@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en" class="patterns-page-html">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Archive & Patterns</title>
+    <link rel="stylesheet" href="Style.css">
+    <script src="Script.js" defer></script>
+</head>
+<body data-default-theme="study">
+<div class="patterns-page" id="patternsApp">
+    <header class="patterns-header">
+        <div class="brand">
+            <div class="pigeon-mark" aria-hidden="true">🧭</div>
+            <div>
+                <h1>Archive & Patterns</h1>
+                <div class="subtitle">what happened · what keeps returning · what it might mean</div>
+            </div>
+        </div>
+
+        <div class="header-right patterns-header-actions">
+            <span id="saveStatus">saved locally</span>
+            <a class="small-button" href="Database.html">← database</a>
+            <a class="small-button" href="Aquarium.html">→ aquarium</a>
+                <button class="small-button selection-mode-button" id="selectModeButton" type="button">select</button>
+            <button class="small-button selection-action-button" id="selectionActionButton" type="button" hidden>delete selected</button>
+            <select id="themeSelect" class="theme-select" aria-label="Theme">
+                <optgroup label="Dark themes">
+                    <option value="dark">🌙 Dark Original</option>
+                    <option value="aquarium">🐠 Dark Teal Celestial Aquarium</option>
+                    <option value="observatory">🔭 Midnight Observatory</option>
+                    <option value="nightgarden">🪻 Night Garden</option>
+                    <option value="fieldnotes">📓 Universal Field Notes</option>
+                </optgroup>
+                <optgroup label="Retro themes">
+                    <option value="y2k">🖥️ Y2K Web Portal</option>
+                </optgroup>
+                <optgroup label="Light themes">
+                    <option value="cozy">💿 Cozy 2000s</option>
+                    <option value="green">🌿 Full Green</option>
+                    <option value="fall">🍂 Fall</option>
+                    <option value="study">📜 Study</option>
+                </optgroup>
+            </select>
+        </div>
+    </header>
+
+    <section class="patterns-intro panel">
+        <div>
+            <strong>Archive = evidence, not obligation.</strong>
+            <span>History on the left · interpretation in the middle · markers and tracking on the right.</span>
+        </div>
+        <div id="archiveSummary" class="archive-summary"></div>
+    </section>
+
+    <main class="patterns-grid">
+        <div class="patterns-stack archive-stack">
+            <section class="panel archive-column day-archive-column">
+                <div class="panel-header">
+                    <div class="panel-title"><span>🗓️</span><span>Day Archive</span></div>
+                    <div class="panel-subtitle">whole-day snapshots · newest first</div>
+                </div>
+                <div id="dayArchiveList" class="archive-list scroll-blue"></div>
+            </section>
+
+            <section class="panel archive-column item-archive-column">
+                <div class="panel-header">
+                    <div class="panel-title"><span>📦</span><span>Archived Items</span></div>
+                    <div class="panel-subtitle">things deliberately moved out of active space</div>
+                </div>
+                <div id="itemArchiveList" class="archive-list scroll-teal"></div>
+            </section>
+        </div>
+
+        <section class="panel patterns-column">
+            <div class="panel-header">
+                <div class="panel-title"><span>🧭</span><span>Patterns & Notes</span></div>
+                <div class="panel-subtitle">your synthesis layer · editable + reorderable</div>
+            </div>
+            <div class="patterns-column-body">
+                <div id="patternNotesList" class="pattern-notes-list scroll-plum"></div>
+                <div class="pattern-entry">
+                    <textarea id="patternInput" class="auto-grow-textarea" data-autogrow="true" rows="1" placeholder="Add a pattern, theme, question, or connection..."></textarea>
+                    <button id="addPattern" class="checklist-add">Add</button>
+                </div>
+                <div class="patterns-hint">Examples: “What keeps working?” · “What drains me repeatedly?” · “What changed after that?” · “What is the same problem wearing different hats?”</div>
+            </div>
+        </section>
+
+        <div class="patterns-stack tracker-stack">
+            <section class="panel tracker-column timeline-column">
+                <div class="panel-header">
+                    <div class="panel-title"><span>📍</span><span>Timeline Markers</span></div>
+                    <div class="panel-subtitle">firsts · shifts · starts · endings · turning points</div>
+                </div>
+                <div class="tracker-body">
+                    <div id="timelineMarkersList" class="tracker-list scroll-orange"></div>
+                    <div class="tracker-entry-row">
+                        <textarea id="timelineMarkerInput" class="auto-grow-textarea tracker-input" data-autogrow="true" rows="1" placeholder="Something changed here..."></textarea>
+                        <button id="addTimelineMarker" class="checklist-add">Add</button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="panel tracker-column strain-column">
+                <div class="panel-header">
+                    <div class="panel-title"><span>🌿</span><span>Strain Journal</span></div>
+                    <div class="panel-subtitle">what I tried · what it actually felt like · what happened next</div>
+                </div>
+                <div class="tracker-body strain-tracker-body">
+                    <div id="strainJournalList" class="tracker-list scroll-green"></div>
+                    <div class="strain-entry-form">
+                        <input id="strainNameInput" class="tracker-text-input" type="text" placeholder="Strain / product">
+                        <textarea id="strainNotesInput" class="auto-grow-textarea tracker-input" data-autogrow="true" rows="1" placeholder="Effects, setting, what I did, anything worth remembering..."></textarea>
+                        <button id="addStrainEntry" class="checklist-add">Add entry</button>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+</div>
+</body>
+</html>

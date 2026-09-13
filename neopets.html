@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en" class="neopets-page-html">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paige's Neopets Corner</title>
+<link rel="stylesheet" href="Style.css">
+<script src="Script.js" defer></script>
+</head>
+<body class="neopets-page" data-default-theme="fieldnotes">
+<div class="neo-page neo-field-page" id="neopetsApp">
+
+    <header class="neo-card neo-field-header">
+        <div class="neo-title-area">
+            <h1><span class="neo-star">✦</span> <span class="neo-ui-edit" contenteditable="true" data-neo-ui="title">Neopian Field Notes</span> <span class="neo-sparkle">✧</span></h1>
+            <p class="neo-ui-edit" contenteditable="true" data-neo-ui="subtitle">dreamies • treasures • daily wandering</p>
+        </div>
+
+        <div class="neo-header-tools">
+            <a class="small-button neo-db-link" href="Database.html">← database</a>
+            <span id="saveStatus">saved locally</span>
+            <select id="themeSelect" class="theme-select" aria-label="Theme"></select>
+            <div class="neo-status">
+                <span class="neo-ui-edit" contenteditable="true" data-neo-ui="status-label">currently:</span>
+                <strong class="neo-ui-edit" contenteditable="true" data-neo-ui="status">wandering neopia</strong>
+            </div>
+        </div>
+    </header>
+
+    <section class="neo-card neo-dream-card">
+        <div class="neo-panel-heading">
+            <h2 class="neo-panel-title neo-ui-edit" contenteditable="true" data-neo-ui="dream-title">Dreamies ☾</h2>
+            <button class="neo-panel-add" id="addDreamie" type="button">+ dreamie</button>
+        </div>
+        <div id="dreamieList" class="neo-dream-list"></div>
+    </section>
+
+    <main class="neo-card neo-dailies-card">
+        <div class="neo-dailies-head">
+            <h2 class="neo-dailies-title neo-ui-edit" contenteditable="true" data-neo-ui="links-title">My Dailies ✦</h2>
+            <div class="neo-dailies-head-right">
+                <div class="neo-dailies-note neo-ui-edit" contenteditable="true" data-neo-ui="links-note">arranged in my preferred order so I can click my way through the routine</div>
+                <button class="neo-panel-add" id="addNeoSection" type="button">+ section</button>
+            </div>
+        </div>
+
+        <div id="neoLinkSections" class="neo-link-sections"></div>
+
+        <div class="neo-reference-box">
+            <div class="neo-reference-label neo-ui-edit" contenteditable="true" data-neo-ui="reference-label">external reference portal ::</div>
+            <div class="neo-reference-links">
+                <a class="neo-reference-link" href="https://thedailyneopets.com/dailies" target="_blank" rel="noopener noreferrer">
+                    <strong>☼ Full Dailies Index</strong>
+                    <small>thedailyneopets.com</small>
+                </a>
+                <a class="neo-reference-link" href="https://items.jellyneo.net/" target="_blank" rel="noopener noreferrer">
+                    <strong>◇ Item Database</strong>
+                    <small>items.jellyneo.net</small>
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <div class="neo-right-stack">
+        <section class="neo-card neo-task-card">
+            <div class="neo-panel-heading">
+                <h2 class="neo-panel-title neo-ui-edit" contenteditable="true" data-neo-ui="streak-title">Streaks ✓</h2>
+                <button class="neo-panel-add" id="addNeoStreak" type="button">+ task</button>
+            </div>
+            <div id="neoStreakList" class="neo-task-list"></div>
+        </section>
+
+        <section class="neo-card neo-treasure-card">
+            <div class="neo-panel-heading">
+                <h2 class="neo-panel-title neo-ui-edit" contenteditable="true" data-neo-ui="treasure-title">Treasure List ✧</h2>
+                <button class="neo-panel-add" id="addTreasure" type="button">+ item</button>
+            </div>
+            <div id="treasureList" class="neo-want-list"></div>
+        </section>
+    </div>
+
+    <footer class="neo-card neo-field-footer">
+        <div class="neo-ui-edit" contenteditable="true" data-neo-ui="footer">best viewed with enchanted eyes, a healthy neopoint budget, and absolutely no self-control ✦</div>
+        <div><a href="Database.html">← back home</a></div>
+    </footer>
+</div>
+
+<div id="neoLinkEditorBackdrop" class="link-editor-backdrop" aria-hidden="true">
+    <div class="link-editor neo-link-editor" role="dialog" aria-modal="true" aria-labelledby="neoLinkEditorTitle">
+        <h2 id="neoLinkEditorTitle">Edit Neopets Link</h2>
+        <label for="neoLinkLabelInput">Label</label>
+        <input id="neoLinkLabelInput" type="text">
+        <label for="neoLinkDescriptionInput">Tiny description</label>
+        <input id="neoLinkDescriptionInput" type="text">
+        <label for="neoLinkIconInput">Icon / symbol</label>
+        <input id="neoLinkIconInput" type="text" maxlength="4" placeholder="✦">
+        <label for="neoLinkUrlInput">URL</label>
+        <input id="neoLinkUrlInput" type="text" placeholder="https://www.neopets.com/...">
+        <label for="neoLinkSectionSelect">Section</label>
+        <select id="neoLinkSectionSelect"></select>
+        <div class="link-editor-actions">
+            <button id="cancelNeoLinkEdit" type="button">Cancel</button>
+            <button id="saveNeoLinkEdit" type="button">Save</button>
+        </div>
+    </div>
+</div>
+</body>
+</html>

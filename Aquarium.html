@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en" class="aquarium-page">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brain Aquarium</title>
+    <link rel="stylesheet" href="Style.css">
+</head>
+<body data-default-theme="aquarium">
+<div class="aq-page" id="aquariumApp">
+
+    <header class="aq-header">
+        <div class="aq-brand">
+            <div class="pigeon-mark" aria-hidden="true">🪼</div>
+            <div class="aq-title">
+                <h1>Brain Aquarium</h1>
+                <div class="aq-subtitle">capture first · sort second · obligation is optional</div>
+            </div>
+        </div>
+
+        <div class="aq-header-actions">
+            <span id="saveStatus">saved locally</span>
+
+            <a class="small-button aq-home-link" href="Database.html">← database</a>
+            <a class="small-button" href="Patterns.html">→ archives</a>
+    
+            <button class="small-button selection-mode-button" id="selectModeButton" type="button">select</button>
+            <button class="small-button selection-action-button" id="selectionActionButton" type="button" hidden>archive selected</button>
+
+            <select id="themeSelect" class="theme-select" aria-label="Theme">
+            <optgroup label="Dark themes">
+                <option value="dark">🌙 Dark Original</option>
+                <option value="aquarium">🐠 Dark Teal Celestial Aquarium</option>
+                <option value="observatory">🔭 Midnight Observatory</option>
+                <option value="nightgarden">🪻 Night Garden</option>
+                <option value="fieldnotes">📓 Universal Field Notes</option>
+            </optgroup>
+            <optgroup label="Retro themes">
+                <option value="y2k">🖥️ Y2K Web Portal</option>
+            </optgroup>
+            <optgroup label="Light themes">
+                <option value="cozy">💿 Cozy 2000s</option>
+                <option value="green">🌿 Full Green</option>
+                <option value="fall">🍂 Fall</option>
+                <option value="study">📜 Study</option>
+            </optgroup>
+        </select>
+
+            <button class="small-button" id="archiveDone">archive completed</button>
+        </div>
+    </header>
+
+    <div class="aq-workspace">
+        <aside class="aq-panel aq-capture-panel">
+            <div class="aq-panel-head">
+                <div class="aq-title-wrap">
+                    <span class="aq-section-icon">✧</span>
+                    <div>
+                        <div class="aq-panel-title">Brain Dump</div>
+                        <div class="aq-panel-subtitle">Catch it before asking what it is.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="aq-capture-body">
+                <div class="aq-kind-prompt">What kind of thing are you catching?</div>
+
+                <div class="aq-kind-toggle">
+                    <button class="aq-kind-choice active" data-kind="thought">
+                        <strong>✦ Thought</strong>
+                        <span>remember · explore · hold</span>
+                    </button>
+
+                    <button class="aq-kind-choice" data-kind="action">
+                        <strong>○ Action</strong>
+                        <span>something to actually do</span>
+                    </button>
+
+                    <button class="aq-kind-choice" data-kind="ask">
+                        <strong>? Ask</strong>
+                        <span>question · uncertainty · find out</span>
+                    </button>
+                </div>
+
+                <textarea
+                    id="captureInput"
+                    class="aq-capture-input"
+                    data-autogrow="true"
+                    data-autogrow-unlimited="true"
+                    rows="1"
+                    placeholder="Put the thought here. You do not have to organize it yet."
+                ></textarea>
+
+                <div class="aq-capture-row">
+                    <span class="aq-shortcut">Enter adds · Shift + Enter makes a new line</span>
+                    <button class="aq-primary-button" id="captureBtn">add to inbox</button>
+                </div>
+            </div>
+
+            <div id="inboxZone" class="aq-inbox-zone aq-dropzone" data-zone="inbox"></div>
+        </aside>
+
+        <main>
+            <div class="aq-board-tools">
+                <div class="aq-filter-set">
+                    <button class="aq-filter-button active" data-filter="all">all</button>
+                    <button class="aq-filter-button" data-filter="thought">✦ thoughts</button>
+                    <button class="aq-filter-button" data-filter="action">○ actions</button>
+                    <button class="aq-filter-button" data-filter="ask">? asks</button>
+                </div>
+
+                <div class="aq-board-tool-right">
+                    <div class="aq-panel-subtitle">Drag categories by ⋮⋮ · drag cards anywhere · drop above/below a card to reorder</div>
+                    <button class="small-button aq-add-category-inline" id="addCategoryTop" type="button">+ category</button>
+                </div>
+            </div>
+
+            <div id="categoryGrid" class="aq-section-board"></div>
+
+            <div class="aq-footer-note">
+                Click a THOUGHT / ACTION / ASK chip to cycle its type. Category and card type are separate.
+            </div>
+        </main>
+    </div>
+
+</div>
+<script src="Script.js"></script>
+</body>
+</html>
