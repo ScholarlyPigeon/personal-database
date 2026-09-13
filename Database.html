@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Database</title>
 <link rel="stylesheet" href="Style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+<script src="CloudSync.js" defer></script>
 <script src="Script.js" defer></script>
 </head>
 <body data-theme="dark">
@@ -21,6 +23,10 @@
 
     <div class="header-right">
         <span id="saveStatus">saved locally</span>
+        <button id="cloudLoginButton" class="small-button" type="button">cloud login</button>
+        <button id="localBackupButton" class="small-button" type="button">backup local</button>
+        <button id="uploadCloudButton" class="small-button" type="button">upload to cloud</button>
+        <button id="loadCloudButton" class="small-button" type="button">load from cloud</button>
         <a class="small-button" href="Aquarium.html">→ aquarium</a>
         <a class="small-button" href="Patterns.html">→ archives</a>
 
