@@ -147,6 +147,19 @@ document.querySelectorAll(
 ).forEach(bindSharedAutoGrowTextarea);
 
 /* =========================================================
+   MOBILE COMPOSER KEYBOARD BEHAVIOR
+   On touch/mobile layouts, Enter belongs to the text itself.
+   The visible Add / Submit button is the only way to submit.
+   Desktop keeps the faster Enter-to-submit shortcut.
+   ========================================================= */
+function mobileComposerUsesNewlines() {
+    return (
+        window.matchMedia("(max-width: 760px)").matches ||
+        window.matchMedia("(pointer: coarse)").matches
+    );
+}
+
+/* =========================================================
    SHARED ARCHIVE SYSTEM
    Past day lists roll into a historical archive automatically.
    Active items can also be intentionally archived from Database
@@ -1151,9 +1164,7 @@ if (document.getElementById("tileGrid")) {
         addLineTop.addEventListener("click", () => input.focus());
         input.addEventListener("keydown", event => {
             if (event.key !== "Enter") return;
-
-            /* Shift + Enter is always reserved for a real line break. */
-            if (event.shiftKey) return;
+            if (mobileComposerUsesNewlines() || event.shiftKey) return;
 
             event.preventDefault();
             addTileLine();
@@ -1996,9 +2007,8 @@ if (document.getElementById("tileGrid")) {
         buttonElement.addEventListener("click", addItem);
         inputElement.addEventListener("keydown", event => {
             if (event.key !== "Enter") return;
+            if (mobileComposerUsesNewlines() || event.shiftKey) return;
 
-            /* Site-wide rule: Enter submits. Shift + Enter makes a line break. */
-            if (event.shiftKey) return;
             event.preventDefault();
             addItem();
         });
@@ -2888,12 +2898,16 @@ if (document.getElementById("aquariumApp")) {
 
     document.getElementById("captureInput").addEventListener("keydown", event => {
         if (event.key !== "Enter") return;
+        if (mobileComposerUsesNewlines() || event.shiftKey) return;
 
-        /* Site-wide rule: Enter submits. Shift + Enter makes a line break. */
-        if (event.shiftKey) return;
         event.preventDefault();
         document.getElementById("captureBtn").click();
     });
+
+    const aquariumShortcut = document.querySelector(".aq-shortcut");
+    if (aquariumShortcut && mobileComposerUsesNewlines()) {
+        aquariumShortcut.textContent = "Enter makes a new line · tap add to inbox to save";
+    }
 
     document.querySelectorAll(".aq-filter-button").forEach(button => {
         button.addEventListener("click", () => {
@@ -3259,7 +3273,9 @@ if (document.getElementById("patternsApp")) {
 
     addPattern.addEventListener("click", addPatternNote);
     patternInput.addEventListener("keydown", event => {
-        if (event.key !== "Enter" || event.shiftKey) return;
+        if (event.key !== "Enter") return;
+        if (mobileComposerUsesNewlines() || event.shiftKey) return;
+
         event.preventDefault();
         addPatternNote();
     });
@@ -3342,7 +3358,9 @@ if (document.getElementById("patternsApp")) {
 
     addTimelineMarker.addEventListener("click", addTimelineMarkerEntry);
     timelineMarkerInput.addEventListener("keydown", event => {
-        if (event.key !== "Enter" || event.shiftKey) return;
+        if (event.key !== "Enter") return;
+        if (mobileComposerUsesNewlines() || event.shiftKey) return;
+
         event.preventDefault();
         addTimelineMarkerEntry();
     });
@@ -3445,12 +3463,14 @@ if (document.getElementById("patternsApp")) {
 
     addStrainEntry.addEventListener("click", addStrainJournalEntry);
     strainNameInput.addEventListener("keydown", event => {
-        if (event.key !== "Enter") return;
+        if (event.key !== "Enter" || mobileComposerUsesNewlines()) return;
         event.preventDefault();
         addStrainJournalEntry();
     });
     strainNotesInput.addEventListener("keydown", event => {
-        if (event.key !== "Enter" || event.shiftKey) return;
+        if (event.key !== "Enter") return;
+        if (mobileComposerUsesNewlines() || event.shiftKey) return;
+
         event.preventDefault();
         addStrainJournalEntry();
     });

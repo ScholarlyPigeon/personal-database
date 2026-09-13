@@ -35,3 +35,9 @@ MOBILE CHROME + HEADER REFINEMENT
 - Moved Reset Layout before the theme selector.
 - Mobile utility row is now Aquarium + Archives + Select + Reset, with the theme selector directly beneath it.
 
+
+MOBILE STABILITY FOLLOW-UP
+- Mobile Database section subtitles are hidden so titles always have enough room.
+- Dense editable rows use isolated paint layers to reduce Chromium/Brave ghost-text artifacts.
+- On phones/touch devices, Enter creates a newline in content composers; use the visible Add/Submit button to save.
+- Desktop keeps Enter-to-submit, with Shift+Enter for a newline.

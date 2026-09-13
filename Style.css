@@ -8474,3 +8474,79 @@ html {
     }
 }
 
+
+/* =========================================================
+   MOBILE STABILITY PASS — HEADER FIT + PAINT ISOLATION
+   Keeps compact phone headers readable and works around stale
+   Chromium/Brave text paint artifacts seen in dense editable rows.
+   ========================================================= */
+@media (max-width: 760px) {
+    /* Secondary header instructions are useful on desktop, but on
+       phones they compete with the actual section name for width. */
+    .database-page .panel-header .panel-subtitle,
+    .database-page .date-rail-header .panel-subtitle {
+        display: none !important;
+    }
+
+    .database-page .panel-header,
+    .database-page .date-rail-header {
+        min-height: 40px;
+        height: auto;
+        overflow: visible;
+        align-items: center;
+    }
+
+    .database-page .panel-title {
+        min-width: 0;
+        flex: 1 1 auto;
+        line-height: 1.2;
+    }
+
+    .database-page .panel-title > span:last-child {
+        min-width: 0;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+
+    /* Chromium occasionally leaves stale editable text behind while
+       scrolling translucent light-theme cards. Give each row its own
+       paint boundary/layer and clip any stale pixels to that row. */
+    .database-page .checklist-item,
+    .database-page .tile-item-row,
+    .database-page .priority-item,
+    .database-page .day-card .checklist-item {
+        position: relative;
+        overflow: hidden;
+        contain: paint;
+        -webkit-transform: translateZ(0);
+        transform: translateZ(0);
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
+    }
+
+    .database-page .task-text,
+    .database-page .tile-item-text,
+    .database-page .priority-item-text {
+        position: relative;
+        z-index: 1;
+        min-height: 1.35em;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        text-shadow: none !important;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    /* Keep each horizontal calendar card self-contained while swiping. */
+    .database-page .day-card {
+        overflow: hidden;
+    }
+
+    /* Mobile composers are intentionally multi-line. The button is
+       the submit control, so give textareas a comfortable two-line
+       ceiling before auto-grow takes over. */
+    .database-page textarea[data-autogrow],
+    html.aquarium-page textarea[data-autogrow],
+    html.patterns-page-html textarea[data-autogrow] {
+        line-height: 1.4;
+    }
+}
