@@ -8321,3 +8321,156 @@ body.neopets-page[data-theme="y2k"] .neo-task { border-radius: 2px; border-width
     }
 }
 
+/* =========================================================
+   MOBILE BROWSER NORMALIZATION + COMPACT DATABASE HEADER
+   Chrome/Chromium can apply mobile text autosizing differently
+   from one browser build/settings profile to another. Keep the
+   app's own type scale authoritative and reduce repaint artifacts
+   in dense editable cards. The Database header also becomes a
+   compact control deck on phones.
+   ========================================================= */
+
+html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+
+@media (max-width: 760px) {
+    html,
+    body {
+        -webkit-text-size-adjust: 100%;
+        text-size-adjust: 100%;
+        overflow-x: hidden;
+    }
+
+    /* Keep Chrome/Chromium from visually inflating or smearing
+       dense editable rows while they repaint during scroll. */
+    .database-page .task-text,
+    .database-page .tile-item-text,
+    .database-page .priority-item-text,
+    .database-page .link-chip a,
+    .database-page .date-label,
+    .database-page [contenteditable="true"] {
+        text-shadow: none;
+        overflow-wrap: anywhere;
+        word-break: normal;
+    }
+
+    .database-page .checklist-item,
+    .database-page .tile-item-row,
+    .database-page .priority-item,
+    .database-page .day-card {
+        isolation: isolate;
+    }
+
+    /* Smaller top deck so capture space arrives sooner. */
+    .database-header {
+        gap: 6px;
+    }
+
+    .database-page .brand {
+        gap: 8px;
+    }
+
+    .database-page .pigeon-mark {
+        width: 36px;
+        height: 36px;
+        border-radius: 11px;
+    }
+
+    .database-page h1 {
+        font-size: 25px;
+    }
+
+    .database-page .subtitle {
+        display: none;
+    }
+
+    .database-page .header-right,
+    .database-page .header-right {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 5px;
+        align-items: stretch;
+    }
+
+    /* Cloud status + login/backup live in one slim row. */
+    .database-page .sync-tools {
+        grid-column: 1 / -1;
+        width: 100%;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto auto;
+        gap: 5px;
+        align-items: stretch;
+    }
+
+    .database-page .sync-tools .sync-status {
+        grid-column: auto;
+        min-width: 0;
+        min-height: 30px;
+        justify-content: flex-start;
+        padding: 3px 8px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size: 10.5px;
+    }
+
+    .database-page .sync-tools .small-button {
+        width: auto;
+        min-width: 66px;
+    }
+
+    /* Aquarium + Archives share the left half of the utility row. */
+    .database-page .page-nav {
+        grid-column: 1 / span 2;
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 5px;
+    }
+
+    .database-page .page-nav .small-button,
+    .database-page .sync-tools .small-button,
+    .database-page .header-right > .small-button {
+        min-height: 32px;
+        padding: 4px 6px;
+        font-size: 10.5px;
+        line-height: 1.15;
+    }
+
+    .database-page #selectModeButton {
+        grid-column: 3;
+    }
+
+    /* Reset now sits directly before the theme menu in the DOM
+       and occupies the final utility slot on mobile. */
+    .database-page #resetLayout {
+        grid-column: 4;
+    }
+
+    .database-page .selection-action-button:not([hidden]) {
+        grid-column: 1 / -1;
+    }
+
+    .database-page .theme-select {
+        grid-column: 1 / -1;
+        width: 100%;
+        max-width: none;
+        min-height: 34px;
+        height: 34px;
+        padding-top: 3px;
+        padding-bottom: 3px;
+        font-size: 12px;
+        box-shadow: none;
+    }
+}
+
+@media (max-width: 430px) {
+    /* Preserve the compact four-slot utility row instead of
+       falling back to the older two-column mobile header. */
+    .database-page .header-right {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+

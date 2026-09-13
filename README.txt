@@ -26,3 +26,12 @@ Important:
 - Existing Supabase data is not embedded in these files.
 - The Supabase publishable key remains in CloudSync.js by design; RLS remains the security boundary.
 - Drag-and-drop remains desktop-first. Touch browsers vary in support for native HTML drag/drop, but adding/editing/checking content remains available on mobile.
+
+MOBILE CHROME + HEADER REFINEMENT
+- Added mobile text-size normalization for Chrome/Chromium consistency.
+- Removed mobile text shadows from dense editable Database content to reduce repaint/ghosting artifacts.
+- Added isolation to dense Database cards for cleaner Chromium repainting.
+- Condensed the Database mobile header/control deck.
+- Moved Reset Layout before the theme selector.
+- Mobile utility row is now Aquarium + Archives + Select + Reset, with the theme selector directly beneath it.
+
