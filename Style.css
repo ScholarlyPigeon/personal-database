@@ -3482,7 +3482,7 @@ html.aquarium-page .aq-panel-head {
 
 /* =========================================================
    DATABASE V2 — THREE-COLUMN DESKTOP LAYOUT
-   Priority shelf + left task rail + center board + 14-day rail.
+   Priority shelf + left task rail + center board + 28-day rail.
    Kept at the end so these rules cleanly override the older layout
    without disturbing the shared Aquarium styles above.
    ========================================================= */
@@ -3601,7 +3601,7 @@ html.aquarium-page .aq-panel-head {
     align-self: stretch;
 }
 
-/* ---------- RIGHT TWO-WEEK DATE RAIL ---------- */
+/* ---------- RIGHT FOUR-WEEK DATE RAIL ---------- */
 .right-date-rail {
     display: grid;
     grid-template-rows: 40px minmax(0, 1fr);
@@ -7553,3 +7553,771 @@ body.neopets-page[data-theme="y2k"] .neo-task { border-radius: 2px; border-width
     .neo-task-list,
     .neo-want-list { max-height: 300px; }
 }
+
+/* =========================================================
+   POLISHED CLOUD CONTROLS + RESPONSIVE MOBILE LAYOUT
+   Desktop keeps the established composition. Phones get a
+   genuine vertical workspace instead of a shrunken desktop.
+   ========================================================= */
+
+.sync-tools,
+.page-nav {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.sync-status {
+    display: inline-flex;
+    align-items: center;
+    min-height: 29px;
+    padding: 4px 8px;
+    border: 1px solid color-mix(in srgb, var(--teal) 35%, var(--border));
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--teal) 7%, var(--panel));
+    color: var(--muted);
+    white-space: nowrap;
+}
+
+.sync-status[data-sync-state="connected"] {
+    color: var(--teal-soft);
+}
+
+.sync-status[data-sync-state="syncing"],
+.sync-status[data-sync-state="checking"] {
+    color: var(--blue-soft);
+}
+
+.sync-status[data-sync-state="error"] {
+    color: var(--rose-soft);
+    border-color: color-mix(in srgb, var(--rose) 42%, var(--border));
+}
+
+.cloud-login-button[hidden] {
+    display: none !important;
+}
+
+/* Secure sign-in dialog created by CloudSync.js. */
+.cloud-login-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    background: rgba(6, 8, 12, .68);
+    backdrop-filter: blur(5px);
+}
+
+.cloud-login-backdrop.open { display: flex; }
+
+.cloud-login-card {
+    width: min(390px, 100%);
+    padding: 18px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background:
+        radial-gradient(circle at 12% 0%, color-mix(in srgb, var(--teal) 9%, transparent), transparent 34%),
+        var(--panel);
+    color: var(--text);
+    box-shadow: 0 22px 60px rgba(0,0,0,.42);
+}
+
+.cloud-login-kicker {
+    margin-bottom: 5px;
+    color: var(--teal-soft);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+}
+
+.cloud-login-card h2 {
+    margin: 0 0 5px;
+    font-family: "Trebuchet MS", "Lucida Sans Unicode", "Segoe UI", sans-serif;
+    font-size: 21px;
+}
+
+.cloud-login-card p {
+    margin: 0 0 14px;
+    color: var(--muted);
+    line-height: 1.45;
+}
+
+.cloud-login-card label {
+    display: block;
+    margin: 9px 0 4px;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.cloud-login-card input {
+    width: 100%;
+    min-height: 40px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 10px;
+    outline: none;
+    background: color-mix(in srgb, var(--bg) 54%, var(--panel));
+    color: var(--text);
+    font: inherit;
+}
+
+.cloud-login-card input:focus { border-color: var(--teal); }
+
+.cloud-login-error {
+    min-height: 18px;
+    margin-top: 7px;
+    color: var(--rose-soft);
+    font-size: 11px;
+}
+
+.cloud-login-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 7px;
+    margin-top: 9px;
+}
+
+.cloud-login-submit {
+    color: var(--text);
+    border-color: color-mix(in srgb, var(--teal) 58%, var(--border));
+}
+
+/* ---------- PHONE / SMALL TABLET ---------- */
+@media (max-width: 760px) {
+    html,
+    body {
+        min-width: 0;
+    }
+
+    input,
+    textarea,
+    select {
+        font-size: 16px;
+    }
+
+    .small-button,
+    .theme-select,
+    .checklist-add,
+    .mini-add,
+    .link-add-button,
+    .aq-primary-button,
+    .aq-filter-button,
+    .neo-panel-add {
+        min-height: 38px;
+    }
+
+    /* ===== DATABASE ===== */
+    html:has(.database-page),
+    body.database-body {
+        width: 100%;
+        height: auto;
+        min-height: 100%;
+        overflow: auto;
+    }
+
+    .database-page.page {
+        width: calc(100% - 12px);
+        height: auto;
+        min-height: 100dvh;
+        margin: 0 auto;
+        padding: 7px 0 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 9px;
+        overflow: visible;
+    }
+
+    .database-header {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 9px;
+    }
+
+    .database-page .brand {
+        align-items: center;
+    }
+
+    .database-page h1 {
+        font-size: 27px;
+    }
+
+    .database-page .subtitle {
+        display: block;
+        max-width: 290px;
+        font-size: 10.5px;
+        line-height: 1.35;
+    }
+
+    .database-page .header-right {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 6px;
+    }
+
+    .database-page .sync-tools,
+    .database-page .page-nav {
+        grid-column: 1 / -1;
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 6px;
+    }
+
+    .database-page .sync-tools .sync-status {
+        grid-column: 1 / -1;
+        justify-content: center;
+    }
+
+    .database-page .page-nav .small-button,
+    .database-page .sync-tools .small-button,
+    .database-page .header-right > .small-button {
+        width: 100%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+    }
+
+    .database-page .theme-select {
+        grid-column: 1 / -1;
+        width: 100%;
+        max-width: none;
+        height: 40px;
+    }
+
+    .database-page .selection-action-button:not([hidden]) {
+        grid-column: 1 / -1;
+    }
+
+    .database-page .focus-panel {
+        min-height: 0;
+        display: block;
+    }
+
+    .database-page .priority-spotlight-header {
+        min-height: 40px;
+        height: auto;
+    }
+
+    .database-page .priority-spotlight-head-right .panel-subtitle,
+    .database-page .priority-signal-label {
+        display: none;
+    }
+
+    .database-page .priority-shelf {
+        height: auto;
+        min-height: 128px;
+        grid-auto-columns: minmax(270px, 84vw);
+        grid-template-rows: minmax(108px, auto);
+        padding: 8px;
+        scroll-snap-type: x proximity;
+    }
+
+    .database-page .priority-item {
+        height: auto;
+        min-height: 108px;
+        scroll-snap-align: start;
+    }
+
+    .database-page .priority-item-text {
+        max-height: 88px;
+    }
+
+    .database-grid.content-shell {
+        display: flex;
+        flex-direction: column;
+        gap: 9px;
+    }
+
+    .database-page .left-rail { order: 1; }
+    .database-page .right-date-rail { order: 2; }
+    .database-page .center-workspace { order: 3; }
+
+    .database-page .left-rail,
+    .database-page .center-workspace,
+    .database-page .right-date-rail {
+        min-height: 0;
+        display: block;
+    }
+
+    .database-page .checklist-panel,
+    .database-page .right-date-rail,
+    .database-page .board-panel {
+        display: block;
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    .database-page .checklist-body {
+        display: block;
+        padding: 8px;
+    }
+
+    .database-page .checklist-list {
+        max-height: 48vh;
+        margin-bottom: 8px;
+        overflow-y: auto;
+    }
+
+    .database-page .checklist-item {
+        min-height: 42px;
+        padding: 8px 7px;
+    }
+
+    .database-page .task-text,
+    .database-page .tile-item-text,
+    .database-page .link-chip a {
+        font-size: 14px;
+    }
+
+    .database-page .date-rail-header .panel-subtitle {
+        display: block;
+        white-space: normal;
+        text-align: right;
+        font-size: 9.5px;
+    }
+
+    .database-page .day-rail {
+        display: grid;
+        grid-auto-flow: column;
+        grid-auto-columns: minmax(82vw, 320px);
+        gap: 8px;
+        padding: 8px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scroll-snap-type: x mandatory;
+        overscroll-behavior-inline: contain;
+    }
+
+    .database-page .day-card {
+        width: auto;
+        height: 300px;
+        min-height: 300px;
+        flex: none;
+        scroll-snap-align: start;
+    }
+
+    .database-page .day-card .day-list {
+        max-height: none;
+        overflow-y: auto;
+    }
+
+    .database-page .center-workspace {
+        display: flex;
+        flex-direction: column;
+        gap: 9px;
+    }
+
+    .database-page .link-strip {
+        min-height: 46px;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        gap: 6px;
+    }
+
+    .database-page .links-container {
+        padding-bottom: 3px;
+    }
+
+    .database-page .board-panel .panel-header {
+        min-height: 44px;
+        height: auto;
+    }
+
+    .database-page .board-header-actions .panel-subtitle {
+        display: none;
+    }
+
+    .database-page .board-body {
+        padding: 8px;
+        overflow: visible;
+    }
+
+    .database-page .center-workspace .tile-grid {
+        height: auto;
+        min-height: 0;
+        grid-template-columns: 1fr;
+        grid-auto-rows: auto;
+        gap: 8px;
+    }
+
+    .database-page .board-tile {
+        min-height: 185px;
+    }
+
+    .database-page .tile-lines-body {
+        min-height: 140px;
+    }
+
+    .database-page .tile-item-list {
+        max-height: 300px;
+        overflow-y: auto;
+    }
+
+    /* ===== AQUARIUM ===== */
+    html.aquarium-page .aq-page {
+        width: calc(100% - 12px);
+        padding: 7px 0 18px;
+    }
+
+    html.aquarium-page .aq-header {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 9px;
+    }
+
+    html.aquarium-page .aq-header-actions {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 6px;
+    }
+
+    html.aquarium-page .aq-header-actions .sync-status,
+    html.aquarium-page .aq-header-actions .theme-select {
+        grid-column: 1 / -1;
+    }
+
+    html.aquarium-page .aq-header-actions .small-button,
+    html.aquarium-page .aq-header-actions .theme-select {
+        width: 100%;
+        max-width: none;
+    }
+
+    html.aquarium-page .aq-workspace {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    html.aquarium-page .aq-capture-panel {
+        position: static;
+    }
+
+    html.aquarium-page .aq-kind-toggle {
+        grid-template-columns: 1fr;
+    }
+
+    html.aquarium-page .aq-kind-choice {
+        min-height: 56px;
+    }
+
+    html.aquarium-page .aq-capture-row {
+        grid-template-columns: 1fr;
+    }
+
+    html.aquarium-page .aq-shortcut {
+        order: 2;
+    }
+
+    html.aquarium-page .aq-primary-button {
+        width: 100%;
+        min-height: 42px;
+    }
+
+    html.aquarium-page .aq-inbox-zone {
+        min-height: 0;
+        max-height: 46vh;
+    }
+
+    html.aquarium-page .aq-board-tools {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    html.aquarium-page .aq-filter-set {
+        width: 100%;
+        overflow-x: auto;
+        padding-bottom: 2px;
+    }
+
+    html.aquarium-page .aq-filter-button {
+        flex: 0 0 auto;
+    }
+
+    html.aquarium-page .aq-board-tool-right {
+        width: 100%;
+    }
+
+    html.aquarium-page .aq-board-tool-right .aq-panel-subtitle {
+        display: none;
+    }
+
+    html.aquarium-page .aq-add-category-inline {
+        width: 100%;
+    }
+
+    html.aquarium-page .aq-category-grid {
+        grid-template-columns: 1fr;
+    }
+
+    html.aquarium-page .aq-category {
+        min-height: 0;
+    }
+
+    html.aquarium-page .aq-category-zone {
+        min-height: 120px;
+    }
+
+    html.aquarium-page .aq-card {
+        min-height: 48px;
+        padding: 9px;
+    }
+
+    /* ===== ARCHIVE & PATTERNS ===== */
+    html.patterns-page-html .patterns-page {
+        width: calc(100% - 12px);
+        padding: 7px 0 18px;
+    }
+
+    html.patterns-page-html .patterns-header {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 9px;
+    }
+
+    html.patterns-page-html .patterns-header-actions {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 6px;
+    }
+
+    html.patterns-page-html .patterns-header-actions .sync-status,
+    html.patterns-page-html .patterns-header-actions .theme-select {
+        grid-column: 1 / -1;
+    }
+
+    html.patterns-page-html .patterns-header-actions .small-button,
+    html.patterns-page-html .patterns-header-actions .theme-select {
+        width: 100%;
+        max-width: none;
+    }
+
+    html.patterns-page-html .patterns-intro {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 7px;
+    }
+
+    html.patterns-page-html .archive-summary {
+        white-space: normal;
+    }
+
+    html.patterns-page-html .patterns-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    html.patterns-page-html .patterns-column { order: 1; }
+    html.patterns-page-html .tracker-stack { order: 2; }
+    html.patterns-page-html .archive-stack { order: 3; }
+
+    html.patterns-page-html .patterns-stack,
+    html.patterns-page-html .archive-column,
+    html.patterns-page-html .patterns-column,
+    html.patterns-page-html .tracker-column {
+        width: 100%;
+        min-height: 0;
+        max-height: none;
+    }
+
+    html.patterns-page-html .archive-list,
+    html.patterns-page-html .pattern-notes-list,
+    html.patterns-page-html .tracker-list {
+        max-height: 58vh;
+        overflow-y: auto;
+    }
+
+    html.patterns-page-html .pattern-entry,
+    html.patterns-page-html .tracker-entry-row,
+    html.patterns-page-html .strain-entry-form {
+        grid-template-columns: 1fr;
+    }
+
+    html.patterns-page-html .pattern-entry .checklist-add,
+    html.patterns-page-html .tracker-entry-row .checklist-add,
+    html.patterns-page-html .strain-entry-form .checklist-add {
+        width: 100%;
+    }
+
+    /* ===== NEOPETS ===== */
+    html.neopets-page-html,
+    html.neopets-page-html body {
+        height: auto;
+        min-height: 100%;
+    }
+
+    body.neopets-page {
+        overflow: auto;
+        padding: 7px;
+    }
+
+    .neo-field-page {
+        width: 100%;
+        height: auto;
+        min-height: 100dvh;
+        display: grid;
+        grid-template-columns: 1fr;
+        grid-template-rows: auto;
+        gap: 9px;
+    }
+
+    .neo-field-header,
+    .neo-field-footer,
+    .neo-dream-card,
+    .neo-dailies-card,
+    .neo-right-stack {
+        grid-column: 1;
+        grid-row: auto;
+    }
+
+    .neo-field-header {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 10px;
+        padding: 14px 12px 11px;
+    }
+
+    .neo-title-area h1 {
+        font-size: clamp(27px, 9vw, 34px);
+    }
+
+    .neo-title-area p {
+        font-size: 10px;
+        line-height: 1.35;
+    }
+
+    .neo-header-tools {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 6px;
+        justify-content: stretch;
+    }
+
+    .neo-header-tools .sync-status,
+    .neo-header-tools .theme-select,
+    .neo-header-tools .neo-status {
+        grid-column: 1 / -1;
+    }
+
+    .neo-header-tools .small-button,
+    .neo-header-tools .theme-select {
+        width: 100%;
+        max-width: none;
+    }
+
+    .neo-status {
+        padding: 7px 9px;
+        font-size: 11px;
+    }
+
+    .neo-dream-card,
+    .neo-dailies-card,
+    .neo-task-card,
+    .neo-treasure-card {
+        padding: 10px;
+    }
+
+    .neo-right-stack {
+        display: grid;
+        grid-template-columns: 1fr;
+        grid-template-rows: auto;
+        gap: 9px;
+    }
+
+    .neo-dream-list,
+    .neo-task-list,
+    .neo-want-list,
+    .neo-link-sections {
+        max-height: none;
+        overflow: visible;
+    }
+
+    .neo-dailies-head {
+        align-items: flex-start;
+    }
+
+    .neo-dailies-head-right {
+        flex: 0 0 auto;
+    }
+
+    .neo-dailies-note {
+        display: none;
+    }
+
+    .neo-daily-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 6px;
+    }
+
+    .neo-daily {
+        min-height: 58px;
+        padding: 7px 6px;
+    }
+
+    .neo-daily-icon {
+        width: 29px;
+        height: 29px;
+        font-size: 15px;
+    }
+
+    .neo-daily-title {
+        font-size: 12px;
+    }
+
+    .neo-daily-desc {
+        font-size: 9.5px;
+        line-height: 1.25;
+    }
+
+    .neo-dreamie {
+        grid-template-columns: 58px minmax(0, 1fr) auto;
+        gap: 8px;
+        padding: 8px;
+    }
+
+    .neo-dream-image {
+        width: 58px;
+        height: 58px;
+    }
+
+    .neo-field-footer {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 7px;
+    }
+}
+
+@media (max-width: 430px) {
+    .database-page .header-right,
+    html.aquarium-page .aq-header-actions,
+    html.patterns-page-html .patterns-header-actions,
+    .neo-header-tools {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .database-page .pigeon-mark,
+    html.aquarium-page .pigeon-mark,
+    html.patterns-page-html .pigeon-mark {
+        width: 38px;
+        height: 38px;
+    }
+
+    .neo-daily-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .neo-daily-link {
+        gap: 5px;
+    }
+
+    .neo-daily-actions {
+        align-self: start;
+    }
+}
+

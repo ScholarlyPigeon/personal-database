@@ -20,7 +20,8 @@
 
         <div class="neo-header-tools">
             <a class="small-button neo-db-link" href="Database.html">← database</a>
-            <span id="saveStatus">saved locally</span>
+            <span id="saveStatus" class="sync-status" aria-live="polite">cloud ready</span>
+            <button id="cloudLoginButton" class="small-button cloud-login-button" type="button">cloud login</button>
             <select id="themeSelect" class="theme-select" aria-label="Theme"></select>
             <div class="neo-status">
                 <span class="neo-ui-edit" contenteditable="true" data-neo-ui="status-label">currently:</span>

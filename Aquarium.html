@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Brain Aquarium</title>
     <link rel="stylesheet" href="Style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+    <script src="CloudSync.js" defer></script>
+    <script src="Script.js" defer></script>
 </head>
 <body data-default-theme="aquarium">
 <div class="aq-page" id="aquariumApp">
@@ -19,7 +22,8 @@
         </div>
 
         <div class="aq-header-actions">
-            <span id="saveStatus">saved locally</span>
+            <span id="saveStatus" class="sync-status" aria-live="polite">cloud ready</span>
+            <button id="cloudLoginButton" class="small-button cloud-login-button" type="button">cloud login</button>
 
             <a class="small-button aq-home-link" href="Database.html">← database</a>
             <a class="small-button" href="Patterns.html">→ archives</a>
@@ -124,8 +128,5 @@
     </div>
 
 </div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="CloudSync.js"></script>
-<script src="Script.js"></script>
 </body>
 </html>

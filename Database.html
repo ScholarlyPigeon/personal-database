@@ -1,128 +1,123 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Database</title>
-<link rel="stylesheet" href="Style.css">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="CloudSync.js" defer></script>
-<script src="Script.js" defer></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database</title>
+    <link rel="stylesheet" href="Style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+    <script src="CloudSync.js" defer></script>
+    <script src="Script.js" defer></script>
 </head>
-<body data-theme="dark">
+<body class="database-body" data-theme="dark">
 <div class="page database-page">
 
-<header>
-    <div class="brand">
-        <div class="pigeon-mark">🗃️</div>
-        <div>
-            <h1 class="editable-ui" contenteditable="true" data-ui-save="page-title">database</h1>
-            <div class="subtitle editable-ui" contenteditable="true" data-ui-save="page-subtitle">private notebook · life admin · brain annex · ongoing construction</div>
+    <header class="database-header">
+        <div class="brand">
+            <div class="pigeon-mark" aria-hidden="true">🗃️</div>
+            <div>
+                <h1 class="editable-ui" contenteditable="true" data-ui-save="page-title">database</h1>
+                <div class="subtitle editable-ui" contenteditable="true" data-ui-save="page-subtitle">private notebook · life admin · brain annex · ongoing construction</div>
+            </div>
         </div>
-    </div>
 
-    <div class="header-right">
-        <span id="saveStatus">saved locally</span>
-        <button id="cloudLoginButton" class="small-button" type="button">cloud login</button>
-        <button id="localBackupButton" class="small-button" type="button">backup local</button>
-        <button id="uploadCloudButton" class="small-button" type="button">upload to cloud</button>
-        <button id="loadCloudButton" class="small-button" type="button">load from cloud</button>
-        <a class="small-button" href="Aquarium.html">→ aquarium</a>
-        <a class="small-button" href="Patterns.html">→ archives</a>
-
-        <button class="small-button selection-mode-button" id="selectModeButton" type="button">select</button>
-        <button class="small-button selection-action-button" id="selectionActionButton" type="button" hidden>archive selected</button>
-
-        <select id="themeSelect" class="theme-select" aria-label="Database theme" title="Choose a Database theme">
-            <optgroup label="Dark themes">
-                <option value="dark">🌙 Dark Original</option>
-                <option value="aquarium">🐠 Dark Teal Celestial Aquarium</option>
-                <option value="observatory">🔭 Midnight Observatory</option>
-                <option value="nightgarden">🪻 Night Garden</option>
-                <option value="fieldnotes">📓 Universal Field Notes</option>
-            </optgroup>
-            <optgroup label="Retro themes">
-                <option value="y2k">🖥️ Y2K Web Portal</option>
-            </optgroup>
-            <optgroup label="Light themes">
-                <option value="cozy">💿 Cozy 2000s</option>
-                <option value="green">🌿 Full Green</option>
-                <option value="fall">🍂 Fall</option>
-                <option value="study">📜 Study</option>
-            </optgroup>
-        </select>
-
-        <button id="resetLayout" class="small-button" title="Restore all Main Board tiles and their original order">reset layout</button>
-    </div>
-</header>
-
-<!-- PRIORITY / SPOTLIGHT SHELF -->
-<section class="panel focus-panel priority-spotlight-panel">
-    <div class="panel-header priority-spotlight-header">
-        <div class="panel-title"><span>✦</span><span class="editable-ui" contenteditable="true" data-ui-save="focus-title">Priority Shelf</span></div>
-        <div class="priority-spotlight-head-right">
-            <span class="priority-signal-label" aria-hidden="true">NOW / SIGNAL BOOST</span>
-            <div class="panel-subtitle editable-ui" contenteditable="true" data-ui-save="focus-subtitle">drag any individual line here when it deserves the front row</div>
-        </div>
-    </div>
-    <div id="priorityShelf" class="priority-shelf scroll-plum" data-priority-zone="true"></div>
-</section>
-
-<!-- THREE-COLUMN WORKSPACE -->
-<div class="content-shell database-grid">
-
-    <!-- LEFT: RADAR -->
-    <aside class="left-rail">
-        <section class="panel checklist-panel">
-            <div class="panel-header">
-                <div class="panel-title"><span>📡</span><span class="editable-ui" contenteditable="true" data-ui-save="radar-title">On My Radar</span></div>
-                <div class="panel-subtitle editable-ui" contenteditable="true" data-ui-save="radar-subtitle">editable · moveable checklist</div>
+        <div class="header-right">
+            <div class="sync-tools">
+                <span id="saveStatus" class="sync-status" aria-live="polite">cloud ready</span>
+                <button id="cloudLoginButton" class="small-button cloud-login-button" type="button">cloud login</button>
+                <button id="localBackupButton" class="small-button backup-button" type="button" title="Download a JSON snapshot of your current local Database data">backup</button>
             </div>
 
-            <div class="checklist-body">
-                <div id="radarList" class="checklist-list scroll-teal"></div>
-                <div class="checklist-entry radar-entry">
-                    <textarea id="radarInput" class="checklist-input radar-input auto-grow-textarea" rows="1" data-autogrow="true" placeholder="Add to radar..."></textarea>
-                    <button id="addRadar" class="checklist-add radar-add">Add</button>
+            <nav class="page-nav" aria-label="Database pages">
+                <a class="small-button" href="Aquarium.html">→ aquarium</a>
+                <a class="small-button" href="Patterns.html">→ archives</a>
+            </nav>
+
+            <button class="small-button selection-mode-button" id="selectModeButton" type="button">select</button>
+            <button class="small-button selection-action-button" id="selectionActionButton" type="button" hidden>archive selected</button>
+
+            <select id="themeSelect" class="theme-select" aria-label="Database theme" title="Choose a Database theme">
+                <optgroup label="Dark themes">
+                    <option value="dark">🌙 Dark Original</option>
+                    <option value="aquarium">🐠 Dark Teal Celestial Aquarium</option>
+                    <option value="observatory">🔭 Midnight Observatory</option>
+                    <option value="nightgarden">🪻 Night Garden</option>
+                    <option value="fieldnotes">📓 Universal Field Notes</option>
+                </optgroup>
+                <optgroup label="Retro themes">
+                    <option value="y2k">🖥️ Y2K Web Portal</option>
+                </optgroup>
+                <optgroup label="Light themes">
+                    <option value="cozy">💿 Cozy 2000s</option>
+                    <option value="green">🌿 Full Green</option>
+                    <option value="fall">🍂 Fall</option>
+                    <option value="study">📜 Study</option>
+                </optgroup>
+            </select>
+
+            <button id="resetLayout" class="small-button" type="button" title="Restore all Main Board tiles and their original order">reset layout</button>
+        </div>
+    </header>
+
+    <section class="panel focus-panel priority-spotlight-panel">
+        <div class="panel-header priority-spotlight-header">
+            <div class="panel-title"><span>✦</span><span class="editable-ui" contenteditable="true" data-ui-save="focus-title">Priority Shelf</span></div>
+            <div class="priority-spotlight-head-right">
+                <span class="priority-signal-label" aria-hidden="true">NOW / SIGNAL BOOST</span>
+                <div class="panel-subtitle editable-ui" contenteditable="true" data-ui-save="focus-subtitle">drag any individual line here when it deserves the front row</div>
+            </div>
+        </div>
+        <div id="priorityShelf" class="priority-shelf scroll-plum" data-priority-zone="true"></div>
+    </section>
+
+    <div class="content-shell database-grid">
+        <aside class="left-rail">
+            <section class="panel checklist-panel">
+                <div class="panel-header">
+                    <div class="panel-title"><span>📡</span><span class="editable-ui" contenteditable="true" data-ui-save="radar-title">On My Radar</span></div>
+                    <div class="panel-subtitle editable-ui" contenteditable="true" data-ui-save="radar-subtitle">editable · moveable checklist</div>
                 </div>
-            </div>
-        </section>
-    </aside>
 
-    <!-- CENTER: LINKS + MAIN BOARD -->
-    <main class="center-workspace">
-        <section class="link-strip">
-            <div class="link-strip-label editable-ui" contenteditable="true" data-ui-save="links-title">🔗 Links</div>
-            <div id="linksContainer" class="links-container"></div>
-            <button id="addLinkButton" class="link-add-button" type="button" title="Add a new link">+ link</button>
-        </section>
-
-        <section class="panel board-panel">
-            <div class="panel-header">
-                <div class="panel-title"><span>🗂️</span><span class="editable-ui" contenteditable="true" data-ui-save="main-board-title">Main Board</span></div>
-                <div class="board-header-actions">
-                    <div class="panel-subtitle editable-ui" contenteditable="true" data-ui-save="main-board-subtitle">drag tiles by ⋮⋮ · move priority tiles up top · drag lines between tiles</div>
-                    <button id="addTileButton" class="small-button board-add-tile" type="button" title="Add a new Main Board tile">+ tile</button>
+                <div class="checklist-body">
+                    <div id="radarList" class="checklist-list scroll-teal"></div>
+                    <div class="checklist-entry radar-entry">
+                        <textarea id="radarInput" class="checklist-input radar-input auto-grow-textarea" rows="1" data-autogrow="true" placeholder="Add to radar..."></textarea>
+                        <button id="addRadar" class="checklist-add radar-add" type="button">Add</button>
+                    </div>
                 </div>
+            </section>
+        </aside>
+
+        <main class="center-workspace">
+            <section class="link-strip">
+                <div class="link-strip-label editable-ui" contenteditable="true" data-ui-save="links-title">🔗 Links</div>
+                <div id="linksContainer" class="links-container"></div>
+                <button id="addLinkButton" class="link-add-button" type="button" title="Add a new link">+ link</button>
+            </section>
+
+            <section class="panel board-panel">
+                <div class="panel-header">
+                    <div class="panel-title"><span>🗂️</span><span class="editable-ui" contenteditable="true" data-ui-save="main-board-title">Main Board</span></div>
+                    <div class="board-header-actions">
+                        <div class="panel-subtitle editable-ui" contenteditable="true" data-ui-save="main-board-subtitle">drag tiles by ⋮⋮ · move priority tiles up top · drag lines between tiles</div>
+                        <button id="addTileButton" class="small-button board-add-tile" type="button" title="Add a new Main Board tile">+ tile</button>
+                    </div>
+                </div>
+
+                <div id="boardBody" class="board-body scroll-teal">
+                    <div id="tileGrid" class="tile-grid tile-dropzone" data-tile-zone="board"></div>
+                </div>
+            </section>
+        </main>
+
+        <aside class="right-date-rail panel">
+            <div class="panel-header date-rail-header">
+                <div class="panel-title"><span>🗓️</span><span class="editable-ui" contenteditable="true" data-ui-save="days-title">Next 4 Weeks</span></div>
+                <div class="panel-subtitle editable-ui" contenteditable="true" data-ui-save="days-subtitle">two days in view · four weeks are a scroll away</div>
             </div>
-
-            <div id="boardBody" class="board-body scroll-teal">
-                <div id="tileGrid" class="tile-grid tile-dropzone" data-tile-zone="board"></div>
-            </div>
-        </section>
-    </main>
-
-    <!-- RIGHT: SCROLLABLE TWO-WEEK DATE RAIL -->
-    <aside class="right-date-rail panel">
-        <div class="panel-header date-rail-header">
-            <div class="panel-title"><span>🗓️</span><span class="editable-ui" contenteditable="true" data-ui-save="days-title">Next 4 Weeks</span></div>
-            <div class="panel-subtitle editable-ui" contenteditable="true" data-ui-save="days-subtitle">two days in view · four weeks are a scroll away</div>
-        </div>
-        <div id="dayRail" class="day-rail scroll-blue"></div>
-    </aside>
-
-</div>
-
+            <div id="dayRail" class="day-rail scroll-blue"></div>
+        </aside>
+    </div>
 </div>
 
 <div id="linkEditorBackdrop" class="link-editor-backdrop" aria-hidden="true">

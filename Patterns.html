@@ -21,10 +21,11 @@
         </div>
 
         <div class="header-right patterns-header-actions">
-            <span id="saveStatus">saved locally</span>
+            <span id="saveStatus" class="sync-status" aria-live="polite">cloud ready</span>
+            <button id="cloudLoginButton" class="small-button cloud-login-button" type="button">cloud login</button>
             <a class="small-button" href="Database.html">← database</a>
             <a class="small-button" href="Aquarium.html">→ aquarium</a>
-                <button class="small-button selection-mode-button" id="selectModeButton" type="button">select</button>
+                            <button class="small-button selection-mode-button" id="selectModeButton" type="button">select</button>
             <button class="small-button selection-action-button" id="selectionActionButton" type="button" hidden>delete selected</button>
             <select id="themeSelect" class="theme-select" aria-label="Theme">
                 <optgroup label="Dark themes">

@@ -7,9 +7,17 @@ let saveTimer;
 
 function showSaved() {
     if (!saveStatus) return;
+
+    clearTimeout(saveTimer);
+
+    if (document.body.dataset.cloudSync === "connected") {
+        saveStatus.textContent = "☁ saving…";
+        saveStatus.classList.add("saved");
+        return;
+    }
+
     saveStatus.textContent = "saved locally ✓";
     saveStatus.classList.add("saved");
-    clearTimeout(saveTimer);
     saveTimer = setTimeout(() => {
         saveStatus.textContent = "saved locally";
         saveStatus.classList.remove("saved");
@@ -364,45 +372,16 @@ updateSelectionUi();
 
 
 /* =========================================================
-   MAIN DATABASE MODULE — THREE-COLUMN / TWO-WEEK VERSION
+   MAIN DATABASE MODULE — THREE-COLUMN / FOUR-WEEK VERSION
    ========================================================= */
 if (document.getElementById("tileGrid")) {
-    /* =========================================================
-       SHARED AUTO-GROW COMPOSERS
-       Compact capture fields begin at one line and grow smoothly
-       up to four visible lines. Future pages can reuse the same
-       .auto-grow-textarea class + data-autogrow attribute.
-       ========================================================= */
-    function resizeAutoGrowTextarea(field) {
-        if (!field) return;
-        field.style.height = "auto";
-        const styles = getComputedStyle(field);
-        const lineHeight = parseFloat(styles.lineHeight) || 19;
-        const paddingTop = parseFloat(styles.paddingTop) || 0;
-        const paddingBottom = parseFloat(styles.paddingBottom) || 0;
-        const borderTop = parseFloat(styles.borderTopWidth) || 0;
-        const borderBottom = parseFloat(styles.borderBottomWidth) || 0;
-        const chrome = paddingTop + paddingBottom + borderTop + borderBottom;
-        const minHeight = lineHeight + chrome;
-        const maxHeight = (lineHeight * 4) + chrome;
-        const nextHeight = Math.min(Math.max(field.scrollHeight, minHeight), maxHeight);
-        field.style.height = `${nextHeight}px`;
-        field.style.overflowY = field.scrollHeight > maxHeight ? "auto" : "hidden";
-    }
+    /* Reuse the shared auto-grow helper inside the Database module. */
+    const resizeAutoGrowTextarea = resizeSharedAutoGrowTextarea;
+    const bindAutoGrowTextarea = bindSharedAutoGrowTextarea;
 
-    function bindAutoGrowTextarea(field) {
-        if (!field || field.dataset.autogrowBound === "true") return;
-        field.dataset.autogrowBound = "true";
-        field.rows = 1;
-        field.addEventListener("input", () => resizeAutoGrowTextarea(field));
-        resizeAutoGrowTextarea(field);
-    }
-
-    document.querySelectorAll("textarea[data-autogrow], textarea.auto-grow-textarea")
-        .forEach(bindAutoGrowTextarea);
 
     /* =========================================================
-       DATE HELPERS + 14-DAY RAIL
+       DATE HELPERS + 28-DAY RAIL
        Each day keeps the same date-based storage system as before,
        so existing saved items for matching dates are preserved.
        ========================================================= */
@@ -1763,7 +1742,6 @@ if (document.getElementById("tileGrid")) {
         buttonId,
         defaults,
         accentClass = "",
-        multiline = false,
         archiveSource = "Checklist",
         archiveContext = "",
         archiveOriginalDate = null
@@ -2067,7 +2045,6 @@ if (document.getElementById("tileGrid")) {
             { text: "Review upcoming bills", done: false }
         ],
         accentClass: "scroll-teal",
-        multiline: true,
         archiveSource: "Database",
         archiveContext: "On My Radar"
     });
