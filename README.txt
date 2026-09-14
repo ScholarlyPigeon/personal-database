@@ -86,3 +86,12 @@ LONGFORM IMAGE + EDITABILITY FOLLOW-UP
 - Added an explicit edit-pencil control to every saved Longform thought; it expands the note and focuses the editable text.
 - Longform page title, subtitle, Saved Thoughts heading/note, and Write It Out heading/note are now editable and synced.
 - Bumped the shared asset cache version so updated CSS/JS refreshes cleanly in Chromium/Brave.
+
+V5 — FINAL NIGHT POLISH
+- Enlarged Neopets Dreamies portraits on desktop and mobile, and switched them to contain so the full pet image remains visible.
+- Added rich-text keyboard handling on contenteditable writing surfaces: Ctrl/Cmd+B = bold, Ctrl/Cmd+I = italic, Ctrl/Cmd+U = underline, Ctrl/Cmd+Shift+X = strikethrough.
+- Longform composer is now a rich contenteditable writing surface, and Longform formatting persists when saved and edited.
+- Longform saved-note images now keep their natural aspect ratio with no forced crop box, use the full saved-card width, and the saved-thought rail is wider on desktop.
+- Increased the size/prominence of the Longform optional image / clickable link control.
+- Hardened mobile document scrolling for Longform and Neopets so the full page remains reachable on touch browsers despite the desktop overflow lock.
+- Bumped cache versions to 20260913e.

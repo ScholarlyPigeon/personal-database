@@ -167,6 +167,40 @@ function mobileComposerUsesNewlines() {
 }
 
 /* =========================================================
+   SHARED RICH-TEXT KEYBOARD SHORTCUTS
+   Ctrl/Cmd+B, I and U work on contenteditable writing surfaces.
+   Ctrl/Cmd+Shift+X adds/removes strikethrough. Plain text inputs
+   remain plain text by design.
+   ========================================================= */
+document.addEventListener("keydown", event => {
+    if (!(event.ctrlKey || event.metaKey) || event.altKey) return;
+
+    const editable = event.target?.closest?.('[contenteditable="true"]');
+    if (!editable) return;
+
+    const key = String(event.key || "").toLowerCase();
+    let command = null;
+
+    if (key === "b" && !event.shiftKey) command = "bold";
+    else if (key === "i" && !event.shiftKey) command = "italic";
+    else if (key === "u" && !event.shiftKey) command = "underline";
+    else if (key === "x" && event.shiftKey) command = "strikeThrough";
+
+    if (!command) return;
+
+    event.preventDefault();
+    editable.focus();
+    document.execCommand(command, false, null);
+
+    /* Most browsers fire input for execCommand, but this makes persistence
+       deterministic for our local/cloud save listeners. */
+    editable.dispatchEvent(new InputEvent("input", {
+        bubbles: true,
+        inputType: `format${command.charAt(0).toUpperCase()}${command.slice(1)}`
+    }));
+});
+
+/* =========================================================
    SHARED ARCHIVE SYSTEM
    Past day lists roll into a historical archive automatically.
    Active items can also be intentionally archived from Database
@@ -3584,6 +3618,19 @@ if (document.getElementById("longformApp")) {
     let activeLongformFilter = "all";
     const expandedLongformIds = new Set();
 
+
+    function longformPlainTextToHtml(value) {
+        const temp = document.createElement("div");
+        temp.textContent = String(value || "");
+        return temp.innerHTML.replace(/\n/g, "<br>");
+    }
+
+    function longformHtmlToPlain(value) {
+        const temp = document.createElement("div");
+        temp.innerHTML = String(value || "");
+        return temp.innerText || temp.textContent || "";
+    }
+
     /* Longform page/section labels are intentionally editable too.
        They use their own synced pigeonhole-* keys so personal wording
        follows the rest of the ecosystem between devices. */
@@ -3633,7 +3680,12 @@ if (document.getElementById("longformApp")) {
                 .filter(entry => entry && typeof entry.id === "string")
                 .map(entry => ({
                     id: entry.id,
-                    text: typeof entry.text === "string" ? entry.text : "",
+                    text: typeof entry.text === "string"
+                        ? entry.text
+                        : longformHtmlToPlain(entry.html || ""),
+                    html: typeof entry.html === "string"
+                        ? entry.html
+                        : longformPlainTextToHtml(typeof entry.text === "string" ? entry.text : ""),
                     category: LONGFORM_CATEGORIES.some(item => item.id === entry.category) ? entry.category : "misc",
                     date: /^\d{4}-\d{2}-\d{2}$/.test(entry.date || "") ? entry.date : makeLocalIsoDate(),
                     done: Boolean(entry.done),
@@ -3858,9 +3910,10 @@ if (document.getElementById("longformApp")) {
             text.className = `longform-entry-text${expanded ? " expanded" : " collapsed"}`;
             text.contentEditable = expanded ? "true" : "false";
             text.spellcheck = true;
-            text.textContent = entry.text;
+            text.innerHTML = entry.html || longformPlainTextToHtml(entry.text);
             if (expanded) {
                 text.addEventListener("input", () => {
+                    entry.html = text.innerHTML;
                     entry.text = text.innerText;
                     saveLongformState();
                 });
@@ -3883,7 +3936,8 @@ if (document.getElementById("longformApp")) {
     }
 
     function submitLongformEntry() {
-        const text = longformInput.value.trim();
+        const text = longformInput.innerText.trim();
+        const html = longformInput.innerHTML.trim();
         if (!text) {
             longformInput.focus();
             return;
@@ -3892,6 +3946,7 @@ if (document.getElementById("longformApp")) {
         longformState.entries.unshift({
             id: longformId(),
             text,
+            html,
             category: LONGFORM_CATEGORIES.some(item => item.id === longformCategory.value)
                 ? longformCategory.value
                 : "misc",
@@ -3902,7 +3957,7 @@ if (document.getElementById("longformApp")) {
             linkUrl: longformLinkUrl.value.trim()
         });
 
-        longformInput.value = "";
+        longformInput.innerHTML = "";
         longformImageUrl.value = "";
         longformLinkUrl.value = "";
         longformDate.value = makeLocalIsoDate();

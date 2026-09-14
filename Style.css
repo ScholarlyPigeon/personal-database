@@ -9740,3 +9740,162 @@ html.patterns-page-html .patterns-header,
         font-size: 12px;
     }
 }
+
+
+/* =========================================================
+   V5 — BIGGER DREAMIES, FULL IMAGE PREVIEWS, MOBILE SCROLL
+   + RICH LONGFORM EDITING
+   ========================================================= */
+
+/* Dreamies get more portrait room without taking over the whole rail. */
+.neo-dreamie {
+    grid-template-columns: 86px minmax(0, 1fr) auto;
+}
+.neo-dream-image {
+    width: 86px;
+    height: 86px;
+}
+.neo-dream-image img {
+    object-fit: contain;
+    background: color-mix(in srgb, var(--bg) 86%, var(--plum));
+}
+
+/* Longform attachment label should read like a real control, not footnote dust. */
+.longform-attachment summary {
+    font-size: 13px;
+    line-height: 1.3;
+    font-weight: 700;
+    letter-spacing: .1px;
+}
+.longform-attachment-fields label {
+    font-size: 10.5px;
+}
+
+/* Let screenshots/charts keep their actual proportions. No forced crop box. */
+.longform-entry-body.has-media {
+    grid-template-columns: minmax(190px, 50%) minmax(0, 1fr);
+}
+.longform-entry-media {
+    aspect-ratio: auto;
+    height: auto;
+    max-height: none;
+    overflow: visible;
+    align-self: start;
+}
+.longform-entry-media img {
+    width: 100%;
+    height: auto;
+    max-height: 430px;
+    object-fit: contain;
+    object-position: top center;
+}
+
+/* The composer is now a rich contenteditable surface rather than a textarea. */
+.longform-input {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    cursor: text;
+}
+.longform-input:empty::before {
+    content: attr(data-placeholder);
+    color: var(--faint);
+    pointer-events: none;
+}
+.longform-input b,
+.longform-input strong,
+.longform-entry-text b,
+.longform-entry-text strong { font-weight: 700; }
+.longform-input i,
+.longform-input em,
+.longform-entry-text i,
+.longform-entry-text em { font-style: italic; }
+.longform-input u,
+.longform-entry-text u { text-decoration: underline; }
+.longform-input s,
+.longform-input strike,
+.longform-entry-text s,
+.longform-entry-text strike { text-decoration: line-through; }
+
+/* Mobile pages must scroll at the document level. The global desktop shell
+   intentionally uses overflow:hidden, so these explicit overrides win on phones. */
+@media (max-width: 900px), (pointer: coarse) {
+    html.neopets-page-html,
+    html.neopets-page-html body,
+    html.longform-page-html,
+    html.longform-page-html body {
+        width: 100% !important;
+        height: auto !important;
+        min-height: 100% !important;
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+        overscroll-behavior-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    body.neopets-page {
+        min-height: 100dvh !important;
+        overflow: visible !important;
+    }
+
+    .neo-field-page,
+    .longform-page {
+        height: auto !important;
+        min-height: 100dvh !important;
+        max-height: none !important;
+        overflow: visible !important;
+    }
+
+    .neo-dream-card,
+    .neo-dailies-card,
+    .neo-right-stack,
+    .neo-task-card,
+    .neo-treasure-card,
+    .longform-workspace,
+    .longform-library,
+    .longform-composer {
+        max-height: none !important;
+        overflow: visible !important;
+    }
+
+    .neo-dream-list,
+    .neo-link-sections,
+    .neo-task-list,
+    .neo-want-list,
+    .longform-list {
+        max-height: none !important;
+        overflow: visible !important;
+    }
+}
+
+@media (max-width: 760px) {
+    .neo-dreamie {
+        grid-template-columns: 74px minmax(0, 1fr) auto;
+    }
+    .neo-dream-image {
+        width: 74px;
+        height: 74px;
+    }
+
+    .longform-entry-body.has-media {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    .longform-entry-media img {
+        max-height: none;
+    }
+}
+
+/* Give image-heavy saved thoughts a wider reading rail. Media uses the full
+   card width so schedules, tables and screenshots are actually legible. */
+@media (min-width: 901px) {
+    .longform-workspace {
+        grid-template-columns: minmax(430px, 1.08fr) minmax(0, 1.32fr);
+    }
+    .longform-entry-body.has-media {
+        grid-template-columns: 1fr;
+        gap: 9px;
+    }
+    .longform-entry-media img {
+        max-height: none;
+    }
+}
