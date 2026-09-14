@@ -4,10 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Paige's Neopets Corner</title>
-<link rel="stylesheet" href="Style.css">
+<link rel="stylesheet" href="Style.css?v=20260913c">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="CloudSync.js" defer></script>
-<script src="Script.js" defer></script>
+<script src="CloudSync.js?v=20260913c" defer></script>
+<script src="Script.js?v=20260913c" defer></script>
 </head>
 <body class="neopets-page" data-default-theme="fieldnotes">
 <div class="neo-page neo-field-page" id="neopetsApp">
@@ -19,7 +19,16 @@
         </div>
 
         <div class="neo-header-tools">
-            <select id="ecosystemNav" class="ecosystem-nav-select" aria-label="Open another page"></select>
+            <details class="ecosystem-menu">
+                <summary>pages</summary>
+                <nav class="ecosystem-menu-popover" aria-label="Open another page">
+                    <a href="Database.html">🗃 Database</a>
+                    <a href="Aquarium.html">🪼 Aquarium</a>
+                    <a href="Patterns.html">🧭 Archives</a>
+                    <a href="Longform.html">✎ Longform</a>
+                    <a href="neopets.html" class="current" aria-current="page">✦ Neopets</a>
+                </nav>
+            </details>
             <span id="saveStatus" class="sync-status" aria-live="polite">cloud ready</span>
             <button id="cloudLoginButton" class="small-button cloud-login-button" type="button">cloud login</button>
             <select id="themeSelect" class="theme-select" aria-label="Theme"></select>

@@ -9595,3 +9595,136 @@ body .longform-page .pigeon-mark::before {
         display: none;
     }
 }
+
+
+/* =========================================================
+   V3 NATIVE ECOSYSTEM MENU
+   Replaces the JS-populated <select>. Because these are real links
+   inside <details>, page navigation works even before Script.js loads.
+   ========================================================= */
+.ecosystem-menu {
+    position: relative;
+    min-width: 128px;
+    max-width: 158px;
+    margin: 0;
+    color: var(--muted);
+    font: inherit;
+}
+
+.ecosystem-menu > summary {
+    min-height: 29px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 4px 8px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--panel-light);
+    color: var(--muted);
+    cursor: pointer;
+    user-select: none;
+    font-size: 12px;
+    line-height: 1.1;
+    box-shadow: var(--shadow);
+    list-style: none;
+}
+
+.ecosystem-menu > summary::-webkit-details-marker { display: none; }
+.ecosystem-menu > summary::marker { content: ""; }
+.ecosystem-menu > summary::after {
+    content: "▾";
+    flex: 0 0 auto;
+    color: var(--faint);
+    transition: transform .12s ease;
+}
+.ecosystem-menu[open] > summary::after { transform: rotate(180deg); }
+.ecosystem-menu > summary:hover,
+.ecosystem-menu > summary:focus-visible {
+    color: var(--text);
+    border-color: var(--teal);
+    outline: none;
+}
+
+.ecosystem-menu-popover {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 5px);
+    z-index: 5000;
+    width: max-content;
+    min-width: 176px;
+    padding: 5px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    background: var(--panel);
+    box-shadow: 0 14px 34px rgba(0,0,0,.34);
+}
+
+.ecosystem-menu-popover a {
+    display: block;
+    padding: 7px 9px;
+    border-radius: 6px;
+    color: var(--muted);
+    text-decoration: none;
+    white-space: nowrap;
+    font-size: 12px;
+}
+.ecosystem-menu-popover a:hover,
+.ecosystem-menu-popover a:focus-visible {
+    color: var(--text);
+    background: color-mix(in srgb, var(--teal) 10%, var(--panel-light));
+    outline: none;
+}
+.ecosystem-menu-popover a.current {
+    color: var(--teal-soft);
+    background: color-mix(in srgb, var(--teal) 8%, transparent);
+}
+
+/* Make sure themed headers never clip the open page menu. */
+.database-header,
+html.aquarium-page .aq-header,
+html.patterns-page-html .patterns-header,
+.neo-field-header,
+.longform-header {
+    overflow: visible;
+}
+
+@media (max-width: 760px) {
+    html.aquarium-page .aq-header-actions .ecosystem-menu,
+    html.patterns-page-html .patterns-header-actions .ecosystem-menu,
+    .neo-header-tools .ecosystem-menu,
+    .longform-header-actions .ecosystem-menu {
+        grid-column: 3 / span 2;
+        order: 1;
+        width: 100%;
+        min-width: 0;
+        max-width: none;
+    }
+
+    .database-page .page-nav .ecosystem-menu {
+        width: 100%;
+        min-width: 0;
+        max-width: none;
+    }
+
+    .ecosystem-menu > summary {
+        width: 100%;
+        min-height: 32px;
+        height: 32px;
+        padding: 3px 8px;
+        font-size: 10.5px;
+        box-shadow: none;
+    }
+
+    .ecosystem-menu-popover {
+        left: 0;
+        right: auto;
+        width: 100%;
+        min-width: 164px;
+    }
+
+    .ecosystem-menu-popover a {
+        padding: 9px 10px;
+        font-size: 12px;
+    }
+}

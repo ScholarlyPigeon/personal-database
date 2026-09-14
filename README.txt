@@ -70,3 +70,10 @@ ECOSYSTEM NAV + MOBILE HEADER COMPRESSION
 - Condensed Aquarium, Archive & Patterns, Neopets, and Longform mobile headers to match the tighter Database treatment.
 - On mobile, the theme selector is always the final full-width control at the bottom of each header deck.
 - Tightened mobile title/subtitle chrome while preserving page-specific actions like Select, Archive Completed, backup, and Reset Layout.
+
+
+V3 NAVIGATION FIX
+- Replaced the JS-populated ecosystem select with a native pages dropdown made from real links.
+- Longform is now present in the top pages menu on Database, Aquarium, Archives, Longform, and Neopets.
+- Added cache-busting query strings to Style.css, CloudSync.js, and Script.js so browsers do not reuse the stale JS that could leave the old dropdown empty.
+- Theme selector remains the bottom control in the compact mobile header deck.

@@ -109,38 +109,11 @@ window.addEventListener("storage", event => {
 });
 
 /* =========================================================
-   SHARED ECOSYSTEM PAGE SWITCHER
-   One compact dropdown replaces the growing row of page links.
-   It keeps Longform, Neopets, and the core Database pages one
-   tap away without turning mobile headers into control towers.
+   SHARED ECOSYSTEM NAVIGATION
+   The page menu is intentionally native HTML (<details> + links),
+   so cross-page navigation still works before JavaScript loads and
+   cannot be stranded by a stale cached Script.js file.
    ========================================================= */
-const ecosystemNav = document.getElementById("ecosystemNav");
-const ECOSYSTEM_PAGES = [
-    { file: "Database.html", label: "🗃 Database" },
-    { file: "Aquarium.html", label: "🪼 Aquarium" },
-    { file: "Patterns.html", label: "🧭 Archives" },
-    { file: "Longform.html", label: "✎ Longform" },
-    { file: "neopets.html", label: "✦ Neopets" }
-];
-
-if (ecosystemNav) {
-    const currentFile = decodeURIComponent(window.location.pathname.split("/").pop() || "Database.html").toLowerCase();
-    ecosystemNav.innerHTML = "";
-
-    ECOSYSTEM_PAGES.forEach(page => {
-        const option = document.createElement("option");
-        option.value = page.file;
-        option.textContent = page.label;
-        if (page.file.toLowerCase() === currentFile) option.selected = true;
-        ecosystemNav.appendChild(option);
-    });
-
-    ecosystemNav.addEventListener("change", () => {
-        const target = ecosystemNav.value;
-        if (!target || target.toLowerCase() === currentFile) return;
-        window.location.href = target;
-    });
-}
 
 /* =========================================================
    SHARED AUTO-GROW TEXT ENTRY HELPER
