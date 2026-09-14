@@ -77,3 +77,12 @@ V3 NAVIGATION FIX
 - Longform is now present in the top pages menu on Database, Aquarium, Archives, Longform, and Neopets.
 - Added cache-busting query strings to Style.css, CloudSync.js, and Script.js so browsers do not reuse the stale JS that could leave the old dropdown empty.
 - Theme selector remains the bottom control in the compact mobile header deck.
+
+
+LONGFORM IMAGE + EDITABILITY FOLLOW-UP
+- Widened the desktop Saved Thoughts column while preserving the writing-first composer.
+- Saved-note images now render substantially larger and use contain-fit so charts/schedules are visible without cropping.
+- On narrow phones, attached images stack full-width above the note preview for easier reading.
+- Added an explicit edit-pencil control to every saved Longform thought; it expands the note and focuses the editable text.
+- Longform page title, subtitle, Saved Thoughts heading/note, and Write It Out heading/note are now editable and synced.
+- Bumped the shared asset cache version so updated CSS/JS refreshes cleanly in Chromium/Brave.

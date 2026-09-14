@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Longform Notes</title>
-    <link rel="stylesheet" href="Style.css?v=20260913c">
+    <link rel="stylesheet" href="Style.css?v=20260913d">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-    <script src="CloudSync.js?v=20260913c" defer></script>
-    <script src="Script.js?v=20260913c" defer></script>
+    <script src="CloudSync.js?v=20260913d" defer></script>
+    <script src="Script.js?v=20260913d" defer></script>
 </head>
 <body data-default-theme="study">
 <div class="longform-page" id="longformApp">
@@ -15,8 +15,8 @@
         <div class="brand longform-brand">
             <div class="pigeon-mark" aria-hidden="true">✎</div>
             <div>
-                <h1>Longform</h1>
-                <div class="subtitle">room to think in complete paragraphs</div>
+                <h1 class="editable-ui longform-ui-edit" contenteditable="true" data-longform-ui="page-title">Longform</h1>
+                <div class="subtitle editable-ui longform-ui-edit" contenteditable="true" data-longform-ui="page-subtitle">room to think in complete paragraphs</div>
             </div>
         </div>
 
@@ -41,8 +41,8 @@
         <aside class="panel longform-library">
             <div class="longform-library-head">
                 <div>
-                    <div class="longform-section-title">Saved thoughts</div>
-                    <div class="longform-section-note">collapsed to three lines until you open one</div>
+                    <div class="longform-section-title editable-ui longform-ui-edit" contenteditable="true" data-longform-ui="library-title">Saved thoughts</div>
+                    <div class="longform-section-note editable-ui longform-ui-edit" contenteditable="true" data-longform-ui="library-note">collapsed to three lines until you open one</div>
                 </div>
                 <div class="longform-filter-set" id="longformFilters" aria-label="Filter saved thoughts">
                     <button type="button" class="longform-filter active" data-filter="all">all</button>
@@ -57,8 +57,8 @@
         <section class="panel longform-composer">
             <div class="longform-composer-head">
                 <div>
-                    <div class="longform-section-title">Write it out</div>
-                    <div class="longform-section-note">the text box gets the room; everything else stays quiet</div>
+                    <div class="longform-section-title editable-ui longform-ui-edit" contenteditable="true" data-longform-ui="composer-title">Write it out</div>
+                    <div class="longform-section-note editable-ui longform-ui-edit" contenteditable="true" data-longform-ui="composer-note">the text box gets the room; everything else stays quiet</div>
                 </div>
                 <div class="longform-compose-meta">
                     <label>

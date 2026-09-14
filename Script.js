@@ -3584,6 +3584,41 @@ if (document.getElementById("longformApp")) {
     let activeLongformFilter = "all";
     const expandedLongformIds = new Set();
 
+    /* Longform page/section labels are intentionally editable too.
+       They use their own synced pigeonhole-* keys so personal wording
+       follows the rest of the ecosystem between devices. */
+    document.querySelectorAll("[data-longform-ui]").forEach(element => {
+        const key = `pigeonhole-longform-ui-${element.dataset.longformUi}`;
+        const saved = localStorage.getItem(key);
+        if (saved !== null) element.innerHTML = saved;
+
+        element.addEventListener("input", () => {
+            localStorage.setItem(key, element.innerHTML);
+            showSaved();
+        });
+
+        element.addEventListener("keydown", event => {
+            if (event.key !== "Enter") return;
+            event.preventDefault();
+            element.blur();
+        });
+    });
+
+    function focusLongformEntry(entryId) {
+        requestAnimationFrame(() => {
+            const card = longformList.querySelector(`[data-entry-id="${entryId}"]`);
+            const field = card?.querySelector(".longform-entry-text");
+            if (!field) return;
+            field.focus();
+            const selection = window.getSelection();
+            const range = document.createRange();
+            range.selectNodeContents(field);
+            range.collapse(false);
+            selection.removeAllRanges();
+            selection.addRange(range);
+        });
+    }
+
     function longformId() {
         return (globalThis.crypto && typeof crypto.randomUUID === "function")
             ? `longform-${crypto.randomUUID()}`
@@ -3681,6 +3716,7 @@ if (document.getElementById("longformApp")) {
             const expanded = expandedLongformIds.has(entry.id);
             card.className = `longform-entry${entry.done ? " done" : ""}${expanded ? " expanded" : ""}`;
             card.dataset.category = entry.category;
+            card.dataset.entryId = entry.id;
 
             const top = document.createElement("div");
             top.className = "longform-entry-top";
@@ -3720,6 +3756,17 @@ if (document.getElementById("longformApp")) {
             const doneGlyph = document.createElement("span");
             doneGlyph.textContent = "✓";
             doneLabel.append(done, doneGlyph);
+
+            const edit = document.createElement("button");
+            edit.type = "button";
+            edit.className = "longform-icon-button longform-edit-button";
+            edit.textContent = "✎";
+            edit.title = "Edit this saved thought";
+            edit.addEventListener("click", () => {
+                expandedLongformIds.add(entry.id);
+                renderLongformEntries();
+                focusLongformEntry(entry.id);
+            });
 
             const mediaEdit = document.createElement("button");
             mediaEdit.type = "button";
@@ -3779,7 +3826,7 @@ if (document.getElementById("longformApp")) {
                 showSaved();
             });
 
-            actions.append(doneLabel, mediaEdit, expand, archive, remove);
+            actions.append(doneLabel, edit, mediaEdit, expand, archive, remove);
             top.append(meta, actions);
 
             const body = document.createElement("div");
