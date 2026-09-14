@@ -7257,13 +7257,22 @@ body.neopets-page {
     color: var(--muted);
 }
 
-.neo-link-section { min-height: 0; }
+.neo-link-section {
+    flex: 0 0 auto;
+    min-height: auto;
+    display: grid;
+    grid-template-rows: auto auto;
+    gap: 6px;
+    position: relative;
+}
 .neo-link-section-head {
     display: grid;
     grid-template-columns: auto minmax(0,1fr) auto;
     align-items: center;
     gap: 8px;
-    margin: 0 0 6px;
+    margin: 0;
+    position: relative;
+    z-index: 2;
 }
 .neo-section-drag { color: var(--faint); cursor: grab; user-select: none; }
 .neo-link-section-title {
@@ -7288,6 +7297,8 @@ body.neopets-page {
 .neo-section-actions { display: flex; gap: 3px; }
 
 .neo-daily-grid {
+    position: relative;
+    z-index: 1;
     display: grid;
     grid-template-columns: repeat(3, minmax(0,1fr));
     gap: 7px;
@@ -7399,8 +7410,15 @@ body.neopets-page {
     padding-top: 8px;
     border-top: 1px dashed color-mix(in srgb, var(--plum) 70%, var(--border));
 }
-.neo-reference-label {
+.neo-reference-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
     margin-bottom: 6px;
+}
+.neo-reference-label {
+    min-width: 0;
     font-family: Tahoma, Verdana, Arial, sans-serif;
     font-size: 12px;
     font-weight: bold;
@@ -7408,18 +7426,89 @@ body.neopets-page {
     text-transform: uppercase;
     color: var(--muted);
 }
-.neo-reference-links { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.neo-reference-link {
-    display: block;
-    padding: 9px 11px;
-    text-decoration: none;
+.neo-reference-add {
+    flex: 0 0 auto;
+    border: 0;
+    background: transparent;
+    color: var(--faint);
+    cursor: pointer;
+    font-size: 10px;
+    font-weight: bold;
+}
+.neo-reference-add:hover { color: var(--text); }
+.neo-reference-links {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+}
+.neo-reference-card {
+    min-width: 0;
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0,1fr) auto;
+    align-items: stretch;
+    background: color-mix(in srgb, var(--teal) 78%, var(--panel));
+    color: var(--text);
+    border: 2px solid var(--teal-soft);
     box-shadow: inset 1px 1px 0 rgba(255,255,255,.09), inset -1px -1px 0 rgba(0,0,0,.35);
 }
-.neo-reference-link:first-child { background: color-mix(in srgb, var(--teal) 78%, var(--panel)); color: var(--text); border: 2px solid var(--teal-soft); }
-.neo-reference-link:last-child { background: color-mix(in srgb, var(--blue) 78%, var(--panel)); color: var(--text); border: 2px solid var(--blue-soft); }
-.neo-reference-link strong { display: block; font-family: Georgia, serif; font-size: 16px; font-weight: normal; }
-.neo-reference-link small { display: block; margin-top: 4px; font-size: 12px; font-weight: bold; opacity: .85; }
+.neo-reference-card[data-accent="blue"] { background: color-mix(in srgb, var(--blue) 78%, var(--panel)); border-color: var(--blue-soft); }
+.neo-reference-card[data-accent="plum"] { background: color-mix(in srgb, var(--plum) 78%, var(--panel)); border-color: var(--plum-soft); }
+.neo-reference-card[data-accent="berry"] { background: color-mix(in srgb, var(--rose) 78%, var(--panel)); border-color: var(--rose-soft); }
+.neo-reference-link {
+    min-width: 0;
+    display: block;
+    padding: 9px 11px;
+    color: var(--text);
+    text-decoration: none;
+}
+.neo-reference-link strong {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-family: Georgia, serif;
+    font-size: 16px;
+    font-weight: normal;
+}
+.neo-reference-link small {
+    display: block;
+    margin-top: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 12px;
+    font-weight: bold;
+    opacity: .85;
+}
 .neo-reference-link:hover { outline: 1px dashed var(--text); outline-offset: -4px; }
+.neo-reference-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 4px;
+    opacity: .42;
+}
+.neo-reference-card:hover .neo-reference-actions { opacity: 1; }
+.neo-reference-actions button {
+    border: 0;
+    background: transparent;
+    color: var(--faint);
+    cursor: pointer;
+    padding: 1px 3px;
+    line-height: 1;
+}
+.neo-reference-actions button:hover { color: var(--text); }
+.neo-reference-empty {
+    grid-column: 1 / -1;
+    padding: 10px;
+    border: 1px dashed var(--border);
+    color: var(--faint);
+    text-align: center;
+    font-size: 10px;
+}
 
 .neo-task {
     display: grid;
@@ -8255,6 +8344,15 @@ body.neopets-page[data-theme="y2k"] .neo-task { border-radius: 2px; border-width
         gap: 6px;
     }
 
+    .neo-link-section {
+        flex: 0 0 auto;
+        min-height: auto;
+    }
+
+    .neo-reference-links {
+        grid-template-columns: 1fr;
+    }
+
     .neo-daily {
         min-height: 58px;
         padding: 7px 6px;
@@ -8318,6 +8416,613 @@ body.neopets-page[data-theme="y2k"] .neo-task { border-radius: 2px; border-width
 
     .neo-daily-actions {
         align-self: start;
+    }
+}
+
+
+/* =========================================================
+   LONGFORM NOTES PAGE
+   Writing-first layout: compact archive/list on the left, large
+   composer on the right, then composer-first stacking on phones.
+   ========================================================= */
+html.longform-page-html,
+html.longform-page-html body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+}
+
+html.longform-page-html body {
+    overflow: hidden;
+}
+
+.longform-page {
+    position: relative;
+    z-index: 1;
+    width: min(1480px, calc(100% - 24px));
+    height: 100dvh;
+    margin: 0 auto;
+    padding: 12px 0 14px;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    gap: 10px;
+}
+
+.longform-header {
+    min-height: 54px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.longform-header-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 7px;
+}
+
+.longform-workspace {
+    min-height: 0;
+    display: grid;
+    grid-template-columns: minmax(290px, .72fr) minmax(0, 1.55fr);
+    grid-template-areas: "library composer";
+    gap: 10px;
+}
+
+.longform-library {
+    grid-area: library;
+    min-width: 0;
+    min-height: 0;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+}
+
+.longform-library-head,
+.longform-composer-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 13px 14px;
+    border-bottom: 1px solid var(--border);
+}
+
+.longform-section-title {
+    font-family: "Trebuchet MS", "Lucida Sans Unicode", "Segoe UI", sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.longform-section-note {
+    margin-top: 3px;
+    color: var(--faint);
+    font-size: 11px;
+    line-height: 1.35;
+}
+
+.longform-filter-set {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.longform-filter {
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--faint);
+    padding: 4px 7px;
+    cursor: pointer;
+    font-size: 10px;
+}
+
+.longform-filter:hover,
+.longform-filter.active {
+    color: var(--text);
+    border-color: var(--teal);
+    background: color-mix(in srgb, var(--teal) 14%, transparent);
+}
+
+.longform-list {
+    min-height: 0;
+    overflow-y: auto;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--plum) transparent;
+}
+
+.longform-entry {
+    --longform-accent: var(--teal);
+    min-width: 0;
+    padding: 9px;
+    background: color-mix(in srgb, var(--panel-light) 88%, var(--bg));
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--longform-accent);
+    border-radius: 9px;
+}
+
+.longform-entry[data-category="important"] { --longform-accent: var(--rose); }
+.longform-entry[data-category="database"] { --longform-accent: var(--teal); }
+.longform-entry[data-category="misc"] { --longform-accent: var(--plum); }
+
+.longform-entry.done {
+    opacity: .72;
+}
+
+.longform-entry.done .longform-entry-text {
+    text-decoration: line-through;
+    color: var(--faint);
+}
+
+.longform-entry-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 7px;
+}
+
+.longform-entry-meta {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.longform-card-category,
+.longform-card-date,
+.longform-compose-meta select,
+.longform-compose-meta input,
+.longform-attachment input {
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    background: color-mix(in srgb, var(--bg) 72%, var(--panel));
+    color: var(--muted);
+    outline: none;
+}
+
+.longform-card-category,
+.longform-card-date {
+    min-width: 0;
+    height: 25px;
+    padding: 2px 5px;
+    font-size: 10px;
+}
+
+.longform-card-category { max-width: 92px; }
+.longform-card-date { width: 112px; }
+
+.longform-entry-actions {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.longform-icon-button,
+.longform-expand-button,
+.longform-done-control {
+    width: 25px;
+    height: 25px;
+    display: grid;
+    place-items: center;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--faint);
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.longform-icon-button:hover,
+.longform-expand-button:hover,
+.longform-done-control:hover {
+    color: var(--text);
+    background: rgba(255,255,255,.04);
+}
+
+.longform-delete-button:hover { color: var(--rose-soft); }
+
+.longform-done-control input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.longform-done-control span {
+    width: 17px;
+    height: 17px;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    color: transparent;
+    font-size: 10px;
+}
+
+.longform-done-control input:checked + span {
+    color: var(--text);
+    border-color: var(--green);
+    background: color-mix(in srgb, var(--green) 32%, transparent);
+}
+
+.longform-entry-body {
+    min-width: 0;
+}
+
+.longform-entry-body.has-media {
+    display: grid;
+    grid-template-columns: 62px minmax(0, 1fr);
+    gap: 9px;
+    align-items: start;
+}
+
+.longform-entry-media {
+    width: 62px;
+    height: 62px;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--longform-accent) 65%, var(--border));
+    border-radius: 7px;
+    background: color-mix(in srgb, var(--bg) 80%, var(--longform-accent));
+    color: var(--faint);
+    text-decoration: none;
+    font-size: 9px;
+    text-align: center;
+}
+
+.longform-entry-media img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+}
+
+.longform-entry-media[href]:hover {
+    outline: 1px dashed var(--text);
+    outline-offset: -4px;
+}
+
+.longform-entry-text {
+    min-width: 0;
+    color: var(--text);
+    font-size: 12.5px;
+    line-height: 1.55;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    outline: none;
+}
+
+.longform-entry-text.collapsed {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    overflow: hidden;
+    max-height: calc(1.55em * 3);
+}
+
+.longform-entry-text.expanded {
+    min-height: 3em;
+    padding: 5px 6px;
+    border-radius: 6px;
+    background: rgba(255,255,255,.018);
+}
+
+.longform-entry-text.expanded:focus {
+    background: rgba(255,255,255,.045);
+}
+
+.longform-link-chip {
+    grid-column: 1 / -1;
+    display: inline-block;
+    width: fit-content;
+    margin-top: 6px;
+    color: var(--teal-soft);
+    text-decoration: none;
+    font-size: 10px;
+}
+
+.longform-link-chip:hover { text-decoration: underline; }
+
+.longform-empty {
+    min-height: 130px;
+    display: grid;
+    place-content: center;
+    gap: 3px;
+    padding: 20px;
+    text-align: center;
+    color: var(--faint);
+    border: 1px dashed var(--border);
+    border-radius: 10px;
+}
+
+.longform-empty strong { color: var(--muted); }
+.longform-empty span { font-size: 10px; }
+
+.longform-composer {
+    grid-area: composer;
+    min-width: 0;
+    min-height: 0;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto auto;
+}
+
+.longform-compose-meta {
+    display: flex;
+    align-items: flex-end;
+    gap: 7px;
+}
+
+.longform-compose-meta label,
+.longform-attachment-fields label {
+    display: grid;
+    gap: 3px;
+    color: var(--faint);
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+}
+
+.longform-compose-meta select,
+.longform-compose-meta input {
+    height: 30px;
+    padding: 4px 7px;
+    font-size: 11px;
+}
+
+.longform-input {
+    min-width: 0;
+    min-height: 0;
+    width: auto;
+    height: auto;
+    margin: 12px 14px 8px;
+    padding: 15px 16px;
+    resize: none;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--bg) 78%, var(--panel));
+    color: var(--text);
+    outline: none;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 17px;
+    line-height: 1.62;
+    overflow-y: auto;
+}
+
+.longform-input:focus {
+    border-color: var(--teal);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--teal) 40%, transparent);
+}
+
+.longform-input::placeholder { color: var(--faint); }
+
+.longform-attachment {
+    margin: 0 14px 9px;
+    border-top: 1px dashed var(--border);
+    padding-top: 7px;
+    color: var(--faint);
+}
+
+.longform-attachment summary {
+    width: fit-content;
+    cursor: pointer;
+    font-size: 10px;
+    user-select: none;
+}
+
+.longform-attachment[open] summary {
+    color: var(--muted);
+    margin-bottom: 7px;
+}
+
+.longform-attachment-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 7px;
+}
+
+.longform-attachment input {
+    width: 100%;
+    min-width: 0;
+    height: 31px;
+    padding: 5px 7px;
+    font-size: 11px;
+}
+
+.longform-submit-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 0 14px 13px;
+}
+
+.longform-submit-note {
+    color: var(--faint);
+    font-size: 10px;
+}
+
+.longform-save-button {
+    flex: 0 0 auto;
+    border: 1px solid color-mix(in srgb, var(--teal) 70%, var(--border));
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--teal) 72%, var(--panel));
+    color: var(--text);
+    padding: 8px 13px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 11px;
+}
+
+.longform-save-button:hover {
+    border-color: var(--teal-soft);
+    background: color-mix(in srgb, var(--teal) 82%, var(--panel));
+}
+
+@media (max-width: 900px) {
+    html.longform-page-html,
+    html.longform-page-html body {
+        height: auto;
+        min-height: 100%;
+    }
+
+    html.longform-page-html body {
+        overflow: auto;
+    }
+
+    .longform-page {
+        width: calc(100% - 14px);
+        height: auto;
+        min-height: 100dvh;
+        padding: 8px 0 12px;
+    }
+
+    .longform-header {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .longform-header-actions {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 5px;
+    }
+
+    .longform-header-actions .sync-status,
+    .longform-header-actions .theme-select {
+        grid-column: 1 / -1;
+        width: 100%;
+        max-width: none;
+    }
+
+    .longform-header-actions .small-button {
+        width: 100%;
+        min-width: 0;
+        padding: 5px 6px;
+        font-size: 10px;
+    }
+
+    .longform-workspace {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+            "composer"
+            "library";
+        gap: 9px;
+    }
+
+    .longform-composer {
+        min-height: 62vh;
+        grid-template-rows: auto minmax(330px, 1fr) auto auto;
+    }
+
+    .longform-library {
+        min-height: 45vh;
+    }
+
+    .longform-list {
+        max-height: none;
+        overflow: visible;
+    }
+
+    .longform-library-head,
+    .longform-composer-head {
+        flex-direction: column;
+        gap: 8px;
+        padding: 11px;
+    }
+
+    .longform-filter-set,
+    .longform-compose-meta {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .longform-compose-meta label {
+        flex: 1 1 0;
+    }
+
+    .longform-compose-meta select,
+    .longform-compose-meta input {
+        width: 100%;
+    }
+
+    .longform-input {
+        min-height: 330px;
+        margin: 10px 11px 7px;
+        padding: 13px;
+        font-size: 16px;
+    }
+
+    .longform-attachment {
+        margin: 0 11px 8px;
+    }
+
+    .longform-attachment-fields {
+        grid-template-columns: 1fr;
+    }
+
+    .longform-submit-row {
+        padding: 0 11px 11px;
+    }
+
+    .longform-entry-top {
+        align-items: flex-start;
+    }
+
+    .longform-entry-meta {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .longform-card-category,
+    .longform-card-date {
+        width: 112px;
+        max-width: 112px;
+    }
+}
+
+@media (max-width: 520px) {
+    .longform-header-actions {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .longform-header-actions .cloud-login-button,
+    .longform-header-actions .sync-status,
+    .longform-header-actions .theme-select {
+        grid-column: 1 / -1;
+    }
+
+    .longform-submit-note { display: none; }
+    .longform-save-button { width: 100%; }
+
+    .longform-entry {
+        padding: 8px;
+    }
+
+    .longform-entry-actions {
+        gap: 0;
+    }
+
+    .longform-entry-body.has-media {
+        grid-template-columns: 54px minmax(0, 1fr);
+        gap: 8px;
+    }
+
+    .longform-entry-media {
+        width: 54px;
+        height: 54px;
     }
 }
 
@@ -8421,12 +9126,12 @@ html {
         min-width: 66px;
     }
 
-    /* Aquarium + Archives share the left half of the utility row. */
+    /* Main page links get one compact row of their own. */
     .database-page .page-nav {
-        grid-column: 1 / span 2;
+        grid-column: 1 / -1;
         width: 100%;
         display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 5px;
     }
 
@@ -8440,13 +9145,12 @@ html {
     }
 
     .database-page #selectModeButton {
-        grid-column: 3;
+        grid-column: 1 / span 2;
     }
 
-    /* Reset now sits directly before the theme menu in the DOM
-       and occupies the final utility slot on mobile. */
+    /* Select + Reset share the row directly before the theme menu. */
     .database-page #resetLayout {
-        grid-column: 4;
+        grid-column: 3 / span 2;
     }
 
     .database-page .selection-action-button:not([hidden]) {
@@ -8548,5 +9252,346 @@ html {
     html.aquarium-page textarea[data-autogrow],
     html.patterns-page-html textarea[data-autogrow] {
         line-height: 1.4;
+    }
+}
+
+/* =========================================================
+   COMPACT ECOSYSTEM NAVIGATION + MOBILE HEADER DECKS
+   A single page switcher replaces the row of cross-page links.
+   On phones, all headers use the same compact rhythm and keep
+   the theme menu as the final control in the deck.
+   ========================================================= */
+.ecosystem-nav-select {
+    min-width: 128px;
+    height: 29px;
+    max-width: 158px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--panel-light);
+    color: var(--muted);
+    padding: 4px 25px 4px 8px;
+    outline: none;
+    cursor: pointer;
+    font: inherit;
+    font-size: 12px;
+    box-shadow: var(--shadow);
+}
+
+.ecosystem-nav-select:hover,
+.ecosystem-nav-select:focus {
+    color: var(--text);
+    border-color: var(--teal);
+}
+
+.ecosystem-nav-select option {
+    background: var(--panel);
+    color: var(--text);
+}
+
+/* Keep the Neopets section title physically above its cards, even
+   when a section contains enough links to overflow the visible panel. */
+.neo-link-sections {
+    align-content: start;
+}
+
+.neo-link-section-head {
+    min-height: 24px;
+    isolation: isolate;
+}
+
+@media (max-width: 760px) {
+    /* Shared mobile header scale. */
+    .database-header,
+    html.aquarium-page .aq-header,
+    html.patterns-page-html .patterns-header,
+    .neo-field-header,
+    .longform-header {
+        gap: 6px;
+    }
+
+    html.aquarium-page .aq-brand,
+    html.patterns-page-html .brand,
+    .longform-brand {
+        gap: 8px;
+    }
+
+    html.aquarium-page .pigeon-mark,
+    html.patterns-page-html .pigeon-mark,
+    .longform-page .pigeon-mark {
+        width: 36px;
+        height: 36px;
+        border-radius: 11px;
+    }
+
+    html.aquarium-page h1,
+    html.patterns-page-html h1,
+    .longform-page h1 {
+        font-size: 25px;
+    }
+
+    html.aquarium-page .aq-subtitle,
+    html.patterns-page-html .subtitle,
+    .longform-header .subtitle,
+    .neo-title-area p {
+        display: none;
+    }
+
+    .neo-field-header {
+        padding: 9px 10px 8px;
+    }
+
+    .neo-title-area h1 {
+        font-size: clamp(25px, 7.5vw, 31px);
+        line-height: 1.02;
+    }
+
+    /* Uniform compact controls. */
+    html.aquarium-page .aq-header-actions,
+    html.patterns-page-html .patterns-header-actions,
+    .neo-header-tools,
+    .longform-header-actions {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 5px;
+        align-items: stretch;
+    }
+
+    html.aquarium-page .aq-header-actions .small-button,
+    html.patterns-page-html .patterns-header-actions .small-button,
+    .neo-header-tools .small-button,
+    .longform-header-actions .small-button,
+    html.aquarium-page .aq-header-actions .theme-select,
+    html.patterns-page-html .patterns-header-actions .theme-select,
+    .neo-header-tools .theme-select,
+    .longform-header-actions .theme-select,
+    html.aquarium-page .aq-header-actions .ecosystem-nav-select,
+    html.patterns-page-html .patterns-header-actions .ecosystem-nav-select,
+    .neo-header-tools .ecosystem-nav-select,
+    .longform-header-actions .ecosystem-nav-select {
+        min-height: 32px;
+        height: 32px;
+        width: 100%;
+        max-width: none;
+        min-width: 0;
+        padding-top: 3px;
+        padding-bottom: 3px;
+        font-size: 10.5px;
+        line-height: 1.15;
+        box-shadow: none;
+    }
+
+    html.aquarium-page .aq-header-actions .sync-status,
+    html.patterns-page-html .patterns-header-actions .sync-status,
+    .neo-header-tools .sync-status,
+    .longform-header-actions .sync-status {
+        grid-column: 1 / span 2;
+        order: 1;
+        min-width: 0;
+        min-height: 32px;
+        justify-content: flex-start;
+        padding: 3px 8px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size: 10.5px;
+    }
+
+    html.aquarium-page .aq-header-actions .ecosystem-nav-select,
+    html.patterns-page-html .patterns-header-actions .ecosystem-nav-select,
+    .neo-header-tools .ecosystem-nav-select,
+    .longform-header-actions .ecosystem-nav-select {
+        grid-column: 3 / span 2;
+        order: 1;
+    }
+
+    /* Login only appears when a session is needed. Giving it a full
+       utility row prevents the permanent layout from carrying empty space. */
+    html.aquarium-page .aq-header-actions .cloud-login-button,
+    html.patterns-page-html .patterns-header-actions .cloud-login-button,
+    .neo-header-tools .cloud-login-button,
+    .longform-header-actions .cloud-login-button {
+        grid-column: 1 / -1;
+        order: 0;
+    }
+
+    /* Theme always lives at the bottom of the control deck. */
+    html.aquarium-page .aq-header-actions .theme-select,
+    html.patterns-page-html .patterns-header-actions .theme-select,
+    .neo-header-tools .theme-select,
+    .longform-header-actions .theme-select {
+        grid-column: 1 / -1;
+        order: 99;
+        font-size: 12px;
+    }
+
+    /* Aquarium: selection + completed-archive share one tight row. */
+    html.aquarium-page #selectModeButton {
+        grid-column: 1;
+        order: 2;
+    }
+
+    html.aquarium-page #archiveDone {
+        grid-column: 2 / span 3;
+        order: 2;
+    }
+
+    html.aquarium-page .selection-action-button:not([hidden]) {
+        grid-column: 1 / -1;
+        order: 3;
+    }
+
+    /* Patterns: keep the selector available without a whole toolbar. */
+    html.patterns-page-html #selectModeButton {
+        grid-column: 1 / span 2;
+        order: 2;
+    }
+
+    html.patterns-page-html .selection-action-button:not([hidden]) {
+        grid-column: 3 / span 2;
+        order: 2;
+    }
+
+    /* Neopets decorative status gets one slim line rather than a big card. */
+    .neo-header-tools .neo-status {
+        grid-column: 1 / -1;
+        order: 2;
+        min-height: 30px;
+        padding: 4px 8px;
+        font-size: 10px;
+    }
+
+    /* Longform only needs sync + page switcher + theme when connected. */
+    .longform-header-actions {
+        gap: 5px;
+    }
+
+    /* Database joins the same page-switcher system while preserving its
+       backup/reset tools. Theme remains the last item. */
+    .database-page .header-right {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 5px;
+    }
+
+    .database-page .page-nav {
+        grid-column: 1 / span 2;
+        display: block;
+        order: 2;
+        width: 100%;
+    }
+
+    .database-page .page-nav .ecosystem-nav-select {
+        width: 100%;
+        max-width: none;
+        min-width: 0;
+        height: 32px;
+        min-height: 32px;
+        padding-top: 3px;
+        padding-bottom: 3px;
+        font-size: 10.5px;
+        box-shadow: none;
+    }
+
+    .database-page #selectModeButton {
+        grid-column: 3;
+        order: 2;
+    }
+
+    .database-page #resetLayout {
+        grid-column: 4;
+        order: 2;
+    }
+
+    .database-page .selection-action-button:not([hidden]) {
+        grid-column: 1 / -1;
+        order: 3;
+    }
+
+    .database-page .theme-select {
+        grid-column: 1 / -1;
+        order: 99;
+    }
+
+    /* Compact headings beneath the header too, mirroring the Database pass. */
+    html.aquarium-page .aq-panel-subtitle,
+    html.patterns-page-html .panel-subtitle,
+    .longform-section-note {
+        font-size: 10px;
+    }
+
+    html.patterns-page-html .patterns-intro {
+        padding: 8px 10px;
+    }
+
+    /* Neopets sections and references keep clear ownership of their rows. */
+    .neo-link-section {
+        display: grid;
+        grid-template-rows: auto auto;
+        gap: 5px;
+    }
+
+    .neo-link-section-head {
+        min-height: 26px;
+        margin-bottom: 0;
+    }
+
+    .neo-daily-grid {
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Longform mobile: keep the composer dominant while trimming chrome. */
+    .longform-page {
+        width: calc(100% - 12px);
+        padding-top: 7px;
+    }
+
+    .longform-composer-head,
+    .longform-library-head {
+        padding: 9px 10px;
+    }
+
+    .longform-section-title {
+        font-size: 16px;
+    }
+
+    .longform-input {
+        margin: 8px 9px 6px;
+        min-height: 340px;
+        padding: 12px;
+    }
+
+    .longform-attachment {
+        margin-left: 9px;
+        margin-right: 9px;
+    }
+
+    .longform-submit-row {
+        padding: 0 9px 9px;
+    }
+}
+
+@media (max-width: 430px) {
+    html.aquarium-page .aq-header-actions,
+    html.patterns-page-html .patterns-header-actions,
+    .neo-header-tools,
+    .longform-header-actions,
+    .database-page .header-right {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+/* Longform keeps its own pencil mark instead of inheriting the active
+   theme's Database icon. Neopets deliberately keeps its text-only masthead. */
+body .longform-page .pigeon-mark::before {
+    content: "✎";
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 23px;
+}
+
+@media (max-width: 760px) {
+    /* The Neopets "currently" badge is decorative, so mobile gives that
+       vertical space back to the actual notes and dailies. */
+    .neo-header-tools .neo-status {
+        display: none;
     }
 }

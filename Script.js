@@ -109,6 +109,40 @@ window.addEventListener("storage", event => {
 });
 
 /* =========================================================
+   SHARED ECOSYSTEM PAGE SWITCHER
+   One compact dropdown replaces the growing row of page links.
+   It keeps Longform, Neopets, and the core Database pages one
+   tap away without turning mobile headers into control towers.
+   ========================================================= */
+const ecosystemNav = document.getElementById("ecosystemNav");
+const ECOSYSTEM_PAGES = [
+    { file: "Database.html", label: "🗃 Database" },
+    { file: "Aquarium.html", label: "🪼 Aquarium" },
+    { file: "Patterns.html", label: "🧭 Archives" },
+    { file: "Longform.html", label: "✎ Longform" },
+    { file: "neopets.html", label: "✦ Neopets" }
+];
+
+if (ecosystemNav) {
+    const currentFile = decodeURIComponent(window.location.pathname.split("/").pop() || "Database.html").toLowerCase();
+    ecosystemNav.innerHTML = "";
+
+    ECOSYSTEM_PAGES.forEach(page => {
+        const option = document.createElement("option");
+        option.value = page.file;
+        option.textContent = page.label;
+        if (page.file.toLowerCase() === currentFile) option.selected = true;
+        ecosystemNav.appendChild(option);
+    });
+
+    ecosystemNav.addEventListener("change", () => {
+        const target = ecosystemNav.value;
+        if (!target || target.toLowerCase() === currentFile) return;
+        window.location.href = target;
+    });
+}
+
+/* =========================================================
    SHARED AUTO-GROW TEXT ENTRY HELPER
    Compact textareas start at one line and grow to four visible
    lines by default. The Aquarium capture box is intentionally
@@ -3550,6 +3584,337 @@ if (document.getElementById("patternsApp")) {
     renderStrainJournal();
 }
 
+
+/* =========================================================
+   LONGFORM NOTES MODULE
+   Clean writing-first page for larger blocks of text. Entries
+   collapse to a three-line preview, expand for reading/editing,
+   and can archive into the shared Archive & Patterns history.
+   ========================================================= */
+if (document.getElementById("longformApp")) {
+    const LONGFORM_STORAGE_KEY = "pigeonhole-longform-v1";
+    const LONGFORM_CATEGORIES = [
+        { id: "important", label: "Important" },
+        { id: "database", label: "Database" },
+        { id: "misc", label: "Misc." }
+    ];
+
+    const longformList = document.getElementById("longformList");
+    const longformInput = document.getElementById("longformInput");
+    const longformCategory = document.getElementById("longformCategory");
+    const longformDate = document.getElementById("longformDate");
+    const longformImageUrl = document.getElementById("longformImageUrl");
+    const longformLinkUrl = document.getElementById("longformLinkUrl");
+    const saveLongformEntry = document.getElementById("saveLongformEntry");
+    const longformFilters = document.getElementById("longformFilters");
+
+    let activeLongformFilter = "all";
+    const expandedLongformIds = new Set();
+
+    function longformId() {
+        return (globalThis.crypto && typeof crypto.randomUUID === "function")
+            ? `longform-${crypto.randomUUID()}`
+            : `longform-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    }
+
+    function normalizeLongformState(value) {
+        const state = value && typeof value === "object" ? value : {};
+        const entries = Array.isArray(state.entries) ? state.entries : [];
+        return {
+            entries: entries
+                .filter(entry => entry && typeof entry.id === "string")
+                .map(entry => ({
+                    id: entry.id,
+                    text: typeof entry.text === "string" ? entry.text : "",
+                    category: LONGFORM_CATEGORIES.some(item => item.id === entry.category) ? entry.category : "misc",
+                    date: /^\d{4}-\d{2}-\d{2}$/.test(entry.date || "") ? entry.date : makeLocalIsoDate(),
+                    done: Boolean(entry.done),
+                    createdAt: typeof entry.createdAt === "string" ? entry.createdAt : new Date().toISOString(),
+                    imageUrl: typeof entry.imageUrl === "string" ? entry.imageUrl : "",
+                    linkUrl: typeof entry.linkUrl === "string" ? entry.linkUrl : ""
+                }))
+        };
+    }
+
+    function readLongformState() {
+        try {
+            const saved = JSON.parse(localStorage.getItem(LONGFORM_STORAGE_KEY));
+            return normalizeLongformState(saved);
+        } catch {
+            return normalizeLongformState(null);
+        }
+    }
+
+    let longformState = readLongformState();
+
+    function saveLongformState(show = true) {
+        localStorage.setItem(LONGFORM_STORAGE_KEY, JSON.stringify(longformState));
+        if (show) showSaved();
+    }
+
+    function categoryLabel(categoryId) {
+        return LONGFORM_CATEGORIES.find(item => item.id === categoryId)?.label || "Misc.";
+    }
+
+    function makeCategorySelect(entry) {
+        const select = document.createElement("select");
+        select.className = "longform-card-category";
+        LONGFORM_CATEGORIES.forEach(category => {
+            const option = document.createElement("option");
+            option.value = category.id;
+            option.textContent = category.label;
+            select.appendChild(option);
+        });
+        select.value = entry.category;
+        select.addEventListener("change", () => {
+            entry.category = select.value;
+            saveLongformState(false);
+            renderLongformEntries();
+            showSaved();
+        });
+        return select;
+    }
+
+    function editLongformMedia(entry) {
+        const image = window.prompt("Image URL (leave blank to clear):", entry.imageUrl || "");
+        if (image === null) return;
+        const link = window.prompt("Where should the image open when clicked? Leave blank for no click-through link:", entry.linkUrl || "");
+        if (link === null) return;
+        entry.imageUrl = image.trim();
+        entry.linkUrl = link.trim();
+        saveLongformState(false);
+        renderLongformEntries();
+        showSaved();
+    }
+
+    function renderLongformEntries() {
+        longformList.innerHTML = "";
+        const visible = longformState.entries.filter(entry => (
+            activeLongformFilter === "all" || entry.category === activeLongformFilter
+        ));
+
+        if (!visible.length) {
+            const empty = document.createElement("div");
+            empty.className = "longform-empty";
+            empty.innerHTML = activeLongformFilter === "all"
+                ? "<strong>No saved thoughts yet.</strong><span>The first one will land here as a three-line preview.</span>"
+                : `<strong>No ${categoryLabel(activeLongformFilter).toLowerCase()} thoughts here.</strong><span>Nothing is being hidden except by your current filter.</span>`;
+            longformList.appendChild(empty);
+            return;
+        }
+
+        visible.forEach(entry => {
+            const card = document.createElement("article");
+            const expanded = expandedLongformIds.has(entry.id);
+            card.className = `longform-entry${entry.done ? " done" : ""}${expanded ? " expanded" : ""}`;
+            card.dataset.category = entry.category;
+
+            const top = document.createElement("div");
+            top.className = "longform-entry-top";
+
+            const meta = document.createElement("div");
+            meta.className = "longform-entry-meta";
+            const category = makeCategorySelect(entry);
+
+            const date = document.createElement("input");
+            date.type = "date";
+            date.className = "longform-card-date";
+            date.value = entry.date;
+            date.title = "Entry date";
+            date.addEventListener("change", () => {
+                if (!date.value) return;
+                entry.date = date.value;
+                saveLongformState();
+            });
+            meta.append(category, date);
+
+            const actions = document.createElement("div");
+            actions.className = "longform-entry-actions";
+
+            const doneLabel = document.createElement("label");
+            doneLabel.className = "longform-done-control";
+            doneLabel.title = "Toggle strikethrough";
+            const done = document.createElement("input");
+            done.type = "checkbox";
+            done.checked = entry.done;
+            done.setAttribute("aria-label", "Toggle strikethrough");
+            done.addEventListener("change", () => {
+                entry.done = done.checked;
+                saveLongformState(false);
+                renderLongformEntries();
+                showSaved();
+            });
+            const doneGlyph = document.createElement("span");
+            doneGlyph.textContent = "✓";
+            doneLabel.append(done, doneGlyph);
+
+            const mediaEdit = document.createElement("button");
+            mediaEdit.type = "button";
+            mediaEdit.className = "longform-icon-button";
+            mediaEdit.textContent = "◎";
+            mediaEdit.title = "Set image / clickable link";
+            mediaEdit.addEventListener("click", () => editLongformMedia(entry));
+
+            const expand = document.createElement("button");
+            expand.type = "button";
+            expand.className = "longform-expand-button";
+            expand.textContent = expanded ? "▴" : "▾";
+            expand.title = expanded ? "Collapse" : "Reveal full thought";
+            expand.setAttribute("aria-expanded", String(expanded));
+            expand.addEventListener("click", () => {
+                if (expandedLongformIds.has(entry.id)) expandedLongformIds.delete(entry.id);
+                else expandedLongformIds.add(entry.id);
+                renderLongformEntries();
+            });
+
+            const archive = document.createElement("button");
+            archive.type = "button";
+            archive.className = "longform-icon-button";
+            archive.textContent = "↘";
+            archive.title = "Archive into Archive & Patterns";
+            archive.addEventListener("click", () => {
+                const archived = archiveManualItem({
+                    text: entry.text,
+                    source: "Longform",
+                    context: categoryLabel(entry.category),
+                    originalDate: entry.date,
+                    createdAt: entry.createdAt,
+                    metadata: {
+                        done: entry.done,
+                        imageUrl: entry.imageUrl,
+                        linkUrl: entry.linkUrl
+                    }
+                });
+                if (!archived) return;
+                longformState.entries = longformState.entries.filter(item => item.id !== entry.id);
+                expandedLongformIds.delete(entry.id);
+                saveLongformState(false);
+                renderLongformEntries();
+                showSaved();
+            });
+
+            const remove = document.createElement("button");
+            remove.type = "button";
+            remove.className = "longform-icon-button longform-delete-button";
+            remove.textContent = "×";
+            remove.title = "Delete entry";
+            remove.addEventListener("click", () => {
+                longformState.entries = longformState.entries.filter(item => item.id !== entry.id);
+                expandedLongformIds.delete(entry.id);
+                saveLongformState(false);
+                renderLongformEntries();
+                showSaved();
+            });
+
+            actions.append(doneLabel, mediaEdit, expand, archive, remove);
+            top.append(meta, actions);
+
+            const body = document.createElement("div");
+            body.className = `longform-entry-body${entry.imageUrl ? " has-media" : ""}`;
+
+            if (entry.imageUrl) {
+                const media = document.createElement(entry.linkUrl ? "a" : "div");
+                media.className = "longform-entry-media";
+                if (entry.linkUrl) {
+                    media.href = entry.linkUrl;
+                    media.target = "_blank";
+                    media.rel = "noopener noreferrer";
+                    media.title = "Open linked page";
+                }
+                const img = document.createElement("img");
+                img.src = entry.imageUrl;
+                img.alt = "Linked note image";
+                img.loading = "lazy";
+                img.addEventListener("error", () => {
+                    media.classList.add("image-error");
+                    img.remove();
+                    media.textContent = "image unavailable";
+                });
+                media.appendChild(img);
+                body.appendChild(media);
+            }
+
+            const text = document.createElement("div");
+            text.className = `longform-entry-text${expanded ? " expanded" : " collapsed"}`;
+            text.contentEditable = expanded ? "true" : "false";
+            text.spellcheck = true;
+            text.textContent = entry.text;
+            if (expanded) {
+                text.addEventListener("input", () => {
+                    entry.text = text.innerText;
+                    saveLongformState();
+                });
+            }
+            body.appendChild(text);
+
+            if (entry.linkUrl && !entry.imageUrl) {
+                const link = document.createElement("a");
+                link.className = "longform-link-chip";
+                link.href = entry.linkUrl;
+                link.target = "_blank";
+                link.rel = "noopener noreferrer";
+                link.textContent = "↗ linked reference";
+                body.appendChild(link);
+            }
+
+            card.append(top, body);
+            longformList.appendChild(card);
+        });
+    }
+
+    function submitLongformEntry() {
+        const text = longformInput.value.trim();
+        if (!text) {
+            longformInput.focus();
+            return;
+        }
+
+        longformState.entries.unshift({
+            id: longformId(),
+            text,
+            category: LONGFORM_CATEGORIES.some(item => item.id === longformCategory.value)
+                ? longformCategory.value
+                : "misc",
+            date: longformDate.value || makeLocalIsoDate(),
+            done: false,
+            createdAt: new Date().toISOString(),
+            imageUrl: longformImageUrl.value.trim(),
+            linkUrl: longformLinkUrl.value.trim()
+        });
+
+        longformInput.value = "";
+        longformImageUrl.value = "";
+        longformLinkUrl.value = "";
+        longformDate.value = makeLocalIsoDate();
+        saveLongformState(false);
+        renderLongformEntries();
+        showSaved();
+        longformInput.focus();
+    }
+
+    longformDate.value = makeLocalIsoDate();
+    saveLongformEntry.addEventListener("click", submitLongformEntry);
+    longformInput.addEventListener("keydown", event => {
+        if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
+            event.preventDefault();
+            submitLongformEntry();
+        }
+    });
+
+    longformFilters.addEventListener("click", event => {
+        const button = event.target.closest("[data-filter]");
+        if (!button) return;
+        activeLongformFilter = button.dataset.filter || "all";
+        longformFilters.querySelectorAll("[data-filter]").forEach(item => {
+            item.classList.toggle("active", item === button);
+        });
+        renderLongformEntries();
+    });
+
+    saveLongformState(false);
+    renderLongformEntries();
+}
+
 /* =========================================================
    NEOPIAN FIELD NOTES MODULE — CANONICAL LAYOUT
    Uses Paige's latest three-column Field Notes page as the
@@ -3604,6 +3969,10 @@ if (document.getElementById("neopetsApp")) {
             { id: "treasure-2", text: "Paint brush" },
             { id: "treasure-3", text: "Customization piece" },
             { id: "treasure-4", text: "Extremely unnecessary treasure" }
+        ],
+        references: [
+            { id: "ref-dailies", label: "Full Dailies Index", detail: "thedailyneopets.com", icon: "☼", url: "https://thedailyneopets.com/dailies", accent: "teal" },
+            { id: "ref-items", label: "Item Database", detail: "items.jellyneo.net", icon: "◇", url: "https://items.jellyneo.net/", accent: "blue" }
         ]
     };
 
@@ -3624,7 +3993,15 @@ if (document.getElementById("neopetsApp")) {
             })) : cloneNeo(neoDefaults.links),
             dreamies: Array.isArray(saved.dreamies) ? saved.dreamies.map(item => ({ ...item, image: item.image || "" })) : cloneNeo(neoDefaults.dreamies),
             streaks: Array.isArray(saved.streaks) ? saved.streaks : cloneNeo(neoDefaults.streaks),
-            treasures: Array.isArray(saved.treasures) ? saved.treasures : cloneNeo(neoDefaults.treasures)
+            treasures: Array.isArray(saved.treasures) ? saved.treasures : cloneNeo(neoDefaults.treasures),
+            references: Array.isArray(saved.references) ? saved.references.map((item, index) => ({
+                ...item,
+                label: typeof item.label === "string" ? item.label : "Reference",
+                detail: typeof item.detail === "string" ? item.detail : "",
+                icon: typeof item.icon === "string" ? item.icon : "◇",
+                url: typeof item.url === "string" ? item.url : "#",
+                accent: NEO_ACCENTS.includes(item.accent) ? item.accent : NEO_ACCENTS[index % NEO_ACCENTS.length]
+            })) : cloneNeo(neoDefaults.references)
         };
     }
 
@@ -3644,6 +4021,7 @@ if (document.getElementById("neopetsApp")) {
     let draggedNeoSide = null;
     let editingNeoLinkId = null;
     let creatingNeoLinkSectionId = null;
+    let editingNeoReferenceId = null;
 
     function saveNeoState(show = true) {
         localStorage.setItem(NEO_STATE_KEY, JSON.stringify(neoState));
@@ -3664,6 +4042,8 @@ if (document.getElementById("neopetsApp")) {
     const dreamieList = document.getElementById("dreamieList");
     const streakList = document.getElementById("neoStreakList");
     const treasureList = document.getElementById("treasureList");
+    const neoReferenceLinks = document.getElementById("neoReferenceLinks");
+    const addNeoReference = document.getElementById("addNeoReference");
 
     const neoLinkEditorBackdrop = document.getElementById("neoLinkEditorBackdrop");
     const neoLinkEditorTitle = document.getElementById("neoLinkEditorTitle");
@@ -3674,6 +4054,15 @@ if (document.getElementById("neopetsApp")) {
     const neoLinkSectionSelect = document.getElementById("neoLinkSectionSelect");
     const saveNeoLinkEdit = document.getElementById("saveNeoLinkEdit");
     const cancelNeoLinkEdit = document.getElementById("cancelNeoLinkEdit");
+
+    const neoReferenceEditorBackdrop = document.getElementById("neoReferenceEditorBackdrop");
+    const neoReferenceEditorTitle = document.getElementById("neoReferenceEditorTitle");
+    const neoReferenceLabelInput = document.getElementById("neoReferenceLabelInput");
+    const neoReferenceDetailInput = document.getElementById("neoReferenceDetailInput");
+    const neoReferenceIconInput = document.getElementById("neoReferenceIconInput");
+    const neoReferenceUrlInput = document.getElementById("neoReferenceUrlInput");
+    const saveNeoReferenceEdit = document.getElementById("saveNeoReferenceEdit");
+    const cancelNeoReferenceEdit = document.getElementById("cancelNeoReferenceEdit");
 
     function populateNeoSectionSelect(selectedId = null) {
         neoLinkSectionSelect.innerHTML = "";
@@ -4012,6 +4401,143 @@ if (document.getElementById("neopetsApp")) {
     }
     document.getElementById("addNeoSection").addEventListener("click", addNeoSection);
 
+
+    function nextNeoReferenceAccent() {
+        const sequence = ["teal", "blue", "plum", "berry"];
+        return sequence[neoState.references.length % sequence.length];
+    }
+
+    function openNeoReferenceEditor(reference = null) {
+        editingNeoReferenceId = reference?.id || null;
+        neoReferenceEditorTitle.textContent = reference ? "Edit Reference Link" : "Add Reference Link";
+        neoReferenceLabelInput.value = reference?.label || "";
+        neoReferenceDetailInput.value = reference?.detail || "";
+        neoReferenceIconInput.value = reference?.icon || "◇";
+        neoReferenceUrlInput.value = reference?.url === "#" ? "" : (reference?.url || "");
+        neoReferenceEditorBackdrop.classList.add("open");
+        neoReferenceEditorBackdrop.setAttribute("aria-hidden", "false");
+        requestAnimationFrame(() => neoReferenceLabelInput.focus());
+    }
+
+    function closeNeoReferenceEditor() {
+        editingNeoReferenceId = null;
+        neoReferenceEditorBackdrop.classList.remove("open");
+        neoReferenceEditorBackdrop.setAttribute("aria-hidden", "true");
+    }
+
+    function renderNeoReferences() {
+        if (!neoReferenceLinks) return;
+        neoReferenceLinks.innerHTML = "";
+
+        if (!neoState.references.length) {
+            const empty = document.createElement("div");
+            empty.className = "neo-reference-empty";
+            empty.textContent = "Add a reference when you want a useful outside doorway here.";
+            neoReferenceLinks.appendChild(empty);
+            return;
+        }
+
+        neoState.references.forEach(reference => {
+            const card = document.createElement("article");
+            card.className = "neo-reference-card";
+            card.dataset.accent = NEO_ACCENTS.includes(reference.accent) ? reference.accent : "teal";
+
+            const anchor = document.createElement("a");
+            anchor.className = "neo-reference-link";
+            anchor.href = reference.url || "#";
+            anchor.target = "_blank";
+            anchor.rel = "noopener noreferrer";
+            if (!reference.url || reference.url === "#") {
+                anchor.addEventListener("click", event => event.preventDefault());
+            }
+
+            const title = document.createElement("strong");
+            title.textContent = `${reference.icon || "◇"} ${reference.label || "Reference"}`;
+            const detail = document.createElement("small");
+            detail.textContent = reference.detail || "external link";
+            anchor.append(title, detail);
+
+            const actions = document.createElement("div");
+            actions.className = "neo-reference-actions";
+
+            const edit = document.createElement("button");
+            edit.type = "button";
+            edit.textContent = "✎";
+            edit.title = "Edit reference";
+            edit.addEventListener("click", () => openNeoReferenceEditor(reference));
+
+            const remove = document.createElement("button");
+            remove.type = "button";
+            remove.textContent = "×";
+            remove.title = "Remove reference";
+            remove.addEventListener("click", () => {
+                neoState.references = neoState.references.filter(item => item.id !== reference.id);
+                saveNeoState(false);
+                renderNeoReferences();
+                showSaved();
+            });
+
+            actions.append(edit, remove);
+            card.append(anchor, actions);
+            neoReferenceLinks.appendChild(card);
+        });
+    }
+
+    if (addNeoReference) addNeoReference.addEventListener("click", () => openNeoReferenceEditor());
+
+    if (saveNeoReferenceEdit) {
+        saveNeoReferenceEdit.addEventListener("click", () => {
+            const label = neoReferenceLabelInput.value.trim();
+            if (!label) return;
+
+            const detail = neoReferenceDetailInput.value.trim();
+            const icon = neoReferenceIconInput.value.trim() || "◇";
+            const url = neoReferenceUrlInput.value.trim() || "#";
+            const existing = neoState.references.find(item => item.id === editingNeoReferenceId);
+
+            if (existing) {
+                existing.label = label;
+                existing.detail = detail;
+                existing.icon = icon;
+                existing.url = url;
+            } else {
+                neoState.references.push({
+                    id: neoId("neo-ref"),
+                    label,
+                    detail,
+                    icon,
+                    url,
+                    accent: nextNeoReferenceAccent()
+                });
+            }
+
+            saveNeoState(false);
+            renderNeoReferences();
+            closeNeoReferenceEditor();
+            showSaved();
+        });
+    }
+
+    [neoReferenceLabelInput, neoReferenceDetailInput, neoReferenceIconInput, neoReferenceUrlInput]
+        .filter(Boolean)
+        .forEach(input => {
+            input.addEventListener("keydown", event => {
+                if (event.key !== "Enter") return;
+                event.preventDefault();
+                saveNeoReferenceEdit?.click();
+            });
+        });
+
+    cancelNeoReferenceEdit?.addEventListener("click", closeNeoReferenceEditor);
+    neoReferenceEditorBackdrop?.addEventListener("click", event => {
+        if (event.target === neoReferenceEditorBackdrop) closeNeoReferenceEditor();
+    });
+    document.addEventListener("keydown", event => {
+        if (event.key === "Escape" && neoReferenceEditorBackdrop?.classList.contains("open")) {
+            closeNeoReferenceEditor();
+        }
+    });
+
     function focusEditable(element) {
         if (!element) return;
         element.focus();
@@ -4231,5 +4757,6 @@ if (document.getElementById("neopetsApp")) {
     renderDreamies();
     renderStreaks();
     renderTreasures();
+    renderNeoReferences();
     saveNeoState(false);
 }

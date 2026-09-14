@@ -19,7 +19,7 @@
         </div>
 
         <div class="neo-header-tools">
-            <a class="small-button neo-db-link" href="Database.html">← database</a>
+            <select id="ecosystemNav" class="ecosystem-nav-select" aria-label="Open another page"></select>
             <span id="saveStatus" class="sync-status" aria-live="polite">cloud ready</span>
             <button id="cloudLoginButton" class="small-button cloud-login-button" type="button">cloud login</button>
             <select id="themeSelect" class="theme-select" aria-label="Theme"></select>
@@ -50,17 +50,11 @@
         <div id="neoLinkSections" class="neo-link-sections"></div>
 
         <div class="neo-reference-box">
-            <div class="neo-reference-label neo-ui-edit" contenteditable="true" data-neo-ui="reference-label">external reference portal ::</div>
-            <div class="neo-reference-links">
-                <a class="neo-reference-link" href="https://thedailyneopets.com/dailies" target="_blank" rel="noopener noreferrer">
-                    <strong>☼ Full Dailies Index</strong>
-                    <small>thedailyneopets.com</small>
-                </a>
-                <a class="neo-reference-link" href="https://items.jellyneo.net/" target="_blank" rel="noopener noreferrer">
-                    <strong>◇ Item Database</strong>
-                    <small>items.jellyneo.net</small>
-                </a>
+            <div class="neo-reference-head">
+                <div class="neo-reference-label neo-ui-edit" contenteditable="true" data-neo-ui="reference-label">external reference portal ::</div>
+                <button class="neo-reference-add" id="addNeoReference" type="button">+ reference</button>
             </div>
+            <div id="neoReferenceLinks" class="neo-reference-links"></div>
         </div>
     </main>
 
@@ -104,6 +98,24 @@
         <div class="link-editor-actions">
             <button id="cancelNeoLinkEdit" type="button">Cancel</button>
             <button id="saveNeoLinkEdit" type="button">Save</button>
+        </div>
+    </div>
+</div>
+
+<div id="neoReferenceEditorBackdrop" class="link-editor-backdrop" aria-hidden="true">
+    <div class="link-editor neo-link-editor" role="dialog" aria-modal="true" aria-labelledby="neoReferenceEditorTitle">
+        <h2 id="neoReferenceEditorTitle">Edit Reference Link</h2>
+        <label for="neoReferenceLabelInput">Label</label>
+        <input id="neoReferenceLabelInput" type="text">
+        <label for="neoReferenceDetailInput">Small text / site</label>
+        <input id="neoReferenceDetailInput" type="text" placeholder="items.jellyneo.net">
+        <label for="neoReferenceIconInput">Icon / symbol</label>
+        <input id="neoReferenceIconInput" type="text" maxlength="4" placeholder="◇">
+        <label for="neoReferenceUrlInput">URL</label>
+        <input id="neoReferenceUrlInput" type="text" placeholder="https://...">
+        <div class="link-editor-actions">
+            <button id="cancelNeoReferenceEdit" type="button">Cancel</button>
+            <button id="saveNeoReferenceEdit" type="button">Save</button>
         </div>
     </div>
 </div>

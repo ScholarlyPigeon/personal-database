@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en" class="longform-page-html">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Longform Notes</title>
+    <link rel="stylesheet" href="Style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+    <script src="CloudSync.js" defer></script>
+    <script src="Script.js" defer></script>
+</head>
+<body data-default-theme="study">
+<div class="longform-page" id="longformApp">
+    <header class="longform-header">
+        <div class="brand longform-brand">
+            <div class="pigeon-mark" aria-hidden="true">✎</div>
+            <div>
+                <h1>Longform</h1>
+                <div class="subtitle">room to think in complete paragraphs</div>
+            </div>
+        </div>
+
+        <div class="longform-header-actions">
+            <span id="saveStatus" class="sync-status" aria-live="polite">cloud ready</span>
+            <button id="cloudLoginButton" class="small-button cloud-login-button" type="button">cloud login</button>
+            <select id="ecosystemNav" class="ecosystem-nav-select" aria-label="Open another page"></select>
+            <select id="themeSelect" class="theme-select" aria-label="Theme"></select>
+        </div>
+    </header>
+
+    <main class="longform-workspace">
+        <aside class="panel longform-library">
+            <div class="longform-library-head">
+                <div>
+                    <div class="longform-section-title">Saved thoughts</div>
+                    <div class="longform-section-note">collapsed to three lines until you open one</div>
+                </div>
+                <div class="longform-filter-set" id="longformFilters" aria-label="Filter saved thoughts">
+                    <button type="button" class="longform-filter active" data-filter="all">all</button>
+                    <button type="button" class="longform-filter" data-filter="important">important</button>
+                    <button type="button" class="longform-filter" data-filter="database">database</button>
+                    <button type="button" class="longform-filter" data-filter="misc">misc.</button>
+                </div>
+            </div>
+            <div id="longformList" class="longform-list"></div>
+        </aside>
+
+        <section class="panel longform-composer">
+            <div class="longform-composer-head">
+                <div>
+                    <div class="longform-section-title">Write it out</div>
+                    <div class="longform-section-note">the text box gets the room; everything else stays quiet</div>
+                </div>
+                <div class="longform-compose-meta">
+                    <label>
+                        <span>category</span>
+                        <select id="longformCategory">
+                            <option value="important">Important</option>
+                            <option value="database" selected>Database</option>
+                            <option value="misc">Misc.</option>
+                        </select>
+                    </label>
+                    <label>
+                        <span>date</span>
+                        <input id="longformDate" type="date">
+                    </label>
+                </div>
+            </div>
+
+            <textarea id="longformInput" class="longform-input" placeholder="Stay here as long as the thought needs. Enter always makes a new line."></textarea>
+
+            <details class="longform-attachment">
+                <summary>optional image / clickable link</summary>
+                <div class="longform-attachment-fields">
+                    <label>
+                        <span>image URL</span>
+                        <input id="longformImageUrl" type="url" placeholder="https://.../image.jpg">
+                    </label>
+                    <label>
+                        <span>click-through URL</span>
+                        <input id="longformLinkUrl" type="url" placeholder="https://...">
+                    </label>
+                </div>
+            </details>
+
+            <div class="longform-submit-row">
+                <div class="longform-submit-note">Ctrl/Cmd + Enter saves · plain Enter stays in the thought</div>
+                <button id="saveLongformEntry" class="longform-save-button" type="button">save thought</button>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>
