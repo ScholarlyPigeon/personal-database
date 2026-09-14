@@ -3792,57 +3792,41 @@ if (document.getElementById("longformApp")) {
             const actions = document.createElement("div");
             actions.className = "longform-entry-actions";
 
-            const doneLabel = document.createElement("label");
-            doneLabel.className = "longform-done-control";
-            doneLabel.title = "Toggle strikethrough";
-            const done = document.createElement("input");
-            done.type = "checkbox";
-            done.checked = entry.done;
-            done.setAttribute("aria-label", "Toggle strikethrough");
-            done.addEventListener("change", () => {
-                entry.done = done.checked;
+            const tools = document.createElement("details");
+            tools.className = "longform-card-tools";
+
+            const toolsSummary = document.createElement("summary");
+            toolsSummary.textContent = "tools";
+            toolsSummary.title = "Entry tools";
+            toolsSummary.setAttribute("aria-label", "Open entry tools");
+
+            const toolsPanel = document.createElement("div");
+            toolsPanel.className = "longform-card-tool-panel";
+
+            const doneButton = document.createElement("button");
+            doneButton.type = "button";
+            doneButton.className = "longform-tool-button";
+            doneButton.textContent = entry.done ? "✓ strikethrough on" : "✓ strikethrough";
+            doneButton.title = "Toggle strikethrough";
+            doneButton.setAttribute("aria-pressed", String(entry.done));
+            doneButton.addEventListener("click", () => {
+                entry.done = !entry.done;
                 saveLongformState(false);
                 renderLongformEntries();
                 showSaved();
             });
-            const doneGlyph = document.createElement("span");
-            doneGlyph.textContent = "✓";
-            doneLabel.append(done, doneGlyph);
-
-            const edit = document.createElement("button");
-            edit.type = "button";
-            edit.className = "longform-icon-button longform-edit-button";
-            edit.textContent = "✎";
-            edit.title = "Edit this saved thought";
-            edit.addEventListener("click", () => {
-                expandedLongformIds.add(entry.id);
-                renderLongformEntries();
-                focusLongformEntry(entry.id);
-            });
 
             const mediaEdit = document.createElement("button");
             mediaEdit.type = "button";
-            mediaEdit.className = "longform-icon-button";
-            mediaEdit.textContent = "◎";
+            mediaEdit.className = "longform-tool-button";
+            mediaEdit.textContent = entry.imageUrl || entry.linkUrl ? "◎ edit image / link" : "◎ add image / link";
             mediaEdit.title = "Set image / clickable link";
             mediaEdit.addEventListener("click", () => editLongformMedia(entry));
 
-            const expand = document.createElement("button");
-            expand.type = "button";
-            expand.className = "longform-expand-button";
-            expand.textContent = expanded ? "▴" : "▾";
-            expand.title = expanded ? "Collapse" : "Reveal full thought";
-            expand.setAttribute("aria-expanded", String(expanded));
-            expand.addEventListener("click", () => {
-                if (expandedLongformIds.has(entry.id)) expandedLongformIds.delete(entry.id);
-                else expandedLongformIds.add(entry.id);
-                renderLongformEntries();
-            });
-
             const archive = document.createElement("button");
             archive.type = "button";
-            archive.className = "longform-icon-button";
-            archive.textContent = "↘";
+            archive.className = "longform-tool-button";
+            archive.textContent = "↘ archive";
             archive.title = "Archive into Archive & Patterns";
             archive.addEventListener("click", () => {
                 const archived = archiveManualItem({
@@ -3867,8 +3851,8 @@ if (document.getElementById("longformApp")) {
 
             const remove = document.createElement("button");
             remove.type = "button";
-            remove.className = "longform-icon-button longform-delete-button";
-            remove.textContent = "×";
+            remove.className = "longform-tool-button longform-tool-delete";
+            remove.textContent = "× delete";
             remove.title = "Delete entry";
             remove.addEventListener("click", () => {
                 longformState.entries = longformState.entries.filter(item => item.id !== entry.id);
@@ -3878,8 +3862,38 @@ if (document.getElementById("longformApp")) {
                 showSaved();
             });
 
-            actions.append(doneLabel, edit, mediaEdit, expand, archive, remove);
+            toolsPanel.append(doneButton, mediaEdit, archive, remove);
+            tools.append(toolsSummary, toolsPanel);
+
+            const expand = document.createElement("button");
+            expand.type = "button";
+            expand.className = "longform-expand-button longform-collapse-toggle";
+            expand.textContent = expanded ? "▴" : "▾";
+            expand.title = expanded ? "Collapse this thought" : "Open full thought";
+            expand.setAttribute("aria-expanded", String(expanded));
+            expand.addEventListener("click", () => {
+                if (expandedLongformIds.has(entry.id)) expandedLongformIds.delete(entry.id);
+                else expandedLongformIds.add(entry.id);
+                renderLongformEntries();
+            });
+
+            actions.append(tools, expand);
             top.append(meta, actions);
+
+            const summary = document.createElement("button");
+            summary.type = "button";
+            summary.className = "longform-entry-summary";
+            summary.textContent = String(entry.text || "").replace(/\s+/g, " ").trim() || "Untitled thought";
+            summary.title = expanded
+                ? "Click to place your cursor in this thought"
+                : "Open and edit this thought";
+            summary.addEventListener("click", () => {
+                if (!expandedLongformIds.has(entry.id)) {
+                    expandedLongformIds.add(entry.id);
+                    renderLongformEntries();
+                }
+                focusLongformEntry(entry.id);
+            });
 
             const body = document.createElement("div");
             body.className = `longform-entry-body${entry.imageUrl ? " has-media" : ""}`;
@@ -3907,17 +3921,16 @@ if (document.getElementById("longformApp")) {
             }
 
             const text = document.createElement("div");
-            text.className = `longform-entry-text${expanded ? " expanded" : " collapsed"}`;
-            text.contentEditable = expanded ? "true" : "false";
+            text.className = "longform-entry-text expanded";
+            text.contentEditable = "true";
             text.spellcheck = true;
             text.innerHTML = entry.html || longformPlainTextToHtml(entry.text);
-            if (expanded) {
-                text.addEventListener("input", () => {
-                    entry.html = text.innerHTML;
-                    entry.text = text.innerText;
-                    saveLongformState();
-                });
-            }
+            text.addEventListener("input", () => {
+                entry.html = text.innerHTML;
+                entry.text = text.innerText;
+                summary.textContent = String(entry.text || "").replace(/\s+/g, " ").trim() || "Untitled thought";
+                saveLongformState();
+            });
             body.appendChild(text);
 
             if (entry.linkUrl && !entry.imageUrl) {
@@ -3930,7 +3943,7 @@ if (document.getElementById("longformApp")) {
                 body.appendChild(link);
             }
 
-            card.append(top, body);
+            card.append(top, summary, body);
             longformList.appendChild(card);
         });
     }

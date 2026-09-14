@@ -95,3 +95,11 @@ V5 — FINAL NIGHT POLISH
 - Increased the size/prominence of the Longform optional image / clickable link control.
 - Hardened mobile document scrolling for Longform and Neopets so the full page remains reachable on touch browsers despite the desktop overflow lock.
 - Bumped cache versions to 20260913e.
+
+LONGFORM V6 — FULLY COLLAPSIBLE SAVED THOUGHTS
+- Saved Longform cards now fully collapse: text, image, and link content all fold away.
+- A compact card header always remains visible with category/date plus a one-line text preview.
+- Clicking the one-line preview opens the card and places the cursor directly in the saved thought for editing.
+- Removed the redundant pencil edit button.
+- Consolidated secondary actions into a clearer Tools menu: strikethrough, image/link, archive, and delete.
+- The collapse arrow remains visible beside Tools for quick open/close control.

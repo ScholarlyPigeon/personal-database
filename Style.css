@@ -9899,3 +9899,219 @@ html.patterns-page-html .patterns-header,
         max-height: none;
     }
 }
+
+/* =========================================================
+   V6 — LONGFORM FOLDING CARDS + CONSOLIDATED TOOLS
+   Collapsed cards keep a compact metadata/header strip and one
+   readable line of the note while hiding the entire body/media.
+   ========================================================= */
+.longform-entry {
+    position: relative;
+    padding: 8px 9px 9px;
+}
+
+.longform-entry-top {
+    margin-bottom: 5px;
+}
+
+.longform-card-category,
+.longform-card-date {
+    height: 28px;
+    font-size: 10.5px;
+    border-color: color-mix(in srgb, var(--longform-accent) 42%, var(--border));
+    background: color-mix(in srgb, var(--panel) 76%, var(--bg));
+}
+
+.longform-entry-actions {
+    gap: 5px;
+}
+
+.longform-card-tools {
+    position: relative;
+    flex: 0 0 auto;
+}
+
+.longform-card-tools > summary {
+    list-style: none;
+    min-width: 48px;
+    height: 28px;
+    display: grid;
+    place-items: center;
+    padding: 0 8px;
+    border: 1px solid color-mix(in srgb, var(--longform-accent) 48%, var(--border));
+    border-radius: 7px;
+    background: color-mix(in srgb, var(--panel-light) 88%, var(--bg));
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 10.5px;
+    font-weight: 700;
+    user-select: none;
+}
+
+.longform-card-tools > summary::-webkit-details-marker {
+    display: none;
+}
+
+.longform-card-tools > summary:hover,
+.longform-card-tools[open] > summary {
+    color: var(--text);
+    border-color: var(--longform-accent);
+    background: color-mix(in srgb, var(--longform-accent) 14%, var(--panel-light));
+}
+
+.longform-card-tool-panel {
+    position: absolute;
+    z-index: 40;
+    top: calc(100% + 5px);
+    right: 0;
+    min-width: 158px;
+    display: grid;
+    gap: 2px;
+    padding: 5px;
+    border: 1px solid color-mix(in srgb, var(--longform-accent) 50%, var(--border));
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--panel) 96%, var(--bg));
+    box-shadow: 0 10px 24px rgba(0,0,0,.28);
+}
+
+.longform-tool-button {
+    width: 100%;
+    min-height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--muted);
+    padding: 6px 8px;
+    cursor: pointer;
+    text-align: left;
+    font-size: 11px;
+}
+
+.longform-tool-button:hover,
+.longform-tool-button:focus-visible {
+    color: var(--text);
+    background: color-mix(in srgb, var(--longform-accent) 12%, transparent);
+    outline: none;
+}
+
+.longform-tool-delete:hover,
+.longform-tool-delete:focus-visible {
+    color: var(--rose-soft);
+}
+
+.longform-collapse-toggle {
+    width: 30px;
+    height: 28px;
+    border: 1px solid color-mix(in srgb, var(--longform-accent) 52%, var(--border));
+    background: color-mix(in srgb, var(--longform-accent) 11%, var(--panel-light));
+    color: var(--text);
+    font-size: 13px;
+}
+
+.longform-collapse-toggle:hover {
+    border-color: var(--longform-accent);
+    background: color-mix(in srgb, var(--longform-accent) 20%, var(--panel-light));
+}
+
+.longform-entry-summary {
+    width: 100%;
+    min-width: 0;
+    display: block;
+    border: 0;
+    border-radius: 6px;
+    background: color-mix(in srgb, var(--bg) 24%, transparent);
+    color: var(--text);
+    padding: 6px 8px;
+    cursor: text;
+    text-align: left;
+    font: inherit;
+    font-size: 12.5px;
+    line-height: 1.35;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.longform-entry-summary:hover,
+.longform-entry-summary:focus-visible {
+    background: color-mix(in srgb, var(--longform-accent) 10%, transparent);
+    outline: none;
+}
+
+.longform-entry:not(.expanded) .longform-entry-summary {
+    font-weight: 700;
+}
+
+.longform-entry.expanded .longform-entry-summary {
+    color: var(--muted);
+    margin-bottom: 8px;
+}
+
+.longform-entry.done .longform-entry-summary {
+    color: var(--faint);
+    text-decoration: line-through;
+}
+
+/* This is the actual full-card collapse: text, image and link disappear. */
+.longform-entry:not(.expanded) .longform-entry-body {
+    display: none !important;
+}
+
+.longform-entry.expanded .longform-entry-body {
+    min-width: 0;
+}
+
+/* The body text is directly editable whenever a card is open. */
+.longform-entry.expanded .longform-entry-text {
+    min-height: 3em;
+    padding: 7px 8px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    background: rgba(255,255,255,.018);
+}
+
+.longform-entry.expanded .longform-entry-text:hover,
+.longform-entry.expanded .longform-entry-text:focus {
+    border-color: color-mix(in srgb, var(--longform-accent) 38%, transparent);
+    background: rgba(255,255,255,.045);
+}
+
+@media (max-width: 520px) {
+    .longform-entry-top {
+        align-items: center;
+        gap: 6px;
+    }
+
+    .longform-entry-meta {
+        flex-direction: row;
+        align-items: center;
+        gap: 4px;
+        flex: 1 1 auto;
+    }
+
+    .longform-card-category {
+        width: min(34vw, 96px);
+        max-width: 96px;
+    }
+
+    .longform-card-date {
+        width: min(37vw, 112px);
+        max-width: 112px;
+    }
+
+    .longform-card-tools > summary {
+        min-width: 44px;
+        padding: 0 6px;
+    }
+
+    .longform-card-tool-panel {
+        min-width: 150px;
+    }
+
+    .longform-entry-summary {
+        font-size: 12px;
+    }
+}
