@@ -1,0 +1,49 @@
+PERSONAL DATABASE — SAFE CLOUD SYNC V2
+September 14, 2026
+
+WHAT THIS FIXES
+The previous CloudSync.js uploaded the entire localStorage state as one cloud blob.
+That allowed an older browser/device to overwrite newer keys written by another device.
+
+Safe Sync V2 keeps the same Supabase project and same database_state table, but:
+- fetches the newest cloud row before each write
+- detects which localStorage keys actually changed on this device
+- merges only those changed keys into the newest cloud state
+- uses updated_at as an optimistic lock so a stale write cannot silently win
+- retries if another device writes between our read and write
+- checks the cloud every 10 seconds while the page is visible
+- checks local changes every 1.5 seconds without making a network request unless something changed
+- preserves a local conflict record if both devices changed the same key differently
+- includes conflict records in the normal Database backup download
+
+INSTALL
+1. Do not edit the Database on either device during the update.
+2. On the desktop Database, click Backup once and save the JSON file.
+3. Replace the existing CloudSync.js in your hosted site with CloudSync-SAFE-v2.js.
+   Keep the hosted filename as exactly: CloudSync.js
+4. Publish/deploy the change.
+5. Refresh the desktop Database.
+6. Confirm the header says: "☁ safe sync ready ✓" or "☁ synced safely ✓".
+7. Refresh the phone Database and confirm the same.
+8. Make one tiny TEST entry on the phone.
+9. Leave the desktop page open. Within about 10 seconds it should notice the cloud change
+   and safely reload when you are not actively typing.
+10. Delete the test entry on either device and verify the deletion also crosses over.
+
+NO SUPABASE SQL OR TABLE CHANGES ARE REQUIRED.
+
+IMPORTANT
+On the very first V2 load in each browser, the existing cloud state becomes that browser's
+baseline. That is intentional. Because the current phone and desktop are already showing
+the same post-loss state, this is the cleanest moment to migrate.
+
+CONFLICTS
+If both devices edit the exact same underlying localStorage key before either device sees
+the other's change, V2:
+- keeps the already-saved cloud version
+- stores the displaced local version in personal-database-sync-conflicts-v2
+- shows an alert
+- includes that recovery record in the Backup JSON
+
+This removes silent same-key conflict loss. The normal case, where the two devices change
+different keys/sections, merges automatically.
