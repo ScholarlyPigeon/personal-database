@@ -43,6 +43,7 @@ const THEME_OPTIONS = [
     { value: "cozy", label: "💿 Cozy 2000s", group: "Light themes" },
     { value: "green", label: "🌿 Full Green", group: "Light themes" },
     { value: "fall", label: "🍂 Fall", group: "Light themes" },
+    { value: "fall2", label: "🍁 Fall 2", group: "Dark themes" },
     { value: "study", label: "📜 Study", group: "Light themes" }
 ];
 
@@ -202,6 +203,29 @@ document.addEventListener("copy", event => {
     const fragment = range.cloneContents();
     const htmlContainer = document.createElement("div");
     htmlContainer.appendChild(fragment.cloneNode(true));
+
+    /* Keep bold/italic/links/paragraph structure, but remove Personal Intranet
+       layout hooks and painted backgrounds so pasted text does not carry a
+       card/panel color into another note or outside app. */
+    htmlContainer.querySelectorAll("*").forEach(element => {
+        element.removeAttribute("class");
+        element.removeAttribute("id");
+        element.removeAttribute("bgcolor");
+        element.removeAttribute("contenteditable");
+        element.removeAttribute("draggable");
+
+        [...element.attributes].forEach(attribute => {
+            if (attribute.name.startsWith("data-")) element.removeAttribute(attribute.name);
+        });
+
+        if (element.style) {
+            element.style.removeProperty("background");
+            element.style.removeProperty("background-color");
+            element.style.removeProperty("background-image");
+            if (!element.getAttribute("style")?.trim()) element.removeAttribute("style");
+        }
+    });
+
     const plainText = selectionFragmentToPlainText(fragment);
 
     if (!plainText) return;
@@ -1009,7 +1033,7 @@ if (document.getElementById("tileGrid")) {
             drag.className = "priority-item-drag";
             drag.textContent = "⋮⋮";
             drag.draggable = true;
-            drag.title = "Drag back to any Database section or reorder on the shelf";
+            drag.title = "Drag to another Database section";
 
             const body = document.createElement("div");
             body.className = "priority-item-body";
@@ -1297,7 +1321,7 @@ if (document.getElementById("tileGrid")) {
                 drag.className = "tile-item-drag";
                 drag.textContent = "⋮⋮";
                 drag.draggable = true;
-                drag.title = "Drag between Main Board tiles, Radar, calendar days, or the Priority Shelf";
+                drag.title = "Drag between Main Board tiles, Radar, Near My Radar, or calendar days";
 
                 const text = document.createElement("div");
                 text.className = "tile-item-text";
@@ -1862,7 +1886,8 @@ if (document.getElementById("tileGrid")) {
         accentClass = "",
         archiveSource = "Checklist",
         archiveContext = "",
-        archiveOriginalDate = null
+        archiveOriginalDate = null,
+        doneToBottom = false
     }) {
         const listElement = document.getElementById(listId);
         const inputElement = document.getElementById(inputId);
@@ -1919,7 +1944,7 @@ if (document.getElementById("tileGrid")) {
                 drag.className = "check-drag";
                 drag.textContent = "⋮⋮";
                 drag.draggable = true;
-                drag.title = "Drag between Radar, calendar days, Main Board tiles, or the Priority Shelf";
+                drag.title = "Drag between Radar, Near My Radar, calendar days, or Main Board tiles";
 
                 const wrap = document.createElement("label");
                 wrap.className = "check-wrap";
@@ -1929,7 +1954,20 @@ if (document.getElementById("tileGrid")) {
                 check.type = "checkbox";
                 check.checked = item.done;
                 check.addEventListener("change", () => {
-                    items[index].done = check.checked;
+                    const [changedItem] = items.splice(index, 1);
+                    changedItem.done = check.checked;
+
+                    if (doneToBottom) {
+                        if (changedItem.done) {
+                            items.push(changedItem);
+                        } else {
+                            const firstDoneIndex = items.findIndex(candidate => candidate.done);
+                            items.splice(firstDoneIndex < 0 ? items.length : firstDoneIndex, 0, changedItem);
+                        }
+                    } else {
+                        items.splice(index, 0, changedItem);
+                    }
+
                     manager.save();
                     renderItems();
                 });
@@ -2136,7 +2174,8 @@ if (document.getElementById("tileGrid")) {
             accentClass: dayAccentClasses[offset % dayAccentClasses.length],
             archiveSource: "Calendar",
             archiveContext: document.getElementById(`dayList${offset}`)?.closest(".day-card")?.querySelector(".date-label")?.textContent || "",
-            archiveOriginalDate: dayDateStrings[offset]
+            archiveOriginalDate: dayDateStrings[offset],
+            doneToBottom: true
         });
 
         const archiveButton = document.getElementById(`dayArchive${offset}`);
@@ -2153,7 +2192,7 @@ if (document.getElementById("tileGrid")) {
         }
     }
 
-    createChecklistManager({
+    const radarManager = createChecklistManager({
         storageKey: "pigeonhole-tight-radar",
         listId: "radarList",
         inputId: "radarInput",
@@ -2167,6 +2206,37 @@ if (document.getElementById("tileGrid")) {
         archiveSource: "Database",
         archiveContext: "On My Radar"
     });
+
+    createChecklistManager({
+        storageKey: "pigeonhole-near-radar",
+        listId: "nearRadarList",
+        inputId: "nearRadarInput",
+        buttonId: "addNearRadar",
+        defaults: [],
+        accentClass: "scroll-plum",
+        archiveSource: "Database",
+        archiveContext: "Near My Radar"
+    });
+
+    /* V17 migration: the visible Priority Shelf was retired in favor of Radar.
+       Preserve any items that were still sitting there by moving them into
+       On My Radar once, then clear the old shelf storage. */
+    if (!priorityShelf && radarManager && priorityItems.length) {
+        const existingIds = new Set(radarManager.items.map(item => item.id));
+        priorityItems.forEach(item => {
+            if (existingIds.has(item.id)) return;
+            radarManager.items.push({
+                id: item.id || archiveId("task"),
+                text: String(item.text || ""),
+                done: Boolean(item.done)
+            });
+        });
+        radarManager.save(false);
+        radarManager.render();
+        priorityItems = [];
+        savePriorityItems(false);
+        showSaved();
+    }
 
     renderPriorityShelf();
 
@@ -3822,8 +3892,9 @@ if (document.getElementById("patternsApp")) {
         }
 
         strainJournal.forEach((entry, index) => {
+            entry.expanded = Boolean(entry.expanded);
             const card = document.createElement("article");
-            card.className = "tracker-card strain-entry-card";
+            card.className = "tracker-card strain-entry-card" + (entry.expanded ? " expanded" : "");
 
             const head = document.createElement("div");
             head.className = "tracker-card-head";
@@ -3857,13 +3928,26 @@ if (document.getElementById("patternsApp")) {
                 showSaved();
             });
 
+            const collapse = document.createElement("button");
+            collapse.className = "strain-collapse-toggle";
+            collapse.type = "button";
+            collapse.textContent = entry.expanded ? "▾" : "▸";
+            collapse.title = entry.expanded ? "Collapse strain notes" : "Reveal strain notes";
+            collapse.setAttribute("aria-expanded", String(entry.expanded));
+            collapse.addEventListener("click", () => {
+                entry.expanded = !entry.expanded;
+                saveStrainJournal(false);
+                renderStrainJournal();
+                showSaved();
+            });
+
             const selector = makeSelectionControl(
                 selectionKey("strain-entry", entry.id),
                 "Select this strain journal entry"
             );
             const actions = document.createElement("div");
             actions.className = "tracker-card-actions";
-            actions.append(selector, remove);
+            actions.append(collapse, selector, remove);
             head.append(titleWrap, actions);
 
             const notes = document.createElement("div");
@@ -3872,6 +3956,7 @@ if (document.getElementById("patternsApp")) {
             notes.spellcheck = true;
             notes.textContent = entry.notes || "";
             notes.dataset.placeholder = "Add effects or context...";
+            notes.hidden = !entry.expanded;
             notes.addEventListener("input", () => {
                 entry.notes = notes.innerText;
                 saveStrainJournal();

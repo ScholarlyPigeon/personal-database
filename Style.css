@@ -10240,3 +10240,246 @@ html.patterns-page-html .patterns-header,
 
     html.aquarium-page .aq-section-collapse-bar { min-height: 36px; margin-left: 0; margin-right: 0; padding: 6px 8px; }
 }
+
+
+/* =========================================================
+   V18 — CANDLELIT FALL 2 + DATABASE / ARCHIVE USABILITY PASS
+   ========================================================= */
+
+/* Fall 2: darker jewel-toned autumn with turquoise glass accents. */
+body[data-theme="fall2"] {
+    --bg: #160f14;
+    --bg-soft: #21151c;
+    --panel: #2b1c24;
+    --panel-light: #38252d;
+    --plum: #8d3f61;
+    --plum-soft: #d287a7;
+    --teal: #257a75;
+    --teal-soft: #69c9bf;
+    --blue: #365f72;
+    --blue-soft: #7cabb9;
+    --rose: #9f493e;
+    --rose-soft: #d27a66;
+    --green: #61724a;
+    --green-soft: #a0b57a;
+    --orange: #a96131;
+    --orange-soft: #dda15c;
+    --text: #f0dfd2;
+    --muted: #c7ab9c;
+    --faint: #91786f;
+    --border: #62413f;
+    --shadow: 0 12px 30px rgba(5, 2, 4, .42), inset 0 1px 0 rgba(255,224,190,.035);
+    color: var(--text);
+    background-color: #160f14;
+    background-image:
+        radial-gradient(circle at 16% 12%, rgba(177, 86, 46, .23), transparent 25%),
+        radial-gradient(circle at 88% 10%, rgba(37, 122, 117, .24), transparent 28%),
+        radial-gradient(circle at 74% 84%, rgba(128, 46, 72, .18), transparent 30%),
+        radial-gradient(circle at 34% 92%, rgba(222, 161, 92, .11), transparent 20%),
+        linear-gradient(145deg, #170e14 0%, #241218 35%, #211a18 66%, #102524 100%);
+}
+
+body[data-theme="fall2"]::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background:
+        radial-gradient(circle at 23% 22%, rgba(255, 190, 104, .055) 0 1px, transparent 1.6px) 0 0 / 72px 72px,
+        repeating-linear-gradient(125deg, rgba(255,240,219,.012) 0 1px, transparent 1px 9px);
+    mix-blend-mode: screen;
+}
+
+body[data-theme="fall2"]::after {
+    content: "";
+    position: fixed;
+    width: 430px;
+    height: 430px;
+    right: -150px;
+    bottom: -170px;
+    pointer-events: none;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(216, 139, 69, .12), transparent 68%);
+}
+
+body[data-theme="fall2"] .page,
+body[data-theme="fall2"] .patterns-page,
+body[data-theme="fall2"] .aq-page,
+body[data-theme="fall2"] .longform-page,
+body[data-theme="fall2"] .neo-page { position: relative; z-index: 1; }
+
+body[data-theme="fall2"] h1 { color: #f7e4d0; text-shadow: 0 2px 16px rgba(211, 123, 65, .13); }
+body[data-theme="fall2"] .subtitle,
+body[data-theme="fall2"] .header-right { color: #c9aea0; }
+body[data-theme="fall2"] #saveStatus.saved { color: var(--teal-soft); }
+
+body[data-theme="fall2"] .pigeon-mark {
+    color: #f6ddc5;
+    background: linear-gradient(145deg, #6f2947, #923e3f 52%, #8a5b32 76%, #236a68);
+    border: 1px solid rgba(226, 168, 111, .30);
+    box-shadow: 0 10px 24px rgba(5,2,4,.38), inset 0 1px 0 rgba(255,255,255,.13);
+}
+
+body[data-theme="fall2"] .panel,
+body[data-theme="fall2"] .link-strip,
+body[data-theme="fall2"] .aq-panel,
+body[data-theme="fall2"] .neo-card,
+body[data-theme="fall2"] .longform-library,
+body[data-theme="fall2"] .longform-composer {
+    background: linear-gradient(160deg, rgba(58, 37, 44, .98), rgba(38, 26, 32, .985));
+    border-color: #60413f;
+    box-shadow: 0 12px 28px rgba(5,2,4,.34), inset 0 1px 0 rgba(255,230,201,.03);
+}
+
+body[data-theme="fall2"] .panel-header,
+body[data-theme="fall2"] .aq-panel-head,
+body[data-theme="fall2"] .longform-library-head,
+body[data-theme="fall2"] .longform-composer-head {
+    background: linear-gradient(90deg, rgba(132, 53, 75, .12), rgba(37, 122, 117, .08), transparent);
+    border-bottom-color: #5a3b3a;
+}
+
+body[data-theme="fall2"] .panel-title,
+body[data-theme="fall2"] .link-strip-label,
+body[data-theme="fall2"] .longform-section-title { color: #e0a0ad; }
+body[data-theme="fall2"] .panel-subtitle,
+body[data-theme="fall2"] .longform-section-note { color: #977f75; }
+
+body[data-theme="fall2"] .small-button,
+body[data-theme="fall2"] .theme-select,
+body[data-theme="fall2"] .link-add-button {
+    color: #d7b9a9;
+    background: linear-gradient(180deg, #422a32, #332228);
+    border-color: #694541;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.035);
+}
+body[data-theme="fall2"] .small-button:hover,
+body[data-theme="fall2"] .theme-select:hover,
+body[data-theme="fall2"] .theme-select:focus,
+body[data-theme="fall2"] .link-add-button:hover {
+    color: #f4dfcf;
+    border-color: #3f9891;
+    background: linear-gradient(180deg, #493038, #38272c);
+}
+
+body[data-theme="fall2"] input:not([type="checkbox"]),
+body[data-theme="fall2"] textarea,
+body[data-theme="fall2"] .longform-input,
+body[data-theme="fall2"] .link-editor input,
+body[data-theme="fall2"] .link-editor select {
+    color: var(--text);
+    background: rgba(13, 8, 11, .28);
+    border-color: #5e413e;
+}
+
+body[data-theme="fall2"] .checklist-item,
+body[data-theme="fall2"] .tile-item-row,
+body[data-theme="fall2"] .tracker-card,
+body[data-theme="fall2"] .archive-card,
+body[data-theme="fall2"] .pattern-note,
+body[data-theme="fall2"] .longform-entry,
+body[data-theme="fall2"] .aq-card {
+    background: linear-gradient(145deg, rgba(71,45,52,.72), rgba(46,31,36,.82));
+    border-color: rgba(113,73,67,.72);
+}
+
+body[data-theme="fall2"] .board-tile[data-accent="plum"] { background: linear-gradient(180deg, #402532, #31202a); }
+body[data-theme="fall2"] .board-tile[data-accent="teal"] { background: linear-gradient(180deg, #203b39, #1c302f); }
+body[data-theme="fall2"] .board-tile[data-accent="blue"] { background: linear-gradient(180deg, #24343e, #202b34); }
+body[data-theme="fall2"] .board-tile[data-accent="rose"] { background: linear-gradient(180deg, #432a29, #342321); }
+body[data-theme="fall2"] .board-tile[data-accent="green"] { background: linear-gradient(180deg, #303629, #272d24); }
+body[data-theme="fall2"] .board-tile[data-accent="orange"] { background: linear-gradient(180deg, #453225, #35291f); }
+
+body[data-theme="fall2"] .day-card { background: linear-gradient(145deg, rgba(61,39,45,.84), rgba(39,27,31,.94)); }
+body[data-theme="fall2"] .link-chip { background: rgba(89, 54, 60, .42); border-color: rgba(122,76,67,.55); box-shadow: none; }
+body[data-theme="fall2"] .link-chip a { color: #e4c7b6; }
+body[data-theme="fall2"] .link-chip a:hover { color: var(--teal-soft); }
+body[data-theme="fall2"] .tile-item-text,
+body[data-theme="fall2"] .task-text,
+body[data-theme="fall2"] .tracker-card-text { color: #d9c2b5; }
+
+/* Database: retired Priority Shelf, full-width links, and two Radar layers. */
+.database-page.page {
+    grid-template-rows: auto 38px minmax(0, 1fr);
+}
+.database-page .database-global-links {
+    min-height: 38px;
+    height: 38px;
+    padding: 5px 8px 5px 10px;
+    border-radius: 10px;
+    box-shadow: none;
+    background: color-mix(in srgb, var(--panel) 94%, var(--bg));
+}
+.database-page .database-global-links .link-chip {
+    padding: 4px 8px;
+    border-radius: 7px;
+    box-shadow: none;
+}
+.database-page .database-global-links .link-add-button { height: 26px; padding: 2px 8px; }
+.database-page .left-rail {
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 10px;
+}
+.database-page .center-workspace {
+    display: grid;
+    grid-template-rows: minmax(0, 1fr);
+    gap: 0;
+}
+.database-page .center-workspace .board-panel { height: 100%; }
+.database-page .panel-header,
+.database-page .date-rail-header { overflow: hidden; align-items: center; }
+.database-page .panel-title { min-width: 0; flex: 0 1 auto; align-items: center; line-height: 1; }
+.database-page .panel-title > span:last-child {
+    min-width: 0;
+    white-space: nowrap !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.15;
+}
+.database-page .panel-subtitle { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.database-page .right-date-rail .panel-title { flex: 1 1 auto; }
+.database-page .near-radar-panel .panel-title > span:first-child { color: var(--plum-soft); }
+
+/* Archive: stretch synthesis to the same bottom edge as the stacked side columns. */
+html.patterns-page-html .patterns-grid { align-items: stretch; }
+html.patterns-page-html .patterns-column {
+    height: calc(100vh - 154px);
+    min-height: 68vh;
+    max-height: calc(100vh - 154px);
+    align-self: stretch;
+}
+
+/* Strain capture: name above notes; compact reveal-on-demand saved entries. */
+html.patterns-page-html .strain-entry-form {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: "name name" "notes add";
+    align-items: end;
+}
+html.patterns-page-html #strainNameInput { grid-area: name; }
+html.patterns-page-html #strainNotesInput { grid-area: notes; }
+html.patterns-page-html #addStrainEntry { grid-area: add; }
+html.patterns-page-html .strain-collapse-toggle {
+    width: 24px;
+    height: 24px;
+    display: grid;
+    place-items: center;
+    border: 1px solid color-mix(in srgb, var(--green) 36%, var(--border));
+    border-radius: 6px;
+    padding: 0;
+    background: color-mix(in srgb, var(--green) 7%, var(--panel-light));
+    color: var(--green-soft);
+    cursor: pointer;
+}
+html.patterns-page-html .strain-collapse-toggle:hover { border-color: var(--green); color: var(--text); }
+html.patterns-page-html .strain-entry-notes[hidden] { display: none !important; }
+html.patterns-page-html .strain-entry-card:not(.expanded) .tracker-card-head { margin-bottom: 0; }
+html.patterns-page-html .strain-column .panel-header { justify-content: flex-start; }
+
+@media (max-width: 760px) {
+    .database-page.page { grid-template-rows: auto auto auto; }
+    .database-page .database-global-links { height: auto; min-height: 44px; }
+    .database-page .left-rail { display: grid; grid-template-rows: auto auto; gap: 9px; }
+    html.patterns-page-html .patterns-column { height: auto; min-height: 520px; max-height: none; }
+    html.patterns-page-html .strain-entry-form { grid-template-columns: 1fr; grid-template-areas: "name" "notes" "add"; }
+}

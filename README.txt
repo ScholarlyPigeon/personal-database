@@ -1,4 +1,4 @@
-PERSONAL DATABASE — POLISHED CLOUD + MOBILE PASS
+PERSONAL INTRANET — POLISHED CLOUD + MOBILE PASS
 
 Files to upload together:
 - index.html
@@ -124,3 +124,16 @@ SEPTEMBER 18 — PIN / COLLAPSE / TIMELINE FOLLOW-UP
 - Archive & Patterns headings shortened to Archive, Patterns, Timeline, and Strains (Day Archive remains unchanged).
 - Timeline markers now have editable date inputs. Existing markers inherit their original local date, new markers default to today, and the list sorts newest date to oldest.
 - Shared cache version bumped to 20260918b.
+
+
+V18 — FALL 2 + RADAR / ARCHIVE REFINEMENT (2026-09-18)
+- Added 🍁 Fall 2: a darker candlelit jewel-tone autumn theme with turquoise/teal accents.
+- Clipboard HTML is sanitized so copied text keeps semantic formatting without carrying PI card/background styling.
+- Database Priority Shelf retired; any remaining Priority items migrate once into On My Radar.
+- Links moved to a calmer full-width strip beneath the Database header.
+- Added Near My Radar as a second synced checklist beneath On My Radar.
+- Calendar items automatically move below unfinished items when checked; unchecking returns them above completed items.
+- Database headers are constrained to one aligned line.
+- Archive Patterns column stretches to the page bottom.
+- Strain capture stacks name above notes; saved strain bodies are collapsed/revealable while names stay visible.
+- Removed the Strains header helper copy to protect header fit.

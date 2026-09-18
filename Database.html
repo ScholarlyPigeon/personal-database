@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Database</title>
-    <link rel="stylesheet" href="Style.css?v=20260918b">
+    <link rel="stylesheet" href="Style.css?v=20260918c">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-    <script src="CloudSync.js?v=20260918b" defer></script>
-    <script src="Script.js?v=20260918b" defer></script>
+    <script src="CloudSync.js?v=20260918c" defer></script>
+    <script src="Script.js?v=20260918c" defer></script>
 </head>
 <body class="database-body" data-theme="dark">
 <div class="page database-page">
@@ -53,6 +53,7 @@
                     <option value="observatory">🔭 Midnight Observatory</option>
                     <option value="nightgarden">🪻 Night Garden</option>
                     <option value="fieldnotes">📓 Universal Field Notes</option>
+                    <option value="fall2">🍁 Fall 2</option>
                 </optgroup>
                 <optgroup label="Retro themes">
                     <option value="y2k">🖥️ Y2K Web Portal</option>
@@ -68,15 +69,10 @@
         </div>
     </header>
 
-    <section class="panel focus-panel priority-spotlight-panel">
-        <div class="panel-header priority-spotlight-header">
-            <div class="panel-title"><span>✦</span><span class="editable-ui" contenteditable="true" data-ui-save="focus-title">Priority Shelf</span></div>
-            <div class="priority-spotlight-head-right">
-                <span class="priority-signal-label" aria-hidden="true">NOW / SIGNAL BOOST</span>
-                <div class="panel-subtitle editable-ui" contenteditable="true" data-ui-save="focus-subtitle">drag any individual line here when it deserves the front row</div>
-            </div>
-        </div>
-        <div id="priorityShelf" class="priority-shelf scroll-plum" data-priority-zone="true"></div>
+    <section class="link-strip database-global-links">
+        <div class="link-strip-label editable-ui" contenteditable="true" data-ui-save="links-title">🔗 Links</div>
+        <div id="linksContainer" class="links-container"></div>
+        <button id="addLinkButton" class="link-add-button" type="button" title="Add a new link">+ link</button>
     </section>
 
     <div class="content-shell database-grid">
@@ -95,20 +91,29 @@
                     </div>
                 </div>
             </section>
+
+            <section class="panel checklist-panel near-radar-panel">
+                <div class="panel-header">
+                    <div class="panel-title"><span>◌</span><span class="editable-ui" contenteditable="true" data-ui-save="near-radar-title">Near My Radar</span></div>
+                    <div class="panel-subtitle editable-ui" contenteditable="true" data-ui-save="near-radar-subtitle">worth keeping close · not urgent yet</div>
+                </div>
+
+                <div class="checklist-body">
+                    <div id="nearRadarList" class="checklist-list scroll-plum"></div>
+                    <div class="checklist-entry radar-entry">
+                        <textarea id="nearRadarInput" class="checklist-input radar-input auto-grow-textarea" rows="1" data-autogrow="true" placeholder="Keep nearby..."></textarea>
+                        <button id="addNearRadar" class="checklist-add radar-add" type="button">Add</button>
+                    </div>
+                </div>
+            </section>
         </aside>
 
         <main class="center-workspace">
-            <section class="link-strip">
-                <div class="link-strip-label editable-ui" contenteditable="true" data-ui-save="links-title">🔗 Links</div>
-                <div id="linksContainer" class="links-container"></div>
-                <button id="addLinkButton" class="link-add-button" type="button" title="Add a new link">+ link</button>
-            </section>
-
             <section class="panel board-panel">
                 <div class="panel-header">
                     <div class="panel-title"><span>🗂️</span><span class="editable-ui" contenteditable="true" data-ui-save="main-board-title">Main Board</span></div>
                     <div class="board-header-actions">
-                        <div class="panel-subtitle editable-ui" contenteditable="true" data-ui-save="main-board-subtitle">drag tiles by ⋮⋮ · move priority tiles up top · drag lines between tiles</div>
+                        <div class="panel-subtitle editable-ui" contenteditable="true" data-ui-save="main-board-subtitle">drag tiles by ⋮⋮ · move lines between tiles and lists</div>
                         <button id="addTileButton" class="small-button board-add-tile" type="button" title="Add a new Main Board tile">+ tile</button>
                     </div>
                 </div>
