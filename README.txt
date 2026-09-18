@@ -5,6 +5,8 @@ Files to upload together:
 - Database.html
 - Aquarium.html
 - Patterns.html
+- Almanac.html
+- Longform.html
 - neopets.html
 - Script.js
 - Style.css
@@ -137,3 +139,18 @@ V18 — FALL 2 + RADAR / ARCHIVE REFINEMENT (2026-09-18)
 - Archive Patterns column stretches to the page bottom.
 - Strain capture stacks name above notes; saved strain bodies are collapsed/revealable while names stay visible.
 - Removed the Strains header helper copy to protect header fit.
+
+
+V19 — QUIETER ROOMS + ARCHIVE DESK + PERSONAL ALMANAC (2026-09-18)
+- Fall 2 now uses stronger jewel-tone panel/tile differentiation across Database, Aquarium, Longform, Archive, and the new Almanac, while retaining teal/turquoise accents.
+- Added a shared synced header-only collapse system for sensible major sections. Radar/Near Radar, Aquarium capture, Longform panes, Neopets major cards, Archive panels, and Almanac panels can now be folded down.
+- Added clean category managers to Aquarium and Longform. Aquarium categories can be added, renamed, recolored, moved between sections, or removed. Longform categories can be added, renamed, recolored, or removed; entries safely fall back to another category when one is deleted.
+- Rebuilt Archive & Patterns into three working areas: historical archives on the left, a rich-text Notes desk in the middle, and Patterns over Timeline on the right.
+- Notes, Patterns, and Timeline now share one movable ecosystem. Every saved card has a title, editable date, foldable rich body, and destination selector so items can move between the three without being recreated.
+- Existing Pattern and Timeline records migrate once into the new workspace key; legacy keys are left untouched as a safety copy.
+- Removed Strain Journal from Archive & Patterns. Its original pigeonhole-v15-strain-journal storage key is now read by Almanac, so existing strain entries move pages without data re-entry.
+- Added Almanac.html: Meals I Make, Dailies, Quotes & Understandings, Current Rotation, Restock, Wish List, and Strain Journal.
+- Almanac rich cards and strain entries collapse to headers; Dailies and Restock include reset-check controls.
+- Added Almanac to the shared page navigation on every page.
+- Shared cache version bumped to 20260918d.
+- Safe Sync V2 / Supabase structure unchanged.

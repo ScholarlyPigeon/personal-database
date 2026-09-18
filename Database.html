@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Database</title>
-    <link rel="stylesheet" href="Style.css?v=20260918c">
+    <link rel="stylesheet" href="Style.css?v=20260918d">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-    <script src="CloudSync.js?v=20260918c" defer></script>
-    <script src="Script.js?v=20260918c" defer></script>
+    <script src="CloudSync.js?v=20260918d" defer></script>
+    <script src="Script.js?v=20260918d" defer></script>
 </head>
 <body class="database-body" data-theme="dark">
 <div class="page database-page">
@@ -35,6 +35,7 @@
                     <a href="Database.html" class="current" aria-current="page">🗃 Database</a>
                     <a href="Aquarium.html">🪼 Aquarium</a>
                     <a href="Patterns.html">🧭 Archives</a>
+                    <a href="Almanac.html">📖 Almanac</a>
                     <a href="Longform.html">✎ Longform</a>
                     <a href="neopets.html">✦ Neopets</a>
                 </nav>
@@ -77,13 +78,13 @@
 
     <div class="content-shell database-grid">
         <aside class="left-rail">
-            <section class="panel checklist-panel">
+            <section class="panel checklist-panel" data-collapsible-panel="database-radar">
                 <div class="panel-header">
                     <div class="panel-title"><span>📡</span><span class="editable-ui" contenteditable="true" data-ui-save="radar-title">On My Radar</span></div>
                     <div class="panel-subtitle editable-ui" contenteditable="true" data-ui-save="radar-subtitle">editable · moveable checklist</div>
                 </div>
 
-                <div class="checklist-body">
+                <div class="checklist-body" data-collapse-body>
                     <div id="radarList" class="checklist-list scroll-teal"></div>
                     <div class="checklist-entry radar-entry">
                         <textarea id="radarInput" class="checklist-input radar-input auto-grow-textarea" rows="1" data-autogrow="true" placeholder="Add to radar..."></textarea>
@@ -92,13 +93,13 @@
                 </div>
             </section>
 
-            <section class="panel checklist-panel near-radar-panel">
+            <section class="panel checklist-panel near-radar-panel" data-collapsible-panel="database-near-radar">
                 <div class="panel-header">
                     <div class="panel-title"><span>◌</span><span class="editable-ui" contenteditable="true" data-ui-save="near-radar-title">Near My Radar</span></div>
                     <div class="panel-subtitle editable-ui" contenteditable="true" data-ui-save="near-radar-subtitle">worth keeping close · not urgent yet</div>
                 </div>
 
-                <div class="checklist-body">
+                <div class="checklist-body" data-collapse-body>
                     <div id="nearRadarList" class="checklist-list scroll-plum"></div>
                     <div class="checklist-entry radar-entry">
                         <textarea id="nearRadarInput" class="checklist-input radar-input auto-grow-textarea" rows="1" data-autogrow="true" placeholder="Keep nearby..."></textarea>

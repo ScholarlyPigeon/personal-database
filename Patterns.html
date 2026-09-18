@@ -4,19 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Archive & Patterns</title>
-    <link rel="stylesheet" href="Style.css?v=20260918c">
+    <link rel="stylesheet" href="Style.css?v=20260918d">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="CloudSync.js?v=20260918c" defer></script>
-<script src="Script.js?v=20260918c" defer></script>
+    <script src="CloudSync.js?v=20260918d" defer></script>
+    <script src="Script.js?v=20260918d" defer></script>
 </head>
 <body data-default-theme="study">
-<div class="patterns-page" id="patternsApp">
+<div class="patterns-page archive-v2-page" id="archiveApp">
     <header class="patterns-header">
         <div class="brand">
             <div class="pigeon-mark" aria-hidden="true">🧭</div>
             <div>
                 <h1>Archive & Patterns</h1>
-                <div class="subtitle">what happened · what keeps returning · what it might mean</div>
+                <div class="subtitle">history on the left · thinking desk in the middle · meaning on the right</div>
             </div>
         </div>
 
@@ -29,106 +29,367 @@
                     <a href="Database.html">🗃 Database</a>
                     <a href="Aquarium.html">🪼 Aquarium</a>
                     <a href="Patterns.html" class="current" aria-current="page">🧭 Archives</a>
+                    <a href="Almanac.html">📖 Almanac</a>
                     <a href="Longform.html">✎ Longform</a>
                     <a href="neopets.html">✦ Neopets</a>
                 </nav>
             </details>
-                            <button class="small-button selection-mode-button" id="selectModeButton" type="button">select</button>
+            <button class="small-button selection-mode-button" id="selectModeButton" type="button">select</button>
             <button class="small-button selection-action-button" id="selectionActionButton" type="button" hidden>delete selected</button>
-            <select id="themeSelect" class="theme-select" aria-label="Theme">
-                <optgroup label="Dark themes">
-                    <option value="dark">🌙 Dark Original</option>
-                    <option value="aquarium">🐠 Dark Teal Celestial Aquarium</option>
-                    <option value="observatory">🔭 Midnight Observatory</option>
-                    <option value="nightgarden">🪻 Night Garden</option>
-                    <option value="fieldnotes">📓 Universal Field Notes</option>
-                    <option value="fall2">🍁 Fall 2</option>
-                </optgroup>
-                <optgroup label="Retro themes">
-                    <option value="y2k">🖥️ Y2K Web Portal</option>
-                </optgroup>
-                <optgroup label="Light themes">
-                    <option value="cozy">💿 Cozy 2000s</option>
-                    <option value="green">🌿 Full Green</option>
-                    <option value="fall">🍂 Fall</option>
-                    <option value="study">📜 Study</option>
-                </optgroup>
-            </select>
+            <select id="themeSelect" class="theme-select" aria-label="Theme"></select>
         </div>
     </header>
 
     <section class="patterns-intro panel">
         <div>
             <strong>Archive = evidence, not obligation.</strong>
-            <span>History on the left · interpretation in the middle · markers and tracking on the right.</span>
+            <span>Write once, then let an idea move between Notes, Patterns, and Timeline as its meaning changes.</span>
         </div>
         <div id="archiveSummary" class="archive-summary"></div>
     </section>
 
-    <main class="patterns-grid">
-        <div class="patterns-stack archive-stack">
-            <section class="panel archive-column day-archive-column">
+    <main class="patterns-grid archive-v2-grid">
+        <div class="patterns-stack archive-stack archive-v2-stack">
+            <section class="panel archive-column day-archive-column" data-collapsible-panel="archive-days">
                 <div class="panel-header">
                     <div class="panel-title"><span>🗓️</span><span>Day Archive</span></div>
-                    <div class="panel-subtitle">whole-day snapshots · newest first</div>
+                    <div class="panel-subtitle">newest first</div>
                 </div>
-                <div id="dayArchiveList" class="archive-list scroll-blue"></div>
+                <div id="dayArchiveList" class="archive-list scroll-blue" data-collapse-body></div>
             </section>
 
-            <section class="panel archive-column item-archive-column">
+            <section class="panel archive-column item-archive-column" data-collapsible-panel="archive-items">
                 <div class="panel-header">
                     <div class="panel-title"><span>📦</span><span>Archive</span></div>
-                    <div class="panel-subtitle">things deliberately moved out of active space</div>
+                    <div class="panel-subtitle">moved out of active space</div>
                 </div>
-                <div id="itemArchiveList" class="archive-list scroll-teal"></div>
+                <div id="itemArchiveList" class="archive-list scroll-teal" data-collapse-body></div>
             </section>
         </div>
 
-        <section class="panel patterns-column">
-            <div class="panel-header">
-                <div class="panel-title"><span>🧭</span><span>Patterns</span></div>
-                <div class="panel-subtitle">your synthesis layer · editable + reorderable</div>
+        <section class="panel archive-notes-column" data-collapsible-panel="archive-notes-desk">
+            <div class="panel-header archive-v2-panel-head">
+                <div class="panel-title"><span>✎</span><span>Notes</span></div>
+                <div class="panel-subtitle">capture here · move later</div>
             </div>
-            <div class="patterns-column-body">
-                <div id="patternNotesList" class="pattern-notes-list scroll-plum"></div>
-                <div class="pattern-entry">
-                    <textarea id="patternInput" class="auto-grow-textarea" data-autogrow="true" rows="1" placeholder="Add a pattern, theme, question, or connection..."></textarea>
-                    <button id="addPattern" class="checklist-add">Add</button>
+            <div class="archive-notes-body" data-collapse-body>
+                <div class="archive-note-composer">
+                    <div class="archive-note-compose-row">
+                        <input id="archiveWorkspaceTitle" type="text" maxlength="180" placeholder="Title this thought…" aria-label="Note title">
+                        <select id="archiveWorkspaceZone" aria-label="Save to">
+                            <option value="notes">Notes</option>
+                            <option value="patterns">Patterns</option>
+                            <option value="timeline">Timeline</option>
+                        </select>
+                        <input id="archiveWorkspaceDate" type="date" aria-label="Date">
+                    </div>
+                    <div id="archiveWorkspaceBody" class="archive-rich-input" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="Write the body here. Ctrl/Cmd + B, I, U work here too."></div>
+                    <div class="archive-note-submit-row">
+                        <span>Ctrl/Cmd + Enter saves · destination can change later</span>
+                        <button id="saveArchiveWorkspaceItem" class="checklist-add" type="button">save note</button>
+                    </div>
                 </div>
-                <div class="patterns-hint">Examples: “What keeps working?” · “What drains me repeatedly?” · “What changed after that?” · “What is the same problem wearing different hats?”</div>
+                <div id="archiveNotesList" class="archive-workspace-list scroll-plum"></div>
             </div>
         </section>
 
-        <div class="patterns-stack tracker-stack">
-            <section class="panel tracker-column timeline-column">
+        <div class="patterns-stack insight-stack archive-v2-stack">
+            <section class="panel archive-insight-panel patterns-insight-panel" data-collapsible-panel="archive-patterns">
                 <div class="panel-header">
-                    <div class="panel-title"><span>📍</span><span>Timeline</span></div>
-                    <div class="panel-subtitle">firsts · shifts · starts · endings · turning points</div>
+                    <div class="panel-title"><span>🧩</span><span>Patterns</span></div>
+                    <div class="panel-subtitle">what keeps repeating</div>
                 </div>
-                <div class="tracker-body">
-                    <div id="timelineMarkersList" class="tracker-list scroll-orange"></div>
-                    <div class="tracker-entry-row">
-                        <textarea id="timelineMarkerInput" class="auto-grow-textarea tracker-input" data-autogrow="true" rows="1" placeholder="Something changed here..."></textarea>
-                        <button id="addTimelineMarker" class="checklist-add">Add</button>
-                    </div>
-                </div>
+                <div id="archivePatternsList" class="archive-workspace-list scroll-plum" data-collapse-body></div>
             </section>
 
-            <section class="panel tracker-column strain-column">
+            <section class="panel archive-insight-panel timeline-insight-panel" data-collapsible-panel="archive-timeline">
                 <div class="panel-header">
-                    <div class="panel-title"><span>🌿</span><span>Strains</span></div>
+                    <div class="panel-title"><span>📍</span><span>Timeline</span></div>
+                    <div class="panel-subtitle">turning points · newest first</div>
                 </div>
-                <div class="tracker-body strain-tracker-body">
-                    <div id="strainJournalList" class="tracker-list scroll-green"></div>
-                    <div class="strain-entry-form">
-                        <input id="strainNameInput" class="tracker-text-input" type="text" placeholder="Strain / product">
-                        <textarea id="strainNotesInput" class="auto-grow-textarea tracker-input" data-autogrow="true" rows="1" placeholder="Effects, setting, what I did, anything worth remembering..."></textarea>
-                        <button id="addStrainEntry" class="checklist-add">Add entry</button>
-                    </div>
-                </div>
+                <div id="archiveTimelineList" class="archive-workspace-list scroll-orange" data-collapse-body></div>
             </section>
         </div>
     </main>
 </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const WORKSPACE_KEY = "pigeonhole-archive-workspace-v1";
+    const WORKSPACE_MIGRATION_KEY = "pigeonhole-archive-workspace-migrated-v1";
+    const LEGACY_PATTERN_KEY = "pigeonhole-v10-pattern-notes";
+    const LEGACY_TIMELINE_KEY = "pigeonhole-v15-timeline-markers";
+    const ZONES = [
+        { id: "notes", label: "Notes", accent: "teal" },
+        { id: "patterns", label: "Patterns", accent: "plum" },
+        { id: "timeline", label: "Timeline", accent: "orange" }
+    ];
+
+    const dayArchiveList = document.getElementById("dayArchiveList");
+    const itemArchiveList = document.getElementById("itemArchiveList");
+    const archiveSummary = document.getElementById("archiveSummary");
+    const titleInput = document.getElementById("archiveWorkspaceTitle");
+    const zoneInput = document.getElementById("archiveWorkspaceZone");
+    const dateInput = document.getElementById("archiveWorkspaceDate");
+    const bodyInput = document.getElementById("archiveWorkspaceBody");
+    const saveButton = document.getElementById("saveArchiveWorkspaceItem");
+    const lists = {
+        notes: document.getElementById("archiveNotesList"),
+        patterns: document.getElementById("archivePatternsList"),
+        timeline: document.getElementById("archiveTimelineList")
+    };
+
+    const plainToHtml = value => {
+        const temp = document.createElement("div");
+        temp.textContent = String(value || "");
+        return temp.innerHTML.replace(/\n/g, "<br>");
+    };
+    const htmlToPlain = value => {
+        const temp = document.createElement("div");
+        temp.innerHTML = String(value || "");
+        return temp.innerText || temp.textContent || "";
+    };
+    const readArray = key => {
+        try {
+            const value = JSON.parse(localStorage.getItem(key) || "[]");
+            return Array.isArray(value) ? value : [];
+        } catch { return []; }
+    };
+    const workspaceId = prefix => (globalThis.crypto && crypto.randomUUID)
+        ? `${prefix}-${crypto.randomUUID()}`
+        : `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
+    const itemDate = item => /^\d{4}-\d{2}-\d{2}$/.test(item?.date || "")
+        ? item.date
+        : makeLocalIsoDate(item?.createdAt ? new Date(item.createdAt) : new Date());
+    const zoneLabel = id => ZONES.find(zone => zone.id === id)?.label || "Notes";
+    const zoneAccent = id => ZONES.find(zone => zone.id === id)?.accent || "teal";
+
+    function normalizeItem(item) {
+        const zone = ZONES.some(candidate => candidate.id === item?.zone) ? item.zone : "notes";
+        const text = typeof item?.text === "string" ? item.text : htmlToPlain(item?.html || "");
+        return {
+            id: typeof item?.id === "string" ? item.id : workspaceId("insight"),
+            zone,
+            title: typeof item?.title === "string" && item.title.trim() ? item.title.trim() : (text.trim().slice(0, 120) || "Untitled"),
+            text,
+            html: typeof item?.html === "string" ? item.html : plainToHtml(text),
+            date: itemDate(item),
+            createdAt: typeof item?.createdAt === "string" ? item.createdAt : new Date().toISOString(),
+            expanded: Boolean(item?.expanded)
+        };
+    }
+
+    function readWorkspace() {
+        try {
+            const saved = JSON.parse(localStorage.getItem(WORKSPACE_KEY) || "[]");
+            return Array.isArray(saved) ? saved.map(normalizeItem) : [];
+        } catch { return []; }
+    }
+
+    let workspace = readWorkspace();
+
+    function migrateLegacyOnce() {
+        if (localStorage.getItem(WORKSPACE_MIGRATION_KEY) === "true") return;
+        const patterns = readArray(LEGACY_PATTERN_KEY);
+        const timeline = readArray(LEGACY_TIMELINE_KEY);
+        const existingIds = new Set(workspace.map(item => item.id));
+
+        patterns.forEach(note => {
+            if (!note || existingIds.has(note.id)) return;
+            workspace.push(normalizeItem({
+                id: note.id || workspaceId("pattern"),
+                zone: "patterns",
+                title: String(note.text || "Pattern").trim() || "Pattern",
+                text: "",
+                html: "",
+                createdAt: note.createdAt || new Date().toISOString(),
+                date: itemDate(note)
+            }));
+        });
+        timeline.forEach(marker => {
+            if (!marker || existingIds.has(marker.id)) return;
+            workspace.push(normalizeItem({
+                id: marker.id || workspaceId("timeline"),
+                zone: "timeline",
+                title: String(marker.text || "Timeline marker").trim() || "Timeline marker",
+                text: "",
+                html: "",
+                createdAt: marker.createdAt || new Date().toISOString(),
+                date: marker.date || itemDate(marker)
+            }));
+        });
+        localStorage.setItem(WORKSPACE_MIGRATION_KEY, "true");
+        saveWorkspace(false);
+    }
+
+    function saveWorkspace(announce = true) {
+        localStorage.setItem(WORKSPACE_KEY, JSON.stringify(workspace));
+        if (announce) showSaved();
+    }
+
+    function emptyMessage(text) {
+        const empty = document.createElement("div");
+        empty.className = "archive-empty";
+        empty.textContent = text;
+        return empty;
+    }
+
+    function formatDate(value) {
+        if (!value) return "date unknown";
+        const date = /^\d{4}-\d{2}-\d{2}$/.test(value) ? new Date(`${value}T12:00:00`) : new Date(value);
+        if (Number.isNaN(date.getTime())) return value;
+        return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    }
+
+    function renderArchiveHistory() {
+        const records = readArchiveRecords();
+        const days = records.filter(record => record.recordType === "day")
+            .sort((a,b) => String(b.originalDate || "").localeCompare(String(a.originalDate || "")));
+        const items = records.filter(record => record.recordType === "item")
+            .sort((a,b) => String(b.archivedAt || "").localeCompare(String(a.archivedAt || "")));
+        archiveSummary.textContent = `${days.length} day snapshot${days.length === 1 ? "" : "s"} · ${items.length} archived item${items.length === 1 ? "" : "s"} · ${workspace.length} working note${workspace.length === 1 ? "" : "s"}`;
+        dayArchiveList.innerHTML = "";
+        itemArchiveList.innerHTML = "";
+
+        if (!days.length) dayArchiveList.appendChild(emptyMessage("Past days will collect here as they roll off the active calendar."));
+        days.forEach(record => {
+            const card = document.createElement("article");
+            card.className = "archive-card day-archive-card";
+            const head = document.createElement("div"); head.className = "archive-card-head";
+            const title = document.createElement("div"); title.className = "archive-card-title"; title.textContent = record.displayLabel || formatDate(record.originalDate);
+            const selector = makeSelectionControl(selectionKey("archive-day", record.id), "Select this archived day");
+            const remove = document.createElement("button"); remove.className = "archive-remove"; remove.type = "button"; remove.textContent = "×"; remove.title = "Delete archived day permanently";
+            remove.addEventListener("click", () => {
+                saveArchiveRecords(readArchiveRecords().filter(item => item.id !== record.id), false);
+                renderArchiveHistory(); showSaved();
+            });
+            const actions = document.createElement("div"); actions.className = "archive-head-actions"; actions.append(selector, remove); head.append(title, actions);
+            const list = document.createElement("div"); list.className = "archived-day-items";
+            (Array.isArray(record.items) ? record.items : []).forEach((item, index) => {
+                const row = document.createElement("div"); row.className = "archived-day-item" + (item.done ? " was-done" : "");
+                const wrap = document.createElement("label"); wrap.className = "check-wrap archive-day-check";
+                const check = document.createElement("input"); check.type = "checkbox"; check.checked = Boolean(item.done);
+                check.addEventListener("change", () => {
+                    const all = readArchiveRecords(); const live = all.find(candidate => candidate.id === record.id);
+                    if (!live?.items?.[index]) return; live.items[index].done = check.checked; saveArchiveRecords(all, true); row.classList.toggle("was-done", check.checked);
+                });
+                wrap.appendChild(check); const text = document.createElement("span"); text.className = "archived-day-item-text"; text.textContent = item.text;
+                row.append(wrap, text); list.appendChild(row);
+            });
+            card.append(head, list); dayArchiveList.appendChild(card);
+        });
+
+        if (!items.length) itemArchiveList.appendChild(emptyMessage("Anything deliberately archived from the active pages lands here."));
+        items.forEach(record => {
+            const card = document.createElement("article"); card.className = "archive-card item-archive-card";
+            const head = document.createElement("div"); head.className = "archive-card-head";
+            const source = document.createElement("div"); source.className = "archive-source"; source.textContent = [record.source, record.context].filter(Boolean).join(" · ") || "Archived item";
+            const selector = makeSelectionControl(selectionKey("archive-item", record.id), "Select this archived item");
+            const remove = document.createElement("button"); remove.className = "archive-remove"; remove.type = "button"; remove.textContent = "×"; remove.title = "Delete archived item permanently";
+            remove.addEventListener("click", () => { saveArchiveRecords(readArchiveRecords().filter(item => item.id !== record.id), false); renderArchiveHistory(); showSaved(); });
+            const actions = document.createElement("div"); actions.className = "archive-head-actions"; actions.append(selector, remove); head.append(source, actions);
+            const text = document.createElement("div"); text.className = "archive-item-text"; text.textContent = record.text || "";
+            const meta = document.createElement("div"); meta.className = "archive-card-meta"; meta.textContent = `archived ${formatDate(record.archivedAt)}`;
+            card.append(head, text, meta); itemArchiveList.appendChild(card);
+        });
+    }
+
+    function makeWorkspaceCard(item) {
+        const card = document.createElement("article");
+        card.className = "archive-workspace-card" + (item.expanded ? " expanded" : "");
+        card.dataset.zone = item.zone;
+        card.dataset.accent = zoneAccent(item.zone);
+        const head = document.createElement("div"); head.className = "archive-workspace-card-head";
+        const title = document.createElement("div"); title.className = "archive-workspace-card-title"; title.contentEditable = "true"; title.spellcheck = true; title.textContent = item.title || "Untitled";
+        title.addEventListener("input", () => { item.title = title.innerText.trim() || "Untitled"; saveWorkspace(); });
+        title.addEventListener("keydown", event => { if (event.key === "Enter") { event.preventDefault(); title.blur(); } });
+
+        const controls = document.createElement("div"); controls.className = "archive-workspace-card-controls";
+        const date = document.createElement("input"); date.type = "date"; date.className = "archive-workspace-date"; date.value = item.date; date.title = "Date";
+        date.addEventListener("change", () => { if (!date.value) return; item.date = date.value; saveWorkspace(false); renderWorkspace(); showSaved(); });
+        const zone = document.createElement("select"); zone.className = "archive-workspace-zone"; zone.title = "Move between Notes, Patterns, and Timeline";
+        ZONES.forEach(optionData => { const option = document.createElement("option"); option.value = optionData.id; option.textContent = optionData.label; zone.appendChild(option); });
+        zone.value = item.zone;
+        zone.addEventListener("change", () => { item.zone = zone.value; saveWorkspace(false); renderWorkspace(); showSaved(); });
+        const toggle = document.createElement("button"); toggle.type = "button"; toggle.className = "archive-workspace-toggle"; toggle.textContent = item.expanded ? "▾" : "▸"; toggle.title = item.expanded ? "Collapse body" : "Reveal body";
+        toggle.addEventListener("click", () => { item.expanded = !item.expanded; saveWorkspace(false); renderWorkspace(); showSaved(); });
+        const selector = makeSelectionControl(selectionKey("archive-workspace", item.id), "Select this note");
+        const remove = document.createElement("button"); remove.type = "button"; remove.className = "archive-remove"; remove.textContent = "×"; remove.title = "Delete working note";
+        remove.addEventListener("click", () => { workspace = workspace.filter(candidate => candidate.id !== item.id); saveWorkspace(false); renderWorkspace(); renderArchiveHistory(); showSaved(); });
+        controls.append(date, zone, toggle, selector, remove); head.append(title, controls);
+
+        const body = document.createElement("div"); body.className = "archive-workspace-card-body"; body.contentEditable = "true"; body.spellcheck = true; body.innerHTML = item.html || plainToHtml(item.text); body.hidden = !item.expanded; body.dataset.placeholder = "Add body text…";
+        body.addEventListener("input", () => { item.html = body.innerHTML; item.text = body.innerText; saveWorkspace(); });
+        card.append(head, body);
+        return card;
+    }
+
+    function renderWorkspace() {
+        Object.values(lists).forEach(list => { list.innerHTML = ""; });
+        ZONES.forEach(zone => {
+            let items = workspace.filter(item => item.zone === zone.id);
+            items = [...items].sort((a,b) => {
+                if (zone.id === "timeline") {
+                    const byDate = String(b.date || "").localeCompare(String(a.date || ""));
+                    if (byDate) return byDate;
+                }
+                return String(b.createdAt || "").localeCompare(String(a.createdAt || ""));
+            });
+            if (!items.length) {
+                const messages = {
+                    notes: "Saved notes will stack here beneath the writing desk.",
+                    patterns: "When something keeps repeating, move it here.",
+                    timeline: "Turning points and milestones can live here."
+                };
+                lists[zone.id].appendChild(emptyMessage(messages[zone.id]));
+            } else {
+                items.forEach(item => lists[zone.id].appendChild(makeWorkspaceCard(item)));
+            }
+        });
+    }
+
+    function saveNewWorkspaceItem() {
+        const title = titleInput.value.trim();
+        const text = bodyInput.innerText.trim();
+        const html = bodyInput.innerHTML.trim();
+        if (!title && !text) { titleInput.focus(); return; }
+        workspace.unshift(normalizeItem({
+            id: workspaceId("insight"), zone: zoneInput.value, title: title || text.slice(0,120) || "Untitled",
+            text, html, date: dateInput.value || makeLocalIsoDate(), createdAt: new Date().toISOString(), expanded: false
+        }));
+        titleInput.value = ""; bodyInput.innerHTML = ""; dateInput.value = makeLocalIsoDate(); zoneInput.value = "notes";
+        saveWorkspace(false); renderWorkspace(); renderArchiveHistory(); showSaved(); titleInput.focus();
+    }
+
+    migrateLegacyOnce();
+    dateInput.value = makeLocalIsoDate();
+    saveButton.addEventListener("click", saveNewWorkspaceItem);
+    bodyInput.addEventListener("keydown", event => { if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) { event.preventDefault(); saveNewWorkspaceItem(); } });
+
+    configureSelectionAction("delete selected", selected => {
+        const archiveIds = new Set(); const workspaceIds = new Set();
+        selected.forEach(key => {
+            const [scope, id] = String(key).split("::");
+            if ((scope === "archive-day" || scope === "archive-item") && id) archiveIds.add(id);
+            if (scope === "archive-workspace" && id) workspaceIds.add(id);
+        });
+        const count = archiveIds.size + workspaceIds.size;
+        if (!count) return false;
+        if (!window.confirm(`Permanently delete ${count} selected item${count === 1 ? "" : "s"}?`)) return false;
+        if (archiveIds.size) saveArchiveRecords(readArchiveRecords().filter(record => !archiveIds.has(record.id)), false);
+        if (workspaceIds.size) { workspace = workspace.filter(item => !workspaceIds.has(item.id)); saveWorkspace(false); }
+        renderArchiveHistory(); renderWorkspace(); showSaved(); return true;
+    });
+
+    window.addEventListener("storage", event => {
+        if (event.key === ARCHIVE_STORAGE_KEY) renderArchiveHistory();
+        if (event.key === WORKSPACE_KEY) { workspace = readWorkspace(); renderWorkspace(); renderArchiveHistory(); }
+    });
+
+    renderArchiveHistory();
+    renderWorkspace();
+    window.PigeonholeBindCollapsiblePanels?.();
+});
+</script>
 </body>
 </html>

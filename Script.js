@@ -260,6 +260,74 @@ document.addEventListener("click", event => {
 }, true);
 
 /* =========================================================
+   SHARED COLLAPSIBLE PANELS
+   Opt-in sections can fold to a header-only state. Collapse
+   choices use a synced pigeonhole-* key so the quieter view
+   follows the user between devices.
+   ========================================================= */
+const PANEL_COLLAPSE_KEY = "pigeonhole-ui-panel-collapse-v1";
+
+function readPanelCollapseState() {
+    try {
+        const saved = JSON.parse(localStorage.getItem(PANEL_COLLAPSE_KEY) || "{}");
+        return saved && typeof saved === "object" && !Array.isArray(saved) ? saved : {};
+    } catch {
+        return {};
+    }
+}
+
+function writePanelCollapseState(state) {
+    localStorage.setItem(PANEL_COLLAPSE_KEY, JSON.stringify(state));
+    if (typeof showSaved === "function") showSaved();
+}
+
+function bindCollapsiblePanels(root = document) {
+    const state = readPanelCollapseState();
+    root.querySelectorAll?.("[data-collapsible-panel]").forEach(panel => {
+        if (panel.dataset.collapseBound === "true") return;
+        const id = panel.dataset.collapsiblePanel;
+        if (!id) return;
+
+        const header = panel.querySelector(
+            ":scope > .panel-header, :scope > .aq-panel-head, :scope > .longform-library-head, :scope > .longform-composer-head, :scope > .neo-panel-heading, :scope > .neo-dailies-head, :scope > .almanac-panel-head, :scope > .archive-v2-panel-head"
+        );
+        const bodies = [...panel.querySelectorAll(":scope > [data-collapse-body]")];
+        if (!header || !bodies.length) return;
+
+        panel.dataset.collapseBound = "true";
+        let toggle = header.querySelector(":scope > .panel-collapse-toggle");
+        if (!toggle) {
+            toggle = document.createElement("button");
+            toggle.type = "button";
+            toggle.className = "panel-collapse-toggle";
+            toggle.setAttribute("aria-label", "Collapse section");
+            toggle.title = "Collapse / expand";
+            header.appendChild(toggle);
+        }
+
+        const apply = collapsed => {
+            panel.classList.toggle("is-collapsed", collapsed);
+            bodies.forEach(body => { body.hidden = collapsed; });
+            toggle.textContent = collapsed ? "▸" : "▾";
+            toggle.setAttribute("aria-expanded", String(!collapsed));
+            toggle.setAttribute("aria-label", collapsed ? "Expand section" : "Collapse section");
+        };
+
+        apply(Boolean(state[id]));
+        toggle.addEventListener("click", event => {
+            event.preventDefault();
+            event.stopPropagation();
+            state[id] = !panel.classList.contains("is-collapsed");
+            apply(Boolean(state[id]));
+            writePanelCollapseState(state);
+        });
+    });
+}
+
+document.addEventListener("DOMContentLoaded", () => bindCollapsiblePanels());
+window.PigeonholeBindCollapsiblePanels = bindCollapsiblePanels;
+
+/* =========================================================
    SHARED RICH-TEXT KEYBOARD SHORTCUTS
    Ctrl/Cmd+B, I and U work on contenteditable writing surfaces.
    Ctrl/Cmd+Shift+X adds/removes strikethrough. Plain text inputs
@@ -3324,6 +3392,101 @@ if (document.getElementById("aquariumApp")) {
         });
     }
 
+    function openAquariumCategoryManager() {
+        const backdrop = document.createElement("div");
+        backdrop.className = "category-manager-backdrop open";
+        const card = document.createElement("div");
+        card.className = "category-manager-card category-manager-aquarium";
+        card.innerHTML = `
+            <div class="category-manager-head"><div><strong>Aquarium categories</strong><span>Rename, recolor, move between depths, add, or remove.</span></div><button type="button" class="category-manager-close">×</button></div>
+            <div class="category-manager-list"></div>
+            <div class="category-manager-footer"><button type="button" class="small-button category-manager-add">+ category</button><button type="button" class="small-button category-manager-done">done</button></div>
+        `;
+        backdrop.appendChild(card);
+        document.body.appendChild(backdrop);
+        const list = card.querySelector(".category-manager-list");
+
+        const repaint = () => {
+            list.innerHTML = "";
+            aquariumState.categories.forEach((category, index) => {
+                const row = document.createElement("div");
+                row.className = "category-manager-row aquarium-category-manager-row";
+
+                const name = document.createElement("input");
+                name.type = "text";
+                name.value = category.name;
+                name.setAttribute("aria-label", "Category name");
+                name.addEventListener("change", () => {
+                    category.name = name.value.trim() || "Untitled";
+                    saveAquariumState(false);
+                    renderAquarium();
+                    showSaved();
+                });
+
+                const section = document.createElement("select");
+                section.setAttribute("aria-label", "Aquarium section");
+                aquariumState.sections.forEach(item => {
+                    const option = document.createElement("option");
+                    option.value = item.id;
+                    option.textContent = item.name;
+                    section.appendChild(option);
+                });
+                section.value = category.section;
+                section.addEventListener("change", () => {
+                    category.section = section.value;
+                    saveAquariumState(false);
+                    renderAquarium();
+                    showSaved();
+                });
+
+                const accent = document.createElement("select");
+                accent.setAttribute("aria-label", "Category color");
+                [...new Set(CATEGORY_ACCENT_SEQUENCE)].forEach(value => {
+                    const option = document.createElement("option");
+                    option.value = value;
+                    option.textContent = value;
+                    accent.appendChild(option);
+                });
+                accent.value = category.accent;
+                accent.addEventListener("change", () => {
+                    category.accent = accent.value;
+                    saveAquariumState(false);
+                    renderAquarium();
+                    showSaved();
+                });
+
+                const remove = document.createElement("button");
+                remove.type = "button";
+                remove.className = "category-manager-remove";
+                remove.textContent = "×";
+                remove.title = "Delete category";
+                remove.addEventListener("click", () => {
+                    aquariumState.cards.forEach(aquariumCard => {
+                        if (aquariumCard.zone === category.id) aquariumCard.zone = "inbox";
+                    });
+                    aquariumState.categories.splice(index, 1);
+                    saveAquariumState(false);
+                    renderAquarium();
+                    repaint();
+                    showSaved();
+                });
+
+                row.append(name, section, accent, remove);
+                list.appendChild(row);
+            });
+        };
+
+        const close = () => backdrop.remove();
+        card.querySelector(".category-manager-close").addEventListener("click", close);
+        card.querySelector(".category-manager-done").addEventListener("click", close);
+        backdrop.addEventListener("click", event => { if (event.target === backdrop) close(); });
+        card.querySelector(".category-manager-add").addEventListener("click", () => {
+            addAquariumCategory(aquariumState.sections[0]?.id || "surface");
+            repaint();
+        });
+        repaint();
+    }
+
     const kindPlaceholders = {
         thought: "Put the thought here. You do not have to organize it yet.",
         action: "What actually needs to happen?",
@@ -3375,6 +3538,7 @@ if (document.getElementById("aquariumApp")) {
     });
 
     document.getElementById("addCategoryTop").addEventListener("click", addAquariumCategory);
+    document.getElementById("manageAquariumCategories")?.addEventListener("click", openAquariumCategoryManager);
 
     document.getElementById("archiveDone").addEventListener("click", () => {
         const completed = aquariumState.cards.filter(card => card.done);
@@ -4085,11 +4249,34 @@ if (document.getElementById("patternsApp")) {
    ========================================================= */
 if (document.getElementById("longformApp")) {
     const LONGFORM_STORAGE_KEY = "pigeonhole-longform-v1";
-    const LONGFORM_CATEGORIES = [
-        { id: "important", label: "Important" },
-        { id: "database", label: "Database" },
-        { id: "misc", label: "Misc." }
+    const LONGFORM_CATEGORY_KEY = "pigeonhole-longform-categories-v1";
+    const LONGFORM_CATEGORY_DEFAULTS = [
+        { id: "important", label: "Important", accent: "rose" },
+        { id: "database", label: "Database", accent: "teal" },
+        { id: "misc", label: "Misc.", accent: "plum" }
     ];
+    const LONGFORM_CATEGORY_ACCENTS = ["rose", "teal", "plum", "blue", "green", "orange"];
+
+    function readLongformCategories() {
+        try {
+            const saved = JSON.parse(localStorage.getItem(LONGFORM_CATEGORY_KEY) || "null");
+            if (!Array.isArray(saved) || !saved.length) return LONGFORM_CATEGORY_DEFAULTS.map(item => ({ ...item }));
+            const cleaned = saved
+                .filter(item => item && typeof item.id === "string" && typeof item.label === "string")
+                .map((item, index) => ({
+                    id: item.id,
+                    label: item.label.trim() || "Category",
+                    accent: LONGFORM_CATEGORY_ACCENTS.includes(item.accent)
+                        ? item.accent
+                        : LONGFORM_CATEGORY_ACCENTS[index % LONGFORM_CATEGORY_ACCENTS.length]
+                }));
+            return cleaned.length ? cleaned : LONGFORM_CATEGORY_DEFAULTS.map(item => ({ ...item }));
+        } catch {
+            return LONGFORM_CATEGORY_DEFAULTS.map(item => ({ ...item }));
+        }
+    }
+
+    let longformCategories = readLongformCategories();
 
     const longformList = document.getElementById("longformList");
     const longformInput = document.getElementById("longformInput");
@@ -4099,6 +4286,7 @@ if (document.getElementById("longformApp")) {
     const longformLinkUrl = document.getElementById("longformLinkUrl");
     const saveLongformEntry = document.getElementById("saveLongformEntry");
     const longformFilters = document.getElementById("longformFilters");
+    const manageLongformCategories = document.getElementById("manageLongformCategories");
 
     let activeLongformFilter = "all";
     const expandedLongformIds = new Set();
@@ -4171,7 +4359,7 @@ if (document.getElementById("longformApp")) {
                     html: typeof entry.html === "string"
                         ? entry.html
                         : longformPlainTextToHtml(typeof entry.text === "string" ? entry.text : ""),
-                    category: LONGFORM_CATEGORIES.some(item => item.id === entry.category) ? entry.category : "misc",
+                    category: longformCategories.some(item => item.id === entry.category) ? entry.category : (longformCategories[0]?.id || "misc"),
                     date: /^\d{4}-\d{2}-\d{2}$/.test(entry.date || "") ? entry.date : makeLocalIsoDate(),
                     done: Boolean(entry.done),
                     createdAt: typeof entry.createdAt === "string" ? entry.createdAt : new Date().toISOString(),
@@ -4199,13 +4387,13 @@ if (document.getElementById("longformApp")) {
     }
 
     function categoryLabel(categoryId) {
-        return LONGFORM_CATEGORIES.find(item => item.id === categoryId)?.label || "Misc.";
+        return longformCategories.find(item => item.id === categoryId)?.label || "Category";
     }
 
     function makeCategorySelect(entry) {
         const select = document.createElement("select");
         select.className = "longform-card-category";
-        LONGFORM_CATEGORIES.forEach(category => {
+        longformCategories.forEach(category => {
             const option = document.createElement("option");
             option.value = category.id;
             option.textContent = category.label;
@@ -4219,6 +4407,134 @@ if (document.getElementById("longformApp")) {
             showSaved();
         });
         return select;
+    }
+
+    function longformCategoryAccent(categoryId) {
+        return longformCategories.find(item => item.id === categoryId)?.accent || "plum";
+    }
+
+    function saveLongformCategories(show = true) {
+        localStorage.setItem(LONGFORM_CATEGORY_KEY, JSON.stringify(longformCategories));
+        if (show) showSaved();
+    }
+
+    function populateLongformCategoryUi() {
+        const selected = longformCategory.value;
+        longformCategory.innerHTML = "";
+        longformCategories.forEach(category => {
+            const option = document.createElement("option");
+            option.value = category.id;
+            option.textContent = category.label;
+            longformCategory.appendChild(option);
+        });
+        longformCategory.value = longformCategories.some(item => item.id === selected)
+            ? selected
+            : (longformCategories[0]?.id || "");
+
+        longformFilters.innerHTML = "";
+        const all = document.createElement("button");
+        all.type = "button";
+        all.className = "longform-filter" + (activeLongformFilter === "all" ? " active" : "");
+        all.dataset.filter = "all";
+        all.textContent = "all";
+        longformFilters.appendChild(all);
+        longformCategories.forEach(category => {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "longform-filter" + (activeLongformFilter === category.id ? " active" : "");
+            button.dataset.filter = category.id;
+            button.dataset.accent = category.accent;
+            button.textContent = category.label.toLowerCase();
+            longformFilters.appendChild(button);
+        });
+    }
+
+    function openLongformCategoryManager() {
+        const backdrop = document.createElement("div");
+        backdrop.className = "category-manager-backdrop open";
+        const card = document.createElement("div");
+        card.className = "category-manager-card";
+        card.innerHTML = `
+            <div class="category-manager-head"><div><strong>Longform categories</strong><span>Add, rename, recolor, or remove categories.</span></div><button type="button" class="category-manager-close">×</button></div>
+            <div class="category-manager-list"></div>
+            <div class="category-manager-footer"><button type="button" class="small-button category-manager-add">+ category</button><button type="button" class="small-button category-manager-done">done</button></div>
+        `;
+        backdrop.appendChild(card);
+        document.body.appendChild(backdrop);
+        const list = card.querySelector(".category-manager-list");
+
+        const repaint = () => {
+            list.innerHTML = "";
+            longformCategories.forEach((category, index) => {
+                const row = document.createElement("div");
+                row.className = "category-manager-row";
+                const name = document.createElement("input");
+                name.type = "text";
+                name.value = category.label;
+                name.setAttribute("aria-label", "Category name");
+                name.addEventListener("change", () => {
+                    category.label = name.value.trim() || "Category";
+                    saveLongformCategories(false);
+                    populateLongformCategoryUi();
+                    renderLongformEntries();
+                    showSaved();
+                });
+                const accent = document.createElement("select");
+                accent.setAttribute("aria-label", "Category color");
+                LONGFORM_CATEGORY_ACCENTS.forEach(value => {
+                    const option = document.createElement("option");
+                    option.value = value; option.textContent = value; accent.appendChild(option);
+                });
+                accent.value = category.accent;
+                accent.addEventListener("change", () => {
+                    category.accent = accent.value;
+                    saveLongformCategories(false);
+                    renderLongformEntries();
+                    showSaved();
+                });
+                const remove = document.createElement("button");
+                remove.type = "button";
+                remove.className = "category-manager-remove";
+                remove.textContent = "×";
+                remove.title = "Delete category";
+                remove.disabled = longformCategories.length <= 1;
+                remove.addEventListener("click", () => {
+                    if (longformCategories.length <= 1) return;
+                    const fallback = longformCategories.find(item => item.id !== category.id);
+                    longformState.entries.forEach(entry => {
+                        if (entry.category === category.id) entry.category = fallback.id;
+                    });
+                    if (activeLongformFilter === category.id) activeLongformFilter = "all";
+                    longformCategories.splice(index, 1);
+                    saveLongformCategories(false);
+                    saveLongformState(false);
+                    populateLongformCategoryUi();
+                    renderLongformEntries();
+                    repaint();
+                    showSaved();
+                });
+                row.append(name, accent, remove);
+                list.appendChild(row);
+            });
+        };
+
+        const close = () => backdrop.remove();
+        card.querySelector(".category-manager-close").addEventListener("click", close);
+        card.querySelector(".category-manager-done").addEventListener("click", close);
+        backdrop.addEventListener("click", event => { if (event.target === backdrop) close(); });
+        card.querySelector(".category-manager-add").addEventListener("click", () => {
+            const id = `category-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+            longformCategories.push({
+                id,
+                label: "New category",
+                accent: LONGFORM_CATEGORY_ACCENTS[longformCategories.length % LONGFORM_CATEGORY_ACCENTS.length]
+            });
+            saveLongformCategories(false);
+            populateLongformCategoryUi();
+            repaint();
+            showSaved();
+        });
+        repaint();
     }
 
     function editLongformMedia(entry) {
@@ -4245,7 +4561,7 @@ if (document.getElementById("longformApp")) {
             const empty = document.createElement("div");
             empty.className = "longform-empty";
             empty.innerHTML = activeLongformFilter === "all"
-                ? "<strong>No saved thoughts yet.</strong><span>The first one will land here as a three-line preview.</span>"
+                ? "<strong>No saved thoughts yet.</strong><span>The first one will land here by title, ready to unfold when needed.</span>"
                 : `<strong>No ${categoryLabel(activeLongformFilter).toLowerCase()} thoughts here.</strong><span>Nothing is being hidden except by your current filter.</span>`;
             longformList.appendChild(empty);
             return;
@@ -4256,6 +4572,7 @@ if (document.getElementById("longformApp")) {
             const expanded = expandedLongformIds.has(entry.id);
             card.className = `longform-entry${entry.done ? " done" : ""}${expanded ? " expanded" : ""}`;
             card.dataset.category = entry.category;
+            card.dataset.accent = longformCategoryAccent(entry.category);
             card.dataset.entryId = entry.id;
             card.classList.toggle("pinned", Boolean(entry.pinned));
 
@@ -4462,9 +4779,9 @@ if (document.getElementById("longformApp")) {
             id: longformId(),
             text,
             html,
-            category: LONGFORM_CATEGORIES.some(item => item.id === longformCategory.value)
+            category: longformCategories.some(item => item.id === longformCategory.value)
                 ? longformCategory.value
-                : "misc",
+                : (longformCategories[0]?.id || "misc"),
             date: longformDate.value || makeLocalIsoDate(),
             done: false,
             createdAt: new Date().toISOString(),
@@ -4483,6 +4800,8 @@ if (document.getElementById("longformApp")) {
         longformInput.focus();
     }
 
+    populateLongformCategoryUi();
+    if (manageLongformCategories) manageLongformCategories.addEventListener("click", openLongformCategoryManager);
     longformDate.value = makeLocalIsoDate();
     saveLongformEntry.addEventListener("click", submitLongformEntry);
     longformInput.addEventListener("keydown", event => {
@@ -4502,6 +4821,16 @@ if (document.getElementById("longformApp")) {
         renderLongformEntries();
     });
 
+    window.addEventListener("storage", event => {
+        if (event.key === LONGFORM_CATEGORY_KEY) {
+            longformCategories = readLongformCategories();
+            if (!longformCategories.some(item => item.id === activeLongformFilter)) activeLongformFilter = "all";
+            populateLongformCategoryUi();
+            renderLongformEntries();
+        }
+    });
+
+    saveLongformCategories(false);
     saveLongformState(false);
     renderLongformEntries();
 }

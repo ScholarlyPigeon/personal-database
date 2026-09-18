@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Longform Notes</title>
-    <link rel="stylesheet" href="Style.css?v=20260918c">
+    <link rel="stylesheet" href="Style.css?v=20260918d">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-    <script src="CloudSync.js?v=20260918c" defer></script>
-    <script src="Script.js?v=20260918c" defer></script>
+    <script src="CloudSync.js?v=20260918d" defer></script>
+    <script src="Script.js?v=20260918d" defer></script>
 
     <style>
         /* =========================================================
@@ -249,6 +249,7 @@
                     <a href="Database.html">🗃 Database</a>
                     <a href="Aquarium.html">🪼 Aquarium</a>
                     <a href="Patterns.html">🧭 Archives</a>
+                    <a href="Almanac.html">📖 Almanac</a>
                     <a href="Longform.html" class="current" aria-current="page">✎ Longform</a>
                     <a href="neopets.html">✦ Neopets</a>
                 </nav>
@@ -258,7 +259,7 @@
     </header>
 
     <main class="longform-workspace">
-        <aside class="panel longform-library">
+        <aside class="panel longform-library" data-collapsible-panel="longform-library">
             <div class="longform-library-head">
                 <div>
                     <div class="longform-section-title editable-ui longform-ui-edit" contenteditable="true" data-longform-ui="library-title">Saved thoughts</div>
@@ -271,10 +272,10 @@
                     <button type="button" class="longform-filter" data-filter="misc">misc.</button>
                 </div>
             </div>
-            <div id="longformList" class="longform-list"></div>
+            <div id="longformList" class="longform-list" data-collapse-body></div>
         </aside>
 
-        <section class="panel longform-composer">
+        <section class="panel longform-composer" data-collapsible-panel="longform-composer">
             <div class="longform-composer-head">
                 <div>
                     <div class="longform-section-title editable-ui longform-ui-edit" contenteditable="true" data-longform-ui="composer-title">Write it out</div>
@@ -282,7 +283,7 @@
                 </div>
                 <div class="longform-compose-meta">
                     <label>
-                        <span>category</span>
+                        <span>category <button id="manageLongformCategories" class="longform-manage-categories" type="button">manage</button></span>
                         <select id="longformCategory">
                             <option value="important">Important</option>
                             <option value="database" selected>Database</option>
@@ -299,6 +300,7 @@
             <input
                 id="longformTitleInput"
                 class="longform-title-input"
+                data-collapse-body
                 type="text"
                 maxlength="180"
                 autocomplete="off"
@@ -306,9 +308,9 @@
                 aria-label="Longform note title"
             >
 
-            <div id="longformInput" class="longform-input" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="Stay here as long as the thought needs. Enter always makes a new line."></div>
+            <div id="longformInput" class="longform-input" data-collapse-body contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="Stay here as long as the thought needs. Enter always makes a new line."></div>
 
-            <details class="longform-attachment">
+            <details class="longform-attachment" data-collapse-body>
                 <summary>optional image / clickable link</summary>
                 <div class="longform-attachment-fields">
                     <label>
@@ -322,7 +324,7 @@
                 </div>
             </details>
 
-            <div class="longform-submit-row">
+            <div class="longform-submit-row" data-collapse-body>
                 <div class="longform-submit-note">Ctrl/Cmd + Enter saves · plain Enter stays in the thought</div>
                 <button id="saveLongformEntry" class="longform-save-button" type="button">save thought</button>
             </div>

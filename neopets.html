@@ -4,10 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Paige's Neopets Corner</title>
-<link rel="stylesheet" href="Style.css?v=20260918c">
+<link rel="stylesheet" href="Style.css?v=20260918d">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-<script src="CloudSync.js?v=20260918c" defer></script>
-<script src="Script.js?v=20260918c" defer></script>
+<script src="CloudSync.js?v=20260918d" defer></script>
+<script src="Script.js?v=20260918d" defer></script>
 </head>
 <body class="neopets-page" data-default-theme="fieldnotes">
 <div class="neo-page neo-field-page" id="neopetsApp">
@@ -25,6 +25,7 @@
                     <a href="Database.html">🗃 Database</a>
                     <a href="Aquarium.html">🪼 Aquarium</a>
                     <a href="Patterns.html">🧭 Archives</a>
+                    <a href="Almanac.html">📖 Almanac</a>
                     <a href="Longform.html">✎ Longform</a>
                     <a href="neopets.html" class="current" aria-current="page">✦ Neopets</a>
                 </nav>
@@ -39,15 +40,15 @@
         </div>
     </header>
 
-    <section class="neo-card neo-dream-card">
+    <section class="neo-card neo-dream-card" data-collapsible-panel="neo-dreamies">
         <div class="neo-panel-heading">
             <h2 class="neo-panel-title neo-ui-edit" contenteditable="true" data-neo-ui="dream-title">Dreamies ☾</h2>
             <button class="neo-panel-add" id="addDreamie" type="button">+ dreamie</button>
         </div>
-        <div id="dreamieList" class="neo-dream-list"></div>
+        <div id="dreamieList" class="neo-dream-list" data-collapse-body></div>
     </section>
 
-    <main class="neo-card neo-dailies-card">
+    <main class="neo-card neo-dailies-card" data-collapsible-panel="neo-dailies">
         <div class="neo-dailies-head">
             <h2 class="neo-dailies-title neo-ui-edit" contenteditable="true" data-neo-ui="links-title">My Dailies ✦</h2>
             <div class="neo-dailies-head-right">
@@ -56,6 +57,7 @@
             </div>
         </div>
 
+        <div class="neo-dailies-collapse-body" data-collapse-body>
         <div id="neoLinkSections" class="neo-link-sections"></div>
 
         <div class="neo-reference-box">
@@ -65,23 +67,24 @@
             </div>
             <div id="neoReferenceLinks" class="neo-reference-links"></div>
         </div>
+        </div>
     </main>
 
     <div class="neo-right-stack">
-        <section class="neo-card neo-task-card">
+        <section class="neo-card neo-task-card" data-collapsible-panel="neo-streaks">
             <div class="neo-panel-heading">
                 <h2 class="neo-panel-title neo-ui-edit" contenteditable="true" data-neo-ui="streak-title">Streaks ✓</h2>
                 <button class="neo-panel-add" id="addNeoStreak" type="button">+ task</button>
             </div>
-            <div id="neoStreakList" class="neo-task-list"></div>
+            <div id="neoStreakList" class="neo-task-list" data-collapse-body></div>
         </section>
 
-        <section class="neo-card neo-treasure-card">
+        <section class="neo-card neo-treasure-card" data-collapsible-panel="neo-treasure">
             <div class="neo-panel-heading">
                 <h2 class="neo-panel-title neo-ui-edit" contenteditable="true" data-neo-ui="treasure-title">Treasure List ✧</h2>
                 <button class="neo-panel-add" id="addTreasure" type="button">+ item</button>
             </div>
-            <div id="treasureList" class="neo-want-list"></div>
+            <div id="treasureList" class="neo-want-list" data-collapse-body></div>
         </section>
     </div>
 
