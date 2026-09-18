@@ -103,3 +103,16 @@ LONGFORM V6 — FULLY COLLAPSIBLE SAVED THOUGHTS
 - Removed the redundant pencil edit button.
 - Consolidated secondary actions into a clearer Tools menu: strikethrough, image/link, archive, and delete.
 - The collapse arrow remains visible beside Tools for quick open/close control.
+
+
+PERSONAL INTRANET — 2026-09-18 USABILITY PASS
+- Added touch-friendly tap-to-move on the Database: tap a ⋮⋮ handle, then tap a destination tile/row/list. Desktop drag/drop remains available.
+- Added confirmation before destructive delete/remove controls across the intranet.
+- Mobile lists now favor taller cards/page scrolling over cramped nested scroll boxes, with more room for selectable long notes.
+- Added copy handling that preserves paragraph/newline spacing when moving text out of intranet content.
+- Longform collapsed Saved Thoughts now show the title only; the composer body once again fills the available panel beneath the title field.
+- Archived day snapshots now retain live completion checkboxes, so forgotten items can be marked complete later.
+- Archive & Patterns panel titles/helper text stay on one line with ellipsis instead of wrapping into tall headers.
+- Brain Aquarium section separators are now persistent collapse/expand bars.
+- Shared asset cache version bumped to 20260918a.
+- Safe Sync V2 / Supabase structure unchanged.

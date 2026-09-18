@@ -167,6 +167,75 @@ function mobileComposerUsesNewlines() {
 }
 
 /* =========================================================
+   SHARED COPY PRESERVATION
+   Rich/contenteditable browser selections can flatten visual block
+   breaks when copied as plain text. Keep paragraph/newline spacing
+   intact while also preserving HTML for rich destinations.
+   ========================================================= */
+function selectionFragmentToPlainText(fragment) {
+    const container = document.createElement("div");
+    container.appendChild(fragment.cloneNode(true));
+
+    container.querySelectorAll("br").forEach(node => node.replaceWith("\n"));
+    container.querySelectorAll("p, div, li, section, article, header, footer, h1, h2, h3, h4, h5, h6").forEach(node => {
+        if (!node.lastChild || node.lastChild.nodeValue !== "\n") {
+            node.appendChild(document.createTextNode("\n"));
+        }
+    });
+
+    return container.textContent
+        .replace(/\u00a0/g, " ")
+        .replace(/[ \t]+\n/g, "\n")
+        .replace(/\n{3,}/g, "\n\n");
+}
+
+document.addEventListener("copy", event => {
+    const selection = window.getSelection();
+    if (!selection || selection.isCollapsed || !selection.rangeCount || !event.clipboardData) return;
+
+    const node = selection.anchorNode?.nodeType === Node.ELEMENT_NODE
+        ? selection.anchorNode
+        : selection.anchorNode?.parentElement;
+    if (!node?.closest?.(".database-page, .aq-page, .patterns-page, .longform-page, .neo-page")) return;
+
+    const range = selection.getRangeAt(0);
+    const fragment = range.cloneContents();
+    const htmlContainer = document.createElement("div");
+    htmlContainer.appendChild(fragment.cloneNode(true));
+    const plainText = selectionFragmentToPlainText(fragment);
+
+    if (!plainText) return;
+    event.clipboardData.setData("text/plain", plainText);
+    event.clipboardData.setData("text/html", htmlContainer.innerHTML);
+    event.preventDefault();
+});
+
+/* =========================================================
+   SHARED DELETE CONFIRMATION
+   Every visible destructive delete/remove control asks once before
+   its existing handler is allowed to mutate saved data. Bulk delete
+   keeps its own count-aware confirmation below.
+   ========================================================= */
+document.addEventListener("click", event => {
+    const button = event.target?.closest?.("button");
+    if (!button || button.id === "selectionActionButton") return;
+
+    const title = String(button.title || "").trim();
+    const text = String(button.textContent || "").trim();
+    const destructive = /^(delete|remove)\b/i.test(title) || /^×?\s*delete\b/i.test(text);
+    if (!destructive) return;
+
+    const action = /^remove\b/i.test(title) ? "Remove" : "Delete";
+    const noun = title.replace(/^(delete|remove)\s+/i, "").replace(/\s+permanently$/i, "").trim();
+    const prompt = noun ? `${action} ${noun}?` : `${action} this item?`;
+
+    if (!window.confirm(prompt)) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+    }
+}, true);
+
+/* =========================================================
    SHARED RICH-TEXT KEYBOARD SHORTCUTS
    Ctrl/Cmd+B, I and U work on contenteditable writing surfaces.
    Ctrl/Cmd+Shift+X adds/removes strikethrough. Plain text inputs
@@ -1132,9 +1201,6 @@ if (document.getElementById("tileGrid")) {
             deleteTile.textContent = "×";
             deleteTile.title = "Delete this custom tile";
             deleteTile.addEventListener("click", () => {
-                const displayTitle = title.innerText.trim() || "this tile";
-                if (!window.confirm(`Delete “${displayTitle}”?`)) return;
-
                 customTiles = customTiles.filter(item => item.id !== tile.id);
                 tiles = tiles.filter(item => item.id !== tile.id);
                 allTileIds = allTileIds.filter(id => id !== tile.id);
@@ -1838,6 +1904,7 @@ if (document.getElementById("tileGrid")) {
         };
 
         checklistManagers.set(storageKey, manager);
+        listElement.dataset.storageKey = storageKey;
 
         function renderItems() {
             listElement.innerHTML = "";
@@ -1845,6 +1912,7 @@ if (document.getElementById("tileGrid")) {
             items.forEach((item, index) => {
                 const row = document.createElement("div");
                 row.className = "checklist-item" + (item.done ? " done" : "");
+                row.dataset.itemId = item.id;
                 if (accentClass) row.classList.add(accentClass);
 
                 const drag = document.createElement("span");
@@ -2187,6 +2255,230 @@ if (document.getElementById("tileGrid")) {
         }
         return changed;
     });
+
+    /* =========================================================
+       MOBILE TAP-TO-MOVE
+       Native HTML drag/drop is inconsistent on touch browsers. On
+       phones/tablets, tapping a ⋮⋮ move handle selects an item; the
+       next tap on a compatible row/tile/list moves it there. Desktop
+       drag-and-drop remains unchanged.
+       ========================================================= */
+    let mobileMoveState = null;
+    let mobileMoveBanner = null;
+
+    function mobileMoveEnabled() {
+        return mobileComposerUsesNewlines();
+    }
+
+    function ensureMobileMoveBanner() {
+        if (mobileMoveBanner) return mobileMoveBanner;
+        mobileMoveBanner = document.createElement("div");
+        mobileMoveBanner.className = "mobile-move-banner";
+        mobileMoveBanner.innerHTML = '<span>move mode: tap the destination</span><button type="button">cancel</button>';
+        mobileMoveBanner.querySelector("button").addEventListener("click", event => {
+            event.preventDefault();
+            event.stopPropagation();
+            clearMobileMoveState();
+        });
+        document.body.appendChild(mobileMoveBanner);
+        return mobileMoveBanner;
+    }
+
+    function clearMobileMoveState() {
+        mobileMoveState = null;
+        document.body.classList.remove("mobile-move-mode");
+        document.querySelectorAll(".mobile-move-source").forEach(node => node.classList.remove("mobile-move-source"));
+        if (mobileMoveBanner) mobileMoveBanner.hidden = true;
+    }
+
+    function beginMobileMove(state, sourceNode) {
+        mobileMoveState = state;
+        document.body.classList.add("mobile-move-mode");
+        document.querySelectorAll(".mobile-move-source").forEach(node => node.classList.remove("mobile-move-source"));
+        sourceNode?.classList.add("mobile-move-source");
+        const banner = ensureMobileMoveBanner();
+        banner.hidden = false;
+    }
+
+    function moveSourceIntoTile(targetTileId, targetIndex = null) {
+        const state = mobileMoveState;
+        if (!state) return false;
+        if (state.type === "tile-line") {
+            moveTileItem(state.sourceTileId, state.sourceItemId, targetTileId, targetIndex);
+            return true;
+        }
+        if (state.type === "checklist") {
+            moveChecklistItemToTile(state.sourceKey, state.sourceItemId, targetTileId, targetIndex);
+            return true;
+        }
+        if (state.type === "priority") {
+            movePriorityItemToTile(state.priorityItemId, targetTileId, targetIndex);
+            return true;
+        }
+        return false;
+    }
+
+    function moveSourceIntoChecklist(targetKey, targetIndex = null) {
+        const state = mobileMoveState;
+        const target = checklistManagers.get(targetKey);
+        if (!state || !target) return false;
+        if (targetIndex === null) targetIndex = target.items.length;
+
+        if (state.type === "tile-line") {
+            moveTileItemToChecklist(state.sourceTileId, state.sourceItemId, targetKey, targetIndex);
+            return true;
+        }
+        if (state.type === "priority") {
+            movePriorityItemToChecklist(state.priorityItemId, targetKey, targetIndex);
+            return true;
+        }
+        if (state.type === "checklist") {
+            const source = checklistManagers.get(state.sourceKey);
+            const sourceIndex = source?.items.findIndex(item => item.id === state.sourceItemId) ?? -1;
+            if (sourceIndex < 0) return false;
+            moveChecklistItem(state.sourceKey, sourceIndex, targetKey, targetIndex);
+            return true;
+        }
+        return false;
+    }
+
+    function moveSourceIntoPriority(targetIndex = null) {
+        const state = mobileMoveState;
+        if (!state) return false;
+        if (state.type === "tile-line") {
+            moveTileItemToPriority(state.sourceTileId, state.sourceItemId, targetIndex);
+            return true;
+        }
+        if (state.type === "checklist") {
+            moveChecklistItemToPriority(state.sourceKey, state.sourceItemId, targetIndex);
+            return true;
+        }
+        if (state.type === "priority") {
+            reorderPriorityItem(state.priorityItemId, targetIndex ?? priorityItems.length);
+            return true;
+        }
+        return false;
+    }
+
+    document.addEventListener("click", event => {
+        if (!mobileMoveEnabled()) return;
+
+        const handle = event.target.closest(".drag-handle, .tile-item-drag, .check-drag, .priority-item-drag");
+        if (handle) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            if (handle.matches(".drag-handle")) {
+                const card = handle.closest(".board-tile");
+                if (card?.dataset.id) beginMobileMove({ type: "board-tile", tileId: card.dataset.id }, card);
+                return;
+            }
+            if (handle.matches(".tile-item-drag")) {
+                const row = handle.closest(".tile-item-row");
+                const list = handle.closest(".tile-item-list");
+                if (row?.dataset.itemId && list?.dataset.tileId) beginMobileMove({ type: "tile-line", sourceTileId: list.dataset.tileId, sourceItemId: row.dataset.itemId }, row);
+                return;
+            }
+            if (handle.matches(".check-drag")) {
+                const row = handle.closest(".checklist-item");
+                const list = handle.closest(".checklist-list, .day-list");
+                if (row?.dataset.itemId && list?.dataset.storageKey) beginMobileMove({ type: "checklist", sourceKey: list.dataset.storageKey, sourceItemId: row.dataset.itemId }, row);
+                return;
+            }
+            if (handle.matches(".priority-item-drag")) {
+                const card = handle.closest(".priority-item");
+                if (card?.dataset.priorityId) beginMobileMove({ type: "priority", priorityItemId: card.dataset.priorityId }, card);
+                return;
+            }
+        }
+
+        if (!mobileMoveState) return;
+
+        /* Move mode should never hijack a checkbox, delete button, link,
+           text editor, or other control. Tap the surrounding row/card to
+           choose it as the destination. */
+        if (event.target.closest('button, input, textarea, select, a')) return;
+
+        if (mobileMoveState.type === "board-tile") {
+            const targetCard = event.target.closest(".board-tile");
+            if (targetCard?.dataset.id) {
+                event.preventDefault();
+                event.stopPropagation();
+                const targetIndex = boardOrder.indexOf(targetCard.dataset.id);
+                moveTile(mobileMoveState.tileId, targetIndex < 0 ? boardOrder.length : targetIndex);
+                clearMobileMoveState();
+                return;
+            }
+            if (event.target.closest("#tileGrid")) {
+                event.preventDefault();
+                event.stopPropagation();
+                moveTile(mobileMoveState.tileId, boardOrder.length);
+                clearMobileMoveState();
+            }
+            return;
+        }
+
+        const tileRow = event.target.closest(".tile-item-row");
+        if (tileRow) {
+            const list = tileRow.closest(".tile-item-list");
+            const targetTileId = list?.dataset.tileId;
+            if (targetTileId) {
+                const rows = [...list.querySelectorAll(":scope > .tile-item-row")];
+                const targetIndex = Math.max(0, rows.indexOf(tileRow));
+                event.preventDefault();
+                event.stopPropagation();
+                if (moveSourceIntoTile(targetTileId, targetIndex)) clearMobileMoveState();
+                return;
+            }
+        }
+
+        const tileList = event.target.closest(".tile-item-list");
+        if (tileList?.dataset.tileId) {
+            event.preventDefault();
+            event.stopPropagation();
+            const targetTile = tileById(tileList.dataset.tileId);
+            const targetIndex = targetTile ? loadTileItems(targetTile).length : null;
+            if (moveSourceIntoTile(tileList.dataset.tileId, targetIndex)) clearMobileMoveState();
+            return;
+        }
+
+        const checklistRow = event.target.closest(".checklist-item");
+        if (checklistRow) {
+            const list = checklistRow.closest(".checklist-list, .day-list");
+            const targetKey = list?.dataset.storageKey;
+            const manager = targetKey ? checklistManagers.get(targetKey) : null;
+            if (targetKey && manager) {
+                const targetIndex = manager.items.findIndex(item => item.id === checklistRow.dataset.itemId);
+                event.preventDefault();
+                event.stopPropagation();
+                if (moveSourceIntoChecklist(targetKey, targetIndex < 0 ? manager.items.length : targetIndex)) clearMobileMoveState();
+                return;
+            }
+        }
+
+        const checklistList = event.target.closest(".checklist-list, .day-list");
+        if (checklistList?.dataset.storageKey) {
+            event.preventDefault();
+            event.stopPropagation();
+            if (moveSourceIntoChecklist(checklistList.dataset.storageKey, null)) clearMobileMoveState();
+            return;
+        }
+
+        const priorityCard = event.target.closest(".priority-item");
+        if (priorityCard?.dataset.priorityId) {
+            const targetIndex = priorityItems.findIndex(item => item.id === priorityCard.dataset.priorityId);
+            event.preventDefault();
+            event.stopPropagation();
+            if (moveSourceIntoPriority(targetIndex < 0 ? priorityItems.length : targetIndex)) clearMobileMoveState();
+            return;
+        }
+
+        if (event.target.closest("#priorityShelf")) {
+            event.preventDefault();
+            event.stopPropagation();
+            if (moveSourceIntoPriority(priorityItems.length)) clearMobileMoveState();
+        }
+    }, true);
 }
 
 /* =========================================================
@@ -2768,6 +3060,24 @@ if (document.getElementById("aquariumApp")) {
         return shell;
     }
 
+    const AQUARIUM_COLLAPSED_SECTIONS_KEY = "brain-aquarium-collapsed-sections-v1";
+
+    function readCollapsedAquariumSections() {
+        try {
+            const saved = JSON.parse(localStorage.getItem(AQUARIUM_COLLAPSED_SECTIONS_KEY) || "[]");
+            return new Set(Array.isArray(saved) ? saved : []);
+        } catch {
+            return new Set();
+        }
+    }
+
+    let collapsedAquariumSections = readCollapsedAquariumSections();
+
+    function saveCollapsedAquariumSections() {
+        localStorage.setItem(AQUARIUM_COLLAPSED_SECTIONS_KEY, JSON.stringify([...collapsedAquariumSections]));
+        showSaved();
+    }
+
     function renderAquariumCategories() {
         const board = document.getElementById("categoryGrid");
         board.innerHTML = "";
@@ -2778,7 +3088,19 @@ if (document.getElementById("aquariumApp")) {
             band.dataset.sectionId = section.id;
 
             const divider = document.createElement("div");
-            divider.className = "aq-section-divider";
+            divider.className = "aq-section-divider aq-section-collapse-bar";
+            divider.tabIndex = 0;
+            divider.setAttribute("role", "button");
+
+            const collapsed = collapsedAquariumSections.has(section.id);
+            band.classList.toggle("collapsed", collapsed);
+            divider.setAttribute("aria-expanded", String(!collapsed));
+            divider.title = collapsed ? "Expand this section" : "Collapse this section";
+
+            const toggle = document.createElement("span");
+            toggle.className = "aq-section-toggle";
+            toggle.textContent = collapsed ? "▸" : "▾";
+            toggle.setAttribute("aria-hidden", "true");
 
             const lineLeft = document.createElement("span");
             lineLeft.className = "aq-section-line";
@@ -2789,6 +3111,8 @@ if (document.getElementById("aquariumApp")) {
             label.spellcheck = false;
             label.textContent = section.name;
             label.title = "Click to rename this section";
+            label.addEventListener("click", event => event.stopPropagation());
+            label.addEventListener("keydown", event => event.stopPropagation());
             label.addEventListener("input", () => {
                 section.name = label.innerText.trim() || "Section";
                 saveAquariumState();
@@ -2796,11 +3120,30 @@ if (document.getElementById("aquariumApp")) {
 
             const lineRight = document.createElement("span");
             lineRight.className = "aq-section-line";
-            divider.append(lineLeft, label, lineRight);
+            divider.append(toggle, lineLeft, label, lineRight);
+
+            function toggleSection() {
+                if (collapsedAquariumSections.has(section.id)) collapsedAquariumSections.delete(section.id);
+                else collapsedAquariumSections.add(section.id);
+                saveCollapsedAquariumSections();
+                renderAquariumCategories();
+            }
+
+            divider.addEventListener("click", event => {
+                if (event.target.closest(".aq-section-label")) return;
+                toggleSection();
+            });
+            divider.addEventListener("keydown", event => {
+                if (event.key !== "Enter" && event.key !== " ") return;
+                if (event.target.closest(".aq-section-label")) return;
+                event.preventDefault();
+                toggleSection();
+            });
 
             const grid = document.createElement("div");
             grid.className = "aq-category-grid";
             grid.dataset.sectionId = section.id;
+            grid.hidden = collapsed;
 
             grid.addEventListener("dragover", event => {
                 if (!draggedCategoryId) return;
@@ -3115,7 +3458,7 @@ if (document.getElementById("patternsApp")) {
             remove.textContent = "×";
             remove.title = "Delete this archived day permanently";
             remove.addEventListener("click", () => {
-                if (window.confirm("Permanently delete this archived day snapshot?")) removeArchiveRecord(record.id);
+                removeArchiveRecord(record.id);
             });
 
             const selector = makeSelectionControl(
@@ -3130,10 +3473,31 @@ if (document.getElementById("patternsApp")) {
 
             const list = document.createElement("div");
             list.className = "archived-day-items";
-            (Array.isArray(record.items) ? record.items : []).forEach(item => {
+            (Array.isArray(record.items) ? record.items : []).forEach((item, itemIndex) => {
                 const row = document.createElement("div");
                 row.className = "archived-day-item" + (item.done ? " was-done" : "");
-                row.textContent = item.text;
+
+                const wrap = document.createElement("label");
+                wrap.className = "check-wrap archive-day-check";
+                const check = document.createElement("input");
+                check.type = "checkbox";
+                check.checked = Boolean(item.done);
+                check.setAttribute("aria-label", `Mark archived item ${item.done ? "not done" : "done"}`);
+                check.addEventListener("change", () => {
+                    const recordsNow = readArchiveRecords();
+                    const liveRecord = recordsNow.find(candidate => candidate.id === record.id);
+                    if (!liveRecord || !Array.isArray(liveRecord.items) || !liveRecord.items[itemIndex]) return;
+                    liveRecord.items[itemIndex].done = check.checked;
+                    saveArchiveRecords(recordsNow, true);
+                    row.classList.toggle("was-done", check.checked);
+                });
+                wrap.appendChild(check);
+
+                const text = document.createElement("span");
+                text.className = "archived-day-item-text";
+                text.textContent = item.text;
+
+                row.append(wrap, text);
                 list.appendChild(row);
             });
 
@@ -3166,7 +3530,7 @@ if (document.getElementById("patternsApp")) {
             remove.textContent = "×";
             remove.title = "Delete this archived item permanently";
             remove.addEventListener("click", () => {
-                if (window.confirm("Permanently delete this archived item?")) removeArchiveRecord(record.id);
+                removeArchiveRecord(record.id);
             });
 
             const selector = makeSelectionControl(

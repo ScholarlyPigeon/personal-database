@@ -5140,21 +5140,22 @@ html.patterns-page-html body {
 }
 
 .archived-day-item {
-    position: relative;
-    padding-left: 13px;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: start;
+    gap: 7px;
     color: var(--text);
+}
+
+.archived-day-item-text {
+    min-width: 0;
     white-space: pre-wrap;
     overflow-wrap: anywhere;
 }
 
-.archived-day-item::before {
-    content: "•";
-    position: absolute;
-    left: 1px;
-    color: var(--blue-soft);
-}
+.archive-day-check { margin-top: 2px; }
 
-.archived-day-item.was-done {
+.archived-day-item.was-done .archived-day-item-text {
     color: var(--faint);
     text-decoration: line-through;
 }
@@ -5181,6 +5182,18 @@ html.patterns-page-html body {
     text-align: center;
     line-height: 1.45;
 }
+
+/* Archive & Patterns headers stay on one tidy line. */
+html.patterns-page-html .panel-header { flex-wrap: nowrap; min-width: 0; }
+html.patterns-page-html .panel-header .panel-title { min-width: 0; flex: 0 1 auto; white-space: nowrap; }
+html.patterns-page-html .panel-header .panel-title > span:last-child,
+html.patterns-page-html .panel-header .panel-subtitle {
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+html.patterns-page-html .panel-header .panel-subtitle { flex: 1 1 auto; text-align: right; }
 
 .patterns-column-body {
     min-height: 0;
@@ -5835,12 +5848,28 @@ body[data-theme="dark"] .theme-select option {
 
 .aq-section-divider {
     display: grid;
-    grid-template-columns: minmax(24px, 1fr) auto minmax(24px, 1fr);
+    grid-template-columns: auto minmax(24px, 1fr) auto minmax(24px, 1fr);
     align-items: center;
     gap: 9px;
-    min-height: 17px;
+    min-height: 28px;
     margin: 1px 3px 7px;
 }
+.aq-section-collapse-bar {
+    padding: 4px 7px;
+    border: 1px solid color-mix(in srgb, var(--border) 74%, transparent);
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--panel-light) 44%, transparent);
+    cursor: pointer;
+    user-select: none;
+    transition: background .12s ease, border-color .12s ease;
+}
+.aq-section-collapse-bar:hover, .aq-section-collapse-bar:focus-visible {
+    border-color: color-mix(in srgb, var(--teal) 55%, var(--border));
+    background: color-mix(in srgb, var(--panel-light) 70%, transparent);
+    outline: none;
+}
+.aq-section-toggle { width: 14px; color: var(--teal-soft); font-size: 12px; line-height: 1; text-align: center; }
+.aq-board-section.collapsed .aq-section-collapse-bar { margin-bottom: 0; opacity: .9; }
 
 .aq-section-line {
     height: 1px;
@@ -8764,7 +8793,7 @@ html.longform-page-html body {
     min-width: 0;
     min-height: 0;
     display: grid;
-    grid-template-rows: auto minmax(0, 1fr) auto auto;
+    grid-template-rows: auto auto minmax(0, 1fr) auto auto;
 }
 
 .longform-compose-meta {
@@ -8795,7 +8824,7 @@ html.longform-page-html body {
     min-height: 0;
     width: auto;
     height: auto;
-    margin: 12px 14px 8px;
+    margin: 7px 14px 8px;
     padding: 15px 16px;
     resize: none;
     border: 1px solid var(--border);
@@ -8934,7 +8963,7 @@ html.longform-page-html body {
 
     .longform-composer {
         min-height: 62vh;
-        grid-template-rows: auto minmax(330px, 1fr) auto auto;
+        grid-template-rows: auto auto minmax(330px, 1fr) auto auto;
     }
 
     .longform-library {
@@ -10114,4 +10143,55 @@ html.patterns-page-html .patterns-header,
     .longform-entry-summary {
         font-size: 12px;
     }
+}
+
+
+/* =========================================================
+   PERSONAL INTRANET — 2026-09-18 MOBILE READABILITY + MOVE PASS
+   ========================================================= */
+.mobile-move-banner {
+    display: flex; position: fixed; left: 50%; bottom: max(14px, env(safe-area-inset-bottom)); z-index: 9999;
+    transform: translateX(-50%); width: min(520px, calc(100% - 24px)); align-items: center; justify-content: space-between;
+    gap: 10px; padding: 9px 10px 9px 12px; border: 1px solid color-mix(in srgb, var(--teal) 70%, var(--border));
+    border-radius: 999px; background: color-mix(in srgb, var(--panel) 96%, var(--bg)); color: var(--text);
+    box-shadow: 0 12px 30px rgba(0,0,0,.32); font-size: 12px;
+}
+.mobile-move-banner[hidden] { display: none !important; }
+.mobile-move-banner button { flex: 0 0 auto; border: 1px solid var(--border); border-radius: 999px; background: var(--panel-light); color: var(--muted); padding: 5px 9px; }
+.mobile-move-source { outline: 2px solid color-mix(in srgb, var(--teal-soft) 75%, transparent) !important; outline-offset: -2px; }
+
+@media (max-width: 760px), (pointer: coarse) {
+    .database-page .drag-handle, .database-page .tile-item-drag, .database-page .check-drag, .database-page .priority-item-drag,
+    html.aquarium-page .aq-category-handle, html.aquarium-page .aq-card-leading, .neo-drag {
+        min-width: 30px; min-height: 30px; display: inline-grid; place-items: center; touch-action: manipulation; cursor: pointer; font-size: 16px;
+    }
+
+    .database-page .checklist-list, .database-page .tile-item-list, .database-page .day-card .day-list,
+    html.aquarium-page .aq-inbox-zone, html.aquarium-page .aq-category-zone,
+    html.patterns-page-html .archive-list, html.patterns-page-html .pattern-notes-list, html.patterns-page-html .tracker-list {
+        max-height: none !important; overflow-y: visible !important;
+    }
+
+    .database-page .day-card { height: auto !important; min-height: 300px; }
+
+    .database-page .task-text, .database-page .tile-item-text, .database-page .priority-item-text,
+    html.aquarium-page .aq-card-text, html.patterns-page-html .archive-item-text, html.patterns-page-html .pattern-note-text,
+    html.patterns-page-html .tracker-entry-text, html.patterns-page-html .archived-day-item-text, .neo-link-description, .neo-side-text {
+        max-height: none !important; overflow: visible !important; white-space: pre-wrap; overflow-wrap: anywhere; word-break: normal;
+    }
+
+    .selection-mode .database-page .item-row-actions, .database-page.selection-mode .item-row-actions { min-width: 22px; gap: 2px; }
+    .selection-mode .database-page .item-row-actions .archive-icon-button,
+    .selection-mode .database-page .item-row-actions .check-delete,
+    .selection-mode .database-page .item-row-actions .tile-item-delete,
+    html.aquarium-page body.selection-mode .aq-card-actions .aq-card-archive,
+    html.aquarium-page body.selection-mode .aq-card-actions .aq-card-delete,
+    html.patterns-page-html body.selection-mode .archive-head-actions .archive-remove,
+    html.patterns-page-html body.selection-mode .pattern-note-actions .archive-remove { display: none !important; }
+
+    html.patterns-page-html .panel-header .panel-title > span:last-child, html.patterns-page-html .panel-header .panel-subtitle {
+        white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important;
+    }
+
+    html.aquarium-page .aq-section-collapse-bar { min-height: 36px; margin-left: 0; margin-right: 0; padding: 6px 8px; }
 }
