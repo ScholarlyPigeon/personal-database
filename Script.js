@@ -4432,21 +4432,19 @@ if (document.getElementById("longformApp")) {
             : (longformCategories[0]?.id || "");
 
         longformFilters.innerHTML = "";
-        const all = document.createElement("button");
-        all.type = "button";
-        all.className = "longform-filter" + (activeLongformFilter === "all" ? " active" : "");
-        all.dataset.filter = "all";
-        all.textContent = "all";
+        const all = document.createElement("option");
+        all.value = "all";
+        all.textContent = "All categories";
         longformFilters.appendChild(all);
         longformCategories.forEach(category => {
-            const button = document.createElement("button");
-            button.type = "button";
-            button.className = "longform-filter" + (activeLongformFilter === category.id ? " active" : "");
-            button.dataset.filter = category.id;
-            button.dataset.accent = category.accent;
-            button.textContent = category.label.toLowerCase();
-            longformFilters.appendChild(button);
+            const option = document.createElement("option");
+            option.value = category.id;
+            option.textContent = category.label;
+            longformFilters.appendChild(option);
         });
+        longformFilters.value = longformCategories.some(item => item.id === activeLongformFilter)
+            ? activeLongformFilter
+            : "all";
     }
 
     function openLongformCategoryManager() {
@@ -4811,13 +4809,8 @@ if (document.getElementById("longformApp")) {
         }
     });
 
-    longformFilters.addEventListener("click", event => {
-        const button = event.target.closest("[data-filter]");
-        if (!button) return;
-        activeLongformFilter = button.dataset.filter || "all";
-        longformFilters.querySelectorAll("[data-filter]").forEach(item => {
-            item.classList.toggle("active", item === button);
-        });
+    longformFilters.addEventListener("change", () => {
+        activeLongformFilter = longformFilters.value || "all";
         renderLongformEntries();
     });
 

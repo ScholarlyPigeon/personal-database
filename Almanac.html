@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Personal Almanac</title>
-    <link rel="stylesheet" href="Style.css?v=20260918d">
+    <link rel="stylesheet" href="Style.css?v=20260918e">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-    <script src="CloudSync.js?v=20260918d" defer></script>
-    <script src="Script.js?v=20260918d" defer></script>
+    <script src="CloudSync.js?v=20260918e" defer></script>
+    <script src="Script.js?v=20260918e" defer></script>
 </head>
 <body data-default-theme="fall2">
 <div class="almanac-page" id="almanacApp">
@@ -42,85 +42,78 @@
         <span>Meals, routines, useful truths, supplies, wants, and the things you learn by actually living with them.</span>
     </section>
 
-    <main class="almanac-grid">
-        <div class="almanac-stack">
-            <section class="panel almanac-panel meals-panel" data-collapsible-panel="almanac-meals">
-                <div class="almanac-panel-head">
-                    <div class="panel-title"><span>🍲</span><span>Meals I Make</span></div>
-                    <button class="almanac-add-button" type="button" data-add-note="meals">+ meal</button>
-                </div>
-                <div id="almanacMeals" class="almanac-note-list" data-collapse-body></div>
-            </section>
+    <main class="almanac-grid" id="almanacGrid">
+        <section class="panel almanac-panel meals-panel" data-collapsible-panel="almanac-meals">
+            <div class="almanac-panel-head">
+                <div class="panel-title"><span>🍲</span><span>Meals I Make</span></div>
+                <button class="almanac-add-button" type="button" data-add-note="meals">+ meal</button>
+            </div>
+            <div id="almanacMeals" class="almanac-note-list" data-collapse-body></div>
+        </section>
 
-            <section class="panel almanac-panel dailies-panel" data-collapsible-panel="almanac-dailies">
-                <div class="almanac-panel-head">
-                    <div class="panel-title"><span>✓</span><span>Dailies</span></div>
-                    <button class="almanac-reset-button" id="resetAlmanacDailies" type="button">reset checks</button>
-                </div>
-                <div class="almanac-checklist-body" data-collapse-body>
-                    <div id="almanacDailies" class="almanac-checklist"></div>
-                    <div class="almanac-entry-row"><input id="almanacDailiesInput" type="text" placeholder="Add a daily…"><button type="button" data-add-list="dailies">+</button></div>
-                </div>
-            </section>
-        </div>
+        <section class="panel almanac-panel dailies-panel" data-collapsible-panel="almanac-dailies">
+            <div class="almanac-panel-head">
+                <div class="panel-title"><span>✓</span><span>Dailies</span></div>
+                <button class="almanac-reset-button" id="resetAlmanacDailies" type="button">reset checks</button>
+            </div>
+            <div class="almanac-checklist-body" data-collapse-body>
+                <div id="almanacDailies" class="almanac-checklist"></div>
+                <div class="almanac-entry-row"><input id="almanacDailiesInput" type="text" placeholder="Add a daily…"><button type="button" data-add-list="dailies">+</button></div>
+            </div>
+        </section>
 
-        <div class="almanac-stack almanac-center-stack">
-            <section class="panel almanac-panel quotes-panel" data-collapsible-panel="almanac-quotes">
-                <div class="almanac-panel-head">
-                    <div class="panel-title"><span>❝</span><span>Quotes & Understandings</span></div>
-                    <button class="almanac-add-button" type="button" data-add-note="quotes">+ note</button>
-                </div>
-                <div id="almanacQuotes" class="almanac-note-list" data-collapse-body></div>
-            </section>
+        <section class="panel almanac-panel quotes-panel" data-collapsible-panel="almanac-quotes">
+            <div class="almanac-panel-head">
+                <div class="panel-title"><span>❝</span><span>Quotes & Understandings</span></div>
+                <button class="almanac-add-button" type="button" data-add-note="quotes">+ note</button>
+            </div>
+            <div id="almanacQuotes" class="almanac-note-list" data-collapse-body></div>
+        </section>
 
-            <section class="panel almanac-panel rotation-panel" data-collapsible-panel="almanac-rotation">
-                <div class="almanac-panel-head">
-                    <div class="panel-title"><span>✦</span><span>Current Rotation</span></div>
-                    <div class="panel-subtitle">what I keep reaching for lately</div>
-                </div>
-                <div class="almanac-checklist-body" data-collapse-body>
-                    <div id="almanacRotation" class="almanac-simple-list"></div>
-                    <div class="almanac-entry-row"><input id="almanacRotationInput" type="text" placeholder="Drink, ritual, show, product, tiny favorite…"><button type="button" data-add-list="rotation">+</button></div>
-                </div>
-            </section>
-        </div>
+        <section class="panel almanac-panel rotation-panel" data-collapsible-panel="almanac-rotation">
+            <div class="almanac-panel-head">
+                <div class="panel-title"><span>✦</span><span>Current Rotation</span></div>
+            </div>
+            <div class="almanac-checklist-body" data-collapse-body>
+                <div id="almanacRotation" class="almanac-simple-list"></div>
+                <div class="almanac-entry-row"><input id="almanacRotationInput" type="text" placeholder="Drink, ritual, show, product, tiny favorite…"><button type="button" data-add-list="rotation">+</button></div>
+            </div>
+        </section>
 
-        <div class="almanac-stack almanac-right-stack">
-            <section class="panel almanac-panel restock-panel" data-collapsible-panel="almanac-restock">
-                <div class="almanac-panel-head">
-                    <div class="panel-title"><span>↻</span><span>Restock</span></div>
-                    <button class="almanac-reset-button" id="resetAlmanacRestock" type="button">reset checks</button>
-                </div>
-                <div class="almanac-checklist-body" data-collapse-body>
-                    <div id="almanacRestock" class="almanac-checklist"></div>
-                    <div class="almanac-entry-row"><input id="almanacRestockInput" type="text" placeholder="Something I replace often…"><button type="button" data-add-list="restock">+</button></div>
-                </div>
-            </section>
+        <section class="panel almanac-panel restock-panel" data-collapsible-panel="almanac-restock">
+            <div class="almanac-panel-head">
+                <div class="panel-title"><span>↻</span><span>Restock</span></div>
+                <button class="almanac-reset-button" id="resetAlmanacRestock" type="button">reset checks</button>
+            </div>
+            <div class="almanac-checklist-body" data-collapse-body>
+                <div id="almanacRestock" class="almanac-checklist"></div>
+                <div class="almanac-entry-row"><input id="almanacRestockInput" type="text" placeholder="Something I replace often…"><button type="button" data-add-list="restock">+</button></div>
+            </div>
+        </section>
 
-            <section class="panel almanac-panel wishlist-panel" data-collapsible-panel="almanac-wishlist">
-                <div class="almanac-panel-head">
-                    <div class="panel-title"><span>✧</span><span>Wish List</span></div>
-                </div>
-                <div class="almanac-checklist-body" data-collapse-body>
-                    <div id="almanacWishlist" class="almanac-checklist"></div>
-                    <div class="almanac-entry-row"><input id="almanacWishlistInput" type="text" placeholder="Something I want to remember…"><button type="button" data-add-list="wishlist">+</button></div>
-                </div>
-            </section>
+        <section class="panel almanac-panel wishlist-panel" data-collapsible-panel="almanac-wishlist">
+            <div class="almanac-panel-head">
+                <div class="panel-title"><span>✧</span><span>Wish List</span></div>
+            </div>
+            <div class="almanac-checklist-body" data-collapse-body>
+                <div id="almanacWishlist" class="almanac-checklist"></div>
+                <div class="almanac-entry-row"><input id="almanacWishlistInput" type="text" placeholder="Something I want to remember…"><button type="button" data-add-list="wishlist">+</button></div>
+            </div>
+        </section>
 
-            <section class="panel almanac-panel strains-panel" data-collapsible-panel="almanac-strains">
-                <div class="almanac-panel-head">
-                    <div class="panel-title"><span>🌿</span><span>Strain Journal</span></div>
+        <section class="panel almanac-panel strains-panel" data-collapsible-panel="almanac-strains">
+            <div class="almanac-panel-head">
+                <div class="panel-title"><span>🌿</span><span>Strain Journal</span></div>
+            </div>
+            <div class="almanac-strain-body" data-collapse-body>
+                <div id="almanacStrains" class="almanac-strain-list"></div>
+                <div class="almanac-strain-entry">
+                    <input id="almanacStrainName" type="text" placeholder="Strain / product">
+                    <textarea id="almanacStrainNotes" rows="2" placeholder="Effects, setting, what happened next…"></textarea>
+                    <button id="addAlmanacStrain" class="checklist-add" type="button">add entry</button>
                 </div>
-                <div class="almanac-strain-body" data-collapse-body>
-                    <div id="almanacStrains" class="almanac-strain-list"></div>
-                    <div class="almanac-strain-entry">
-                        <input id="almanacStrainName" type="text" placeholder="Strain / product">
-                        <textarea id="almanacStrainNotes" rows="2" placeholder="Effects, setting, what happened next…"></textarea>
-                        <button id="addAlmanacStrain" class="checklist-add" type="button">add entry</button>
-                    </div>
-                </div>
-            </section>
-        </div>
+            </div>
+        </section>
     </main>
 </div>
 
@@ -128,6 +121,7 @@
 document.addEventListener("DOMContentLoaded", () => {
     const STATE_KEY = "pigeonhole-almanac-v1";
     const STRAIN_KEY = "pigeonhole-v15-strain-journal";
+    const PANEL_ORDER_KEY = "pigeonhole-almanac-panel-order-v1";
     const emptyState = () => ({ meals: [], dailies: [], quotes: [], restock: [], wishlist: [], rotation: [] });
     const makeId = prefix => (globalThis.crypto && crypto.randomUUID)
         ? `${prefix}-${crypto.randomUUID()}`
@@ -158,8 +152,96 @@ document.addEventListener("DOMContentLoaded", () => {
         dailies: document.getElementById("almanacDailiesInput"), restock: document.getElementById("almanacRestockInput"),
         wishlist: document.getElementById("almanacWishlistInput"), rotation: document.getElementById("almanacRotationInput")
     };
+    const almanacGrid = document.getElementById("almanacGrid");
+    const panelIds = [...almanacGrid.querySelectorAll(":scope > .almanac-panel")].map(panel => panel.dataset.collapsiblePanel);
+    let activeAlmanacPanelMove = null;
+    let draggedAlmanacPanel = null;
 
     function empty(container, text) { const node = document.createElement("div"); node.className = "almanac-empty"; node.textContent = text; container.appendChild(node); }
+
+    function archiveFromAlmanac(text, context, metadata = null) {
+        return archiveManualItem({
+            text: String(text || "").trim(),
+            source: "Personal Almanac",
+            context,
+            metadata
+        });
+    }
+
+    function readPanelOrder() {
+        try {
+            const saved = JSON.parse(localStorage.getItem(PANEL_ORDER_KEY) || "[]");
+            const clean = Array.isArray(saved) ? saved.filter(id => panelIds.includes(id)) : [];
+            panelIds.forEach(id => { if (!clean.includes(id)) clean.push(id); });
+            return clean;
+        } catch { return [...panelIds]; }
+    }
+    let panelOrder = readPanelOrder();
+    function savePanelOrder() { localStorage.setItem(PANEL_ORDER_KEY, JSON.stringify(panelOrder)); showSaved(); }
+    function applyPanelOrder() {
+        panelOrder.forEach(id => {
+            const panel = almanacGrid.querySelector(`:scope > [data-collapsible-panel="${id}"]`);
+            if (panel) almanacGrid.appendChild(panel);
+        });
+    }
+    function setAlmanacPanelMove(id = null) {
+        activeAlmanacPanelMove = id;
+        document.body.classList.toggle("almanac-panel-move-mode", Boolean(id));
+        almanacGrid.querySelectorAll(":scope > .almanac-panel").forEach(panel => {
+            panel.classList.toggle("move-source", panel.dataset.collapsiblePanel === id);
+        });
+    }
+    function moveAlmanacPanelBefore(sourceId, targetId) {
+        if (!sourceId || !targetId || sourceId === targetId) return;
+        const from = panelOrder.indexOf(sourceId);
+        const to = panelOrder.indexOf(targetId);
+        if (from < 0 || to < 0) return;
+        const [moved] = panelOrder.splice(from, 1);
+        const nextTo = panelOrder.indexOf(targetId);
+        panelOrder.splice(nextTo, 0, moved);
+        applyPanelOrder();
+        savePanelOrder();
+        setAlmanacPanelMove(null);
+    }
+    function bindAlmanacPanelMovement() {
+        applyPanelOrder();
+        almanacGrid.querySelectorAll(":scope > .almanac-panel").forEach(panel => {
+            const id = panel.dataset.collapsiblePanel;
+            const head = panel.querySelector(":scope > .almanac-panel-head");
+            if (!id || !head || head.querySelector(":scope > .almanac-panel-move")) return;
+            const handle = document.createElement("button");
+            handle.type = "button";
+            handle.className = "almanac-panel-move";
+            handle.textContent = "⋮⋮";
+            handle.title = "Move this Almanac tile";
+            handle.draggable = true;
+            head.insertBefore(handle, head.firstChild);
+            handle.addEventListener("click", event => {
+                event.preventDefault(); event.stopPropagation();
+                setAlmanacPanelMove(activeAlmanacPanelMove === id ? null : id);
+            });
+            handle.addEventListener("dragstart", event => {
+                draggedAlmanacPanel = id; setAlmanacPanelMove(id);
+                event.dataTransfer.effectAllowed = "move";
+                event.dataTransfer.setData("application/x-pigeon-almanac-panel", id);
+            });
+            handle.addEventListener("dragend", () => { draggedAlmanacPanel = null; setAlmanacPanelMove(null); });
+            panel.addEventListener("dragover", event => { if (!draggedAlmanacPanel || draggedAlmanacPanel === id) return; event.preventDefault(); panel.classList.add("almanac-panel-drop-target"); });
+            panel.addEventListener("dragleave", event => { if (!panel.contains(event.relatedTarget)) panel.classList.remove("almanac-panel-drop-target"); });
+            panel.addEventListener("drop", event => {
+                if (!draggedAlmanacPanel || draggedAlmanacPanel === id) return;
+                event.preventDefault(); panel.classList.remove("almanac-panel-drop-target");
+                const source = draggedAlmanacPanel; draggedAlmanacPanel = null; moveAlmanacPanelBefore(source, id);
+            });
+        });
+        almanacGrid.addEventListener("click", event => {
+            if (!activeAlmanacPanelMove || event.target.closest(".almanac-panel-move")) return;
+            const target = event.target.closest(".almanac-panel");
+            if (!target || target.dataset.collapsiblePanel === activeAlmanacPanelMove) return;
+            event.preventDefault(); event.stopPropagation();
+            moveAlmanacPanelBefore(activeAlmanacPanelMove, target.dataset.collapsiblePanel);
+        }, true);
+    }
 
     function addNote(kind) {
         state[kind].unshift({ id: makeId(kind), title: kind === "meals" ? "New meal" : "New understanding", text: "", html: "", expanded: true, createdAt: new Date().toISOString() });
@@ -180,9 +262,16 @@ document.addEventListener("DOMContentLoaded", () => {
             const actions = document.createElement("div"); actions.className = "almanac-note-actions";
             const toggle = document.createElement("button"); toggle.type = "button"; toggle.className = "almanac-note-toggle"; toggle.textContent = item.expanded ? "▾" : "▸"; toggle.title = item.expanded ? "Collapse body" : "Reveal body";
             toggle.addEventListener("click", () => { item.expanded = !item.expanded; saveState(false); renderNotes(kind); showSaved(); });
+            const archive = document.createElement("button"); archive.type = "button"; archive.className = "archive-icon-button almanac-item-archive"; archive.textContent = "↘"; archive.title = `Archive ${kind === "meals" ? "meal" : "note"}`;
+            archive.addEventListener("click", () => {
+                const bodyText = String(item.text || "").trim();
+                const archived = archiveFromAlmanac([item.title, bodyText].filter(Boolean).join("\n\n"), kind === "meals" ? "Meals I Make" : "Quotes & Understandings", { kind, title: item.title });
+                if (!archived) return;
+                state[kind].splice(index,1); saveState(false); renderNotes(kind); showSaved();
+            });
             const remove = document.createElement("button"); remove.type = "button"; remove.className = "archive-remove"; remove.textContent = "×"; remove.title = `Delete ${kind === "meals" ? "meal" : "note"}`;
             remove.addEventListener("click", () => { state[kind].splice(index,1); saveState(false); renderNotes(kind); showSaved(); });
-            actions.append(toggle, remove); head.append(title, actions);
+            actions.append(toggle, archive, remove); head.append(title, actions);
             const body = document.createElement("div"); body.className = "almanac-note-body"; body.contentEditable = "true"; body.spellcheck = true; body.hidden = !item.expanded; body.innerHTML = item.html || plainToHtml(item.text); body.dataset.placeholder = kind === "meals" ? "Ingredients, shortcuts, substitutions, why it works…" : "Put the full thought here…";
             body.addEventListener("input", () => { item.html = body.innerHTML; item.text = body.innerText; saveState(); });
             card.append(head, body); container.appendChild(card);
@@ -206,9 +295,16 @@ document.addEventListener("DOMContentLoaded", () => {
             }
             const text = document.createElement("div"); text.className = "almanac-list-text"; text.contentEditable = "true"; text.spellcheck = true; text.textContent = item.text || "";
             text.addEventListener("input", () => { item.text = text.innerText; saveState(); });
+            const archive = document.createElement("button"); archive.type = "button"; archive.className = "archive-icon-button almanac-item-archive"; archive.textContent = "↘"; archive.title = "Archive this item";
+            archive.addEventListener("click", () => {
+                const labels = { dailies: "Dailies", restock: "Restock", wishlist: "Wish List", rotation: "Current Rotation" };
+                const archived = archiveFromAlmanac(item.text, labels[kind] || "Almanac", { kind, done: Boolean(item.done) });
+                if (!archived) return;
+                state[kind].splice(index,1); saveState(false); renderList(kind); showSaved();
+            });
             const remove = document.createElement("button"); remove.type = "button"; remove.className = "archive-remove"; remove.textContent = "×"; remove.title = "Delete list item";
             remove.addEventListener("click", () => { state[kind].splice(index,1); saveState(false); renderList(kind); showSaved(); });
-            row.append(text, remove); container.appendChild(row);
+            row.append(text, archive, remove); container.appendChild(row);
         });
     }
 
@@ -227,9 +323,15 @@ document.addEventListener("DOMContentLoaded", () => {
             const actions = document.createElement("div"); actions.className = "almanac-strain-actions";
             const toggle = document.createElement("button"); toggle.type = "button"; toggle.className = "almanac-note-toggle"; toggle.textContent = entry.expanded ? "▾" : "▸"; toggle.title = entry.expanded ? "Collapse strain notes" : "Reveal strain notes";
             toggle.addEventListener("click", () => { entry.expanded = !entry.expanded; saveStrains(false); renderStrains(); showSaved(); });
+            const archive = document.createElement("button"); archive.type = "button"; archive.className = "archive-icon-button almanac-item-archive"; archive.textContent = "↘"; archive.title = "Archive strain entry";
+            archive.addEventListener("click", () => {
+                const archived = archiveFromAlmanac([entry.name, entry.notes].filter(Boolean).join("\n\n"), "Strain Journal", { kind: "strain", name: entry.name, createdAt: entry.createdAt });
+                if (!archived) return;
+                strains.splice(index,1); saveStrains(false); renderStrains(); showSaved();
+            });
             const remove = document.createElement("button"); remove.type = "button"; remove.className = "archive-remove"; remove.textContent = "×"; remove.title = "Delete strain entry";
             remove.addEventListener("click", () => { strains.splice(index,1); saveStrains(false); renderStrains(); showSaved(); });
-            actions.append(toggle, remove); head.append(titleWrap, actions);
+            actions.append(toggle, archive, remove); head.append(titleWrap, actions);
             const body = document.createElement("div"); body.className = "almanac-strain-notes"; body.contentEditable = "true"; body.spellcheck = true; body.hidden = !entry.expanded; body.textContent = entry.notes || ""; body.dataset.placeholder = "Add effects or context…";
             body.addEventListener("input", () => { entry.notes = body.innerText; saveStrains(); });
             card.append(head, body); container.appendChild(card);
@@ -258,6 +360,7 @@ document.addEventListener("DOMContentLoaded", () => {
         ["dailies","restock","wishlist","rotation"].forEach(renderList);
         renderStrains();
     }
+    bindAlmanacPanelMovement();
     renderAll();
     window.PigeonholeBindCollapsiblePanels?.();
 });

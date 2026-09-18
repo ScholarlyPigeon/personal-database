@@ -154,3 +154,14 @@ V19 — QUIETER ROOMS + ARCHIVE DESK + PERSONAL ALMANAC (2026-09-18)
 - Added Almanac to the shared page navigation on every page.
 - Shared cache version bumped to 20260918d.
 - Safe Sync V2 / Supabase structure unchanged.
+
+
+V5 — FOCUS / MOVEMENT REFINEMENT
+- Archive Timeline moved from orange/yellow into a quieter blue/teal color family across themes.
+- Archive Notes / Patterns / Timeline cards now move by ⋮⋮ handle: drag on desktop, or tap handle then tap a destination list on touch. The persistent per-card destination dropdown was removed.
+- Almanac items can now archive into the shared Archive item history using the same ↘ archive route as the rest of the Personal Intranet.
+- Almanac sections are equal-sized tiles and their order is saved; move them with ⋮⋮ by drag or tap-to-move. Collapsed tiles still shrink to header-only rows.
+- Secondary helper text in section headers is hidden ecosystem-wide to reduce crowding; page-level subtitles remain.
+- Database Upcoming header icon/title alignment was tightened.
+- Longform Saved Thoughts category filters are now one compact dropdown instead of a row of buttons.
+- Shared asset cache version bumped to 20260918e.

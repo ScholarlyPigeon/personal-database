@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Archive & Patterns</title>
-    <link rel="stylesheet" href="Style.css?v=20260918d">
+    <link rel="stylesheet" href="Style.css?v=20260918e">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-    <script src="CloudSync.js?v=20260918d" defer></script>
-    <script src="Script.js?v=20260918d" defer></script>
+    <script src="CloudSync.js?v=20260918e" defer></script>
+    <script src="Script.js?v=20260918e" defer></script>
 </head>
 <body data-default-theme="study">
 <div class="patterns-page archive-v2-page" id="archiveApp">
@@ -107,7 +107,7 @@
                     <div class="panel-title"><span>📍</span><span>Timeline</span></div>
                     <div class="panel-subtitle">turning points · newest first</div>
                 </div>
-                <div id="archiveTimelineList" class="archive-workspace-list scroll-orange" data-collapse-body></div>
+                <div id="archiveTimelineList" class="archive-workspace-list scroll-blue" data-collapse-body></div>
             </section>
         </div>
     </main>
@@ -122,7 +122,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const ZONES = [
         { id: "notes", label: "Notes", accent: "teal" },
         { id: "patterns", label: "Patterns", accent: "plum" },
-        { id: "timeline", label: "Timeline", accent: "orange" }
+        { id: "timeline", label: "Timeline", accent: "blue" }
     ];
 
     const dayArchiveList = document.getElementById("dayArchiveList");
@@ -294,12 +294,57 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    let activeWorkspaceMoveId = null;
+    let draggedWorkspaceMoveId = null;
+
+    function setWorkspaceMoveMode(itemId = null) {
+        activeWorkspaceMoveId = itemId;
+        document.body.classList.toggle("archive-workspace-move-mode", Boolean(itemId));
+        Object.values(lists).forEach(list => list.classList.toggle("archive-workspace-drop-ready", Boolean(itemId)));
+        document.querySelectorAll(".archive-workspace-card").forEach(card => {
+            card.classList.toggle("move-source", card.dataset.itemId === itemId);
+        });
+    }
+
+    function moveWorkspaceItem(itemId, targetZone) {
+        const item = workspace.find(candidate => candidate.id === itemId);
+        if (!item || !ZONES.some(zone => zone.id === targetZone)) return;
+        item.zone = targetZone;
+        item.createdAt = new Date().toISOString();
+        saveWorkspace(false);
+        setWorkspaceMoveMode(null);
+        renderWorkspace();
+        renderArchiveHistory();
+        showSaved();
+    }
+
     function makeWorkspaceCard(item) {
         const card = document.createElement("article");
         card.className = "archive-workspace-card" + (item.expanded ? " expanded" : "");
         card.dataset.zone = item.zone;
+        card.dataset.itemId = item.id;
         card.dataset.accent = zoneAccent(item.zone);
         const head = document.createElement("div"); head.className = "archive-workspace-card-head";
+
+        const move = document.createElement("button");
+        move.type = "button";
+        move.className = "archive-workspace-move";
+        move.textContent = "⋮⋮";
+        move.title = "Move this item to Notes, Patterns, or Timeline";
+        move.draggable = true;
+        move.addEventListener("click", event => {
+            event.preventDefault();
+            event.stopPropagation();
+            setWorkspaceMoveMode(activeWorkspaceMoveId === item.id ? null : item.id);
+        });
+        move.addEventListener("dragstart", event => {
+            draggedWorkspaceMoveId = item.id;
+            setWorkspaceMoveMode(item.id);
+            event.dataTransfer.effectAllowed = "move";
+            event.dataTransfer.setData("application/x-pigeon-archive-workspace", item.id);
+        });
+        move.addEventListener("dragend", () => { draggedWorkspaceMoveId = null; setWorkspaceMoveMode(null); });
+
         const title = document.createElement("div"); title.className = "archive-workspace-card-title"; title.contentEditable = "true"; title.spellcheck = true; title.textContent = item.title || "Untitled";
         title.addEventListener("input", () => { item.title = title.innerText.trim() || "Untitled"; saveWorkspace(); });
         title.addEventListener("keydown", event => { if (event.key === "Enter") { event.preventDefault(); title.blur(); } });
@@ -307,21 +352,49 @@ document.addEventListener("DOMContentLoaded", () => {
         const controls = document.createElement("div"); controls.className = "archive-workspace-card-controls";
         const date = document.createElement("input"); date.type = "date"; date.className = "archive-workspace-date"; date.value = item.date; date.title = "Date";
         date.addEventListener("change", () => { if (!date.value) return; item.date = date.value; saveWorkspace(false); renderWorkspace(); showSaved(); });
-        const zone = document.createElement("select"); zone.className = "archive-workspace-zone"; zone.title = "Move between Notes, Patterns, and Timeline";
-        ZONES.forEach(optionData => { const option = document.createElement("option"); option.value = optionData.id; option.textContent = optionData.label; zone.appendChild(option); });
-        zone.value = item.zone;
-        zone.addEventListener("change", () => { item.zone = zone.value; saveWorkspace(false); renderWorkspace(); showSaved(); });
         const toggle = document.createElement("button"); toggle.type = "button"; toggle.className = "archive-workspace-toggle"; toggle.textContent = item.expanded ? "▾" : "▸"; toggle.title = item.expanded ? "Collapse body" : "Reveal body";
         toggle.addEventListener("click", () => { item.expanded = !item.expanded; saveWorkspace(false); renderWorkspace(); showSaved(); });
         const selector = makeSelectionControl(selectionKey("archive-workspace", item.id), "Select this note");
         const remove = document.createElement("button"); remove.type = "button"; remove.className = "archive-remove"; remove.textContent = "×"; remove.title = "Delete working note";
-        remove.addEventListener("click", () => { workspace = workspace.filter(candidate => candidate.id !== item.id); saveWorkspace(false); renderWorkspace(); renderArchiveHistory(); showSaved(); });
-        controls.append(date, zone, toggle, selector, remove); head.append(title, controls);
+        remove.addEventListener("click", () => { workspace = workspace.filter(candidate => candidate.id !== item.id); saveWorkspace(false); setWorkspaceMoveMode(null); renderWorkspace(); renderArchiveHistory(); showSaved(); });
+        controls.append(date, toggle, selector, remove); head.append(move, title, controls);
 
         const body = document.createElement("div"); body.className = "archive-workspace-card-body"; body.contentEditable = "true"; body.spellcheck = true; body.innerHTML = item.html || plainToHtml(item.text); body.hidden = !item.expanded; body.dataset.placeholder = "Add body text…";
         body.addEventListener("input", () => { item.html = body.innerHTML; item.text = body.innerText; saveWorkspace(); });
         card.append(head, body);
         return card;
+    }
+
+    function bindWorkspaceDropZone(zoneId) {
+        const list = lists[zoneId];
+        if (!list || list.dataset.moveBound === "true") return;
+        list.dataset.moveBound = "true";
+        list.addEventListener("dragover", event => {
+            if (!draggedWorkspaceMoveId) return;
+            event.preventDefault();
+            event.dataTransfer.dropEffect = "move";
+            list.classList.add("archive-workspace-drop-hover");
+        });
+        list.addEventListener("dragleave", event => {
+            if (!list.contains(event.relatedTarget)) list.classList.remove("archive-workspace-drop-hover");
+        });
+        list.addEventListener("drop", event => {
+            if (!draggedWorkspaceMoveId) return;
+            event.preventDefault();
+            list.classList.remove("archive-workspace-drop-hover");
+            const id = draggedWorkspaceMoveId;
+            draggedWorkspaceMoveId = null;
+            moveWorkspaceItem(id, zoneId);
+        });
+        list.addEventListener("click", event => {
+            if (!activeWorkspaceMoveId) return;
+            if (event.target.closest("button, input, select, [contenteditable=\"true\"]")) return;
+            const source = event.target.closest(".archive-workspace-card");
+            if (source?.dataset.itemId === activeWorkspaceMoveId) return;
+            event.preventDefault();
+            event.stopPropagation();
+            moveWorkspaceItem(activeWorkspaceMoveId, zoneId);
+        });
     }
 
     function renderWorkspace() {
@@ -345,7 +418,9 @@ document.addEventListener("DOMContentLoaded", () => {
             } else {
                 items.forEach(item => lists[zone.id].appendChild(makeWorkspaceCard(item)));
             }
+            bindWorkspaceDropZone(zone.id);
         });
+        if (activeWorkspaceMoveId) setWorkspaceMoveMode(activeWorkspaceMoveId);
     }
 
     function saveNewWorkspaceItem() {

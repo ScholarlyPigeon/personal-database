@@ -11038,3 +11038,182 @@ body[data-theme="fall2"] .almanac-list-item { background: rgba(30,19,24,.52); bo
     .neo-dream-card.is-collapsed,
     .neo-dailies-card.is-collapsed { min-height: 46px !important; }
 }
+
+
+/* =========================================================
+   V5 FOCUS / MOVEMENT PASS
+   Cleaner section headers, quieter Timeline colors, direct-move
+   Archive cards, equal movable Almanac tiles, and Longform filter select.
+   ========================================================= */
+
+/* Secondary helper copy is now removed from section-header chrome.
+   Page-level subtitles remain untouched. */
+.panel-header .panel-subtitle,
+.aq-panel-head .aq-panel-subtitle,
+.aq-board-tool-right > .aq-panel-subtitle,
+.longform-library-head .longform-section-note,
+.longform-composer-head .longform-section-note,
+.neo-dailies-note,
+.almanac-panel-head .panel-subtitle {
+    display: none !important;
+}
+
+/* Database Upcoming: keep icon + editable title on one true center line. */
+.database-page .date-rail-header {
+    display: flex;
+    align-items: center !important;
+}
+.database-page .date-rail-header .panel-title {
+    display: flex;
+    align-items: center !important;
+    min-height: 100%;
+    line-height: 1 !important;
+}
+.database-page .date-rail-header .panel-title > span {
+    display: inline-flex;
+    align-items: center;
+    line-height: 1.05 !important;
+}
+
+/* Longform saved-thought filtering is one compact control now. */
+.longform-filter-dropdown {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--faint);
+    font-size: 10.5px;
+}
+.longform-filter-dropdown > span { text-transform: lowercase; }
+.longform-filter-dropdown select {
+    min-width: 132px;
+    max-width: 180px;
+    height: 29px;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    background: color-mix(in srgb, var(--panel-light) 84%, var(--bg));
+    color: var(--text);
+    padding: 4px 24px 4px 7px;
+    outline: none;
+    font-size: 11px;
+}
+
+/* Archive Timeline moves out of the yellow/orange family entirely. */
+.timeline-insight-panel {
+    border-color: color-mix(in srgb, var(--blue) 48%, var(--border));
+    background: linear-gradient(155deg,
+        color-mix(in srgb, var(--blue) 14%, var(--panel)),
+        var(--panel));
+}
+.timeline-insight-panel .panel-title { color: var(--blue-soft); }
+.archive-workspace-card[data-accent="blue"] {
+    --workspace-accent: var(--blue);
+    --workspace-accent-soft: var(--blue-soft);
+}
+body[data-theme="fall2"] .timeline-insight-panel {
+    background: linear-gradient(160deg, rgba(36,72,85,.58), rgba(45,27,34,.98));
+    border-color: #567f8f;
+}
+body[data-theme="fall2"] .archive-workspace-card[data-accent="blue"] {
+    background: color-mix(in srgb, #315f72 34%, var(--panel-light));
+    border-color: #6795a8;
+}
+
+/* Archive workspace cards now use the same handle-first move language as Database. */
+.archive-workspace-card-head {
+    grid-template-columns: auto minmax(0,1fr) auto;
+}
+.archive-workspace-move {
+    width: 24px;
+    height: 26px;
+    display: grid;
+    place-items: center;
+    border: 0;
+    background: transparent;
+    color: var(--faint);
+    cursor: grab;
+    padding: 0;
+    font-size: 13px;
+    line-height: 1;
+    user-select: none;
+}
+.archive-workspace-move:active { cursor: grabbing; }
+.archive-workspace-move:hover,
+.archive-workspace-card.move-source .archive-workspace-move { color: var(--teal-soft); }
+.archive-workspace-drop-ready {
+    outline: 1px dashed color-mix(in srgb, var(--teal) 48%, transparent);
+    outline-offset: -4px;
+    border-radius: 8px;
+}
+.archive-workspace-drop-hover {
+    background: color-mix(in srgb, var(--teal) 8%, transparent);
+    outline-color: var(--teal);
+}
+.archive-workspace-card.move-source { opacity: .56; }
+.archive-workspace-move-mode .archive-workspace-list { cursor: copy; }
+
+/* Almanac is now a reorderable equal-tile board rather than uneven stacks. */
+.almanac-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-auto-rows: 40px;
+    grid-auto-flow: row dense;
+    gap: 10px;
+    align-items: stretch;
+}
+.almanac-grid > .almanac-panel {
+    grid-row: span 7;
+    min-height: 0;
+    height: auto;
+}
+.almanac-grid > .almanac-panel.is-collapsed {
+    grid-row: span 1;
+    min-height: 40px;
+}
+.almanac-panel-head {
+    display: grid;
+    grid-template-columns: auto minmax(0,1fr) auto auto;
+    align-items: center;
+}
+.almanac-panel-head > .panel-title { min-width: 0; }
+.almanac-panel-move {
+    width: 24px;
+    height: 26px;
+    display: grid;
+    place-items: center;
+    border: 0;
+    background: transparent;
+    color: var(--faint);
+    cursor: grab;
+    padding: 0;
+    font-size: 13px;
+    user-select: none;
+}
+.almanac-panel-move:hover,
+.almanac-panel.move-source .almanac-panel-move { color: var(--teal-soft); }
+.almanac-panel.move-source { opacity: .58; }
+.almanac-panel-drop-target {
+    outline: 2px solid color-mix(in srgb, var(--teal) 68%, transparent);
+    outline-offset: -3px;
+}
+.almanac-panel-move-mode .almanac-panel:not(.move-source) { cursor: copy; }
+.almanac-list-item { grid-template-columns: auto minmax(0,1fr) auto auto; }
+.almanac-item-archive {
+    align-self: start;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    display: grid;
+    place-items: center;
+}
+
+@media (max-width: 1100px) {
+    .almanac-grid { grid-template-columns: repeat(2, minmax(0,1fr)) !important; }
+}
+@media (max-width: 760px) {
+    .almanac-grid { grid-template-columns: 1fr !important; grid-auto-flow: row; }
+    .almanac-grid > .almanac-panel { grid-row: span 7; }
+    .almanac-grid > .almanac-panel.is-collapsed { grid-row: span 1; }
+    .archive-workspace-card-head { grid-template-columns: auto minmax(0,1fr); }
+    .archive-workspace-card-controls { grid-column: 2; }
+    .longform-filter-dropdown select { min-width: 118px; max-width: 145px; }
+}

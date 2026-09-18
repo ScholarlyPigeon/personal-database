@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Longform Notes</title>
-    <link rel="stylesheet" href="Style.css?v=20260918d">
+    <link rel="stylesheet" href="Style.css?v=20260918e">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-    <script src="CloudSync.js?v=20260918d" defer></script>
-    <script src="Script.js?v=20260918d" defer></script>
+    <script src="CloudSync.js?v=20260918e" defer></script>
+    <script src="Script.js?v=20260918e" defer></script>
 
     <style>
         /* =========================================================
@@ -265,12 +265,12 @@
                     <div class="longform-section-title editable-ui longform-ui-edit" contenteditable="true" data-longform-ui="library-title">Saved thoughts</div>
                     <div class="longform-section-note editable-ui longform-ui-edit" contenteditable="true" data-longform-ui="library-note">pin what matters now; titles stay visible while thoughts fold underneath</div>
                 </div>
-                <div class="longform-filter-set" id="longformFilters" aria-label="Filter saved thoughts">
-                    <button type="button" class="longform-filter active" data-filter="all">all</button>
-                    <button type="button" class="longform-filter" data-filter="important">important</button>
-                    <button type="button" class="longform-filter" data-filter="database">database</button>
-                    <button type="button" class="longform-filter" data-filter="misc">misc.</button>
-                </div>
+                <label class="longform-filter-dropdown">
+                    <span>show</span>
+                    <select id="longformFilters" aria-label="Filter saved thoughts">
+                        <option value="all">All categories</option>
+                    </select>
+                </label>
             </div>
             <div id="longformList" class="longform-list" data-collapse-body></div>
         </aside>
