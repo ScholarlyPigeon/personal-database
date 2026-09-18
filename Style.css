@@ -5900,6 +5900,11 @@ body[data-theme="dark"] .theme-select option {
     background: color-mix(in srgb, var(--panel-light) 45%, transparent);
 }
 
+.aq-category-grid[hidden],
+.aq-board-section.collapsed > .aq-category-grid {
+    display: none !important;
+}
+
 .aq-category-grid.aq-category-drop-target {
     outline: 1px dashed color-mix(in srgb, var(--teal-soft) 58%, transparent);
     outline-offset: 4px;
@@ -5978,6 +5983,32 @@ body[data-theme="dark"] .theme-select option {
     color: var(--faint);
     font-size: 10px;
     line-height: 1.3;
+}
+
+.tracker-date-input {
+    width: 124px;
+    min-width: 0;
+    height: 25px;
+    padding: 2px 5px;
+    border: 1px solid color-mix(in srgb, var(--border) 88%, transparent);
+    border-radius: 6px;
+    background: color-mix(in srgb, var(--panel) 80%, var(--bg));
+    color: var(--muted);
+    outline: none;
+    color-scheme: dark;
+}
+
+.tracker-date-input:hover,
+.tracker-date-input:focus {
+    border-color: var(--teal);
+    color: var(--text);
+}
+
+body[data-theme="cozy"] .tracker-date-input,
+body[data-theme="green"] .tracker-date-input,
+body[data-theme="fall"] .tracker-date-input,
+body[data-theme="study"] .tracker-date-input {
+    color-scheme: light;
 }
 
 .tracker-card-text {
@@ -10024,6 +10055,20 @@ html.patterns-page-html .patterns-header,
     color: var(--text);
     background: color-mix(in srgb, var(--longform-accent) 12%, transparent);
     outline: none;
+}
+
+.longform-entry.pinned {
+    border-color: color-mix(in srgb, var(--longform-accent) 72%, var(--border));
+}
+
+.longform-entry.pinned .longform-entry-title::before {
+    content: "📌 ";
+    font-size: .82em;
+}
+
+.longform-pin-button[aria-pressed="true"] {
+    color: var(--text);
+    background: color-mix(in srgb, var(--longform-accent) 15%, transparent);
 }
 
 .longform-tool-delete:hover,

@@ -116,3 +116,11 @@ PERSONAL INTRANET — 2026-09-18 USABILITY PASS
 - Brain Aquarium section separators are now persistent collapse/expand bars.
 - Shared asset cache version bumped to 20260918a.
 - Safe Sync V2 / Supabase structure unchanged.
+
+
+SEPTEMBER 18 — PIN / COLLAPSE / TIMELINE FOLLOW-UP
+- Longform Saved Thoughts now support Pin to Top from the Tools menu. Pinned thoughts sort above unpinned thoughts while the rest retain their normal order.
+- Aquarium section collapse now explicitly suppresses the section grid in CSS, fixing category tiles that remained visible after the arrow changed.
+- Archive & Patterns headings shortened to Archive, Patterns, Timeline, and Strains (Day Archive remains unchanged).
+- Timeline markers now have editable date inputs. Existing markers inherit their original local date, new markers default to today, and the list sorts newest date to oldest.
+- Shared cache version bumped to 20260918b.

@@ -3144,6 +3144,7 @@ if (document.getElementById("aquariumApp")) {
             grid.className = "aq-category-grid";
             grid.dataset.sectionId = section.id;
             grid.hidden = collapsed;
+            grid.setAttribute("aria-hidden", String(collapsed));
 
             grid.addEventListener("dragover", event => {
                 if (!draggedCategoryId) return;
@@ -3686,7 +3687,24 @@ if (document.getElementById("patternsApp")) {
     });
 
     /* ---------- TIMELINE MARKERS ---------- */
-    let timelineMarkers = readStoredArray(TIMELINE_MARKERS_KEY);
+    function markerLocalDate(marker) {
+        if (/^\d{4}-\d{2}-\d{2}$/.test(marker?.date || "")) return marker.date;
+        const created = marker?.createdAt ? new Date(marker.createdAt) : new Date();
+        return Number.isNaN(created.getTime()) ? makeLocalIsoDate() : makeLocalIsoDate(created);
+    }
+
+    function normalizeTimelineMarkers(items) {
+        return (Array.isArray(items) ? items : [])
+            .filter(marker => marker && typeof marker.id === "string")
+            .map(marker => ({
+                ...marker,
+                text: typeof marker.text === "string" ? marker.text : "",
+                createdAt: typeof marker.createdAt === "string" ? marker.createdAt : new Date().toISOString(),
+                date: markerLocalDate(marker)
+            }));
+    }
+
+    let timelineMarkers = normalizeTimelineMarkers(readStoredArray(TIMELINE_MARKERS_KEY));
 
     function saveTimelineMarkers(show = true) {
         localStorage.setItem(TIMELINE_MARKERS_KEY, JSON.stringify(timelineMarkers));
@@ -3700,15 +3718,32 @@ if (document.getElementById("patternsApp")) {
             return;
         }
 
-        timelineMarkers.forEach((marker, index) => {
+        const orderedMarkers = [...timelineMarkers].sort((a, b) => {
+            const dateCompare = String(b.date || "").localeCompare(String(a.date || ""));
+            if (dateCompare) return dateCompare;
+            return String(b.createdAt || "").localeCompare(String(a.createdAt || ""));
+        });
+
+        orderedMarkers.forEach(marker => {
+            const index = timelineMarkers.findIndex(item => item.id === marker.id);
             const card = document.createElement("article");
             card.className = "tracker-card timeline-marker";
 
             const head = document.createElement("div");
             head.className = "tracker-card-head";
-            const date = document.createElement("span");
-            date.className = "tracker-date";
-            date.textContent = formatArchiveDate(marker.createdAt);
+            const date = document.createElement("input");
+            date.type = "date";
+            date.className = "tracker-date tracker-date-input";
+            date.value = marker.date || markerLocalDate(marker);
+            date.title = "Timeline date";
+            date.setAttribute("aria-label", "Timeline date");
+            date.addEventListener("change", () => {
+                if (!date.value) return;
+                marker.date = date.value;
+                saveTimelineMarkers(false);
+                renderTimelineMarkers();
+                showSaved();
+            });
 
             const remove = document.createElement("button");
             remove.className = "archive-remove";
@@ -3752,7 +3787,8 @@ if (document.getElementById("patternsApp")) {
         timelineMarkers.unshift({
             id: archiveId("timeline"),
             text: value,
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
+            date: makeLocalIsoDate()
         });
         timelineMarkerInput.value = "";
         resizeSharedAutoGrowTextarea(timelineMarkerInput);
@@ -3887,7 +3923,7 @@ if (document.getElementById("patternsApp")) {
             renderPatternNotes();
         }
         if (event.key === TIMELINE_MARKERS_KEY) {
-            timelineMarkers = readStoredArray(TIMELINE_MARKERS_KEY);
+            timelineMarkers = normalizeTimelineMarkers(readStoredArray(TIMELINE_MARKERS_KEY));
             renderTimelineMarkers();
         }
         if (event.key === STRAIN_JOURNAL_KEY) {
@@ -4055,7 +4091,8 @@ if (document.getElementById("longformApp")) {
                     done: Boolean(entry.done),
                     createdAt: typeof entry.createdAt === "string" ? entry.createdAt : new Date().toISOString(),
                     imageUrl: typeof entry.imageUrl === "string" ? entry.imageUrl : "",
-                    linkUrl: typeof entry.linkUrl === "string" ? entry.linkUrl : ""
+                    linkUrl: typeof entry.linkUrl === "string" ? entry.linkUrl : "",
+                    pinned: Boolean(entry.pinned)
                 }))
         };
     }
@@ -4113,9 +4150,11 @@ if (document.getElementById("longformApp")) {
 
     function renderLongformEntries() {
         longformList.innerHTML = "";
-        const visible = longformState.entries.filter(entry => (
-            activeLongformFilter === "all" || entry.category === activeLongformFilter
-        ));
+        const visible = longformState.entries
+            .filter(entry => (
+                activeLongformFilter === "all" || entry.category === activeLongformFilter
+            ))
+            .sort((a, b) => Number(Boolean(b.pinned)) - Number(Boolean(a.pinned)));
 
         if (!visible.length) {
             const empty = document.createElement("div");
@@ -4133,6 +4172,7 @@ if (document.getElementById("longformApp")) {
             card.className = `longform-entry${entry.done ? " done" : ""}${expanded ? " expanded" : ""}`;
             card.dataset.category = entry.category;
             card.dataset.entryId = entry.id;
+            card.classList.toggle("pinned", Boolean(entry.pinned));
 
             const top = document.createElement("div");
             top.className = "longform-entry-top";
@@ -4166,6 +4206,19 @@ if (document.getElementById("longformApp")) {
 
             const toolsPanel = document.createElement("div");
             toolsPanel.className = "longform-card-tool-panel";
+
+            const pinButton = document.createElement("button");
+            pinButton.type = "button";
+            pinButton.className = "longform-tool-button longform-pin-button";
+            pinButton.textContent = entry.pinned ? "📌 pinned to top" : "📌 pin to top";
+            pinButton.title = entry.pinned ? "Unpin this thought" : "Pin this thought above unpinned notes";
+            pinButton.setAttribute("aria-pressed", String(Boolean(entry.pinned)));
+            pinButton.addEventListener("click", () => {
+                entry.pinned = !entry.pinned;
+                saveLongformState(false);
+                renderLongformEntries();
+                showSaved();
+            });
 
             const doneButton = document.createElement("button");
             doneButton.type = "button";
@@ -4226,7 +4279,7 @@ if (document.getElementById("longformApp")) {
                 showSaved();
             });
 
-            toolsPanel.append(doneButton, mediaEdit, archive, remove);
+            toolsPanel.append(pinButton, doneButton, mediaEdit, archive, remove);
             tools.append(toolsSummary, toolsPanel);
 
             const expand = document.createElement("button");
@@ -4331,7 +4384,8 @@ if (document.getElementById("longformApp")) {
             done: false,
             createdAt: new Date().toISOString(),
             imageUrl: longformImageUrl.value.trim(),
-            linkUrl: longformLinkUrl.value.trim()
+            linkUrl: longformLinkUrl.value.trim(),
+            pinned: false
         });
 
         longformInput.innerHTML = "";
