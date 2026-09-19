@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Brain Aquarium</title>
-    <link rel="stylesheet" href="Style.css?v=20260918h">
+    <link rel="stylesheet" href="Style.css?v=20260918i">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-    <script src="CloudSync.js?v=20260918h" defer></script>
-    <script src="Script.js?v=20260918h" defer></script>
+    <script src="CloudSync.js?v=20260918i" defer></script>
+    <script src="Script.js?v=20260918i" defer></script>
 </head>
 <body data-default-theme="aquarium">
 <div class="aq-page" id="aquariumApp">
@@ -66,21 +66,6 @@
 
     <div class="aq-workspace">
         <main class="aq-board-workspace">
-            <div class="aq-board-tools">
-                <label class="aq-filter-dropdown">
-                    <span>show</span>
-                    <select id="aqFilterSelect" aria-label="Filter Aquarium cards">
-                        <option value="all">All types</option>
-                    </select>
-                </label>
-
-                <div class="aq-board-tool-right">
-                    <div class="aq-panel-subtitle">Drag categories by ⋮⋮ · drag cards anywhere · drop above/below a card to reorder</div>
-                    <button class="small-button aq-add-category-inline" id="manageAquariumCategories" type="button">categories</button>
-                    <button class="small-button aq-add-category-inline" id="addCategoryTop" type="button">+ category</button>
-                </div>
-            </div>
-
             <div id="categoryGrid" class="aq-section-board"></div>
 
             <div class="aq-footer-note">
@@ -88,7 +73,18 @@
             </div>
         </main>
 
-        <aside class="aq-panel aq-capture-panel" data-collapsible-panel="aquarium-capture">
+        <div class="aq-capture-column">
+            <div class="aq-board-tools aq-capture-tools">
+                <label class="aq-filter-dropdown">
+                    <span>show</span>
+                    <select id="aqFilterSelect" aria-label="Filter Aquarium cards">
+                        <option value="all">All types</option>
+                    </select>
+                </label>
+                <button class="small-button aq-add-category-inline" id="manageAquariumCategories" type="button">categories</button>
+            </div>
+
+            <aside class="aq-panel aq-capture-panel" data-collapsible-panel="aquarium-capture">
             <div class="aq-panel-head">
                 <div class="aq-title-wrap">
                     <span class="aq-section-icon">✧</span>
@@ -118,7 +114,8 @@
             </div>
 
             <div id="inboxZone" class="aq-inbox-zone aq-dropzone" data-zone="inbox" data-collapse-body></div>
-        </aside>
+            </aside>
+        </div>
     </div>
 
 </div>

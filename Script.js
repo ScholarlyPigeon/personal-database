@@ -3012,7 +3012,7 @@ if (document.getElementById("aquariumApp")) {
             aquariumState.kinds.forEach(kind => {
                 const option = document.createElement("option");
                 option.value = kind.id;
-                option.textContent = `${aquariumKindSymbol(kind.id)} ${kind.name}`;
+                option.textContent = kind.name;
                 captureSelect.appendChild(option);
             });
             captureSelect.value = captureKind;
@@ -3109,36 +3109,19 @@ if (document.getElementById("aquariumApp")) {
         const leading = document.createElement("div");
         leading.className = "aq-card-leading";
 
-        if (card.kind === "action") {
-            const checkbox = document.createElement("input");
-            checkbox.type = "checkbox";
-            checkbox.className = "aq-action-check";
-            checkbox.checked = Boolean(card.done);
-            checkbox.title = "Mark action complete";
-            checkbox.addEventListener("change", () => {
-                card.done = checkbox.checked;
-                saveAquariumState();
-                renderAquarium();
-            });
-            leading.appendChild(checkbox);
-        } else {
-            const icon = document.createElement("span");
-            icon.className = "aq-kind-icon";
-            icon.textContent = aquariumKindSymbol(card.kind);
-            icon.title = aquariumKindName(card.kind);
-
-            const complete = document.createElement("input");
-            complete.type = "checkbox";
-            complete.className = "aq-secondary-complete";
-            complete.checked = Boolean(card.done);
-            complete.title = "Mark complete";
-            complete.addEventListener("change", () => {
-                card.done = complete.checked;
-                saveAquariumState();
-                renderAquarium();
-            });
-            leading.append(icon, complete);
-        }
+        const complete = document.createElement("input");
+        complete.type = "checkbox";
+        complete.className = "aq-type-complete";
+        complete.checked = Boolean(card.done);
+        complete.title = `Mark ${aquariumKindName(card.kind)} complete`;
+        complete.setAttribute("aria-label", complete.title);
+        complete.dataset.accent = aquariumKindById(card.kind)?.accent || "teal";
+        complete.addEventListener("change", () => {
+            card.done = complete.checked;
+            saveAquariumState();
+            renderAquarium();
+        });
+        leading.appendChild(complete);
 
         const main = document.createElement("div");
         main.className = "aq-card-main";
@@ -3913,7 +3896,6 @@ if (document.getElementById("aquariumApp")) {
 
     document.getElementById("manageAquariumKinds")?.addEventListener("click", openAquariumKindManager);
 
-    document.getElementById("addCategoryTop").addEventListener("click", addAquariumCategory);
     document.getElementById("manageAquariumCategories")?.addEventListener("click", openAquariumCategoryManager);
 
     document.getElementById("archiveDone").addEventListener("click", () => {

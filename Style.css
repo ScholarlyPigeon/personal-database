@@ -12033,3 +12033,134 @@ html.aquarium-page .aq-card-date {
         grid-row: 1 !important;
     }
 }
+
+
+/* =========================================================
+   V9 — AQUARIUM FOCUS COLUMN + UNIFIED TYPE BUBBLES
+   ========================================================= */
+html.aquarium-page .aq-workspace {
+    align-items: stretch !important;
+}
+
+/* Board begins immediately; its utility controls live over the writing column. */
+html.aquarium-page .aq-board-workspace {
+    align-self: start;
+}
+html.aquarium-page .aq-capture-column {
+    min-width: 0;
+    height: calc(100dvh - 96px);
+    max-height: calc(100dvh - 28px);
+    position: sticky;
+    top: 10px;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    gap: 7px;
+}
+html.aquarium-page .aq-capture-tools {
+    min-height: 30px;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: nowrap;
+    gap: 7px;
+}
+html.aquarium-page .aq-capture-tools .aq-filter-dropdown {
+    margin-right: auto;
+}
+html.aquarium-page .aq-capture-panel {
+    position: relative !important;
+    top: auto !important;
+    height: 100%;
+    min-height: 0;
+    display: grid;
+    grid-template-rows: auto auto minmax(0, 1fr);
+}
+html.aquarium-page .aq-capture-panel.is-collapsed {
+    height: auto;
+    align-self: start;
+    grid-template-rows: auto;
+}
+html.aquarium-page .aq-capture-body {
+    min-height: 0;
+}
+html.aquarium-page .aq-inbox-zone {
+    min-height: 0;
+    max-height: none !important;
+    height: 100%;
+    overflow-y: auto;
+}
+
+/* One type = one bubble. No special star/question glyph language. */
+html.aquarium-page .aq-card-leading {
+    width: 18px !important;
+    min-height: 22px;
+    display: grid !important;
+    place-items: start center;
+    align-content: start !important;
+    row-gap: 0 !important;
+    padding-top: 1px;
+}
+html.aquarium-page .aq-type-complete {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 15px;
+    height: 15px;
+    margin: 0;
+    border-radius: 50%;
+    background: transparent;
+    border: 1.5px solid var(--teal-soft);
+    cursor: pointer;
+    display: block;
+    transition: background .12s ease, border-color .12s ease, box-shadow .12s ease;
+}
+html.aquarium-page .aq-type-complete[data-accent="teal"] { border-color: var(--teal-soft); }
+html.aquarium-page .aq-type-complete[data-accent="blue"] { border-color: var(--blue-soft); }
+html.aquarium-page .aq-type-complete[data-accent="plum"] { border-color: var(--plum-soft); }
+html.aquarium-page .aq-type-complete[data-accent="rose"] { border-color: var(--rose-soft); }
+html.aquarium-page .aq-type-complete[data-accent="green"] { border-color: var(--green-soft); }
+html.aquarium-page .aq-type-complete[data-accent="orange"] { border-color: var(--orange-soft); }
+html.aquarium-page .aq-type-complete:checked[data-accent="teal"] { background: radial-gradient(circle at center, var(--teal-soft) 0 43%, transparent 48%); }
+html.aquarium-page .aq-type-complete:checked[data-accent="blue"] { background: radial-gradient(circle at center, var(--blue-soft) 0 43%, transparent 48%); }
+html.aquarium-page .aq-type-complete:checked[data-accent="plum"] { background: radial-gradient(circle at center, var(--plum-soft) 0 43%, transparent 48%); }
+html.aquarium-page .aq-type-complete:checked[data-accent="rose"] { background: radial-gradient(circle at center, var(--rose-soft) 0 43%, transparent 48%); }
+html.aquarium-page .aq-type-complete:checked[data-accent="green"] { background: radial-gradient(circle at center, var(--green-soft) 0 43%, transparent 48%); }
+html.aquarium-page .aq-type-complete:checked[data-accent="orange"] { background: radial-gradient(circle at center, var(--orange-soft) 0 43%, transparent 48%); }
+html.aquarium-page .aq-type-complete:hover {
+    box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 10%, transparent);
+}
+
+@media (max-width: 760px) {
+    html.aquarium-page .aq-capture-column {
+        order: -1;
+        position: relative;
+        top: auto;
+        height: auto;
+        max-height: none;
+        display: grid;
+        grid-template-rows: auto auto;
+    }
+    html.aquarium-page .aq-capture-panel {
+        height: auto;
+        min-height: 0;
+        grid-template-rows: auto auto auto;
+    }
+    html.aquarium-page .aq-inbox-zone {
+        height: auto;
+        min-height: 120px;
+        max-height: none !important;
+    }
+    html.aquarium-page .aq-capture-tools {
+        flex-wrap: wrap;
+    }
+}
+
+
+/* Dynamic type accent also owns the quiet card edge, so custom types and the
+   three original types use the same visual language. */
+html.aquarium-page .aq-card[data-kind-accent="teal"] { border-left: 3px solid var(--teal); }
+html.aquarium-page .aq-card[data-kind-accent="blue"] { border-left: 3px solid var(--blue); }
+html.aquarium-page .aq-card[data-kind-accent="plum"] { border-left: 3px solid var(--plum); }
+html.aquarium-page .aq-card[data-kind-accent="rose"] { border-left: 3px solid var(--rose); }
+html.aquarium-page .aq-card[data-kind-accent="green"] { border-left: 3px solid var(--green); }
+html.aquarium-page .aq-card[data-kind-accent="orange"] { border-left: 3px solid var(--orange); }
