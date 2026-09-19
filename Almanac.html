@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Personal Almanac</title>
-    <link rel="stylesheet" href="Style.css?v=20260918i">
+    <link rel="stylesheet" href="Style.css?v=20260918j">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-    <script src="CloudSync.js?v=20260918i" defer></script>
-    <script src="Script.js?v=20260918i" defer></script>
+    <script src="CloudSync.js?v=20260918j" defer></script>
+    <script src="Script.js?v=20260918j" defer></script>
 </head>
 <body data-default-theme="fall2">
 <div class="almanac-page" id="almanacApp">
@@ -96,14 +96,10 @@
         <section class="panel almanac-panel strains-panel" data-collapsible-panel="almanac-strains" data-accent="blue">
             <div class="almanac-panel-head">
                 <div class="panel-title"><span>🌿</span><span class="almanac-section-title" contenteditable="true" data-almanac-title="strains">Strain Journal</span></div>
+                <button id="addAlmanacStrain" class="almanac-add-button" type="button">+ strain</button>
             </div>
             <div class="almanac-strain-body" data-collapse-body>
                 <div id="almanacStrains" class="almanac-strain-list"></div>
-                <div class="almanac-strain-entry">
-                    <input id="almanacStrainName" type="text" placeholder="Strain / product">
-                    <textarea id="almanacStrainNotes" rows="2" placeholder="Effects, setting, what happened next…"></textarea>
-                    <button id="addAlmanacStrain" class="checklist-add" type="button">add entry</button>
-                </div>
             </div>
         </section>
     </main>
@@ -585,37 +581,73 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    function addStrain() {
+        const id = makeId("strain");
+        strains.unshift({
+            id,
+            name: "New strain",
+            notes: "",
+            html: "",
+            createdAt: new Date().toISOString(),
+            expanded: true
+        });
+        saveStrains(false);
+        renderStrains();
+        showSaved();
+        requestAnimationFrame(() => {
+            const title = document.querySelector(`.almanac-note-card[data-strain-id="${id}"] .almanac-note-title`);
+            if (!title) return;
+            title.focus();
+            const range = document.createRange();
+            range.selectNodeContents(title);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+        });
+    }
+
     function renderStrains() {
         const container = document.getElementById("almanacStrains");
         container.innerHTML = "";
-        if (!strains.length) empty(container, "Your strain notes live here without changing their original storage key.");
+        if (!strains.length) {
+            empty(container, "Strains you want to remember can live here with as much or as little context as useful.");
+            return;
+        }
 
         strains.forEach((entry, index) => {
             entry.expanded = Boolean(entry.expanded);
             const card = document.createElement("article");
-            card.className = "almanac-strain-card" + (entry.expanded ? " expanded" : "");
+            card.className = "almanac-note-card" + (entry.expanded ? " expanded" : "");
+            card.dataset.strainId = entry.id;
 
             const head = document.createElement("div");
-            head.className = "almanac-strain-head";
+            head.className = "almanac-note-head";
+
             const titleWrap = document.createElement("div");
             titleWrap.className = "almanac-strain-title-wrap";
-            const name = document.createElement("div");
-            name.className = "almanac-strain-name";
-            name.contentEditable = "true";
-            name.spellcheck = true;
-            name.textContent = entry.name || "Unnamed strain";
-            name.addEventListener("input", () => {
-                entry.name = name.innerText.trim() || "Unnamed strain";
+            const title = document.createElement("div");
+            title.className = "almanac-note-title";
+            title.contentEditable = "true";
+            title.spellcheck = true;
+            title.textContent = entry.name || "Unnamed strain";
+            title.addEventListener("input", () => {
+                entry.name = title.innerText.trim() || "Unnamed strain";
                 saveStrains();
             });
+            title.addEventListener("keydown", event => {
+                if (event.key !== "Enter") return;
+                event.preventDefault();
+                title.blur();
+            });
+
             const date = document.createElement("span");
             date.className = "almanac-strain-date";
             const d = entry.createdAt ? new Date(entry.createdAt) : new Date();
             date.textContent = Number.isNaN(d.getTime()) ? "" : d.toLocaleDateString("en-US", { month:"short", day:"numeric", year:"numeric" });
-            titleWrap.append(name, date);
+            titleWrap.append(title, date);
 
             const actions = document.createElement("div");
-            actions.className = "almanac-strain-actions";
+            actions.className = "almanac-note-actions";
             const toggle = document.createElement("button");
             toggle.type = "button";
             toggle.className = "almanac-note-toggle";
@@ -661,16 +693,21 @@ document.addEventListener("DOMContentLoaded", () => {
             head.append(titleWrap, actions);
 
             const body = document.createElement("div");
-            body.className = "almanac-strain-notes";
-            body.contentEditable = "true";
-            body.spellcheck = true;
+            body.className = "almanac-note-body";
             body.hidden = !entry.expanded;
-            body.textContent = entry.notes || "";
-            body.dataset.placeholder = "Add effects or context…";
-            body.addEventListener("input", () => {
-                entry.notes = body.innerText;
+            const richText = document.createElement("div");
+            richText.className = "almanac-note-rich";
+            richText.contentEditable = "true";
+            richText.spellcheck = true;
+            richText.innerHTML = entry.html || plainToHtml(entry.notes || "");
+            richText.dataset.placeholder = "Effects, setting, what happened next…";
+            richText.addEventListener("input", () => {
+                entry.html = richText.innerHTML;
+                entry.notes = richText.innerText;
                 saveStrains();
             });
+            body.appendChild(richText);
+
             card.append(head, body);
             container.appendChild(card);
         });
@@ -714,24 +751,7 @@ document.addEventListener("DOMContentLoaded", () => {
         renderList("restock");
         showSaved();
     });
-    document.getElementById("addAlmanacStrain").addEventListener("click", () => {
-        const name = document.getElementById("almanacStrainName");
-        const notes = document.getElementById("almanacStrainNotes");
-        if (!name.value.trim() && !notes.value.trim()) return;
-        strains.unshift({
-            id: makeId("strain"),
-            name: name.value.trim() || "Unnamed strain",
-            notes: notes.value.trim(),
-            createdAt: new Date().toISOString(),
-            expanded: false
-        });
-        name.value = "";
-        notes.value = "";
-        saveStrains(false);
-        renderStrains();
-        showSaved();
-        name.focus();
-    });
+    document.getElementById("addAlmanacStrain").addEventListener("click", addStrain);
 
     window.addEventListener("storage", event => {
         if (event.key === STATE_KEY) {

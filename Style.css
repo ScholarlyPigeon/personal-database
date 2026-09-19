@@ -12164,3 +12164,50 @@ html.aquarium-page .aq-card[data-kind-accent="plum"] { border-left: 3px solid va
 html.aquarium-page .aq-card[data-kind-accent="rose"] { border-left: 3px solid var(--rose); }
 html.aquarium-page .aq-card[data-kind-accent="green"] { border-left: 3px solid var(--green); }
 html.aquarium-page .aq-card[data-kind-accent="orange"] { border-left: 3px solid var(--orange); }
+
+/* =========================================================
+   V10 — RADAR COLLAPSE STABILITY + STRAIN CARD ENTRY
+   ========================================================= */
+/* The Radar stack uses flex to donate space when one panel folds. Keep the
+   open sibling's grid/body sized from available flex space instead of an old
+   100%-height child, which could visually blank after a neighboring collapse. */
+.database-page .left-rail > .checklist-panel:not(.is-collapsed) {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    height: auto !important;
+    display: grid !important;
+    grid-template-rows: 40px minmax(0, 1fr) !important;
+}
+.database-page .left-rail > .checklist-panel:not(.is-collapsed) > .checklist-body {
+    display: grid !important;
+    min-height: 0 !important;
+    height: auto !important;
+    grid-template-rows: minmax(0, 1fr) auto !important;
+    overflow: hidden;
+}
+.database-page .left-rail > .checklist-panel:not(.is-collapsed) > .checklist-body > .checklist-list {
+    min-height: 0 !important;
+    overflow-y: auto !important;
+}
+
+/* Strains now enter exactly like Meals: a small + button in the tile header
+   creates an immediately editable card. The fixed bottom composer is retired. */
+.almanac-strain-body {
+    display: flex !important;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden !important;
+}
+.almanac-strain-list {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 8px;
+}
+.strains-panel .almanac-note-card {
+    border-color: color-mix(in srgb, var(--blue) 42%, var(--border));
+}
+.strains-panel .almanac-note-title,
+.strains-panel .almanac-strain-date {
+    color: var(--blue-soft);
+}
