@@ -11913,3 +11913,123 @@ html.aquarium-page .aq-card.move-source {
     opacity: .55;
     box-shadow: 0 0 0 2px color-mix(in srgb, var(--teal) 34%, transparent);
 }
+
+/* =========================================================
+   V8 — DATABASE RECOVERY + ROOMIER COLUMNS + AQUARIUM CARD AIR
+   ========================================================= */
+
+/* Database: three equal working columns and a little more desktop breathing room. */
+.database-page.page {
+    width: min(1700px, calc(100% - 20px));
+}
+.database-page .database-grid.content-shell {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 12px;
+}
+
+/* Every Database list owns the flexible middle of its panel, so its composer
+   stays parked at the floor even when the list is empty. */
+.database-page .checklist-panel {
+    min-height: 0;
+    height: 100%;
+}
+.database-page .checklist-body,
+.database-page .database-notes-body {
+    min-height: 0;
+    height: 100%;
+    grid-template-rows: minmax(0, 1fr) auto !important;
+}
+.database-page .checklist-list,
+.database-page .database-notes-list {
+    min-height: 0;
+    overflow-y: auto;
+}
+.database-page .checklist-entry,
+.database-page .database-notes-entry,
+.database-page .day-entry-row {
+    align-items: stretch;
+}
+
+/* Two-line composers with matching submit controls. Auto-grow may expand up to
+   the shared cap, but these never collapse back into a one-line sliver. */
+.database-page .checklist-input,
+.database-page .database-notes-input,
+.database-page .day-input {
+    min-height: 52px !important;
+    height: 52px;
+    line-height: 19px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    resize: none;
+}
+.database-page .checklist-add,
+.database-page .mini-add {
+    min-height: 52px;
+    height: 52px;
+    align-self: end;
+    display: grid;
+    place-items: center;
+}
+
+/* The two-card visible calendar rule remains, but the entry row is always the
+   fixed floor of each day card. */
+.database-page .day-card {
+    grid-template-rows: auto minmax(0, 1fr) 52px !important;
+}
+.database-page .day-card .day-list {
+    min-height: 0;
+    overflow-y: auto;
+}
+
+/* Aquarium: two category tiles per row on desktop, one per row on phones. */
+html.aquarium-page .aq-category-grid {
+    grid-template-columns: repeat(2, minmax(260px, 1fr)) !important;
+}
+
+/* Type/date metadata gets its own quiet line ABOVE the editable title/header,
+   instead of competing horizontally with the title and action controls. */
+html.aquarium-page .aq-card-main {
+    display: grid;
+    grid-template-rows: auto auto auto;
+    min-width: 0;
+}
+html.aquarium-page .aq-card-meta {
+    grid-row: 1;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 5px;
+    min-width: 0;
+}
+html.aquarium-page .aq-card-header {
+    grid-row: 2;
+    grid-template-columns: auto minmax(0,1fr) auto !important;
+    align-items: center;
+}
+html.aquarium-page .aq-card-body {
+    grid-row: 3;
+}
+html.aquarium-page .aq-card-meta .aq-kind-select {
+    max-width: min(170px, 68%);
+}
+html.aquarium-page .aq-card-date {
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+    .database-page.page { width: calc(100% - 12px); }
+    .database-page .database-grid.content-shell { grid-template-columns: 1fr !important; }
+    html.aquarium-page .aq-category-grid { grid-template-columns: 1fr !important; }
+    html.aquarium-page .aq-card-meta {
+        grid-column: auto !important;
+        justify-self: stretch !important;
+        flex-wrap: nowrap;
+    }
+    html.aquarium-page .aq-card-actions {
+        grid-column: 3 !important;
+        grid-row: 1 !important;
+    }
+}

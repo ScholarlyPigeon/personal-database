@@ -172,7 +172,8 @@ function resizeSharedAutoGrowTextarea(field) {
     const borderTop = parseFloat(styles.borderTopWidth) || 0;
     const borderBottom = parseFloat(styles.borderBottomWidth) || 0;
     const chrome = paddingTop + paddingBottom + borderTop + borderBottom;
-    const minHeight = lineHeight + chrome;
+    const requestedMinLines = Math.max(1, parseInt(field.dataset.autogrowMinLines || "1", 10) || 1);
+    const minHeight = (lineHeight * requestedMinLines) + chrome;
     const unlimited = field.classList.contains("aq-capture-input") || field.dataset.autogrowUnlimited === "true";
     const maxHeight = unlimited ? Number.POSITIVE_INFINITY : (lineHeight * 4) + chrome;
     const nextHeight = unlimited
@@ -185,7 +186,7 @@ function resizeSharedAutoGrowTextarea(field) {
 function bindSharedAutoGrowTextarea(field) {
     if (!field || field.dataset.sharedAutogrowBound === "true") return;
     field.dataset.sharedAutogrowBound = "true";
-    field.rows = 1;
+    field.rows = Math.max(1, parseInt(field.dataset.autogrowMinLines || field.getAttribute("rows") || "1", 10) || 1);
     field.addEventListener("input", () => resizeSharedAutoGrowTextarea(field));
     resizeSharedAutoGrowTextarea(field);
 }
@@ -736,8 +737,9 @@ if (document.getElementById("tileGrid")) {
         const input = document.createElement("textarea");
         input.id = `dayInput${offset}`;
         input.className = "day-input auto-grow-textarea";
-        input.rows = 1;
+        input.rows = 2;
         input.dataset.autogrow = "true";
+        input.dataset.autogrowMinLines = "2";
         input.placeholder = "Add for this day...";
         bindAutoGrowTextarea(input);
 
@@ -1761,7 +1763,13 @@ if (document.getElementById("tileGrid")) {
     ];
 
     const linksContainer = document.getElementById("linksContainer");
-    let links = JSON.parse(localStorage.getItem("pigeonhole-tight-links")) || defaultLinks;
+    let links = defaultLinks;
+    try {
+        const savedLinks = JSON.parse(localStorage.getItem("pigeonhole-tight-links") || "null");
+        if (Array.isArray(savedLinks)) links = savedLinks;
+    } catch (error) {
+        console.warn("Could not read saved Database links; leaving the stored value untouched and using defaults for this load.", error);
+    }
     let draggedLinkId = null;
     let editingLinkId = null;
 
@@ -2039,7 +2047,16 @@ if (document.getElementById("tileGrid")) {
             bindAutoGrowTextarea(inputElement);
         }
 
-        let items = JSON.parse(localStorage.getItem(storageKey)) || defaults;
+        let items = Array.isArray(defaults) ? defaults.map(item => ({ ...item })) : [];
+        const rawSavedItems = localStorage.getItem(storageKey);
+        if (rawSavedItems !== null) {
+            try {
+                const parsedItems = JSON.parse(rawSavedItems);
+                if (Array.isArray(parsedItems)) items = parsedItems;
+            } catch (error) {
+                console.warn(`Could not read ${storageKey}; preserving the stored value and continuing with an empty/default view instead of stopping the whole Database.`, error);
+            }
+        }
         let addedStableIds = false;
         items = items.map(item => {
             if (item && item.id) return item;
@@ -2366,7 +2383,7 @@ if (document.getElementById("tileGrid")) {
         archiveContext: "Near My Radar"
     });
 
-    createChecklistManager({
+    const databaseNotesManager = createChecklistManager({
         storageKey: "pigeonhole-database-notes-v1",
         listId: "databaseNotesList",
         inputId: "databaseNotesInput",
@@ -2378,6 +2395,49 @@ if (document.getElementById("tileGrid")) {
         checkable: false,
         newItemsToTop: true
     });
+
+    /* V18 recovery migration: v7 retired the visible Main Board but left its
+       saved line-item keys intact. Bring those lines into the new Notes desk
+       exactly once so the information is visible again. The original tile
+       storage is deliberately NOT removed, leaving a safety copy behind. */
+    const LEGACY_BOARD_TO_NOTES_MIGRATION_KEY = "pigeonhole-v18-board-to-notes-migrated";
+    if (databaseNotesManager && localStorage.getItem(LEGACY_BOARD_TO_NOTES_MIGRATION_KEY) !== "true") {
+        const existingIds = new Set(databaseNotesManager.items.map(item => item?.id).filter(Boolean));
+        let recoveredCount = 0;
+
+        tiles.forEach(tile => {
+            const tileItems = loadTileItems(tile);
+            const sourceTitle = plainTileTitle(tile);
+            const defaultTexts = new Set(tile.custom ? [] : defaultTileLines(tile));
+
+            tileItems.forEach(item => {
+                const recoveredText = String(item?.text || "").trim();
+                if (!recoveredText || existingIds.has(item.id)) return;
+
+                /* The old Main Board shipped with starter/example lines. Those
+                   are not personal data, so don't flood the new Notes desk with
+                   untouched defaults. Any edited/new line differs and is kept. */
+                if (!tile.custom && defaultTexts.has(recoveredText)) return;
+
+                databaseNotesManager.items.push({
+                    id: item.id || archiveId("task"),
+                    text: recoveredText,
+                    done: false,
+                    recoveredFromTile: tile.id,
+                    recoveredFromTitle: sourceTitle
+                });
+                existingIds.add(item.id);
+                recoveredCount += 1;
+            });
+        });
+
+        if (recoveredCount) {
+            databaseNotesManager.save(false);
+            databaseNotesManager.render();
+            showSaved();
+        }
+        localStorage.setItem(LEGACY_BOARD_TO_NOTES_MIGRATION_KEY, "true");
+    }
 
     /* V17 migration: the visible Priority Shelf was retired in favor of Radar.
        Preserve any items that were still sitting there by moving them into
@@ -3190,7 +3250,7 @@ if (document.getElementById("aquariumApp")) {
         const actions = document.createElement("div");
         actions.className = "aq-card-actions";
         actions.append(selector, archive, remove, collapse);
-        header.append(drag, title, meta, actions);
+        header.append(drag, title, actions);
 
         const body = document.createElement("div");
         body.className = "aq-card-body";
@@ -3207,7 +3267,7 @@ if (document.getElementById("aquariumApp")) {
             saveAquariumState();
         });
         body.appendChild(text);
-        main.append(header, body);
+        main.append(meta, header, body);
 
         drag.addEventListener("click", event => {
             if (!mobileComposerUsesNewlines()) return;

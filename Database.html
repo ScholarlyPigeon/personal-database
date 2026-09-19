@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Database</title>
-    <link rel="stylesheet" href="Style.css?v=20260918g">
+    <link rel="stylesheet" href="Style.css?v=20260918h">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-    <script src="CloudSync.js?v=20260918g" defer></script>
-    <script src="Script.js?v=20260918g" defer></script>
+    <script src="CloudSync.js?v=20260918h" defer></script>
+    <script src="Script.js?v=20260918h" defer></script>
 </head>
 <body class="database-body" data-theme="dark">
 <div class="page database-page">
@@ -85,7 +85,7 @@
                 <div class="checklist-body" data-collapse-body>
                     <div id="radarList" class="checklist-list scroll-teal"></div>
                     <div class="checklist-entry radar-entry">
-                        <textarea id="radarInput" class="checklist-input radar-input auto-grow-textarea" rows="1" data-autogrow="true" placeholder="Add to radar..."></textarea>
+                        <textarea id="radarInput" class="checklist-input radar-input auto-grow-textarea" rows="2" data-autogrow="true" data-autogrow-min-lines="2" placeholder="Add to radar..."></textarea>
                         <button id="addRadar" class="checklist-add radar-add" type="button">Add</button>
                     </div>
                 </div>
@@ -100,7 +100,7 @@
                 <div class="checklist-body" data-collapse-body>
                     <div id="nearRadarList" class="checklist-list scroll-plum"></div>
                     <div class="checklist-entry radar-entry">
-                        <textarea id="nearRadarInput" class="checklist-input radar-input auto-grow-textarea" rows="1" data-autogrow="true" placeholder="Keep nearby..."></textarea>
+                        <textarea id="nearRadarInput" class="checklist-input radar-input auto-grow-textarea" rows="2" data-autogrow="true" data-autogrow-min-lines="2" placeholder="Keep nearby..."></textarea>
                         <button id="addNearRadar" class="checklist-add radar-add" type="button">Add</button>
                     </div>
                 </div>
@@ -115,7 +115,7 @@
                 <div class="database-notes-body" data-collapse-body>
                     <div id="databaseNotesList" class="checklist-list database-notes-list scroll-teal"></div>
                     <div class="checklist-entry database-notes-entry">
-                        <textarea id="databaseNotesInput" class="checklist-input database-notes-input auto-grow-textarea" rows="2" data-autogrow="true" data-autogrow-unlimited="true" placeholder="Drop a note here, then move it where it belongs when you're ready..."></textarea>
+                        <textarea id="databaseNotesInput" class="checklist-input database-notes-input auto-grow-textarea" rows="2" data-autogrow="true" data-autogrow-min-lines="2" placeholder="Drop a note here, then move it where it belongs when you're ready..."></textarea>
                         <button id="addDatabaseNote" class="checklist-add" type="button">Add</button>
                     </div>
                 </div>
