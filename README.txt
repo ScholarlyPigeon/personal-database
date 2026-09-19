@@ -165,3 +165,24 @@ V5 — FOCUS / MOVEMENT REFINEMENT
 - Database Upcoming header icon/title alignment was tightened.
 - Longform Saved Thoughts category filters are now one compact dropdown instead of a row of buttons.
 - Shared asset cache version bumped to 20260918e.
+
+V6 — FOCUS BOARD + CLEAN CLIPBOARD PASS
+- Personal Almanac reduced to six core movable/collapsible tiles: Meals, Dailies, Things I Like, Restock, Wish List, Strain Journal.
+- Removed Quotes & Understandings from the visible Almanac while preserving any existing quote data in storage.
+- Added editable/synced headers for all six Almanac sections.
+- Almanac tile colors now mirror Brain Aquarium's teal/plum/rose/blue/green/orange accent language, including richer Fall 2 variants.
+- Added adaptive Almanac focus sizing: when only one or two tiles remain expanded, collapsed headers stack in a left rail and the expanded tile(s) grow into the freed space up to roughly two normal tile heights.
+- Rebuilt Meal entry as title + rich-text note + optional recipe/reference link; saved Meal cards remain collapsible and editable.
+- Longform section metadata controls and saved-thought category/date controls are pushed farther right for cleaner headers.
+- Rebuilt shared clipboard handling: plain-text copy explicitly preserves block/paragraph spacing, while rich HTML copy is sanitized to semantic formatting and links only. PI classes, ids, inline styles, colors, backgrounds, and layout paint are removed. Almanac is now included in the clean-copy scope.
+- Bumped shared asset cache version to 20260918f.
+- Safe Sync / CloudSync.js unchanged.
+
+V6G — EDITABLE ECOSYSTEM NAMING
+- Main page titles and subtitles are editable across the Personal Intranet.
+- Remaining static section headers/subheaders in Aquarium and Archive are editable and synced.
+- Almanac page title/subtitle and intro labels are editable; its six tile titles remain independently editable as before.
+- Existing Database, Longform, Neopets, Aquarium section-band, and Almanac tile-title editors are preserved.
+- Shared editable UI labels stay single-line/plain-text so renaming cannot accidentally inject rich formatting or line breaks.
+- New shared label keys use pigeonhole-pi-ui-* and therefore sync through the existing Safe Sync rules.
+- Shared asset cache version bumped to 20260918g.

@@ -169,25 +169,80 @@ function mobileComposerUsesNewlines() {
 
 /* =========================================================
    SHARED COPY PRESERVATION
-   Rich/contenteditable browser selections can flatten visual block
-   breaks when copied as plain text. Keep paragraph/newline spacing
-   intact while also preserving HTML for rich destinations.
+   Browser selections inside rich/contenteditable surfaces can lose
+   visual paragraph breaks or carry theme paint into the destination.
+   Build two deliberate clipboard payloads:
+   - plain text with stable paragraph/newline spacing
+   - semantic HTML with formatting/links but no PI paint, color, ids,
+     classes, inline styles, or layout attributes
    ========================================================= */
+const CLIPBOARD_BLOCK_TAGS = new Set([
+    "ADDRESS", "ARTICLE", "ASIDE", "BLOCKQUOTE", "DIV", "DL", "FIELDSET",
+    "FIGCAPTION", "FIGURE", "FOOTER", "FORM", "H1", "H2", "H3", "H4",
+    "H5", "H6", "HEADER", "HR", "LI", "MAIN", "NAV", "OL", "P", "PRE",
+    "SECTION", "TABLE", "TBODY", "TD", "TFOOT", "TH", "THEAD", "TR", "UL"
+]);
+
 function selectionFragmentToPlainText(fragment) {
+    function walk(node) {
+        if (node.nodeType === Node.TEXT_NODE) return node.nodeValue || "";
+        if (node.nodeType !== Node.ELEMENT_NODE && node.nodeType !== Node.DOCUMENT_FRAGMENT_NODE) return "";
+
+        if (node.nodeType === Node.ELEMENT_NODE && node.tagName === "BR") return "\n";
+
+        const tag = node.nodeType === Node.ELEMENT_NODE ? node.tagName : "";
+        const isBlock = CLIPBOARD_BLOCK_TAGS.has(tag);
+        const isListItem = tag === "LI";
+        let text = "";
+
+        node.childNodes.forEach(child => {
+            text += walk(child);
+        });
+
+        if (isListItem) {
+            text = text.replace(/^\s+|\s+$/g, "");
+            return text ? `${text}\n` : "";
+        }
+
+        if (isBlock && text && !text.endsWith("\n\n")) {
+            text = text.replace(/\n+$/g, "") + "\n\n";
+        }
+
+        return text;
+    }
+
+    return walk(fragment)
+        .replace(/\u00a0/g, " ")
+        .replace(/\r\n?/g, "\n")
+        .replace(/[ \t]+\n/g, "\n")
+        .replace(/\n{3,}/g, "\n\n")
+        .replace(/^\n+|\n+$/g, "");
+}
+
+function sanitizeClipboardHtml(fragment) {
     const container = document.createElement("div");
     container.appendChild(fragment.cloneNode(true));
 
-    container.querySelectorAll("br").forEach(node => node.replaceWith("\n"));
-    container.querySelectorAll("p, div, li, section, article, header, footer, h1, h2, h3, h4, h5, h6").forEach(node => {
-        if (!node.lastChild || node.lastChild.nodeValue !== "\n") {
-            node.appendChild(document.createTextNode("\n"));
+    const allowedTags = new Set([
+        "A", "B", "BLOCKQUOTE", "BR", "CODE", "DIV", "EM", "H1", "H2", "H3",
+        "H4", "H5", "H6", "I", "LI", "OL", "P", "PRE", "S", "STRIKE", "STRONG",
+        "U", "UL"
+    ]);
+
+    [...container.querySelectorAll("*")].reverse().forEach(element => {
+        if (!allowedTags.has(element.tagName)) {
+            const fragment = document.createDocumentFragment();
+            while (element.firstChild) fragment.appendChild(element.firstChild);
+            element.replaceWith(fragment);
+            return;
         }
+
+        const href = element.tagName === "A" ? element.getAttribute("href") : null;
+        [...element.attributes].forEach(attribute => element.removeAttribute(attribute.name));
+        if (element.tagName === "A" && href) element.setAttribute("href", href);
     });
 
-    return container.textContent
-        .replace(/\u00a0/g, " ")
-        .replace(/[ \t]+\n/g, "\n")
-        .replace(/\n{3,}/g, "\n\n");
+    return container.innerHTML;
 }
 
 document.addEventListener("copy", event => {
@@ -197,40 +252,15 @@ document.addEventListener("copy", event => {
     const node = selection.anchorNode?.nodeType === Node.ELEMENT_NODE
         ? selection.anchorNode
         : selection.anchorNode?.parentElement;
-    if (!node?.closest?.(".database-page, .aq-page, .patterns-page, .longform-page, .neo-page")) return;
+    if (!node?.closest?.(".database-page, .aq-page, .patterns-page, .longform-page, .neo-page, .almanac-page")) return;
 
     const range = selection.getRangeAt(0);
     const fragment = range.cloneContents();
-    const htmlContainer = document.createElement("div");
-    htmlContainer.appendChild(fragment.cloneNode(true));
-
-    /* Keep bold/italic/links/paragraph structure, but remove Personal Intranet
-       layout hooks and painted backgrounds so pasted text does not carry a
-       card/panel color into another note or outside app. */
-    htmlContainer.querySelectorAll("*").forEach(element => {
-        element.removeAttribute("class");
-        element.removeAttribute("id");
-        element.removeAttribute("bgcolor");
-        element.removeAttribute("contenteditable");
-        element.removeAttribute("draggable");
-
-        [...element.attributes].forEach(attribute => {
-            if (attribute.name.startsWith("data-")) element.removeAttribute(attribute.name);
-        });
-
-        if (element.style) {
-            element.style.removeProperty("background");
-            element.style.removeProperty("background-color");
-            element.style.removeProperty("background-image");
-            if (!element.getAttribute("style")?.trim()) element.removeAttribute("style");
-        }
-    });
-
     const plainText = selectionFragmentToPlainText(fragment);
-
     if (!plainText) return;
+
     event.clipboardData.setData("text/plain", plainText);
-    event.clipboardData.setData("text/html", htmlContainer.innerHTML);
+    event.clipboardData.setData("text/html", sanitizeClipboardHtml(fragment));
     event.preventDefault();
 });
 
@@ -326,6 +356,62 @@ function bindCollapsiblePanels(root = document) {
 
 document.addEventListener("DOMContentLoaded", () => bindCollapsiblePanels());
 window.PigeonholeBindCollapsiblePanels = bindCollapsiblePanels;
+
+/* =========================================================
+   SHARED EDITABLE UI LABELS
+   Main titles, subtitles, and static section labels that opt in
+   with data-pi-ui stay single-line, plain-text, and synced.
+   Page-specific editors (Database / Longform / Neopets / Almanac
+   tile names) keep their existing storage systems.
+   ========================================================= */
+const PI_UI_LABEL_PREFIX = "pigeonhole-pi-ui-";
+
+function bindSharedEditableUi(root = document) {
+    root.querySelectorAll?.("[data-pi-ui]").forEach(element => {
+        if (element.dataset.piUiBound === "true") return;
+        const id = String(element.dataset.piUi || "").trim();
+        if (!id) return;
+
+        element.dataset.piUiBound = "true";
+        element.contentEditable = "true";
+        element.spellcheck = true;
+        element.classList.add("pi-ui-edit");
+
+        const key = `${PI_UI_LABEL_PREFIX}${id}`;
+        const saved = localStorage.getItem(key);
+        if (saved !== null) element.textContent = saved;
+
+        const save = () => {
+            const value = element.innerText
+                .replace(/\u00a0/g, " ")
+                .replace(/[\r\n]+/g, " ")
+                .replace(/\s{2,}/g, " ")
+                .trim();
+            element.textContent = value;
+            localStorage.setItem(key, value);
+            if (typeof showSaved === "function") showSaved();
+        };
+
+        element.addEventListener("keydown", event => {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                element.blur();
+            }
+        });
+
+        element.addEventListener("paste", event => {
+            event.preventDefault();
+            const text = (event.clipboardData?.getData("text/plain") || "")
+                .replace(/[\r\n]+/g, " ");
+            document.execCommand("insertText", false, text);
+        });
+
+        element.addEventListener("blur", save);
+    });
+}
+
+document.addEventListener("DOMContentLoaded", () => bindSharedEditableUi());
+window.PigeonholeBindEditableUi = bindSharedEditableUi;
 
 /* =========================================================
    SHARED RICH-TEXT KEYBOARD SHORTCUTS

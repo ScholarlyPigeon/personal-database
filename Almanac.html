@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Personal Almanac</title>
-    <link rel="stylesheet" href="Style.css?v=20260918e">
+    <link rel="stylesheet" href="Style.css?v=20260918g">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-    <script src="CloudSync.js?v=20260918e" defer></script>
-    <script src="Script.js?v=20260918e" defer></script>
+    <script src="CloudSync.js?v=20260918g" defer></script>
+    <script src="Script.js?v=20260918g" defer></script>
 </head>
 <body data-default-theme="fall2">
 <div class="almanac-page" id="almanacApp">
@@ -15,8 +15,8 @@
         <div class="brand">
             <div class="pigeon-mark" aria-hidden="true">📖</div>
             <div>
-                <h1>Personal Almanac</h1>
-                <div class="subtitle">things worth keeping close · useful rituals · provisions · little truths</div>
+                <h1 class="pi-ui-edit" contenteditable="true" data-pi-ui="almanac-page-title">Personal Almanac</h1>
+                <div class="subtitle pi-ui-edit" contenteditable="true" data-pi-ui="almanac-page-subtitle">things worth keeping close · useful rituals · provisions · little truths</div>
             </div>
         </div>
         <div class="header-right almanac-header-actions">
@@ -38,22 +38,31 @@
     </header>
 
     <section class="almanac-intro panel">
-        <strong>A reference book for the version of life that repeats.</strong>
-        <span>Meals, routines, useful truths, supplies, wants, and the things you learn by actually living with them.</span>
+        <strong class="pi-ui-edit" contenteditable="true" data-pi-ui="almanac-intro-title">A reference book for the version of life that repeats.</strong>
+        <span class="pi-ui-edit" contenteditable="true" data-pi-ui="almanac-intro-subtitle">Favorites, routines, supplies, wants, meals, and the things you learn by actually living with them.</span>
     </section>
 
     <main class="almanac-grid" id="almanacGrid">
-        <section class="panel almanac-panel meals-panel" data-collapsible-panel="almanac-meals">
+        <section class="panel almanac-panel meals-panel" data-collapsible-panel="almanac-meals" data-accent="orange">
             <div class="almanac-panel-head">
-                <div class="panel-title"><span>🍲</span><span>Meals I Make</span></div>
-                <button class="almanac-add-button" type="button" data-add-note="meals">+ meal</button>
+                <div class="panel-title"><span>🍲</span><span class="almanac-section-title" contenteditable="true" data-almanac-title="meals">Meals I Make</span></div>
             </div>
-            <div id="almanacMeals" class="almanac-note-list" data-collapse-body></div>
+            <div class="almanac-meal-workspace" data-collapse-body>
+                <div id="almanacMeals" class="almanac-note-list"></div>
+                <div class="almanac-meal-composer">
+                    <input id="almanacMealTitle" class="almanac-meal-title-input" type="text" placeholder="Meal / recipe title">
+                    <div id="almanacMealBody" class="almanac-meal-body-input" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="Notes, ingredients, shortcuts, substitutions, why it works…"></div>
+                    <div class="almanac-meal-link-row">
+                        <input id="almanacMealLink" type="url" placeholder="Optional recipe / reference link">
+                        <button id="addAlmanacMeal" class="checklist-add" type="button">add meal</button>
+                    </div>
+                </div>
+            </div>
         </section>
 
-        <section class="panel almanac-panel dailies-panel" data-collapsible-panel="almanac-dailies">
+        <section class="panel almanac-panel dailies-panel" data-collapsible-panel="almanac-dailies" data-accent="teal">
             <div class="almanac-panel-head">
-                <div class="panel-title"><span>✓</span><span>Dailies</span></div>
+                <div class="panel-title"><span>✓</span><span class="almanac-section-title" contenteditable="true" data-almanac-title="dailies">Dailies</span></div>
                 <button class="almanac-reset-button" id="resetAlmanacDailies" type="button">reset checks</button>
             </div>
             <div class="almanac-checklist-body" data-collapse-body>
@@ -62,27 +71,19 @@
             </div>
         </section>
 
-        <section class="panel almanac-panel quotes-panel" data-collapsible-panel="almanac-quotes">
+        <section class="panel almanac-panel rotation-panel" data-collapsible-panel="almanac-rotation" data-accent="plum">
             <div class="almanac-panel-head">
-                <div class="panel-title"><span>❝</span><span>Quotes & Understandings</span></div>
-                <button class="almanac-add-button" type="button" data-add-note="quotes">+ note</button>
-            </div>
-            <div id="almanacQuotes" class="almanac-note-list" data-collapse-body></div>
-        </section>
-
-        <section class="panel almanac-panel rotation-panel" data-collapsible-panel="almanac-rotation">
-            <div class="almanac-panel-head">
-                <div class="panel-title"><span>✦</span><span>Current Rotation</span></div>
+                <div class="panel-title"><span>✦</span><span class="almanac-section-title" contenteditable="true" data-almanac-title="rotation">Things I Like</span></div>
             </div>
             <div class="almanac-checklist-body" data-collapse-body>
                 <div id="almanacRotation" class="almanac-simple-list"></div>
-                <div class="almanac-entry-row"><input id="almanacRotationInput" type="text" placeholder="Drink, ritual, show, product, tiny favorite…"><button type="button" data-add-list="rotation">+</button></div>
+                <div class="almanac-entry-row"><input id="almanacRotationInput" type="text" placeholder="Something I keep reaching for…"><button type="button" data-add-list="rotation">+</button></div>
             </div>
         </section>
 
-        <section class="panel almanac-panel restock-panel" data-collapsible-panel="almanac-restock">
+        <section class="panel almanac-panel restock-panel" data-collapsible-panel="almanac-restock" data-accent="green">
             <div class="almanac-panel-head">
-                <div class="panel-title"><span>↻</span><span>Restock</span></div>
+                <div class="panel-title"><span>↻</span><span class="almanac-section-title" contenteditable="true" data-almanac-title="restock">Restock</span></div>
                 <button class="almanac-reset-button" id="resetAlmanacRestock" type="button">reset checks</button>
             </div>
             <div class="almanac-checklist-body" data-collapse-body>
@@ -91,9 +92,9 @@
             </div>
         </section>
 
-        <section class="panel almanac-panel wishlist-panel" data-collapsible-panel="almanac-wishlist">
+        <section class="panel almanac-panel wishlist-panel" data-collapsible-panel="almanac-wishlist" data-accent="rose">
             <div class="almanac-panel-head">
-                <div class="panel-title"><span>✧</span><span>Wish List</span></div>
+                <div class="panel-title"><span>✧</span><span class="almanac-section-title" contenteditable="true" data-almanac-title="wishlist">Wish List</span></div>
             </div>
             <div class="almanac-checklist-body" data-collapse-body>
                 <div id="almanacWishlist" class="almanac-checklist"></div>
@@ -101,9 +102,9 @@
             </div>
         </section>
 
-        <section class="panel almanac-panel strains-panel" data-collapsible-panel="almanac-strains">
+        <section class="panel almanac-panel strains-panel" data-collapsible-panel="almanac-strains" data-accent="blue">
             <div class="almanac-panel-head">
-                <div class="panel-title"><span>🌿</span><span>Strain Journal</span></div>
+                <div class="panel-title"><span>🌿</span><span class="almanac-section-title" contenteditable="true" data-almanac-title="strains">Strain Journal</span></div>
             </div>
             <div class="almanac-strain-body" data-collapse-body>
                 <div id="almanacStrains" class="almanac-strain-list"></div>
@@ -122,11 +123,16 @@ document.addEventListener("DOMContentLoaded", () => {
     const STATE_KEY = "pigeonhole-almanac-v1";
     const STRAIN_KEY = "pigeonhole-v15-strain-journal";
     const PANEL_ORDER_KEY = "pigeonhole-almanac-panel-order-v1";
+    const TITLE_PREFIX = "pigeonhole-almanac-section-title-";
     const emptyState = () => ({ meals: [], dailies: [], quotes: [], restock: [], wishlist: [], rotation: [] });
     const makeId = prefix => (globalThis.crypto && crypto.randomUUID)
         ? `${prefix}-${crypto.randomUUID()}`
         : `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
-    const plainToHtml = value => { const temp = document.createElement("div"); temp.textContent = String(value || ""); return temp.innerHTML.replace(/\n/g,"<br>"); };
+    const plainToHtml = value => {
+        const temp = document.createElement("div");
+        temp.textContent = String(value || "");
+        return temp.innerHTML.replace(/\n/g,"<br>");
+    };
 
     function readState() {
         try {
@@ -137,27 +143,49 @@ document.addEventListener("DOMContentLoaded", () => {
             return base;
         } catch { return emptyState(); }
     }
-    function saveState(announce = true) { localStorage.setItem(STATE_KEY, JSON.stringify(state)); if (announce) showSaved(); }
-    function readStrains() { try { const value = JSON.parse(localStorage.getItem(STRAIN_KEY) || "[]"); return Array.isArray(value) ? value : []; } catch { return []; } }
-    function saveStrains(announce = true) { localStorage.setItem(STRAIN_KEY, JSON.stringify(strains)); if (announce) showSaved(); }
+    function saveState(announce = true) {
+        localStorage.setItem(STATE_KEY, JSON.stringify(state));
+        if (announce) showSaved();
+    }
+    function readStrains() {
+        try {
+            const value = JSON.parse(localStorage.getItem(STRAIN_KEY) || "[]");
+            return Array.isArray(value) ? value : [];
+        } catch { return []; }
+    }
+    function saveStrains(announce = true) {
+        localStorage.setItem(STRAIN_KEY, JSON.stringify(strains));
+        if (announce) showSaved();
+    }
+
     let state = readState();
     let strains = readStrains();
 
-    const noteContainers = { meals: document.getElementById("almanacMeals"), quotes: document.getElementById("almanacQuotes") };
+    const noteContainers = { meals: document.getElementById("almanacMeals") };
     const listContainers = {
-        dailies: document.getElementById("almanacDailies"), restock: document.getElementById("almanacRestock"),
-        wishlist: document.getElementById("almanacWishlist"), rotation: document.getElementById("almanacRotation")
+        dailies: document.getElementById("almanacDailies"),
+        restock: document.getElementById("almanacRestock"),
+        wishlist: document.getElementById("almanacWishlist"),
+        rotation: document.getElementById("almanacRotation")
     };
     const inputMap = {
-        dailies: document.getElementById("almanacDailiesInput"), restock: document.getElementById("almanacRestockInput"),
-        wishlist: document.getElementById("almanacWishlistInput"), rotation: document.getElementById("almanacRotationInput")
+        dailies: document.getElementById("almanacDailiesInput"),
+        restock: document.getElementById("almanacRestockInput"),
+        wishlist: document.getElementById("almanacWishlistInput"),
+        rotation: document.getElementById("almanacRotationInput")
     };
     const almanacGrid = document.getElementById("almanacGrid");
-    const panelIds = [...almanacGrid.querySelectorAll(":scope > .almanac-panel")].map(panel => panel.dataset.collapsiblePanel);
+    const panelIds = [...almanacGrid.querySelectorAll(":scope > .almanac-panel")]
+        .map(panel => panel.dataset.collapsiblePanel);
     let activeAlmanacPanelMove = null;
     let draggedAlmanacPanel = null;
 
-    function empty(container, text) { const node = document.createElement("div"); node.className = "almanac-empty"; node.textContent = text; container.appendChild(node); }
+    function empty(container, text) {
+        const node = document.createElement("div");
+        node.className = "almanac-empty";
+        node.textContent = text;
+        container.appendChild(node);
+    }
 
     function archiveFromAlmanac(text, context, metadata = null) {
         return archiveManualItem({
@@ -166,6 +194,30 @@ document.addEventListener("DOMContentLoaded", () => {
             context,
             metadata
         });
+    }
+
+    function bindSectionTitles() {
+        document.querySelectorAll("[data-almanac-title]").forEach(element => {
+            const section = element.dataset.almanacTitle;
+            const key = `${TITLE_PREFIX}${section}`;
+            const saved = localStorage.getItem(key);
+            if (saved !== null) element.textContent = saved;
+
+            element.addEventListener("input", () => {
+                const value = element.innerText.replace(/\s+/g, " ").trim();
+                localStorage.setItem(key, value || element.dataset.defaultTitle || "Untitled");
+                showSaved();
+            });
+            element.addEventListener("keydown", event => {
+                if (event.key !== "Enter") return;
+                event.preventDefault();
+                element.blur();
+            });
+        });
+    }
+
+    function sectionTitle(section) {
+        return document.querySelector(`[data-almanac-title="${section}"]`)?.innerText.trim() || "Almanac";
     }
 
     function readPanelOrder() {
@@ -177,12 +229,16 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch { return [...panelIds]; }
     }
     let panelOrder = readPanelOrder();
-    function savePanelOrder() { localStorage.setItem(PANEL_ORDER_KEY, JSON.stringify(panelOrder)); showSaved(); }
+    function savePanelOrder() {
+        localStorage.setItem(PANEL_ORDER_KEY, JSON.stringify(panelOrder));
+        showSaved();
+    }
     function applyPanelOrder() {
         panelOrder.forEach(id => {
             const panel = almanacGrid.querySelector(`:scope > [data-collapsible-panel="${id}"]`);
             if (panel) almanacGrid.appendChild(panel);
         });
+        updateAlmanacFocusLayout();
     }
     function setAlmanacPanelMove(id = null) {
         activeAlmanacPanelMove = id;
@@ -209,6 +265,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const id = panel.dataset.collapsiblePanel;
             const head = panel.querySelector(":scope > .almanac-panel-head");
             if (!id || !head || head.querySelector(":scope > .almanac-panel-move")) return;
+
             const handle = document.createElement("button");
             handle.type = "button";
             handle.className = "almanac-panel-move";
@@ -216,153 +273,473 @@ document.addEventListener("DOMContentLoaded", () => {
             handle.title = "Move this Almanac tile";
             handle.draggable = true;
             head.insertBefore(handle, head.firstChild);
+
             handle.addEventListener("click", event => {
-                event.preventDefault(); event.stopPropagation();
+                event.preventDefault();
+                event.stopPropagation();
                 setAlmanacPanelMove(activeAlmanacPanelMove === id ? null : id);
             });
             handle.addEventListener("dragstart", event => {
-                draggedAlmanacPanel = id; setAlmanacPanelMove(id);
+                draggedAlmanacPanel = id;
+                setAlmanacPanelMove(id);
                 event.dataTransfer.effectAllowed = "move";
                 event.dataTransfer.setData("application/x-pigeon-almanac-panel", id);
             });
-            handle.addEventListener("dragend", () => { draggedAlmanacPanel = null; setAlmanacPanelMove(null); });
-            panel.addEventListener("dragover", event => { if (!draggedAlmanacPanel || draggedAlmanacPanel === id) return; event.preventDefault(); panel.classList.add("almanac-panel-drop-target"); });
-            panel.addEventListener("dragleave", event => { if (!panel.contains(event.relatedTarget)) panel.classList.remove("almanac-panel-drop-target"); });
+            handle.addEventListener("dragend", () => {
+                draggedAlmanacPanel = null;
+                setAlmanacPanelMove(null);
+            });
+            panel.addEventListener("dragover", event => {
+                if (!draggedAlmanacPanel || draggedAlmanacPanel === id) return;
+                event.preventDefault();
+                panel.classList.add("almanac-panel-drop-target");
+            });
+            panel.addEventListener("dragleave", event => {
+                if (!panel.contains(event.relatedTarget)) panel.classList.remove("almanac-panel-drop-target");
+            });
             panel.addEventListener("drop", event => {
                 if (!draggedAlmanacPanel || draggedAlmanacPanel === id) return;
-                event.preventDefault(); panel.classList.remove("almanac-panel-drop-target");
-                const source = draggedAlmanacPanel; draggedAlmanacPanel = null; moveAlmanacPanelBefore(source, id);
+                event.preventDefault();
+                panel.classList.remove("almanac-panel-drop-target");
+                const source = draggedAlmanacPanel;
+                draggedAlmanacPanel = null;
+                moveAlmanacPanelBefore(source, id);
             });
         });
+
         almanacGrid.addEventListener("click", event => {
             if (!activeAlmanacPanelMove || event.target.closest(".almanac-panel-move")) return;
             const target = event.target.closest(".almanac-panel");
             if (!target || target.dataset.collapsiblePanel === activeAlmanacPanelMove) return;
-            event.preventDefault(); event.stopPropagation();
+            event.preventDefault();
+            event.stopPropagation();
             moveAlmanacPanelBefore(activeAlmanacPanelMove, target.dataset.collapsiblePanel);
         }, true);
     }
 
-    function addNote(kind) {
-        state[kind].unshift({ id: makeId(kind), title: kind === "meals" ? "New meal" : "New understanding", text: "", html: "", expanded: true, createdAt: new Date().toISOString() });
-        saveState(false); renderNotes(kind); showSaved();
-        requestAnimationFrame(() => noteContainers[kind].querySelector(".almanac-note-card:first-child .almanac-note-title")?.focus());
+    function updateAlmanacFocusLayout() {
+        const panels = [...almanacGrid.querySelectorAll(":scope > .almanac-panel")];
+        const openPanels = panels.filter(panel => !panel.classList.contains("is-collapsed"));
+
+        almanacGrid.classList.toggle("almanac-focus-one", openPanels.length === 1);
+        almanacGrid.classList.toggle("almanac-focus-two", openPanels.length === 2);
+        panels.forEach(panel => delete panel.dataset.focusSlot);
+        openPanels.forEach((panel, index) => {
+            if (openPanels.length <= 2) panel.dataset.focusSlot = String(index + 1);
+        });
     }
 
-    function renderNotes(kind) {
-        const container = noteContainers[kind]; container.innerHTML = "";
-        if (!state[kind].length) empty(container, kind === "meals" ? "Meals you actually like making can live here, with notes only when useful." : "Quotes, realizations, rules of thumb, and things you want to remember can live here.");
-        state[kind].forEach((item, index) => {
+    const panelClassObserver = new MutationObserver(mutations => {
+        if (mutations.some(mutation => mutation.attributeName === "class")) {
+            requestAnimationFrame(updateAlmanacFocusLayout);
+        }
+    });
+    almanacGrid.querySelectorAll(":scope > .almanac-panel").forEach(panel => {
+        panelClassObserver.observe(panel, { attributes: true, attributeFilter: ["class"] });
+    });
+
+    function addMeal() {
+        const titleInput = document.getElementById("almanacMealTitle");
+        const bodyInput = document.getElementById("almanacMealBody");
+        const linkInput = document.getElementById("almanacMealLink");
+        const title = titleInput.value.trim();
+        const text = bodyInput.innerText.trim();
+        const html = bodyInput.innerHTML.trim();
+        const linkUrl = linkInput.value.trim();
+        if (!title && !text && !linkUrl) return;
+
+        state.meals.unshift({
+            id: makeId("meals"),
+            title: title || text.split(/\n/)[0]?.trim() || "Untitled meal",
+            text,
+            html,
+            linkUrl,
+            expanded: false,
+            createdAt: new Date().toISOString()
+        });
+        titleInput.value = "";
+        bodyInput.innerHTML = "";
+        linkInput.value = "";
+        saveState(false);
+        renderMeals();
+        showSaved();
+        titleInput.focus();
+    }
+
+    function renderMeals() {
+        const container = noteContainers.meals;
+        container.innerHTML = "";
+        if (!state.meals.length) {
+            empty(container, "Meals you actually like making can live here, with as much or as little detail as useful.");
+            return;
+        }
+
+        state.meals.forEach((item, index) => {
             item.expanded = Boolean(item.expanded);
-            const card = document.createElement("article"); card.className = "almanac-note-card" + (item.expanded ? " expanded" : "");
-            const head = document.createElement("div"); head.className = "almanac-note-head";
-            const title = document.createElement("div"); title.className = "almanac-note-title"; title.contentEditable = "true"; title.spellcheck = true; title.textContent = item.title || "Untitled";
-            title.addEventListener("input", () => { item.title = title.innerText.trim() || "Untitled"; saveState(); });
-            title.addEventListener("keydown", event => { if (event.key === "Enter") { event.preventDefault(); title.blur(); } });
-            const actions = document.createElement("div"); actions.className = "almanac-note-actions";
-            const toggle = document.createElement("button"); toggle.type = "button"; toggle.className = "almanac-note-toggle"; toggle.textContent = item.expanded ? "▾" : "▸"; toggle.title = item.expanded ? "Collapse body" : "Reveal body";
-            toggle.addEventListener("click", () => { item.expanded = !item.expanded; saveState(false); renderNotes(kind); showSaved(); });
-            const archive = document.createElement("button"); archive.type = "button"; archive.className = "archive-icon-button almanac-item-archive"; archive.textContent = "↘"; archive.title = `Archive ${kind === "meals" ? "meal" : "note"}`;
-            archive.addEventListener("click", () => {
-                const bodyText = String(item.text || "").trim();
-                const archived = archiveFromAlmanac([item.title, bodyText].filter(Boolean).join("\n\n"), kind === "meals" ? "Meals I Make" : "Quotes & Understandings", { kind, title: item.title });
-                if (!archived) return;
-                state[kind].splice(index,1); saveState(false); renderNotes(kind); showSaved();
+            const card = document.createElement("article");
+            card.className = "almanac-note-card" + (item.expanded ? " expanded" : "");
+
+            const head = document.createElement("div");
+            head.className = "almanac-note-head";
+            const title = document.createElement("div");
+            title.className = "almanac-note-title";
+            title.contentEditable = "true";
+            title.spellcheck = true;
+            title.textContent = item.title || "Untitled meal";
+            title.addEventListener("input", () => {
+                item.title = title.innerText.trim() || "Untitled meal";
+                saveState();
             });
-            const remove = document.createElement("button"); remove.type = "button"; remove.className = "archive-remove"; remove.textContent = "×"; remove.title = `Delete ${kind === "meals" ? "meal" : "note"}`;
-            remove.addEventListener("click", () => { state[kind].splice(index,1); saveState(false); renderNotes(kind); showSaved(); });
-            actions.append(toggle, archive, remove); head.append(title, actions);
-            const body = document.createElement("div"); body.className = "almanac-note-body"; body.contentEditable = "true"; body.spellcheck = true; body.hidden = !item.expanded; body.innerHTML = item.html || plainToHtml(item.text); body.dataset.placeholder = kind === "meals" ? "Ingredients, shortcuts, substitutions, why it works…" : "Put the full thought here…";
-            body.addEventListener("input", () => { item.html = body.innerHTML; item.text = body.innerText; saveState(); });
-            card.append(head, body); container.appendChild(card);
+            title.addEventListener("keydown", event => {
+                if (event.key !== "Enter") return;
+                event.preventDefault();
+                title.blur();
+            });
+
+            const actions = document.createElement("div");
+            actions.className = "almanac-note-actions";
+            const toggle = document.createElement("button");
+            toggle.type = "button";
+            toggle.className = "almanac-note-toggle";
+            toggle.textContent = item.expanded ? "▾" : "▸";
+            toggle.title = item.expanded ? "Collapse meal notes" : "Reveal meal notes";
+            toggle.addEventListener("click", () => {
+                item.expanded = !item.expanded;
+                saveState(false);
+                renderMeals();
+                showSaved();
+            });
+
+            const archive = document.createElement("button");
+            archive.type = "button";
+            archive.className = "archive-icon-button almanac-item-archive";
+            archive.textContent = "↘";
+            archive.title = "Archive meal";
+            archive.addEventListener("click", () => {
+                const archived = archiveFromAlmanac(
+                    [item.title, item.text, item.linkUrl].filter(Boolean).join("\n\n"),
+                    sectionTitle("meals"),
+                    { kind: "meals", title: item.title, linkUrl: item.linkUrl || "" }
+                );
+                if (!archived) return;
+                state.meals.splice(index, 1);
+                saveState(false);
+                renderMeals();
+                showSaved();
+            });
+
+            const remove = document.createElement("button");
+            remove.type = "button";
+            remove.className = "archive-remove";
+            remove.textContent = "×";
+            remove.title = "Delete meal";
+            remove.addEventListener("click", () => {
+                state.meals.splice(index, 1);
+                saveState(false);
+                renderMeals();
+                showSaved();
+            });
+            actions.append(toggle, archive, remove);
+            head.append(title, actions);
+
+            const body = document.createElement("div");
+            body.className = "almanac-note-body";
+            body.hidden = !item.expanded;
+
+            const richText = document.createElement("div");
+            richText.className = "almanac-note-rich";
+            richText.contentEditable = "true";
+            richText.spellcheck = true;
+            richText.innerHTML = item.html || plainToHtml(item.text);
+            richText.dataset.placeholder = "Notes, ingredients, shortcuts, substitutions, why it works…";
+            richText.addEventListener("input", () => {
+                item.html = richText.innerHTML;
+                item.text = richText.innerText;
+                saveState();
+            });
+            body.appendChild(richText);
+
+            const linkRow = document.createElement("div");
+            linkRow.className = "almanac-saved-link-row";
+            const linkInput = document.createElement("input");
+            linkInput.type = "url";
+            linkInput.value = item.linkUrl || "";
+            linkInput.placeholder = "Optional recipe / reference link";
+            const openLink = document.createElement("a");
+            openLink.className = "almanac-meal-link-open";
+            openLink.textContent = "open ↗";
+            openLink.target = "_blank";
+            openLink.rel = "noopener noreferrer";
+            const refreshLink = () => {
+                const value = linkInput.value.trim();
+                item.linkUrl = value;
+                openLink.hidden = !value;
+                openLink.href = value || "#";
+            };
+            refreshLink();
+            linkInput.addEventListener("input", () => {
+                refreshLink();
+                saveState();
+            });
+            linkRow.append(linkInput, openLink);
+            body.appendChild(linkRow);
+
+            card.append(head, body);
+            container.appendChild(card);
         });
     }
 
     function addListItem(kind) {
-        const input = inputMap[kind]; const text = input.value.trim(); if (!text) return;
-        state[kind].push({ id: makeId(kind), text, done: false }); input.value = ""; saveState(false); renderList(kind); showSaved(); input.focus();
+        const input = inputMap[kind];
+        const text = input.value.trim();
+        if (!text) return;
+        state[kind].push({ id: makeId(kind), text, done: false });
+        input.value = "";
+        saveState(false);
+        renderList(kind);
+        showSaved();
+        input.focus();
     }
+
     function renderList(kind) {
-        const container = listContainers[kind]; container.innerHTML = "";
-        if (!state[kind].length) empty(container, kind === "rotation" ? "A tiny place for whatever is currently in heavy rotation." : "Nothing here yet.");
+        const container = listContainers[kind];
+        container.innerHTML = "";
+        if (!state[kind].length) {
+            empty(container, kind === "rotation" ? "A tiny place for things you keep reaching for lately." : "Nothing here yet.");
+        }
+
         state[kind].forEach((item, index) => {
-            const row = document.createElement("div"); row.className = "almanac-list-item" + (item.done ? " done" : "");
+            const row = document.createElement("div");
+            row.className = "almanac-list-item" + (item.done ? " done" : "");
+
             if (kind !== "rotation") {
-                const check = document.createElement("input"); check.type = "checkbox"; check.checked = Boolean(item.done);
-                check.addEventListener("change", () => { item.done = check.checked; saveState(false); renderList(kind); showSaved(); }); row.appendChild(check);
+                const check = document.createElement("input");
+                check.type = "checkbox";
+                check.checked = Boolean(item.done);
+                check.addEventListener("change", () => {
+                    item.done = check.checked;
+                    saveState(false);
+                    renderList(kind);
+                    showSaved();
+                });
+                row.appendChild(check);
             } else {
-                const spark = document.createElement("span"); spark.className = "almanac-list-spark"; spark.textContent = "✦"; row.appendChild(spark);
+                const spark = document.createElement("span");
+                spark.className = "almanac-list-spark";
+                spark.textContent = "✦";
+                row.appendChild(spark);
             }
-            const text = document.createElement("div"); text.className = "almanac-list-text"; text.contentEditable = "true"; text.spellcheck = true; text.textContent = item.text || "";
-            text.addEventListener("input", () => { item.text = text.innerText; saveState(); });
-            const archive = document.createElement("button"); archive.type = "button"; archive.className = "archive-icon-button almanac-item-archive"; archive.textContent = "↘"; archive.title = "Archive this item";
-            archive.addEventListener("click", () => {
-                const labels = { dailies: "Dailies", restock: "Restock", wishlist: "Wish List", rotation: "Current Rotation" };
-                const archived = archiveFromAlmanac(item.text, labels[kind] || "Almanac", { kind, done: Boolean(item.done) });
-                if (!archived) return;
-                state[kind].splice(index,1); saveState(false); renderList(kind); showSaved();
+
+            const text = document.createElement("div");
+            text.className = "almanac-list-text";
+            text.contentEditable = "true";
+            text.spellcheck = true;
+            text.textContent = item.text || "";
+            text.addEventListener("input", () => {
+                item.text = text.innerText;
+                saveState();
             });
-            const remove = document.createElement("button"); remove.type = "button"; remove.className = "archive-remove"; remove.textContent = "×"; remove.title = "Delete list item";
-            remove.addEventListener("click", () => { state[kind].splice(index,1); saveState(false); renderList(kind); showSaved(); });
-            row.append(text, archive, remove); container.appendChild(row);
+
+            const archive = document.createElement("button");
+            archive.type = "button";
+            archive.className = "archive-icon-button almanac-item-archive";
+            archive.textContent = "↘";
+            archive.title = "Archive this item";
+            archive.addEventListener("click", () => {
+                const sectionMap = { dailies: "dailies", restock: "restock", wishlist: "wishlist", rotation: "rotation" };
+                const archived = archiveFromAlmanac(item.text, sectionTitle(sectionMap[kind]), { kind, done: Boolean(item.done) });
+                if (!archived) return;
+                state[kind].splice(index, 1);
+                saveState(false);
+                renderList(kind);
+                showSaved();
+            });
+
+            const remove = document.createElement("button");
+            remove.type = "button";
+            remove.className = "archive-remove";
+            remove.textContent = "×";
+            remove.title = "Delete list item";
+            remove.addEventListener("click", () => {
+                state[kind].splice(index, 1);
+                saveState(false);
+                renderList(kind);
+                showSaved();
+            });
+            row.append(text, archive, remove);
+            container.appendChild(row);
         });
     }
 
     function renderStrains() {
-        const container = document.getElementById("almanacStrains"); container.innerHTML = "";
-        if (!strains.length) empty(container, "Your existing strain notes moved here without changing their storage key.");
+        const container = document.getElementById("almanacStrains");
+        container.innerHTML = "";
+        if (!strains.length) empty(container, "Your strain notes live here without changing their original storage key.");
+
         strains.forEach((entry, index) => {
             entry.expanded = Boolean(entry.expanded);
-            const card = document.createElement("article"); card.className = "almanac-strain-card" + (entry.expanded ? " expanded" : "");
-            const head = document.createElement("div"); head.className = "almanac-strain-head";
-            const titleWrap = document.createElement("div"); titleWrap.className = "almanac-strain-title-wrap";
-            const name = document.createElement("div"); name.className = "almanac-strain-name"; name.contentEditable = "true"; name.spellcheck = true; name.textContent = entry.name || "Unnamed strain";
-            name.addEventListener("input", () => { entry.name = name.innerText.trim() || "Unnamed strain"; saveStrains(); });
-            const date = document.createElement("span"); date.className = "almanac-strain-date"; const d = entry.createdAt ? new Date(entry.createdAt) : new Date(); date.textContent = Number.isNaN(d.getTime()) ? "" : d.toLocaleDateString("en-US", { month:"short", day:"numeric", year:"numeric" });
-            titleWrap.append(name, date);
-            const actions = document.createElement("div"); actions.className = "almanac-strain-actions";
-            const toggle = document.createElement("button"); toggle.type = "button"; toggle.className = "almanac-note-toggle"; toggle.textContent = entry.expanded ? "▾" : "▸"; toggle.title = entry.expanded ? "Collapse strain notes" : "Reveal strain notes";
-            toggle.addEventListener("click", () => { entry.expanded = !entry.expanded; saveStrains(false); renderStrains(); showSaved(); });
-            const archive = document.createElement("button"); archive.type = "button"; archive.className = "archive-icon-button almanac-item-archive"; archive.textContent = "↘"; archive.title = "Archive strain entry";
-            archive.addEventListener("click", () => {
-                const archived = archiveFromAlmanac([entry.name, entry.notes].filter(Boolean).join("\n\n"), "Strain Journal", { kind: "strain", name: entry.name, createdAt: entry.createdAt });
-                if (!archived) return;
-                strains.splice(index,1); saveStrains(false); renderStrains(); showSaved();
+            const card = document.createElement("article");
+            card.className = "almanac-strain-card" + (entry.expanded ? " expanded" : "");
+
+            const head = document.createElement("div");
+            head.className = "almanac-strain-head";
+            const titleWrap = document.createElement("div");
+            titleWrap.className = "almanac-strain-title-wrap";
+            const name = document.createElement("div");
+            name.className = "almanac-strain-name";
+            name.contentEditable = "true";
+            name.spellcheck = true;
+            name.textContent = entry.name || "Unnamed strain";
+            name.addEventListener("input", () => {
+                entry.name = name.innerText.trim() || "Unnamed strain";
+                saveStrains();
             });
-            const remove = document.createElement("button"); remove.type = "button"; remove.className = "archive-remove"; remove.textContent = "×"; remove.title = "Delete strain entry";
-            remove.addEventListener("click", () => { strains.splice(index,1); saveStrains(false); renderStrains(); showSaved(); });
-            actions.append(toggle, archive, remove); head.append(titleWrap, actions);
-            const body = document.createElement("div"); body.className = "almanac-strain-notes"; body.contentEditable = "true"; body.spellcheck = true; body.hidden = !entry.expanded; body.textContent = entry.notes || ""; body.dataset.placeholder = "Add effects or context…";
-            body.addEventListener("input", () => { entry.notes = body.innerText; saveStrains(); });
-            card.append(head, body); container.appendChild(card);
+            const date = document.createElement("span");
+            date.className = "almanac-strain-date";
+            const d = entry.createdAt ? new Date(entry.createdAt) : new Date();
+            date.textContent = Number.isNaN(d.getTime()) ? "" : d.toLocaleDateString("en-US", { month:"short", day:"numeric", year:"numeric" });
+            titleWrap.append(name, date);
+
+            const actions = document.createElement("div");
+            actions.className = "almanac-strain-actions";
+            const toggle = document.createElement("button");
+            toggle.type = "button";
+            toggle.className = "almanac-note-toggle";
+            toggle.textContent = entry.expanded ? "▾" : "▸";
+            toggle.title = entry.expanded ? "Collapse strain notes" : "Reveal strain notes";
+            toggle.addEventListener("click", () => {
+                entry.expanded = !entry.expanded;
+                saveStrains(false);
+                renderStrains();
+                showSaved();
+            });
+
+            const archive = document.createElement("button");
+            archive.type = "button";
+            archive.className = "archive-icon-button almanac-item-archive";
+            archive.textContent = "↘";
+            archive.title = "Archive strain entry";
+            archive.addEventListener("click", () => {
+                const archived = archiveFromAlmanac(
+                    [entry.name, entry.notes].filter(Boolean).join("\n\n"),
+                    sectionTitle("strains"),
+                    { kind: "strain", name: entry.name, createdAt: entry.createdAt }
+                );
+                if (!archived) return;
+                strains.splice(index, 1);
+                saveStrains(false);
+                renderStrains();
+                showSaved();
+            });
+
+            const remove = document.createElement("button");
+            remove.type = "button";
+            remove.className = "archive-remove";
+            remove.textContent = "×";
+            remove.title = "Delete strain entry";
+            remove.addEventListener("click", () => {
+                strains.splice(index, 1);
+                saveStrains(false);
+                renderStrains();
+                showSaved();
+            });
+            actions.append(toggle, archive, remove);
+            head.append(titleWrap, actions);
+
+            const body = document.createElement("div");
+            body.className = "almanac-strain-notes";
+            body.contentEditable = "true";
+            body.spellcheck = true;
+            body.hidden = !entry.expanded;
+            body.textContent = entry.notes || "";
+            body.dataset.placeholder = "Add effects or context…";
+            body.addEventListener("input", () => {
+                entry.notes = body.innerText;
+                saveStrains();
+            });
+            card.append(head, body);
+            container.appendChild(card);
         });
     }
 
-    document.querySelectorAll("[data-add-note]").forEach(button => button.addEventListener("click", () => addNote(button.dataset.addNote)));
-    document.querySelectorAll("[data-add-list]").forEach(button => button.addEventListener("click", () => addListItem(button.dataset.addList)));
-    Object.entries(inputMap).forEach(([kind,input]) => input.addEventListener("keydown", event => { if (event.key === "Enter") { event.preventDefault(); addListItem(kind); } }));
-    document.getElementById("resetAlmanacDailies").addEventListener("click", () => { state.dailies.forEach(item => item.done = false); saveState(false); renderList("dailies"); showSaved(); });
-    document.getElementById("resetAlmanacRestock").addEventListener("click", () => { state.restock.forEach(item => item.done = false); saveState(false); renderList("restock"); showSaved(); });
+    document.querySelectorAll("[data-add-list]").forEach(button => {
+        button.addEventListener("click", () => addListItem(button.dataset.addList));
+    });
+    Object.entries(inputMap).forEach(([kind, input]) => {
+        input.addEventListener("keydown", event => {
+            if (event.key !== "Enter") return;
+            event.preventDefault();
+            addListItem(kind);
+        });
+    });
+
+    document.getElementById("addAlmanacMeal").addEventListener("click", addMeal);
+    document.getElementById("almanacMealTitle").addEventListener("keydown", event => {
+        if (event.key !== "Enter") return;
+        event.preventDefault();
+        document.getElementById("almanacMealBody").focus();
+    });
+    document.getElementById("almanacMealBody").addEventListener("keydown", event => {
+        if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
+            event.preventDefault();
+            addMeal();
+        }
+    });
+
+    document.getElementById("resetAlmanacDailies").addEventListener("click", () => {
+        state.dailies.forEach(item => item.done = false);
+        saveState(false);
+        renderList("dailies");
+        showSaved();
+    });
+    document.getElementById("resetAlmanacRestock").addEventListener("click", () => {
+        state.restock.forEach(item => item.done = false);
+        saveState(false);
+        renderList("restock");
+        showSaved();
+    });
     document.getElementById("addAlmanacStrain").addEventListener("click", () => {
-        const name = document.getElementById("almanacStrainName"); const notes = document.getElementById("almanacStrainNotes");
+        const name = document.getElementById("almanacStrainName");
+        const notes = document.getElementById("almanacStrainNotes");
         if (!name.value.trim() && !notes.value.trim()) return;
-        strains.unshift({ id: makeId("strain"), name: name.value.trim() || "Unnamed strain", notes: notes.value.trim(), createdAt: new Date().toISOString(), expanded: false });
-        name.value = ""; notes.value = ""; saveStrains(false); renderStrains(); showSaved(); name.focus();
+        strains.unshift({
+            id: makeId("strain"),
+            name: name.value.trim() || "Unnamed strain",
+            notes: notes.value.trim(),
+            createdAt: new Date().toISOString(),
+            expanded: false
+        });
+        name.value = "";
+        notes.value = "";
+        saveStrains(false);
+        renderStrains();
+        showSaved();
+        name.focus();
     });
 
     window.addEventListener("storage", event => {
-        if (event.key === STATE_KEY) { state = readState(); renderAll(); }
-        if (event.key === STRAIN_KEY) { strains = readStrains(); renderStrains(); }
+        if (event.key === STATE_KEY) {
+            state = readState();
+            renderAll();
+        }
+        if (event.key === STRAIN_KEY) {
+            strains = readStrains();
+            renderStrains();
+        }
     });
 
     function renderAll() {
-        renderNotes("meals"); renderNotes("quotes");
-        ["dailies","restock","wishlist","rotation"].forEach(renderList);
+        renderMeals();
+        ["dailies", "restock", "wishlist", "rotation"].forEach(renderList);
         renderStrains();
+        updateAlmanacFocusLayout();
     }
+
+    bindSectionTitles();
     bindAlmanacPanelMovement();
     renderAll();
     window.PigeonholeBindCollapsiblePanels?.();
+    updateAlmanacFocusLayout();
 });
 </script>
 </body>

@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Brain Aquarium</title>
-    <link rel="stylesheet" href="Style.css?v=20260918e">
+    <link rel="stylesheet" href="Style.css?v=20260918g">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-    <script src="CloudSync.js?v=20260918e" defer></script>
-    <script src="Script.js?v=20260918e" defer></script>
+    <script src="CloudSync.js?v=20260918g" defer></script>
+    <script src="Script.js?v=20260918g" defer></script>
 </head>
 <body data-default-theme="aquarium">
 <div class="aq-page" id="aquariumApp">
@@ -16,8 +16,8 @@
         <div class="aq-brand">
             <div class="pigeon-mark" aria-hidden="true">🪼</div>
             <div class="aq-title">
-                <h1>Brain Aquarium</h1>
-                <div class="aq-subtitle">capture first · sort second · obligation is optional</div>
+                <h1 class="pi-ui-edit" contenteditable="true" data-pi-ui="aquarium-page-title">Brain Aquarium</h1>
+                <div class="aq-subtitle pi-ui-edit" contenteditable="true" data-pi-ui="aquarium-page-subtitle">capture first · sort second · obligation is optional</div>
             </div>
         </div>
 
@@ -70,8 +70,8 @@
                 <div class="aq-title-wrap">
                     <span class="aq-section-icon">✧</span>
                     <div>
-                        <div class="aq-panel-title">Brain Dump</div>
-                        <div class="aq-panel-subtitle">Catch it before asking what it is.</div>
+                        <div class="aq-panel-title pi-ui-edit" contenteditable="true" data-pi-ui="aquarium-brain-dump-title">Brain Dump</div>
+                        <div class="aq-panel-subtitle pi-ui-edit" contenteditable="true" data-pi-ui="aquarium-brain-dump-subtitle">Catch it before asking what it is.</div>
                     </div>
                 </div>
             </div>
@@ -124,7 +124,7 @@
                 </div>
 
                 <div class="aq-board-tool-right">
-                    <div class="aq-panel-subtitle">Drag categories by ⋮⋮ · drag cards anywhere · drop above/below a card to reorder</div>
+                    <div class="aq-panel-subtitle pi-ui-edit" contenteditable="true" data-pi-ui="aquarium-board-subtitle">Drag categories by ⋮⋮ · drag cards anywhere · drop above/below a card to reorder</div>
                     <button class="small-button aq-add-category-inline" id="manageAquariumCategories" type="button">categories</button>
                     <button class="small-button aq-add-category-inline" id="addCategoryTop" type="button">+ category</button>
                 </div>

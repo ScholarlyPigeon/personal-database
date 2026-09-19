@@ -11217,3 +11217,241 @@ body[data-theme="fall2"] .archive-workspace-card[data-accent="blue"] {
     .archive-workspace-card-controls { grid-column: 2; }
     .longform-filter-dropdown select { min-width: 118px; max-width: 145px; }
 }
+
+/* =========================================================
+   V6 FOCUS / ALMANAC + LONGFORM REFINEMENT
+   Adaptive Almanac focus board, Aquarium-style tile accents,
+   note-style Meals, and right-aligned Longform metadata.
+   ========================================================= */
+
+/* Almanac tiles now speak the same jewel-accent language as Aquarium. */
+.almanac-panel[data-accent] {
+    --almanac-accent: var(--teal);
+    --almanac-accent-soft: var(--teal-soft);
+    border-color: color-mix(in srgb, var(--almanac-accent) 32%, var(--border));
+    background:
+        linear-gradient(145deg, color-mix(in srgb, var(--almanac-accent) 7%, transparent), transparent 38%),
+        var(--panel);
+}
+.almanac-panel[data-accent="teal"] { --almanac-accent: var(--teal); --almanac-accent-soft: var(--teal-soft); }
+.almanac-panel[data-accent="plum"] { --almanac-accent: var(--plum); --almanac-accent-soft: var(--plum-soft); }
+.almanac-panel[data-accent="rose"] { --almanac-accent: var(--rose); --almanac-accent-soft: var(--rose-soft); }
+.almanac-panel[data-accent="blue"] { --almanac-accent: var(--blue); --almanac-accent-soft: var(--blue-soft); }
+.almanac-panel[data-accent="green"] { --almanac-accent: var(--green); --almanac-accent-soft: var(--green-soft); }
+.almanac-panel[data-accent="orange"] { --almanac-accent: var(--orange); --almanac-accent-soft: var(--orange-soft); }
+.almanac-panel[data-accent] > .almanac-panel-head {
+    border-bottom-color: color-mix(in srgb, var(--almanac-accent) 25%, var(--border));
+    background: linear-gradient(90deg, color-mix(in srgb, var(--almanac-accent) 8%, transparent), transparent);
+}
+.almanac-panel[data-accent] .almanac-section-title {
+    color: var(--almanac-accent-soft);
+}
+.almanac-section-title {
+    min-width: 0;
+    outline: none;
+    border-radius: 5px;
+    padding: 1px 3px;
+    overflow-wrap: anywhere;
+}
+.almanac-section-title:hover,
+.almanac-section-title:focus {
+    background: color-mix(in srgb, var(--almanac-accent, var(--teal)) 8%, transparent);
+}
+
+/* Fall 2 uses the exact deeper Aquarium family for the six Almanac tiles. */
+body[data-theme="fall2"] .almanac-panel[data-accent="teal"] { background: color-mix(in srgb, #166b66 50%, var(--panel)); border-color: #3fa89f; }
+body[data-theme="fall2"] .almanac-panel[data-accent="plum"] { background: color-mix(in srgb, #7d3154 48%, var(--panel)); border-color: #b76488; }
+body[data-theme="fall2"] .almanac-panel[data-accent="rose"] { background: color-mix(in srgb, #883b31 48%, var(--panel)); border-color: #c86b56; }
+body[data-theme="fall2"] .almanac-panel[data-accent="blue"] { background: color-mix(in srgb, #315a70 48%, var(--panel)); border-color: #6597aa; }
+body[data-theme="fall2"] .almanac-panel[data-accent="green"] { background: color-mix(in srgb, #52673d 50%, var(--panel)); border-color: #8da769; }
+body[data-theme="fall2"] .almanac-panel[data-accent="orange"] { background: color-mix(in srgb, #8d542a 50%, var(--panel)); border-color: #ca8445; }
+body[data-theme="fall2"] .almanac-panel[data-accent] > .almanac-panel-head {
+    background: linear-gradient(90deg, color-mix(in srgb, var(--almanac-accent) 17%, transparent), transparent 78%);
+}
+
+/* Six-tile focus board: normal view is 3x2. When only one or two tiles
+   remain open, collapsed headers become a quiet left rail and open tiles
+   grow up to roughly two normal tiles stacked. */
+@media (min-width: 1101px) {
+    .almanac-grid.almanac-focus-one,
+    .almanac-grid.almanac-focus-two {
+        grid-template-columns: minmax(190px, .56fr) repeat(2, minmax(0, 1fr));
+        grid-auto-rows: 40px;
+        grid-auto-flow: row;
+        align-items: stretch;
+    }
+    .almanac-grid.almanac-focus-one > .almanac-panel.is-collapsed,
+    .almanac-grid.almanac-focus-two > .almanac-panel.is-collapsed {
+        grid-column: 1;
+        grid-row: span 1;
+        min-height: 40px;
+    }
+    .almanac-grid.almanac-focus-one > .almanac-panel[data-focus-slot="1"] {
+        grid-column: 2 / 4;
+        grid-row: 1 / span 14;
+    }
+    .almanac-grid.almanac-focus-two > .almanac-panel[data-focus-slot="1"] {
+        grid-column: 2;
+        grid-row: 1 / span 14;
+    }
+    .almanac-grid.almanac-focus-two > .almanac-panel[data-focus-slot="2"] {
+        grid-column: 3;
+        grid-row: 1 / span 14;
+    }
+}
+
+/* Meals now use a small Longform-ish composer instead of a + card stub. */
+.almanac-meal-workspace {
+    min-height: 0;
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) auto;
+    gap: 8px;
+    padding: 8px;
+    overflow: hidden;
+}
+.almanac-meal-workspace > .almanac-note-list {
+    padding: 0;
+    overflow-y: auto;
+}
+.almanac-meal-composer {
+    display: grid;
+    gap: 6px;
+    padding-top: 8px;
+    border-top: 1px solid color-mix(in srgb, var(--almanac-accent, var(--orange)) 24%, var(--border));
+}
+.almanac-meal-title-input,
+.almanac-meal-link-row input,
+.almanac-saved-link-row input {
+    min-width: 0;
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    background: color-mix(in srgb, var(--bg) 68%, var(--panel));
+    color: var(--text);
+    padding: 6px 8px;
+    outline: none;
+}
+.almanac-meal-body-input,
+.almanac-note-rich {
+    min-height: 72px;
+    max-height: 180px;
+    overflow-y: auto;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    background: color-mix(in srgb, var(--bg) 68%, var(--panel));
+    color: var(--text);
+    padding: 8px 9px;
+    outline: none;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+.almanac-note-rich {
+    min-height: 54px;
+    max-height: none;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    padding: 0;
+}
+.almanac-meal-body-input:empty::before,
+.almanac-note-rich:empty::before {
+    content: attr(data-placeholder);
+    color: var(--faint);
+    pointer-events: none;
+}
+.almanac-meal-link-row,
+.almanac-saved-link-row {
+    display: grid;
+    grid-template-columns: minmax(0,1fr) auto;
+    align-items: center;
+    gap: 6px;
+}
+.almanac-meal-link-row .checklist-add { min-width: 74px; }
+.almanac-saved-link-row {
+    margin-top: 8px;
+    padding-top: 7px;
+    border-top: 1px solid color-mix(in srgb, var(--border) 75%, transparent);
+}
+.almanac-meal-link-open {
+    color: var(--almanac-accent-soft, var(--teal-soft));
+    text-decoration: none;
+    font-size: 10.5px;
+    white-space: nowrap;
+}
+.almanac-meal-link-open:hover { text-decoration: underline; }
+.almanac-note-body {
+    white-space: normal;
+}
+
+/* Longform: controls hug the right edge instead of occupying visual center. */
+.longform-library-head,
+.longform-composer-head {
+    display: grid;
+    grid-template-columns: minmax(0,1fr) auto auto;
+    align-items: start;
+    column-gap: 9px;
+}
+.longform-filter-dropdown,
+.longform-compose-meta {
+    justify-self: end;
+    margin-left: auto;
+}
+.longform-entry-top {
+    justify-content: flex-end;
+}
+.longform-entry-meta {
+    margin-left: auto;
+    justify-content: flex-end;
+}
+
+@media (max-width: 760px) {
+    .longform-library-head,
+    .longform-composer-head {
+        grid-template-columns: minmax(0,1fr) auto;
+        gap: 7px;
+    }
+    .longform-library-head > :first-child,
+    .longform-composer-head > :first-child {
+        grid-column: 1;
+        grid-row: 1;
+    }
+    .longform-library-head > .panel-collapse-toggle,
+    .longform-composer-head > .panel-collapse-toggle {
+        grid-column: 2;
+        grid-row: 1;
+        justify-self: end;
+    }
+    .longform-filter-dropdown,
+    .longform-compose-meta {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        width: 100%;
+        justify-self: stretch;
+        justify-content: flex-end;
+    }
+    .longform-compose-meta label { flex: 0 1 150px; }
+    .longform-entry-meta {
+        align-items: flex-end;
+    }
+    .almanac-meal-body-input { min-height: 96px; }
+}
+
+/* =========================================================
+   V6G — ECOSYSTEM-WIDE EDITABLE TITLES / SUBTITLES
+   ========================================================= */
+.pi-ui-edit {
+    outline: none;
+    border-radius: 5px;
+    cursor: text;
+    min-width: 0;
+}
+
+.pi-ui-edit:hover {
+    background: color-mix(in srgb, var(--text) 4%, transparent);
+}
+
+.pi-ui-edit:focus {
+    background: color-mix(in srgb, var(--text) 7%, transparent);
+    box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--teal) 55%, transparent);
+}
