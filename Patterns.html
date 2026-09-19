@@ -15,8 +15,8 @@
         <div class="brand">
             <div class="pigeon-mark" aria-hidden="true">🧭</div>
             <div>
-                <h1 class="pi-ui-edit" contenteditable="true" data-pi-ui="archive-page-title">Archive & Patterns</h1>
-                <div class="subtitle pi-ui-edit" contenteditable="true" data-pi-ui="archive-page-subtitle">history on the left · thinking desk in the middle · meaning on the right</div>
+                <h1 data-pi-ui="archive-page-title" data-pi-ui-fallback="Archive & Patterns">Archive & Patterns</h1>
+                <div class="subtitle" data-pi-ui="archive-page-subtitle" data-pi-ui-fallback="history on the left · thinking desk in the middle · meaning on the right">history on the left · thinking desk in the middle · meaning on the right</div>
             </div>
         </div>
 
@@ -42,8 +42,8 @@
 
     <section class="patterns-intro panel">
         <div>
-            <strong class="pi-ui-edit" contenteditable="true" data-pi-ui="archive-intro-title">Archive = evidence, not obligation.</strong>
-            <span class="pi-ui-edit" contenteditable="true" data-pi-ui="archive-intro-subtitle">Write once, then let an idea move between Notes, Patterns, and Timeline as its meaning changes.</span>
+            <strong data-pi-ui="archive-intro-title" data-pi-ui-fallback="Archive = evidence, not obligation.">Archive = evidence, not obligation.</strong>
+            <span data-pi-ui="archive-intro-subtitle" data-pi-ui-fallback="Write once, then let an idea move between Notes, Patterns, and Timeline as its meaning changes.">Write once, then let an idea move between Notes, Patterns, and Timeline as its meaning changes.</span>
         </div>
         <div id="archiveSummary" class="archive-summary"></div>
     </section>
@@ -52,16 +52,16 @@
         <div class="patterns-stack archive-stack archive-v2-stack">
             <section class="panel archive-column day-archive-column" data-collapsible-panel="archive-days">
                 <div class="panel-header">
-                    <div class="panel-title"><span>🗓️</span><span class="pi-ui-edit" contenteditable="true" data-pi-ui="archive-days-title">Day Archive</span></div>
-                    <div class="panel-subtitle pi-ui-edit" contenteditable="true" data-pi-ui="archive-days-subtitle">newest first</div>
+                    <div class="panel-title"><span>🗓️</span><span data-pi-ui="archive-days-title" data-pi-ui-fallback="Day Archive">Day Archive</span></div>
+                    <div class="panel-subtitle">newest first</div>
                 </div>
                 <div id="dayArchiveList" class="archive-list scroll-blue" data-collapse-body></div>
             </section>
 
             <section class="panel archive-column item-archive-column" data-collapsible-panel="archive-items">
                 <div class="panel-header">
-                    <div class="panel-title"><span>📦</span><span class="pi-ui-edit" contenteditable="true" data-pi-ui="archive-items-title">Archive</span></div>
-                    <div class="panel-subtitle pi-ui-edit" contenteditable="true" data-pi-ui="archive-items-subtitle">moved out of active space</div>
+                    <div class="panel-title"><span>📦</span><span data-pi-ui="archive-items-title" data-pi-ui-fallback="Archive">Archive</span></div>
+                    <div class="panel-subtitle">moved out of active space</div>
                 </div>
                 <div id="itemArchiveList" class="archive-list scroll-teal" data-collapse-body></div>
             </section>
@@ -69,8 +69,8 @@
 
         <section class="panel archive-notes-column" data-collapsible-panel="archive-notes-desk">
             <div class="panel-header archive-v2-panel-head">
-                <div class="panel-title"><span>✎</span><span class="pi-ui-edit" contenteditable="true" data-pi-ui="archive-notes-title">Notes</span></div>
-                <div class="panel-subtitle pi-ui-edit" contenteditable="true" data-pi-ui="archive-notes-subtitle">capture here · move later</div>
+                <div class="panel-title"><span>✎</span><span data-pi-ui="archive-notes-title" data-pi-ui-fallback="Notes">Notes</span></div>
+                <div class="panel-subtitle">capture here · move later</div>
             </div>
             <div class="archive-notes-body" data-collapse-body>
                 <div class="archive-note-composer">
@@ -96,16 +96,16 @@
         <div class="patterns-stack insight-stack archive-v2-stack">
             <section class="panel archive-insight-panel patterns-insight-panel" data-collapsible-panel="archive-patterns">
                 <div class="panel-header">
-                    <div class="panel-title"><span>🧩</span><span class="pi-ui-edit" contenteditable="true" data-pi-ui="archive-patterns-title">Patterns</span></div>
-                    <div class="panel-subtitle pi-ui-edit" contenteditable="true" data-pi-ui="archive-patterns-subtitle">what keeps repeating</div>
+                    <div class="panel-title"><span>🧩</span><span data-pi-ui="archive-patterns-title" data-pi-ui-fallback="Patterns">Patterns</span></div>
+                    <div class="panel-subtitle">what keeps repeating</div>
                 </div>
                 <div id="archivePatternsList" class="archive-workspace-list scroll-plum" data-collapse-body></div>
             </section>
 
             <section class="panel archive-insight-panel timeline-insight-panel" data-collapsible-panel="archive-timeline">
                 <div class="panel-header">
-                    <div class="panel-title"><span>📍</span><span class="pi-ui-edit" contenteditable="true" data-pi-ui="archive-timeline-title">Timeline</span></div>
-                    <div class="panel-subtitle pi-ui-edit" contenteditable="true" data-pi-ui="archive-timeline-subtitle">turning points · newest first</div>
+                    <div class="panel-title"><span>📍</span><span data-pi-ui="archive-timeline-title" data-pi-ui-fallback="Timeline">Timeline</span></div>
+                    <div class="panel-subtitle">turning points · newest first</div>
                 </div>
                 <div id="archiveTimelineList" class="archive-workspace-list scroll-blue" data-collapse-body></div>
             </section>

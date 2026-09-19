@@ -15,8 +15,8 @@
         <div class="brand">
             <div class="pigeon-mark" aria-hidden="true">📖</div>
             <div>
-                <h1 class="pi-ui-edit" contenteditable="true" data-pi-ui="almanac-page-title">Personal Almanac</h1>
-                <div class="subtitle pi-ui-edit" contenteditable="true" data-pi-ui="almanac-page-subtitle">things worth keeping close · useful rituals · provisions · little truths</div>
+                <h1 data-pi-ui="almanac-page-title" data-pi-ui-fallback="Personal Almanac">Personal Almanac</h1>
+                <div class="subtitle" data-pi-ui="almanac-page-subtitle" data-pi-ui-fallback="things worth keeping close · useful rituals · provisions · little truths">things worth keeping close · useful rituals · provisions · little truths</div>
             </div>
         </div>
         <div class="header-right almanac-header-actions">
@@ -38,26 +38,17 @@
     </header>
 
     <section class="almanac-intro panel">
-        <strong class="pi-ui-edit" contenteditable="true" data-pi-ui="almanac-intro-title">A reference book for the version of life that repeats.</strong>
-        <span class="pi-ui-edit" contenteditable="true" data-pi-ui="almanac-intro-subtitle">Favorites, routines, supplies, wants, meals, and the things you learn by actually living with them.</span>
+        <strong data-pi-ui="almanac-intro-title" data-pi-ui-fallback="A reference book for the version of life that repeats.">A reference book for the version of life that repeats.</strong>
+        <span data-pi-ui="almanac-intro-subtitle" data-pi-ui-fallback="Favorites, routines, supplies, wants, meals, and the things you learn by actually living with them.">Favorites, routines, supplies, wants, meals, and the things you learn by actually living with them.</span>
     </section>
 
     <main class="almanac-grid" id="almanacGrid">
         <section class="panel almanac-panel meals-panel" data-collapsible-panel="almanac-meals" data-accent="orange">
             <div class="almanac-panel-head">
                 <div class="panel-title"><span>🍲</span><span class="almanac-section-title" contenteditable="true" data-almanac-title="meals">Meals I Make</span></div>
+                <button id="addAlmanacMeal" class="almanac-add-button" type="button">+ meal</button>
             </div>
-            <div class="almanac-meal-workspace" data-collapse-body>
-                <div id="almanacMeals" class="almanac-note-list"></div>
-                <div class="almanac-meal-composer">
-                    <input id="almanacMealTitle" class="almanac-meal-title-input" type="text" placeholder="Meal / recipe title">
-                    <div id="almanacMealBody" class="almanac-meal-body-input" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="Notes, ingredients, shortcuts, substitutions, why it works…"></div>
-                    <div class="almanac-meal-link-row">
-                        <input id="almanacMealLink" type="url" placeholder="Optional recipe / reference link">
-                        <button id="addAlmanacMeal" class="checklist-add" type="button">add meal</button>
-                    </div>
-                </div>
-            </div>
+            <div id="almanacMeals" class="almanac-note-list almanac-meals-list" data-collapse-body></div>
         </section>
 
         <section class="panel almanac-panel dailies-panel" data-collapsible-panel="almanac-dailies" data-accent="teal">
@@ -116,6 +107,18 @@
             </div>
         </section>
     </main>
+</div>
+
+<div id="almanacMealLinkBackdrop" class="link-editor-backdrop" aria-hidden="true">
+    <div class="link-editor almanac-meal-link-editor" role="dialog" aria-modal="true" aria-labelledby="almanacMealLinkTitle">
+        <h2 id="almanacMealLinkTitle">Meal link</h2>
+        <label for="almanacMealLinkPopupInput">Recipe / reference URL</label>
+        <input id="almanacMealLinkPopupInput" type="url" placeholder="https://...">
+        <div class="link-editor-actions">
+            <button id="cancelAlmanacMealLink" type="button">Cancel</button>
+            <button id="saveAlmanacMealLink" type="button">Save link</button>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -321,11 +324,12 @@ document.addEventListener("DOMContentLoaded", () => {
         const panels = [...almanacGrid.querySelectorAll(":scope > .almanac-panel")];
         const openPanels = panels.filter(panel => !panel.classList.contains("is-collapsed"));
 
-        almanacGrid.classList.toggle("almanac-focus-one", openPanels.length === 1);
-        almanacGrid.classList.toggle("almanac-focus-two", openPanels.length === 2);
+        [1, 2, 3, 4].forEach(count => {
+            almanacGrid.classList.toggle(`almanac-focus-${count}`, openPanels.length === count);
+        });
         panels.forEach(panel => delete panel.dataset.focusSlot);
         openPanels.forEach((panel, index) => {
-            if (openPanels.length <= 2) panel.dataset.focusSlot = String(index + 1);
+            if (openPanels.length <= 4) panel.dataset.focusSlot = String(index + 1);
         });
     }
 
@@ -338,32 +342,49 @@ document.addEventListener("DOMContentLoaded", () => {
         panelClassObserver.observe(panel, { attributes: true, attributeFilter: ["class"] });
     });
 
-    function addMeal() {
-        const titleInput = document.getElementById("almanacMealTitle");
-        const bodyInput = document.getElementById("almanacMealBody");
-        const linkInput = document.getElementById("almanacMealLink");
-        const title = titleInput.value.trim();
-        const text = bodyInput.innerText.trim();
-        const html = bodyInput.innerHTML.trim();
-        const linkUrl = linkInput.value.trim();
-        if (!title && !text && !linkUrl) return;
+    let mealLinkTargetId = null;
 
+    function addMeal() {
+        const id = makeId("meals");
         state.meals.unshift({
-            id: makeId("meals"),
-            title: title || text.split(/\n/)[0]?.trim() || "Untitled meal",
-            text,
-            html,
-            linkUrl,
-            expanded: false,
+            id,
+            title: "New meal",
+            text: "",
+            html: "",
+            linkUrl: "",
+            expanded: true,
             createdAt: new Date().toISOString()
         });
-        titleInput.value = "";
-        bodyInput.innerHTML = "";
-        linkInput.value = "";
         saveState(false);
         renderMeals();
         showSaved();
-        titleInput.focus();
+        requestAnimationFrame(() => {
+            const title = document.querySelector(`.almanac-note-card[data-meal-id="${id}"] .almanac-note-title`);
+            if (!title) return;
+            title.focus();
+            const range = document.createRange();
+            range.selectNodeContents(title);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+        });
+    }
+
+    function openMealLinkEditor(item) {
+        const backdrop = document.getElementById("almanacMealLinkBackdrop");
+        const input = document.getElementById("almanacMealLinkPopupInput");
+        mealLinkTargetId = item.id;
+        input.value = item.linkUrl || "";
+        backdrop.classList.add("open");
+        backdrop.setAttribute("aria-hidden", "false");
+        setTimeout(() => input.focus(), 0);
+    }
+
+    function closeMealLinkEditor() {
+        const backdrop = document.getElementById("almanacMealLinkBackdrop");
+        backdrop.classList.remove("open");
+        backdrop.setAttribute("aria-hidden", "true");
+        mealLinkTargetId = null;
     }
 
     function renderMeals() {
@@ -378,6 +399,7 @@ document.addEventListener("DOMContentLoaded", () => {
             item.expanded = Boolean(item.expanded);
             const card = document.createElement("article");
             card.className = "almanac-note-card" + (item.expanded ? " expanded" : "");
+            card.dataset.mealId = item.id;
 
             const head = document.createElement("div");
             head.className = "almanac-note-head";
@@ -410,6 +432,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 showSaved();
             });
 
+            const linkEdit = document.createElement("button");
+            linkEdit.type = "button";
+            linkEdit.className = "almanac-note-link-button";
+            linkEdit.textContent = item.linkUrl ? "◎" : "+↗";
+            linkEdit.title = item.linkUrl ? "Edit meal link" : "Add meal link";
+            linkEdit.addEventListener("click", () => openMealLinkEditor(item));
+
             const archive = document.createElement("button");
             archive.type = "button";
             archive.className = "archive-icon-button almanac-item-archive";
@@ -439,7 +468,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 renderMeals();
                 showSaved();
             });
-            actions.append(toggle, archive, remove);
+            actions.append(toggle, linkEdit, archive, remove);
             head.append(title, actions);
 
             const body = document.createElement("div");
@@ -459,30 +488,15 @@ document.addEventListener("DOMContentLoaded", () => {
             });
             body.appendChild(richText);
 
-            const linkRow = document.createElement("div");
-            linkRow.className = "almanac-saved-link-row";
-            const linkInput = document.createElement("input");
-            linkInput.type = "url";
-            linkInput.value = item.linkUrl || "";
-            linkInput.placeholder = "Optional recipe / reference link";
-            const openLink = document.createElement("a");
-            openLink.className = "almanac-meal-link-open";
-            openLink.textContent = "open ↗";
-            openLink.target = "_blank";
-            openLink.rel = "noopener noreferrer";
-            const refreshLink = () => {
-                const value = linkInput.value.trim();
-                item.linkUrl = value;
-                openLink.hidden = !value;
-                openLink.href = value || "#";
-            };
-            refreshLink();
-            linkInput.addEventListener("input", () => {
-                refreshLink();
-                saveState();
-            });
-            linkRow.append(linkInput, openLink);
-            body.appendChild(linkRow);
+            if (item.linkUrl) {
+                const openLink = document.createElement("a");
+                openLink.className = "almanac-meal-link-open";
+                openLink.textContent = "recipe / reference ↗";
+                openLink.href = item.linkUrl;
+                openLink.target = "_blank";
+                openLink.rel = "noopener noreferrer";
+                body.appendChild(openLink);
+            }
 
             card.append(head, body);
             container.appendChild(card);
@@ -674,16 +688,18 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     document.getElementById("addAlmanacMeal").addEventListener("click", addMeal);
-    document.getElementById("almanacMealTitle").addEventListener("keydown", event => {
-        if (event.key !== "Enter") return;
-        event.preventDefault();
-        document.getElementById("almanacMealBody").focus();
+    document.getElementById("cancelAlmanacMealLink").addEventListener("click", closeMealLinkEditor);
+    document.getElementById("almanacMealLinkBackdrop").addEventListener("click", event => {
+        if (event.target === event.currentTarget) closeMealLinkEditor();
     });
-    document.getElementById("almanacMealBody").addEventListener("keydown", event => {
-        if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
-            event.preventDefault();
-            addMeal();
-        }
+    document.getElementById("saveAlmanacMealLink").addEventListener("click", () => {
+        const item = state.meals.find(meal => meal.id === mealLinkTargetId);
+        if (!item) return closeMealLinkEditor();
+        item.linkUrl = document.getElementById("almanacMealLinkPopupInput").value.trim();
+        saveState(false);
+        closeMealLinkEditor();
+        renderMeals();
+        showSaved();
     });
 
     document.getElementById("resetAlmanacDailies").addEventListener("click", () => {

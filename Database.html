@@ -45,8 +45,6 @@
             <button class="small-button selection-mode-button" id="selectModeButton" type="button">select</button>
             <button class="small-button selection-action-button" id="selectionActionButton" type="button" hidden>archive selected</button>
 
-            <button id="resetLayout" class="small-button" type="button" title="Restore all Main Board tiles and their original order">reset layout</button>
-
             <select id="themeSelect" class="theme-select" aria-label="Database theme" title="Choose a Database theme">
                 <optgroup label="Dark themes">
                     <option value="dark">🌙 Dark Original</option>
@@ -110,19 +108,19 @@
         </aside>
 
         <main class="center-workspace">
-            <section class="panel board-panel">
+            <section class="panel database-notes-panel" data-collapsible-panel="database-notes">
                 <div class="panel-header">
-                    <div class="panel-title"><span>🗂️</span><span class="editable-ui" contenteditable="true" data-ui-save="main-board-title">Main Board</span></div>
-                    <div class="board-header-actions">
-                        <div class="panel-subtitle editable-ui" contenteditable="true" data-ui-save="main-board-subtitle">drag tiles by ⋮⋮ · move lines between tiles and lists</div>
-                        <button id="addTileButton" class="small-button board-add-tile" type="button" title="Add a new Main Board tile">+ tile</button>
+                    <div class="panel-title"><span>✎</span><span class="editable-ui" contenteditable="true" data-ui-save="database-notes-title">Notes</span></div>
+                </div>
+                <div class="database-notes-body" data-collapse-body>
+                    <div id="databaseNotesList" class="checklist-list database-notes-list scroll-teal"></div>
+                    <div class="checklist-entry database-notes-entry">
+                        <textarea id="databaseNotesInput" class="checklist-input database-notes-input auto-grow-textarea" rows="2" data-autogrow="true" data-autogrow-unlimited="true" placeholder="Drop a note here, then move it where it belongs when you're ready..."></textarea>
+                        <button id="addDatabaseNote" class="checklist-add" type="button">Add</button>
                     </div>
                 </div>
-
-                <div id="boardBody" class="board-body scroll-teal">
-                    <div id="tileGrid" class="tile-grid tile-dropzone" data-tile-zone="board"></div>
-                </div>
             </section>
+            <div id="tileGrid" class="legacy-board-storage" data-tile-zone="board" hidden aria-hidden="true"></div>
         </main>
 
         <aside class="right-date-rail panel">

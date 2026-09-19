@@ -110,6 +110,46 @@ window.addEventListener("storage", event => {
 });
 
 /* =========================================================
+   SHARED EDITABLE UI LABELS
+   Page titles and visible section labels can opt in with data-pi-ui.
+   Values stay single-line plain text and sync through pigeonhole-* keys.
+   ========================================================= */
+function bindPiUiLabel(element) {
+    if (!element || element.dataset.piUiBound === "true") return;
+    element.dataset.piUiBound = "true";
+    element.contentEditable = "true";
+    element.spellcheck = false;
+    element.classList.add("editable-ui");
+
+    const key = `pigeonhole-ui-global-${element.dataset.piUi}`;
+    const saved = localStorage.getItem(key);
+    if (saved !== null) element.textContent = saved;
+
+    const clean = value => String(value || "").replace(/\s+/g, " ").trim();
+    const persist = () => {
+        const value = clean(element.innerText);
+        if (value) element.textContent = value;
+        localStorage.setItem(key, value || element.dataset.piUiFallback || "Untitled");
+        showSaved();
+    };
+
+    element.addEventListener("keydown", event => {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            element.blur();
+        }
+    });
+    element.addEventListener("paste", event => {
+        event.preventDefault();
+        const value = clean(event.clipboardData?.getData("text/plain") || "");
+        document.execCommand("insertText", false, value);
+    });
+    element.addEventListener("blur", persist);
+}
+
+document.querySelectorAll("[data-pi-ui]").forEach(bindPiUiLabel);
+
+/* =========================================================
    SHARED ECOSYSTEM NAVIGATION
    The page menu is intentionally native HTML (<details> + links),
    so cross-page navigation still works before JavaScript loads and
@@ -356,62 +396,6 @@ function bindCollapsiblePanels(root = document) {
 
 document.addEventListener("DOMContentLoaded", () => bindCollapsiblePanels());
 window.PigeonholeBindCollapsiblePanels = bindCollapsiblePanels;
-
-/* =========================================================
-   SHARED EDITABLE UI LABELS
-   Main titles, subtitles, and static section labels that opt in
-   with data-pi-ui stay single-line, plain-text, and synced.
-   Page-specific editors (Database / Longform / Neopets / Almanac
-   tile names) keep their existing storage systems.
-   ========================================================= */
-const PI_UI_LABEL_PREFIX = "pigeonhole-pi-ui-";
-
-function bindSharedEditableUi(root = document) {
-    root.querySelectorAll?.("[data-pi-ui]").forEach(element => {
-        if (element.dataset.piUiBound === "true") return;
-        const id = String(element.dataset.piUi || "").trim();
-        if (!id) return;
-
-        element.dataset.piUiBound = "true";
-        element.contentEditable = "true";
-        element.spellcheck = true;
-        element.classList.add("pi-ui-edit");
-
-        const key = `${PI_UI_LABEL_PREFIX}${id}`;
-        const saved = localStorage.getItem(key);
-        if (saved !== null) element.textContent = saved;
-
-        const save = () => {
-            const value = element.innerText
-                .replace(/\u00a0/g, " ")
-                .replace(/[\r\n]+/g, " ")
-                .replace(/\s{2,}/g, " ")
-                .trim();
-            element.textContent = value;
-            localStorage.setItem(key, value);
-            if (typeof showSaved === "function") showSaved();
-        };
-
-        element.addEventListener("keydown", event => {
-            if (event.key === "Enter") {
-                event.preventDefault();
-                element.blur();
-            }
-        });
-
-        element.addEventListener("paste", event => {
-            event.preventDefault();
-            const text = (event.clipboardData?.getData("text/plain") || "")
-                .replace(/[\r\n]+/g, " ");
-            document.execCommand("insertText", false, text);
-        });
-
-        element.addEventListener("blur", save);
-    });
-}
-
-document.addEventListener("DOMContentLoaded", () => bindSharedEditableUi());
-window.PigeonholeBindEditableUi = bindSharedEditableUi;
 
 /* =========================================================
    SHARED RICH-TEXT KEYBOARD SHORTCUTS
@@ -1758,7 +1742,7 @@ if (document.getElementById("tileGrid")) {
         });
     }
 
-    document.getElementById("resetLayout").addEventListener("click", () => {
+    document.getElementById("resetLayout")?.addEventListener("click", () => {
         boardOrder = [...allTileIds];
         saveTileLayout(false);
         renderTileZones();
@@ -2018,6 +2002,7 @@ if (document.getElementById("tileGrid")) {
         if (!Number.isInteger(sourceIndex) || sourceIndex < 0 || sourceIndex >= source.items.length) return;
 
         const [moved] = source.items.splice(sourceIndex, 1);
+        if (!target.checkable) moved.done = false;
         if (sourceKey === targetKey && sourceIndex < targetIndex) targetIndex -= 1;
 
         targetIndex = Math.max(0, Math.min(targetIndex, target.items.length));
@@ -2041,7 +2026,9 @@ if (document.getElementById("tileGrid")) {
         archiveSource = "Checklist",
         archiveContext = "",
         archiveOriginalDate = null,
-        doneToBottom = false
+        doneToBottom = false,
+        checkable = true,
+        newItemsToTop = false
     }) {
         const listElement = document.getElementById(listId);
         const inputElement = document.getElementById(inputId);
@@ -2068,6 +2055,7 @@ if (document.getElementById("tileGrid")) {
             archiveContext,
             archiveOriginalDate,
             accent: String(accentClass || "").replace(/^scroll-/, "") || "teal",
+            checkable: Boolean(checkable),
             get items() { return items; },
             save(show = true) {
                 localStorage.setItem(storageKey, JSON.stringify(items));
@@ -2090,7 +2078,7 @@ if (document.getElementById("tileGrid")) {
 
             items.forEach((item, index) => {
                 const row = document.createElement("div");
-                row.className = "checklist-item" + (item.done ? " done" : "");
+                row.className = "checklist-item" + (checkable && item.done ? " done" : "") + (!checkable ? " checklist-item-no-check" : "");
                 row.dataset.itemId = item.id;
                 if (accentClass) row.classList.add(accentClass);
 
@@ -2098,34 +2086,37 @@ if (document.getElementById("tileGrid")) {
                 drag.className = "check-drag";
                 drag.textContent = "⋮⋮";
                 drag.draggable = true;
-                drag.title = "Drag between Radar, Near My Radar, calendar days, or Main Board tiles";
+                drag.title = "Drag between Notes, Radar, Near My Radar, or calendar days";
 
-                const wrap = document.createElement("label");
-                wrap.className = "check-wrap";
-                if (accentClass) wrap.classList.add(accentClass);
+                let wrap = null;
+                if (checkable) {
+                    wrap = document.createElement("label");
+                    wrap.className = "check-wrap";
+                    if (accentClass) wrap.classList.add(accentClass);
 
-                const check = document.createElement("input");
-                check.type = "checkbox";
-                check.checked = item.done;
-                check.addEventListener("change", () => {
-                    const [changedItem] = items.splice(index, 1);
-                    changedItem.done = check.checked;
+                    const check = document.createElement("input");
+                    check.type = "checkbox";
+                    check.checked = item.done;
+                    check.addEventListener("change", () => {
+                        const [changedItem] = items.splice(index, 1);
+                        changedItem.done = check.checked;
 
-                    if (doneToBottom) {
-                        if (changedItem.done) {
-                            items.push(changedItem);
+                        if (doneToBottom) {
+                            if (changedItem.done) {
+                                items.push(changedItem);
+                            } else {
+                                const firstDoneIndex = items.findIndex(candidate => candidate.done);
+                                items.splice(firstDoneIndex < 0 ? items.length : firstDoneIndex, 0, changedItem);
+                            }
                         } else {
-                            const firstDoneIndex = items.findIndex(candidate => candidate.done);
-                            items.splice(firstDoneIndex < 0 ? items.length : firstDoneIndex, 0, changedItem);
+                            items.splice(index, 0, changedItem);
                         }
-                    } else {
-                        items.splice(index, 0, changedItem);
-                    }
 
-                    manager.save();
-                    renderItems();
-                });
-                wrap.appendChild(check);
+                        manager.save();
+                        renderItems();
+                    });
+                    wrap.appendChild(check);
+                }
 
                 const taskText = document.createElement("div");
                 taskText.className = "task-text";
@@ -2238,7 +2229,8 @@ if (document.getElementById("tileGrid")) {
                 rowActions.className = "item-row-actions";
                 rowActions.append(selector, archive, del);
 
-                row.append(drag, wrap, taskText, rowActions);
+                if (wrap) row.append(drag, wrap, taskText, rowActions);
+                else row.append(drag, taskText, rowActions);
                 listElement.appendChild(row);
             });
         }
@@ -2296,7 +2288,9 @@ if (document.getElementById("tileGrid")) {
         function addItem() {
             const value = inputElement.value.trim();
             if (!value) return;
-            items.push({ id: archiveId("task"), text: value, done: false });
+            const nextItem = { id: archiveId("task"), text: value, done: false };
+            if (newItemsToTop) items.unshift(nextItem);
+            else items.push(nextItem);
             inputElement.value = "";
             if (inputElement.matches("textarea[data-autogrow], textarea.auto-grow-textarea")) {
                 resizeAutoGrowTextarea(inputElement);
@@ -2370,6 +2364,19 @@ if (document.getElementById("tileGrid")) {
         accentClass: "scroll-plum",
         archiveSource: "Database",
         archiveContext: "Near My Radar"
+    });
+
+    createChecklistManager({
+        storageKey: "pigeonhole-database-notes-v1",
+        listId: "databaseNotesList",
+        inputId: "databaseNotesInput",
+        buttonId: "addDatabaseNote",
+        defaults: [],
+        accentClass: "scroll-teal",
+        archiveSource: "Database",
+        archiveContext: "Notes",
+        checkable: false,
+        newItemsToTop: true
     });
 
     /* V17 migration: the visible Priority Shelf was retired in favor of Radar.
@@ -2713,7 +2720,12 @@ if (document.getElementById("tileGrid")) {
    ========================================================= */
 if (document.getElementById("aquariumApp")) {
     const AQUARIUM_STORAGE_KEY = "brain-aquarium-celestial-color-v3";
-    const AQUARIUM_KINDS = ["thought", "action", "ask"];
+    const AQUARIUM_KIND_DEFAULTS = [
+        { id: "thought", name: "Thought", accent: "teal" },
+        { id: "action", name: "Action", accent: "blue" },
+        { id: "ask", name: "Ask", accent: "plum" }
+    ];
+    const AQUARIUM_KIND_ACCENTS = ["teal", "blue", "plum", "rose", "green", "orange"];
     const CATEGORY_ACCENT_SEQUENCE = ["teal", "plum", "rose", "blue", "green", "orange", "blue", "plum"];
     const AQUARIUM_SECTION_DEFAULTS = [
         { id: "surface", name: "Surface" },
@@ -2724,6 +2736,7 @@ if (document.getElementById("aquariumApp")) {
 
     const aquariumDefaults = {
         nextAccentIndex: 8,
+        kinds: AQUARIUM_KIND_DEFAULTS.map(kind => ({ ...kind })),
         sections: AQUARIUM_SECTION_DEFAULTS.map(section => ({ ...section })),
         categories: [
             { id: "todo", name: "To Do", accent: "teal", section: "surface" },
@@ -2781,6 +2794,19 @@ if (document.getElementById("aquariumApp")) {
         if (!Array.isArray(state.categories)) state.categories = [];
         if (!Array.isArray(state.cards)) state.cards = [];
 
+        const suppliedKinds = Array.isArray(state.kinds) ? state.kinds : [];
+        state.kinds = suppliedKinds
+            .filter(kind => kind && typeof kind.id === "string" && kind.id.trim())
+            .map((kind, index) => ({
+                id: kind.id.trim(),
+                name: typeof kind.name === "string" && kind.name.trim() ? kind.name.trim() : `Type ${index + 1}`,
+                accent: AQUARIUM_KIND_ACCENTS.includes(kind.accent)
+                    ? kind.accent
+                    : AQUARIUM_KIND_ACCENTS[index % AQUARIUM_KIND_ACCENTS.length]
+            }));
+        if (!state.kinds.length) state.kinds = AQUARIUM_KIND_DEFAULTS.map(kind => ({ ...kind }));
+        const validKindIds = new Set(state.kinds.map(kind => kind.id));
+
         /* V15 migration: the board now has three lightweight section bands.
            Existing categories are distributed without touching any card data. */
         const suppliedSections = Array.isArray(state.sections) ? state.sections : [];
@@ -2821,18 +2847,33 @@ if (document.getElementById("aquariumApp")) {
         state.cards = state.cards
             .filter(card => card && typeof card.id === "string")
             .map(card => {
-                const kind = AQUARIUM_KINDS.includes(card.kind) ? card.kind : "thought";
+                const kind = validKindIds.has(card.kind) ? card.kind : state.kinds[0].id;
+                const plain = typeof card.text === "string" ? card.text : "";
+                const fallbackTitle = plain
+                    .split(/\n+/)
+                    .map(line => line.trim())
+                    .find(Boolean) || "Untitled note";
+                const title = typeof card.title === "string" && card.title.trim()
+                    ? card.title.trim().replace(/\s+/g, " ").slice(0, 180)
+                    : fallbackTitle.slice(0, 180);
+                const html = typeof card.html === "string"
+                    ? card.html
+                    : plain
+                        .replace(/&/g, "&amp;")
+                        .replace(/</g, "&lt;")
+                        .replace(/>/g, "&gt;")
+                        .replace(/\n/g, "<br>");
                 return {
                     ...card,
-                    text: typeof card.text === "string" ? card.text : "",
-                    /* V16 migration: the Aquarium no longer has a Priority Reef.
-                       Any card that lived there returns safely to the Brain Dump inbox. */
+                    title,
+                    text: plain,
+                    html,
+                    collapsed: card.collapsed !== false,
                     zone: card.zone === "priority"
                         ? "inbox"
                         : (typeof card.zone === "string" ? card.zone : "inbox"),
                     kind,
                     done: Boolean(card.done),
-                    /* Older cards predate this feature. Keep that uncertainty honest. */
                     createdAt: typeof card.createdAt === "string" ? card.createdAt : null
                 };
             });
@@ -2851,10 +2892,19 @@ if (document.getElementById("aquariumApp")) {
     }
 
     let aquariumState = loadAquariumState();
-    let captureKind = "thought";
+    let captureKind = aquariumState.kinds.find(kind => kind.id === "thought")?.id || aquariumState.kinds[0]?.id || "thought";
     let activeFilter = "all";
     let draggedCategoryId = null;
     let draggedAquariumCardId = null;
+    let tapMoveAquariumCardId = null;
+
+    function setAquariumTapMove(cardId = null) {
+        tapMoveAquariumCardId = cardId;
+        document.body.classList.toggle("aq-card-move-mode", Boolean(cardId));
+        document.querySelectorAll(".aq-card").forEach(card => {
+            card.classList.toggle("move-source", card.dataset.cardId === cardId);
+        });
+    }
 
     /* Persist migration additions such as category accents without flashing save status. */
     localStorage.setItem(AQUARIUM_STORAGE_KEY, JSON.stringify(aquariumState));
@@ -2862,6 +2912,62 @@ if (document.getElementById("aquariumApp")) {
     function saveAquariumState(show = true) {
         localStorage.setItem(AQUARIUM_STORAGE_KEY, JSON.stringify(aquariumState));
         if (show) showSaved();
+    }
+
+    function aquariumKindById(id) {
+        return aquariumState.kinds.find(kind => kind.id === id) || aquariumState.kinds[0];
+    }
+
+    function aquariumKindName(id) {
+        return aquariumKindById(id)?.name || "Type";
+    }
+
+    function aquariumKindSymbol(id) {
+        if (id === "ask") return "?";
+        if (id === "action") return "○";
+        if (id === "thought") return "✦";
+        const name = aquariumKindName(id).trim();
+        return name ? name.charAt(0).toUpperCase() : "✦";
+    }
+
+    function aquariumPlainTextFromHtml(html) {
+        const temp = document.createElement("div");
+        temp.innerHTML = String(html || "");
+        return temp.innerText.replace(/\u00a0/g, " ").trim();
+    }
+
+    function cleanAquariumTitle(value) {
+        return String(value || "").replace(/\s+/g, " ").trim().slice(0, 180);
+    }
+
+    function populateAquariumKindUi() {
+        const captureSelect = document.getElementById("aqCaptureKind");
+        const filterSelect = document.getElementById("aqFilterSelect");
+        const kindIds = new Set(aquariumState.kinds.map(kind => kind.id));
+        if (!kindIds.has(captureKind)) captureKind = aquariumState.kinds[0]?.id || "thought";
+        if (activeFilter !== "all" && !kindIds.has(activeFilter)) activeFilter = "all";
+
+        if (captureSelect) {
+            captureSelect.innerHTML = "";
+            aquariumState.kinds.forEach(kind => {
+                const option = document.createElement("option");
+                option.value = kind.id;
+                option.textContent = `${aquariumKindSymbol(kind.id)} ${kind.name}`;
+                captureSelect.appendChild(option);
+            });
+            captureSelect.value = captureKind;
+        }
+
+        if (filterSelect) {
+            filterSelect.innerHTML = '<option value="all">All types</option>';
+            aquariumState.kinds.forEach(kind => {
+                const option = document.createElement("option");
+                option.value = kind.id;
+                option.textContent = kind.name;
+                filterSelect.appendChild(option);
+            });
+            filterSelect.value = activeFilter;
+        }
     }
 
     function cardMatchesFilter(card) {
@@ -2895,10 +3001,6 @@ if (document.getElementById("aquariumApp")) {
         });
     }
 
-    function nextCardKind(kind) {
-        const index = AQUARIUM_KINDS.indexOf(kind);
-        return AQUARIUM_KINDS[(index + 1) % AQUARIUM_KINDS.length];
-    }
 
     function clearAquariumCardDropIndicators() {
         document.querySelectorAll(".aq-card-drop-before, .aq-card-drop-after")
@@ -2939,10 +3041,10 @@ if (document.getElementById("aquariumApp")) {
 
     function makeAquariumCard(card) {
         const element = document.createElement("article");
-        element.className = "aq-card" + (card.done ? " completed" : "");
+        element.className = "aq-card" + (card.done ? " completed" : "") + (card.collapsed ? " collapsed" : "");
         element.dataset.cardId = card.id;
         element.dataset.kind = card.kind;
-        element.draggable = true;
+        element.dataset.kindAccent = aquariumKindById(card.kind)?.accent || "teal";
 
         const leading = document.createElement("div");
         leading.className = "aq-card-leading";
@@ -2961,41 +3063,70 @@ if (document.getElementById("aquariumApp")) {
             leading.appendChild(checkbox);
         } else {
             const icon = document.createElement("span");
-            icon.className = `aq-kind-icon aq-${card.kind}-icon`;
-            icon.textContent = card.kind === "ask" ? "?" : "✦";
-            icon.title = card.kind === "ask"
-                ? "Ask: a question or uncertainty worth keeping visible"
-                : "Thought: something to remember, explore, or hold";
+            icon.className = "aq-kind-icon";
+            icon.textContent = aquariumKindSymbol(card.kind);
+            icon.title = aquariumKindName(card.kind);
 
             const complete = document.createElement("input");
             complete.type = "checkbox";
             complete.className = "aq-secondary-complete";
             complete.checked = Boolean(card.done);
-            complete.title = card.kind === "ask"
-                ? "Mark this ask resolved"
-                : "Mark this thought complete";
+            complete.title = "Mark complete";
             complete.addEventListener("change", () => {
                 card.done = complete.checked;
                 saveAquariumState();
                 renderAquarium();
             });
-
             leading.append(icon, complete);
         }
 
         const main = document.createElement("div");
         main.className = "aq-card-main";
+        const header = document.createElement("div");
+        header.className = "aq-card-header";
 
-        const topLine = document.createElement("div");
-        topLine.className = "aq-card-topline";
+        const drag = document.createElement("span");
+        drag.className = "aq-card-drag";
+        drag.textContent = "⋮⋮";
+        drag.title = "Drag this card anywhere in the Aquarium";
+        drag.draggable = true;
 
-        const kindButton = document.createElement("button");
-        kindButton.className = "aq-kind-chip";
-        kindButton.textContent = card.kind;
-        kindButton.title = "Cycle type: Thought → Action → Ask";
-        kindButton.addEventListener("click", event => {
+        const title = document.createElement("div");
+        title.className = "aq-card-title";
+        title.contentEditable = "true";
+        title.spellcheck = true;
+        title.textContent = cleanAquariumTitle(card.title) || "Untitled note";
+        title.setAttribute("role", "textbox");
+        title.setAttribute("aria-label", "Aquarium note title");
+        title.addEventListener("keydown", event => {
+            if (event.key === "Enter") { event.preventDefault(); title.blur(); }
+        });
+        title.addEventListener("input", () => {
+            card.title = cleanAquariumTitle(title.innerText) || "Untitled note";
+            saveAquariumState();
+        });
+        title.addEventListener("paste", event => {
+            event.preventDefault();
+            const value = cleanAquariumTitle(event.clipboardData?.getData("text/plain") || "");
+            document.execCommand("insertText", false, value);
+        });
+
+        const kindSelect = document.createElement("select");
+        kindSelect.className = "aq-kind-select";
+        kindSelect.title = "Change card type";
+        aquariumState.kinds.forEach(kind => {
+            const option = document.createElement("option");
+            option.value = kind.id;
+            option.textContent = kind.name;
+            kindSelect.appendChild(option);
+        });
+        kindSelect.value = card.kind;
+        kindSelect.dataset.accent = aquariumKindById(card.kind)?.accent || "teal";
+        kindSelect.addEventListener("click", event => event.stopPropagation());
+        kindSelect.addEventListener("change", event => {
             event.stopPropagation();
-            card.kind = nextCardKind(card.kind);
+            card.kind = kindSelect.value;
+            card.done = false;
             saveAquariumState();
             renderAquarium();
         });
@@ -3003,20 +3134,6 @@ if (document.getElementById("aquariumApp")) {
         const created = document.createElement("span");
         created.className = "aq-card-date";
         created.textContent = formatAquariumDate(card.createdAt);
-        created.title = card.createdAt ? "Creation date" : "This card existed before creation dates were recorded";
-
-        const text = document.createElement("div");
-        text.className = "aq-card-text";
-        text.contentEditable = "true";
-        text.spellcheck = true;
-        text.textContent = card.text;
-        text.dataset.placeholder = "Write something...";
-        text.addEventListener("input", () => {
-            card.text = text.innerText;
-            saveAquariumState();
-        });
-
-        main.append(topLine, text);
 
         const archive = document.createElement("button");
         archive.className = "aq-card-archive archive-icon-button";
@@ -3026,12 +3143,12 @@ if (document.getElementById("aquariumApp")) {
         archive.addEventListener("click", event => {
             event.stopPropagation();
             const archived = archiveManualItem({
-                text: card.text,
+                text: [card.title, card.text].filter(Boolean).join("\n\n"),
                 source: "Brain Aquarium",
                 context: aquariumZoneLabel(card.zone),
                 kind: card.kind,
                 createdAt: card.createdAt,
-                metadata: { zone: card.zone, done: Boolean(card.done) }
+                metadata: { zone: card.zone, done: Boolean(card.done), bodyHtml: card.html || "" }
             });
             if (!archived) return;
             aquariumState.cards = aquariumState.cards.filter(item => item.id !== card.id);
@@ -3042,63 +3159,90 @@ if (document.getElementById("aquariumApp")) {
 
         const remove = document.createElement("button");
         remove.className = "aq-card-delete";
+        remove.type = "button";
         remove.textContent = "×";
         remove.title = "Delete";
-        remove.addEventListener("click", () => {
+        remove.addEventListener("click", event => {
+            event.stopPropagation();
             aquariumState.cards = aquariumState.cards.filter(item => item.id !== card.id);
             saveAquariumState();
             renderAquarium();
         });
 
-        const selector = makeSelectionControl(
-            selectionKey("aq-card", card.id),
-            `Select this ${card.kind}`
-        );
+        const collapse = document.createElement("button");
+        collapse.className = "aq-card-collapse";
+        collapse.type = "button";
+        collapse.textContent = card.collapsed ? "▸" : "▾";
+        collapse.title = card.collapsed ? "Expand note" : "Collapse note";
+        collapse.setAttribute("aria-expanded", String(!card.collapsed));
+        collapse.addEventListener("click", event => {
+            event.stopPropagation();
+            card.collapsed = !card.collapsed;
+            saveAquariumState(false);
+            renderAquarium();
+            showSaved();
+        });
 
-        const cardActions = document.createElement("div");
-        cardActions.className = "aq-card-actions";
-        cardActions.append(selector, archive, remove);
-        topLine.append(kindButton, created, cardActions);
+        const selector = makeSelectionControl(selectionKey("aq-card", card.id), `Select this ${aquariumKindName(card.kind)}`);
+        const meta = document.createElement("div");
+        meta.className = "aq-card-meta";
+        meta.append(kindSelect, created);
+        const actions = document.createElement("div");
+        actions.className = "aq-card-actions";
+        actions.append(selector, archive, remove, collapse);
+        header.append(drag, title, meta, actions);
 
-        element.addEventListener("dragstart", event => {
+        const body = document.createElement("div");
+        body.className = "aq-card-body";
+        body.hidden = Boolean(card.collapsed);
+        const text = document.createElement("div");
+        text.className = "aq-card-text aq-card-rich-text";
+        text.contentEditable = "true";
+        text.spellcheck = true;
+        text.innerHTML = card.html || "";
+        text.dataset.placeholder = "Write the thought here…";
+        text.addEventListener("input", () => {
+            card.html = text.innerHTML;
+            card.text = text.innerText.replace(/\u00a0/g, " ").trim();
+            saveAquariumState();
+        });
+        body.appendChild(text);
+        main.append(header, body);
+
+        drag.addEventListener("click", event => {
+            if (!mobileComposerUsesNewlines()) return;
+            event.preventDefault();
+            event.stopPropagation();
+            setAquariumTapMove(tapMoveAquariumCardId === card.id ? null : card.id);
+        });
+
+        drag.addEventListener("dragstart", event => {
             draggedAquariumCardId = card.id;
             event.dataTransfer.setData("text/plain", card.id);
             event.dataTransfer.setData("application/x-aquarium-card", card.id);
             event.dataTransfer.effectAllowed = "move";
             requestAnimationFrame(() => element.classList.add("dragging"));
         });
-
-        element.addEventListener("dragend", () => {
+        drag.addEventListener("dragend", () => {
             draggedAquariumCardId = null;
             element.classList.remove("dragging");
             clearAquariumCardDropIndicators();
             document.querySelectorAll(".aq-drag-over").forEach(zone => zone.classList.remove("aq-drag-over"));
         });
-
-        /* Dropping on the upper/lower half of a card reorders within that box. */
         element.addEventListener("dragover", event => {
             if (!draggedAquariumCardId || draggedAquariumCardId === card.id || draggedCategoryId) return;
-            event.preventDefault();
-            event.stopPropagation();
-            event.dataTransfer.dropEffect = "move";
-
+            event.preventDefault(); event.stopPropagation();
             const rect = element.getBoundingClientRect();
             const after = event.clientY > rect.top + (rect.height / 2);
             clearAquariumCardDropIndicators();
             element.classList.add(after ? "aq-card-drop-after" : "aq-card-drop-before");
         });
-
         element.addEventListener("dragleave", event => {
-            if (!element.contains(event.relatedTarget)) {
-                element.classList.remove("aq-card-drop-before", "aq-card-drop-after");
-            }
+            if (!element.contains(event.relatedTarget)) element.classList.remove("aq-card-drop-before", "aq-card-drop-after");
         });
-
         element.addEventListener("drop", event => {
             if (!draggedAquariumCardId || draggedAquariumCardId === card.id || draggedCategoryId) return;
-            event.preventDefault();
-            event.stopPropagation();
-
+            event.preventDefault(); event.stopPropagation();
             const rect = element.getBoundingClientRect();
             const after = event.clientY > rect.top + (rect.height / 2);
             const sourceId = draggedAquariumCardId;
@@ -3106,6 +3250,16 @@ if (document.getElementById("aquariumApp")) {
             draggedAquariumCardId = null;
             moveAquariumCard(sourceId, card.zone, card.id, after);
         });
+
+        element.addEventListener("click", event => {
+            if (!tapMoveAquariumCardId || tapMoveAquariumCardId === card.id) return;
+            if (event.target.closest("button, input, select, [contenteditable=\"true\"], .aq-card-drag")) return;
+            event.preventDefault();
+            event.stopPropagation();
+            const sourceId = tapMoveAquariumCardId;
+            setAquariumTapMove(null);
+            moveAquariumCard(sourceId, card.zone, card.id, false);
+        }, true);
 
         element.append(leading, main);
         return element;
@@ -3138,6 +3292,15 @@ if (document.getElementById("aquariumApp")) {
             draggedAquariumCardId = null;
             moveAquariumCard(sourceId, zone.dataset.zone);
         });
+
+        zone.addEventListener("click", event => {
+            if (!tapMoveAquariumCardId || event.target.closest(".aq-card, button, input, select, [contenteditable=\"true\"]")) return;
+            event.preventDefault();
+            event.stopPropagation();
+            const sourceId = tapMoveAquariumCardId;
+            setAquariumTapMove(null);
+            moveAquariumCard(sourceId, zone.dataset.zone);
+        }, true);
     }
 
     function renderAquariumZone(zone, zoneName, emptyText) {
@@ -3248,7 +3411,7 @@ if (document.getElementById("aquariumApp")) {
         add.className = "aq-mini-button";
         add.textContent = "+";
         add.title = "Add blank thought";
-        add.addEventListener("click", () => addBlankAquariumCard(category.id, "thought"));
+        add.addEventListener("click", () => addBlankAquariumCard(category.id, aquariumState.kinds[0]?.id || "thought"));
 
         const remove = document.createElement("button");
         remove.className = "aq-mini-button";
@@ -3413,35 +3576,45 @@ if (document.getElementById("aquariumApp")) {
         const id = crypto.randomUUID();
         aquariumState.cards.push({
             id,
+            title: "Untitled note",
             text: "",
+            html: "",
+            collapsed: false,
             zone,
-            kind: AQUARIUM_KINDS.includes(kind) ? kind : "thought",
+            kind: aquariumState.kinds.some(item => item.id === kind) ? kind : (aquariumState.kinds[0]?.id || "thought"),
             done: false,
             createdAt: nowStamp()
         });
-
         saveAquariumState();
         renderAquarium();
-
         requestAnimationFrame(() => {
-            const field = document.querySelector(`.aq-card[data-card-id="${id}"] .aq-card-text`);
-            if (field) field.focus();
+            const field = document.querySelector(`.aq-card[data-card-id="${id}"] .aq-card-title`);
+            if (!field) return;
+            field.focus();
+            const range = document.createRange();
+            range.selectNodeContents(field);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
         });
     }
 
-    function addAquariumCard(zone, text, kind) {
-        const cleaned = text.trim();
-        if (!cleaned) return;
-
-        aquariumState.cards.push({
+    function addAquariumCard(zone, titleValue, htmlValue, kind) {
+        const html = String(htmlValue || "").trim();
+        const plain = aquariumPlainTextFromHtml(html);
+        const title = cleanAquariumTitle(titleValue) || cleanAquariumTitle(plain.split(/\n+/).find(Boolean)) || "Untitled note";
+        if (!plain && !cleanAquariumTitle(titleValue)) return;
+        aquariumState.cards.unshift({
             id: crypto.randomUUID(),
-            text: cleaned,
+            title,
+            text: plain,
+            html,
+            collapsed: true,
             zone,
-            kind: AQUARIUM_KINDS.includes(kind) ? kind : "thought",
+            kind: aquariumState.kinds.some(item => item.id === kind) ? kind : (aquariumState.kinds[0]?.id || "thought"),
             done: false,
             createdAt: nowStamp()
         });
-
         saveAquariumState();
         renderAquarium();
     }
@@ -3573,55 +3746,112 @@ if (document.getElementById("aquariumApp")) {
         repaint();
     }
 
-    const kindPlaceholders = {
-        thought: "Put the thought here. You do not have to organize it yet.",
-        action: "What actually needs to happen?",
-        ask: "What question, uncertainty, or thing-to-find-out is tugging at you?"
-    };
+    const captureSelect = document.getElementById("aqCaptureKind");
+    const filterSelect = document.getElementById("aqFilterSelect");
+    const captureTitle = document.getElementById("aqCaptureTitle");
+    const captureInput = document.getElementById("captureInput");
+    populateAquariumKindUi();
 
-    document.querySelectorAll(".aq-kind-choice").forEach(button => {
-        button.addEventListener("click", () => {
-            captureKind = button.dataset.kind;
-            document.querySelectorAll(".aq-kind-choice").forEach(choice => {
-                choice.classList.toggle("active", choice === button);
-            });
-
-            const input = document.getElementById("captureInput");
-            input.placeholder = kindPlaceholders[captureKind] || kindPlaceholders.thought;
-            input.focus();
-        });
+    captureSelect?.addEventListener("change", () => {
+        captureKind = captureSelect.value;
+        captureInput?.focus();
     });
 
-    document.getElementById("captureBtn").addEventListener("click", () => {
-        const input = document.getElementById("captureInput");
-        addAquariumCard("inbox", input.value, captureKind);
-        input.value = "";
-        resizeSharedAutoGrowTextarea(input);
-        input.focus();
-    });
-
-    document.getElementById("captureInput").addEventListener("keydown", event => {
-        if (event.key !== "Enter") return;
-        if (mobileComposerUsesNewlines() || event.shiftKey) return;
-
-        event.preventDefault();
-        document.getElementById("captureBtn").click();
-    });
-
-    const aquariumShortcut = document.querySelector(".aq-shortcut");
-    if (aquariumShortcut && mobileComposerUsesNewlines()) {
-        aquariumShortcut.textContent = "Enter makes a new line · tap add to inbox to save";
+    function saveAquariumComposer() {
+        if (!captureInput) return;
+        const title = captureTitle?.value || "";
+        const html = captureInput.innerHTML;
+        const plain = aquariumPlainTextFromHtml(html);
+        if (!plain && !title.trim()) return;
+        addAquariumCard("inbox", title, html, captureKind);
+        if (captureTitle) captureTitle.value = "";
+        captureInput.innerHTML = "";
+        captureTitle?.focus();
     }
 
-    document.querySelectorAll(".aq-filter-button").forEach(button => {
-        button.addEventListener("click", () => {
-            activeFilter = button.dataset.filter;
-            document.querySelectorAll(".aq-filter-button").forEach(filter => {
-                filter.classList.toggle("active", filter === button);
-            });
-            renderAquarium();
-        });
+    document.getElementById("captureBtn")?.addEventListener("click", saveAquariumComposer);
+    captureInput?.addEventListener("keydown", event => {
+        if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
+            event.preventDefault();
+            saveAquariumComposer();
+        }
     });
+    captureTitle?.addEventListener("keydown", event => {
+        if (event.key !== "Enter") return;
+        event.preventDefault();
+        captureInput?.focus();
+    });
+    filterSelect?.addEventListener("change", () => {
+        activeFilter = filterSelect.value;
+        renderAquarium();
+    });
+
+    function openAquariumKindManager() {
+        const backdrop = document.createElement("div");
+        backdrop.className = "category-manager-backdrop open";
+        const card = document.createElement("div");
+        card.className = "category-manager-card";
+        card.innerHTML = `
+            <div class="category-manager-head"><div><strong>Aquarium types</strong><span>Rename, recolor, add, or remove card types.</span></div><button type="button" class="category-manager-close">×</button></div>
+            <div class="category-manager-list"></div>
+            <div class="category-manager-footer"><button type="button" class="small-button category-manager-add">+ type</button><button type="button" class="small-button category-manager-done">done</button></div>
+        `;
+        backdrop.appendChild(card);
+        document.body.appendChild(backdrop);
+        const list = card.querySelector(".category-manager-list");
+
+        const repaint = () => {
+            list.innerHTML = "";
+            aquariumState.kinds.forEach((kind, index) => {
+                const row = document.createElement("div");
+                row.className = "category-manager-row aquarium-kind-manager-row";
+                const name = document.createElement("input");
+                name.type = "text";
+                name.value = kind.name;
+                name.setAttribute("aria-label", "Type name");
+                name.addEventListener("change", () => {
+                    kind.name = name.value.trim() || "Untitled";
+                    saveAquariumState(false);
+                    populateAquariumKindUi(); renderAquarium(); showSaved();
+                });
+                const accent = document.createElement("select");
+                accent.setAttribute("aria-label", "Type color");
+                AQUARIUM_KIND_ACCENTS.forEach(value => {
+                    const option = document.createElement("option");
+                    option.value = value; option.textContent = value; accent.appendChild(option);
+                });
+                accent.value = kind.accent;
+                accent.addEventListener("change", () => {
+                    kind.accent = accent.value;
+                    saveAquariumState(false); renderAquarium(); showSaved();
+                });
+                const remove = document.createElement("button");
+                remove.type = "button"; remove.className = "category-manager-remove"; remove.textContent = "×";
+                remove.disabled = aquariumState.kinds.length <= 1;
+                remove.addEventListener("click", () => {
+                    if (aquariumState.kinds.length <= 1) return;
+                    const fallback = aquariumState.kinds.find(item => item.id !== kind.id)?.id;
+                    aquariumState.cards.forEach(item => { if (item.kind === kind.id) item.kind = fallback; });
+                    aquariumState.kinds.splice(index, 1);
+                    saveAquariumState(false); populateAquariumKindUi(); renderAquarium(); repaint(); showSaved();
+                });
+                row.append(name, accent, remove);
+                list.appendChild(row);
+            });
+        };
+        const close = () => backdrop.remove();
+        card.querySelector(".category-manager-close").addEventListener("click", close);
+        card.querySelector(".category-manager-done").addEventListener("click", close);
+        backdrop.addEventListener("click", event => { if (event.target === backdrop) close(); });
+        card.querySelector(".category-manager-add").addEventListener("click", () => {
+            const id = `kind-${crypto.randomUUID()}`;
+            aquariumState.kinds.push({ id, name: "New Type", accent: AQUARIUM_KIND_ACCENTS[aquariumState.kinds.length % AQUARIUM_KIND_ACCENTS.length] });
+            saveAquariumState(false); populateAquariumKindUi(); repaint(); showSaved();
+        });
+        repaint();
+    }
+
+    document.getElementById("manageAquariumKinds")?.addEventListener("click", openAquariumKindManager);
 
     document.getElementById("addCategoryTop").addEventListener("click", addAquariumCategory);
     document.getElementById("manageAquariumCategories")?.addEventListener("click", openAquariumCategoryManager);
@@ -3634,7 +3864,7 @@ if (document.getElementById("aquariumApp")) {
         const archivedAt = new Date().toISOString();
 
         completed.forEach(card => {
-            const cleaned = String(card.text || "").trim();
+            const cleaned = [card.title, card.text].filter(Boolean).join("\n\n").trim();
             if (!cleaned) return;
             records.unshift({
                 id: archiveId("item"),
@@ -3668,7 +3898,7 @@ if (document.getElementById("aquariumApp")) {
         const chosenIds = new Set(chosen.map(card => card.id));
 
         chosen.forEach(card => {
-            const cleaned = String(card.text || "").trim();
+            const cleaned = [card.title, card.text].filter(Boolean).join("\n\n").trim();
             if (!cleaned) return;
             records.unshift({
                 id: archiveId("item"),
@@ -3831,7 +4061,7 @@ if (document.getElementById("patternsApp")) {
         });
 
         if (!items.length) {
-            itemArchiveList.appendChild(emptyArchiveMessage("Use the ↘ archive control on Radar, Main Board lines, calendar items, or Aquarium cards."));
+            itemArchiveList.appendChild(emptyArchiveMessage("Use the ↘ archive control on Database Notes, Radar, calendar items, Aquarium cards, or Almanac entries."));
         }
 
         items.forEach(record => {

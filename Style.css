@@ -11438,20 +11438,478 @@ body[data-theme="fall2"] .almanac-panel[data-accent] > .almanac-panel-head {
 }
 
 /* =========================================================
-   V6G — ECOSYSTEM-WIDE EDITABLE TITLES / SUBTITLES
+   V7 — SNAPSHOT DATABASE + ELASTIC ALMANAC + AQUARIUM TYPES
    ========================================================= */
-.pi-ui-edit {
+
+/* Database: the Main Board has retired into a plain movable Notes desk.
+   Left and right rails are equal and intentionally a little wider. */
+.database-page .database-grid.content-shell {
+    grid-template-columns: minmax(290px, 1.08fr) minmax(250px, .82fr) minmax(290px, 1.08fr) !important;
+    gap: 10px;
+}
+.database-page .database-notes-panel {
+    min-height: 0;
+    height: 100%;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+}
+.database-page .database-notes-body {
+    min-height: 0;
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) auto;
+    gap: 8px;
+    padding: 9px 10px 10px;
+    overflow: hidden;
+}
+.database-page .database-notes-list {
+    min-height: 0;
+    overflow-y: auto;
+}
+.database-page .database-notes-entry {
+    align-items: end;
+}
+.database-page .database-notes-input {
+    min-height: 58px;
+    max-height: 160px;
+    height: auto;
+    resize: vertical;
+}
+.database-page .checklist-item-no-check {
+    grid-template-columns: auto minmax(0,1fr) auto;
+}
+.database-page .legacy-board-storage[hidden] { display: none !important; }
+body[data-theme="fall2"] .database-page .database-notes-panel {
+    background: linear-gradient(155deg, rgba(53,43,66,.82), rgba(40,25,31,.98));
+    border-color: color-mix(in srgb, var(--plum) 46%, var(--border));
+}
+
+/* Longform: reserve a real empty spacer column so metadata/control groups
+   physically hug the right edge instead of looking centered. */
+.longform-library-head,
+.longform-composer-head {
+    width: 100%;
+    grid-template-columns: minmax(0, 1fr) max-content 25px !important;
+    align-items: center !important;
+}
+.longform-library-head > :first-child,
+.longform-composer-head > :first-child { grid-column: 1; min-width: 0; }
+.longform-filter-dropdown,
+.longform-compose-meta {
+    grid-column: 2;
+    justify-self: end !important;
+    margin-left: auto !important;
+}
+.longform-library-head > .panel-collapse-toggle,
+.longform-composer-head > .panel-collapse-toggle {
+    grid-column: 3;
+    justify-self: end;
+}
+.longform-entry-top {
+    display: grid !important;
+    grid-template-columns: minmax(0,1fr) max-content max-content;
+    align-items: center;
+    width: 100%;
+}
+.longform-entry-meta {
+    grid-column: 2;
+    justify-self: end;
+    margin-left: 0 !important;
+}
+.longform-entry-actions {
+    grid-column: 3;
+    justify-self: end;
+}
+
+/* Almanac internals: lists own the flexible space; entry controls stay pinned
+   to the floor and cannot be overpainted by growing content. */
+.almanac-panel:not(.is-collapsed) { overflow: hidden; }
+.almanac-checklist-body,
+.almanac-strain-body {
+    display: flex !important;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden !important;
+    gap: 8px;
+}
+.almanac-checklist,
+.almanac-simple-list,
+.almanac-strain-list,
+.almanac-meals-list {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+}
+.almanac-entry-row,
+.almanac-strain-entry {
+    flex: 0 0 auto;
+    position: relative;
+    z-index: 2;
+}
+.almanac-meals-list {
+    padding: 8px;
+}
+.almanac-note-link-button {
+    min-width: 25px;
+    height: 24px;
+    padding: 0 5px;
+    display: grid;
+    place-items: center;
+    border: 1px solid color-mix(in srgb, var(--almanac-accent, var(--orange)) 42%, var(--border));
+    border-radius: 7px;
+    background: color-mix(in srgb, var(--almanac-accent, var(--orange)) 8%, var(--panel-light));
+    color: var(--almanac-accent-soft, var(--orange-soft));
+    cursor: pointer;
+    font-size: 10px;
+}
+.almanac-note-link-button:hover { color: var(--text); border-color: var(--almanac-accent, var(--orange)); }
+.almanac-meal-link-open {
+    display: inline-flex;
+    margin: 8px 9px 9px;
+    color: var(--almanac-accent-soft, var(--orange-soft));
+}
+.almanac-meal-link-editor #saveAlmanacMealLink {
+    background: var(--teal-soft);
+    color: var(--bg);
+    border-color: transparent;
+    font-weight: 700;
+}
+
+/* Extend the focus board through four open tiles. Collapsed headers become a
+   compact left rail; open cards use the right two columns and expand into the
+   reclaimed space, up to the existing two-tile height ceiling. */
+@media (min-width: 1101px) {
+    .almanac-grid.almanac-focus-1,
+    .almanac-grid.almanac-focus-2,
+    .almanac-grid.almanac-focus-3,
+    .almanac-grid.almanac-focus-4 {
+        grid-template-columns: minmax(190px, .56fr) repeat(2, minmax(0, 1fr)) !important;
+        grid-auto-rows: 40px;
+        grid-auto-flow: row;
+        align-items: stretch;
+    }
+    .almanac-grid.almanac-focus-1 > .almanac-panel.is-collapsed,
+    .almanac-grid.almanac-focus-2 > .almanac-panel.is-collapsed,
+    .almanac-grid.almanac-focus-3 > .almanac-panel.is-collapsed,
+    .almanac-grid.almanac-focus-4 > .almanac-panel.is-collapsed {
+        grid-column: 1;
+        grid-row: span 1;
+        min-height: 40px;
+    }
+    .almanac-grid.almanac-focus-1 > .almanac-panel[data-focus-slot="1"] {
+        grid-column: 2 / 4;
+        grid-row: 1 / span 14;
+    }
+    .almanac-grid.almanac-focus-2 > .almanac-panel[data-focus-slot="1"] {
+        grid-column: 2;
+        grid-row: 1 / span 14;
+    }
+    .almanac-grid.almanac-focus-2 > .almanac-panel[data-focus-slot="2"] {
+        grid-column: 3;
+        grid-row: 1 / span 14;
+    }
+    .almanac-grid.almanac-focus-3 > .almanac-panel[data-focus-slot="1"] {
+        grid-column: 2;
+        grid-row: 1 / span 7;
+    }
+    .almanac-grid.almanac-focus-3 > .almanac-panel[data-focus-slot="2"] {
+        grid-column: 3;
+        grid-row: 1 / span 7;
+    }
+    .almanac-grid.almanac-focus-3 > .almanac-panel[data-focus-slot="3"] {
+        grid-column: 2 / 4;
+        grid-row: 8 / span 7;
+    }
+    .almanac-grid.almanac-focus-4 > .almanac-panel[data-focus-slot="1"] { grid-column: 2; grid-row: 1 / span 7; }
+    .almanac-grid.almanac-focus-4 > .almanac-panel[data-focus-slot="2"] { grid-column: 3; grid-row: 1 / span 7; }
+    .almanac-grid.almanac-focus-4 > .almanac-panel[data-focus-slot="3"] { grid-column: 2; grid-row: 8 / span 7; }
+    .almanac-grid.almanac-focus-4 > .almanac-panel[data-focus-slot="4"] { grid-column: 3; grid-row: 8 / span 7; }
+}
+
+/* Aquarium types now mirror Longform's editable category philosophy. */
+.aq-kind-select-row {
+    display: grid;
+    grid-template-columns: minmax(0,1fr) auto;
+    align-items: end;
+    gap: 7px;
+    margin-bottom: 8px;
+}
+.aq-kind-select-label,
+.aq-filter-dropdown {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--faint);
+    font-size: 10.5px;
+}
+.aq-kind-select-label { display: grid; gap: 3px; }
+.aq-kind-select-label > span,
+.aq-filter-dropdown > span {
+    text-transform: lowercase;
+}
+#aqCaptureKind,
+#aqFilterSelect,
+.aq-kind-select {
+    min-width: 0;
+    height: 29px;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    background: color-mix(in srgb, var(--panel-light) 84%, var(--bg));
+    color: var(--text);
+    padding: 4px 24px 4px 7px;
     outline: none;
-    border-radius: 5px;
-    cursor: text;
+    font-size: 11px;
+}
+#aqCaptureKind { width: 100%; }
+.aq-filter-dropdown { flex: 0 0 auto; }
+#aqFilterSelect { min-width: 132px; max-width: 180px; }
+.aq-kind-select {
+    width: auto;
+    max-width: 118px;
+    height: 24px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    font-size: 9.5px;
+    font-weight: 700;
+}
+.aq-kind-select[data-accent="teal"] { color: var(--teal-soft); }
+.aq-kind-select[data-accent="blue"] { color: var(--blue-soft); }
+.aq-kind-select[data-accent="plum"] { color: var(--plum-soft); }
+.aq-kind-select[data-accent="rose"] { color: var(--rose-soft); }
+.aq-kind-select[data-accent="green"] { color: var(--green-soft); }
+.aq-kind-select[data-accent="orange"] { color: var(--orange-soft); }
+.aq-card[data-kind-accent="teal"] .aq-kind-icon { color: var(--teal-soft); }
+.aq-card[data-kind-accent="blue"] .aq-kind-icon { color: var(--blue-soft); }
+.aq-card[data-kind-accent="plum"] .aq-kind-icon { color: var(--plum-soft); }
+.aq-card[data-kind-accent="rose"] .aq-kind-icon { color: var(--rose-soft); }
+.aq-card[data-kind-accent="green"] .aq-kind-icon { color: var(--green-soft); }
+.aq-card[data-kind-accent="orange"] .aq-kind-icon { color: var(--orange-soft); }
+.aquarium-kind-manager-row {
+    grid-template-columns: minmax(0,1fr) minmax(105px,.42fr) auto !important;
+}
+
+@media (max-width: 760px) {
+    .database-page .database-grid.content-shell { grid-template-columns: 1fr !important; }
+    .longform-library-head,
+    .longform-composer-head {
+        grid-template-columns: minmax(0,1fr) 25px !important;
+    }
+    .longform-filter-dropdown,
+    .longform-compose-meta {
+        grid-column: 1 / -1 !important;
+    }
+    .longform-library-head > .panel-collapse-toggle,
+    .longform-composer-head > .panel-collapse-toggle {
+        grid-column: 2 !important;
+    }
+    .longform-entry-top {
+        grid-template-columns: minmax(0,1fr) auto !important;
+    }
+    .longform-entry-meta {
+        grid-column: 1 / -1;
+        justify-self: end;
+    }
+    .longform-entry-actions {
+        grid-column: 2;
+        grid-row: 1;
+    }
+    .aquarium-kind-manager-row { grid-template-columns: 1fr !important; }
+}
+
+/* =========================================================
+   V7 — AQUARIUM WRITING-FIRST CAPTURE + COLLAPSIBLE CARDS
+   ========================================================= */
+html.aquarium-page .aq-workspace {
+    grid-template-columns: minmax(0, 1fr) minmax(360px, 430px) !important;
+    align-items: start;
+}
+html.aquarium-page .aq-board-workspace {
     min-width: 0;
 }
-
-.pi-ui-edit:hover {
-    background: color-mix(in srgb, var(--text) 4%, transparent);
+html.aquarium-page .aq-capture-panel {
+    position: sticky;
+    top: 10px;
+    min-width: 0;
+}
+html.aquarium-page .aq-capture-body {
+    display: grid;
+    gap: 8px;
+    padding: 10px;
+}
+html.aquarium-page .aq-capture-title-input {
+    width: 100%;
+    min-width: 0;
+    height: 38px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--bg) 72%, var(--panel-light));
+    color: var(--text);
+    padding: 7px 9px;
+    outline: none;
+    font-size: 14px;
+    font-weight: 700;
+}
+html.aquarium-page .aq-capture-title-input:focus {
+    border-color: var(--teal);
+}
+html.aquarium-page .aq-capture-rich-input {
+    min-height: 175px;
+    max-height: 42vh;
+    overflow-y: auto;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    background: color-mix(in srgb, var(--bg) 74%, var(--panel-light));
+    color: var(--text);
+    padding: 10px;
+    outline: none;
+    line-height: 1.52;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+html.aquarium-page .aq-capture-rich-input:focus {
+    border-color: var(--teal);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--teal) 10%, transparent);
+}
+html.aquarium-page .aq-capture-rich-input:empty::before {
+    content: attr(data-placeholder);
+    color: var(--faint);
+    pointer-events: none;
+}
+html.aquarium-page .aq-inbox-zone {
+    max-height: 44vh;
+    overflow-y: auto;
+    padding: 8px;
+}
+html.aquarium-page .aq-card {
+    display: grid;
+    grid-template-columns: auto minmax(0,1fr) !important;
+    gap: 8px;
+    align-items: start;
+    cursor: default;
+}
+html.aquarium-page .aq-card-main {
+    min-width: 0;
+}
+html.aquarium-page .aq-card-header {
+    display: grid;
+    grid-template-columns: auto minmax(0,1fr) auto auto;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+}
+html.aquarium-page .aq-card-drag {
+    color: var(--faint);
+    cursor: grab;
+    user-select: none;
+    font-size: 13px;
+    line-height: 1;
+}
+html.aquarium-page .aq-card-drag:active { cursor: grabbing; }
+html.aquarium-page .aq-card-title {
+    min-width: 0;
+    outline: none;
+    border-radius: 5px;
+    color: var(--text);
+    font-weight: 700;
+    font-size: 12px;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+}
+html.aquarium-page .aq-card-title:hover,
+html.aquarium-page .aq-card-title:focus {
+    background: color-mix(in srgb, var(--teal) 6%, transparent);
+}
+html.aquarium-page .aq-card-meta {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 5px;
+    min-width: 0;
+}
+html.aquarium-page .aq-card-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+}
+html.aquarium-page .aq-card-collapse {
+    width: 24px;
+    height: 24px;
+    display: grid;
+    place-items: center;
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 0;
+}
+html.aquarium-page .aq-card-body {
+    margin-top: 7px;
+    padding-top: 7px;
+    border-top: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
+}
+html.aquarium-page .aq-card-body[hidden] { display: none !important; }
+html.aquarium-page .aq-card-rich-text {
+    min-height: 54px;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+html.aquarium-page .aq-card.collapsed {
+    padding-top: 7px;
+    padding-bottom: 7px;
+}
+html.aquarium-page .aq-card.collapsed .aq-card-leading {
+    align-self: center;
+}
+html.aquarium-page .aq-kind-select {
+    max-width: 104px;
+}
+html.aquarium-page body[data-theme="fall2"] .aq-capture-rich-input,
+html.aquarium-page body[data-theme="fall2"] .aq-capture-title-input {
+    background: color-mix(in srgb, #172f30 66%, var(--panel-light));
 }
 
-.pi-ui-edit:focus {
-    background: color-mix(in srgb, var(--text) 7%, transparent);
-    box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--teal) 55%, transparent);
+@media (max-width: 1050px) {
+    html.aquarium-page .aq-workspace {
+        grid-template-columns: minmax(0,1fr) minmax(330px,390px) !important;
+    }
+}
+
+@media (max-width: 760px) {
+    html.aquarium-page .aq-workspace {
+        grid-template-columns: 1fr !important;
+    }
+    html.aquarium-page .aq-capture-panel {
+        order: -1;
+        position: relative;
+        top: auto;
+    }
+    html.aquarium-page .aq-capture-rich-input {
+        min-height: 150px;
+        max-height: none;
+    }
+    html.aquarium-page .aq-inbox-zone {
+        max-height: none;
+    }
+    html.aquarium-page .aq-card-header {
+        grid-template-columns: auto minmax(0,1fr) auto;
+    }
+    html.aquarium-page .aq-card-meta {
+        grid-column: 2 / -1;
+        justify-self: end;
+        flex-wrap: wrap;
+    }
+    html.aquarium-page .aq-card-actions {
+        grid-column: 3;
+        grid-row: 1;
+    }
+}
+
+html.aquarium-page body.aq-card-move-mode .aq-dropzone,
+html.aquarium-page body.aq-card-move-mode .aq-card:not(.move-source) {
+    outline: 1px dashed color-mix(in srgb, var(--teal-soft) 66%, var(--plum-soft));
+    outline-offset: -3px;
+}
+html.aquarium-page .aq-card.move-source {
+    opacity: .55;
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--teal) 34%, transparent);
 }

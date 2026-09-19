@@ -178,11 +178,17 @@ V6 — FOCUS BOARD + CLEAN CLIPBOARD PASS
 - Bumped shared asset cache version to 20260918f.
 - Safe Sync / CloudSync.js unchanged.
 
-V6G — EDITABLE ECOSYSTEM NAMING
-- Main page titles and subtitles are editable across the Personal Intranet.
-- Remaining static section headers/subheaders in Aquarium and Archive are editable and synced.
-- Almanac page title/subtitle and intro labels are editable; its six tile titles remain independently editable as before.
-- Existing Database, Longform, Neopets, Aquarium section-band, and Almanac tile-title editors are preserved.
-- Shared editable UI labels stay single-line/plain-text so renaming cannot accidentally inject rich formatting or line breaks.
-- New shared label keys use pigeonhole-pi-ui-* and therefore sync through the existing Safe Sync rules.
+V7 — DATABASE NOTES + AQUARIUM WRITING DESK (2026-09-18)
+- Database Main Board tiles retired so Aquarium can own spatial/category organization without duplicating that role.
+- Database center column is now a plain Notes workspace: entry stays at the bottom, saved notes collect above it, and notes use the same move system as Radar and calendar items.
+- Database left and right rails are equal-width and slightly wider while the Notes column is intentionally less dominant.
+- Almanac tile bodies use anchored composers and corrected overflow so saved items no longer overlap each other or the entry controls.
+- Almanac focus layout expands open tiles into available space across more collapse states while preserving the six-tile overview when most tiles are open.
+- Meals returned to the lighter + meal interaction: create an editable meal card directly, with an optional link editor available from the saved card.
+- Longform composer and saved-card category/date metadata are aligned fully to the right edge of their header areas.
+- Aquarium Thought / Action / Ask types are now managed data with dropdowns; types can be added, renamed, recolored, or removed.
+- Aquarium capture was rebuilt as a wider right-side writing desk with title + rich-text body + type selector.
+- Aquarium saved items now keep a visible title/header and collapsible rich-text body while retaining category/section movement and mobile tap-to-move.
+- Existing Aquarium records migrate in place to the richer card shape without requiring re-entry.
 - Shared asset cache version bumped to 20260918g.
+- Safe Sync / CloudSync.js unchanged.
