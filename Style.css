@@ -12211,3 +12211,70 @@ html.aquarium-page .aq-card[data-kind-accent="orange"] { border-left: 3px solid 
 .strains-panel .almanac-strain-date {
     color: var(--blue-soft);
 }
+
+/* =========================================================
+   V11 — RADAR COLLAPSE + MOBILE STACK FINAL FIX
+   ========================================================= */
+/* V8 intentionally made all Database checklist panels full-height so their
+   composers could stay at the floor. A collapsed Radar panel must opt out of
+   that rule completely: its shell becomes header-height and the open sibling
+   receives the freed desktop space. */
+.database-page .left-rail > .checklist-panel.is-collapsed {
+    flex: 0 0 auto !important;
+    height: auto !important;
+    min-height: 0 !important;
+    display: grid !important;
+    grid-template-rows: auto !important;
+    align-self: stretch;
+}
+.database-page .left-rail > .checklist-panel.is-collapsed > .panel-header {
+    min-height: 40px;
+    height: 40px;
+}
+
+/* Phones should never inherit the desktop flex-height negotiation. Both Radar
+   panels stack at their natural height; open panels show their list + composer,
+   collapsed panels show only the header. */
+@media (max-width: 760px) {
+    .database-page .left-rail {
+        display: grid !important;
+        grid-template-columns: minmax(0, 1fr) !important;
+        grid-template-rows: auto auto !important;
+        gap: 9px !important;
+        height: auto !important;
+        min-height: 0 !important;
+        overflow: visible !important;
+    }
+
+    .database-page .left-rail > .checklist-panel,
+    .database-page .left-rail > .checklist-panel:not(.is-collapsed) {
+        flex: none !important;
+        width: 100% !important;
+        height: auto !important;
+        min-height: 0 !important;
+        display: grid !important;
+        grid-template-rows: auto auto !important;
+        overflow: hidden !important;
+    }
+
+    .database-page .left-rail > .checklist-panel:not(.is-collapsed) > .checklist-body {
+        display: grid !important;
+        height: auto !important;
+        min-height: 0 !important;
+        grid-template-rows: minmax(0, auto) auto !important;
+        overflow: visible !important;
+    }
+
+    .database-page .left-rail > .checklist-panel:not(.is-collapsed) > .checklist-body > .checklist-list {
+        min-height: 0 !important;
+        max-height: 48vh !important;
+        overflow-y: auto !important;
+        margin-bottom: 8px;
+    }
+
+    .database-page .left-rail > .checklist-panel.is-collapsed {
+        height: auto !important;
+        min-height: 40px !important;
+        grid-template-rows: auto !important;
+    }
+}
