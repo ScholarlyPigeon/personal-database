@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en" class="aquarium-page">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brain Aquarium</title>
+    <link rel="stylesheet" href="Style.css?v=20260927-clean1">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+    <script src="CloudSync.js?v=20260927-clean1" defer></script>
+    <script src="Script.js?v=20260927-clean1" defer></script>
+</head>
+<body data-default-theme="aquarium">
+<div class="aq-page" id="aquariumApp">
+
+    <header class="aq-header">
+        <div class="aq-brand">
+            <div class="pi-mark" aria-hidden="true">🪼</div>
+            <div class="aq-title">
+                <h1 data-pi-ui="aquarium-page-title" data-pi-ui-fallback="Brain Aquarium">Brain Aquarium</h1>
+                <div class="aq-subtitle" data-pi-ui="aquarium-page-subtitle" data-pi-ui-fallback="capture first · sort second · obligation is optional">capture first · sort second · obligation is optional</div>
+            </div>
+        </div>
+
+        <div class="aq-header-actions">
+            <span id="saveStatus" class="sync-status" aria-live="polite">cloud ready</span>
+            <button id="cloudLoginButton" class="small-button cloud-login-button" type="button">cloud login</button>
+
+            <details class="ecosystem-menu">
+                <summary>pages</summary>
+                <nav class="ecosystem-menu-popover" aria-label="Open another page">
+                    
+                    <a href="index.html">⌂ Home</a>
+<a href="Database.html">🗃 Database</a>
+                    <a href="Aquarium.html" class="current" aria-current="page">🪼 Aquarium</a>
+                    <a href="Patterns.html">🧭 Archives</a>
+                    <a href="Almanac.html">📖 Almanac</a>
+                    <a href="Longform.html">✎ Longform</a>
+                    <a href="neopets.html">✦ Neopets</a>
+                </nav>
+            </details>
+    
+            <button class="small-button selection-mode-button" id="selectModeButton" type="button">select</button>
+            <button class="small-button selection-action-button" id="selectionActionButton" type="button" hidden>archive selected</button>
+
+            <select id="themeSelect" class="theme-select" aria-label="Theme">
+            <optgroup label="Dark themes">
+                <option value="dark">🌙 Dark Original</option>
+                <option value="aquarium">🐠 Dark Teal Celestial Aquarium</option>
+                <option value="observatory">🔭 Midnight Observatory</option>
+                <option value="nightgarden">🪻 Night Garden</option>
+                <option value="fieldnotes">📓 Universal Field Notes</option>
+            </optgroup>
+            <optgroup label="Retro themes">
+                <option value="y2k">🖥️ Y2K Web Portal</option>
+            </optgroup>
+            <optgroup label="Light themes">
+                <option value="cozy">💿 Cozy 2000s</option>
+                <option value="green">🌿 Full Green</option>
+                <option value="fall">🍂 Fall</option>
+                    <option value="fall2">🍁 Fall 2</option>
+                <option value="study">📜 Study</option>
+            </optgroup>
+        </select>
+
+            <button class="small-button" id="archiveDone">archive completed</button>
+        </div>
+    </header>
+
+    <div class="aq-workspace">
+        <main class="aq-board-workspace">
+            <div id="categoryGrid" class="aq-section-board"></div>
+
+            <div class="aq-footer-note">
+                Card type and board category are separate. Use the type dropdown on a card anytime you want to change it.
+            </div>
+        </main>
+
+        <div class="aq-capture-column">
+            <div class="aq-board-tools aq-capture-tools">
+                <label class="aq-filter-dropdown">
+                    <span>show</span>
+                    <select id="aqFilterSelect" aria-label="Filter Aquarium cards">
+                        <option value="all">All types</option>
+                    </select>
+                </label>
+                <button class="small-button aq-add-category-inline" id="manageAquariumCategories" type="button">categories</button>
+            </div>
+
+            <aside class="aq-panel aq-capture-panel" data-collapsible-panel="aquarium-capture">
+            <div class="aq-panel-head">
+                <div class="aq-title-wrap">
+                    <span class="aq-section-icon">✧</span>
+                    <div>
+                        <div class="aq-panel-title editable-ui" contenteditable="true" data-pi-ui="aquarium-capture-title" data-pi-ui-fallback="Brain Dump">Brain Dump</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="aq-capture-body" data-collapse-body>
+                <input id="aqCaptureTitle" class="aq-capture-title-input" type="text" maxlength="180" autocomplete="off" placeholder="Title this thought…" aria-label="Aquarium note title">
+
+                <div id="captureInput" class="aq-capture-rich-input" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="Let the thought take up the space it needs. Ctrl/Cmd + B, I, U work here too."></div>
+
+                <div class="aq-kind-select-row">
+                    <label class="aq-kind-select-label">
+                        <span>type</span>
+                        <select id="aqCaptureKind" aria-label="Aquarium card type"></select>
+                    </label>
+                    <button class="small-button" id="manageAquariumKinds" type="button">manage types</button>
+                </div>
+
+                <div class="aq-capture-row">
+                    <span class="aq-shortcut">Ctrl/Cmd + Enter saves · plain Enter stays in the thought</span>
+                    <button class="aq-primary-button" id="captureBtn">add to inbox</button>
+                </div>
+            </div>
+
+            <div id="inboxZone" class="aq-inbox-zone aq-dropzone" data-zone="inbox" data-collapse-body></div>
+            </aside>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

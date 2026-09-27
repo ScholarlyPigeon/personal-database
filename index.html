@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en" class="pi-home-html">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Intranet · Home</title>
+    <link rel="stylesheet" href="Style.css?v=20260927-clean1">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+    <script src="CloudSync.js?v=20260927-clean1" defer></script>
+    <script src="Script.js?v=20260927-clean1" defer></script>
+</head>
+<body class="pi-home-body" data-default-theme="observatory">
+<div class="pi-home-page" id="piHomeApp">
+    <header class="pi-home-header">
+        <div class="pi-home-brand">
+            <div class="pi-mark" aria-hidden="true">⌂</div>
+            <div>
+                <div class="pi-home-title-row"><h1>Personal Intranet</h1><span class="pi-role-badge">ORIENT</span></div>
+                <div class="subtitle">see what matters · catch what appeared · choose a room</div>
+            </div>
+        </div>
+        <div class="pi-home-header-actions">
+            <span id="saveStatus" class="sync-status" aria-live="polite">cloud ready</span>
+            <button id="cloudLoginButton" class="small-button cloud-login-button" type="button">cloud login</button>
+            <select id="themeSelect" class="theme-select" aria-label="Theme"></select>
+        </div>
+    </header>
+
+    <section class="pi-home-capture">
+        <div class="pi-home-capture-title">
+            <div><strong>Catch it first.</strong> <span>No classification required.</span></div>
+            <span>Everything caught here is immediately safe in the Aquarium Inbox.</span>
+        </div>
+        <div class="pi-home-capture-row">
+            <textarea id="piHomeCapture" rows="2" placeholder="What just entered your head?"></textarea>
+            <button id="piHomeCatch" type="button">catch</button>
+            <button id="piHomeFind" data-pi-open-search type="button">find anything</button>
+            <button id="piHomeRecent" data-pi-open-recent type="button">recent</button>
+        </div>
+        <div id="piHomeRoutes" class="pi-route-bar" hidden></div>
+    </section>
+
+    <main class="pi-home-grid">
+        <section class="pi-home-card pi-home-focus">
+            <div class="pi-home-card-head">
+                <strong>✦ Focus Now</strong>
+                <div><span id="piHomeFocusCount"></span> <span id="piHomeFocusWarning" class="pi-focus-warning" hidden></span></div>
+            </div>
+            <div id="piHomeFocusList" class="pi-focus-list"></div>
+            <div class="pi-focus-entry"><input id="piHomeFocusInput" type="text" placeholder="What genuinely deserves the front row?"><button id="piHomeFocusAdd" type="button">add</button></div>
+        </section>
+
+        <section class="pi-home-card">
+            <div class="pi-home-card-head"><strong>🗓 Today</strong><a href="Database.html">open calendar →</a></div>
+            <div id="piHomeTodayList" class="pi-home-today-list"></div>
+        </section>
+
+        <section class="pi-home-card">
+            <div class="pi-home-card-head"><strong>↺ Recent</strong><button class="small-button" data-pi-open-recent type="button">full trail</button></div>
+            <div id="piHomeRecentList" class="pi-home-recent-wrap pi-recent-list"></div>
+        </section>
+
+        <section class="pi-home-card pi-home-doors">
+            <div class="pi-home-card-head"><strong>Rooms</strong><span>one page, one cognitive job</span></div>
+            <div class="pi-door-grid">
+                <a class="pi-door" href="Database.html"><span class="pi-door-count" data-pi-door-count="database" hidden></span><div class="pi-door-top"><span class="pi-door-icon">🗃</span><div><div class="pi-door-role">FOCUS</div><strong>Database</strong></div></div><p>What needs attention, what stays on your radar, and what is coming.</p></a>
+                <a class="pi-door" href="Aquarium.html"><span class="pi-door-count" data-pi-door-count="aquarium" hidden></span><div class="pi-door-top"><span class="pi-door-icon">🪼</span><div><div class="pi-door-role">CAPTURE</div><strong>Brain Aquarium</strong></div></div><p>Catch, classify later, and let thoughts exist without becoming homework.</p></a>
+                <a class="pi-door" href="Longform.html"><span class="pi-door-count" data-pi-door-count="longform" hidden></span><div class="pi-door-top"><span class="pi-door-icon">✎</span><div><div class="pi-door-role">THINK</div><strong>Longform</strong></div></div><p>Stay with an idea long enough for it to become a complete thought.</p></a>
+                <a class="pi-door" href="Patterns.html"><span class="pi-door-count" data-pi-door-count="archive" hidden></span><div class="pi-door-top"><span class="pi-door-icon">🧭</span><div><div class="pi-door-role">REVIEW</div><strong>Archive & Patterns</strong></div></div><p>History, synthesis, patterns, and turning points without visual pileup.</p></a>
+                <a class="pi-door" href="Almanac.html"><div class="pi-door-top"><span class="pi-door-icon">📖</span><div><div class="pi-door-role">REFERENCE</div><strong>Almanac</strong></div></div><p>The reusable facts, routines, favorites, provisions, and little truths.</p></a>
+                <a class="pi-door" href="neopets.html"><div class="pi-door-top"><span class="pi-door-icon">✦</span><div><div class="pi-door-role">PLAY</div><strong>Neopian Field Notes</strong></div></div><p>Dailies first, then treasures, dreamies, streaks, and wandering.</p></a>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>
