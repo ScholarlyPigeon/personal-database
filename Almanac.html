@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Personal Almanac</title>
-    <link rel="stylesheet" href="Style.css?v=20260928-polish2">
+    <link rel="stylesheet" href="Style.css?v=20260928-stablefinish">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-    <script src="CloudSync.js?v=20260928-polish2" defer></script>
-    <script src="Script.js?v=20260928-polish2" defer></script>
+    <script src="CloudSync.js?v=20260928-stablefinish" defer></script>
+    <script src="Script.js?v=20260928-stablefinish" defer></script>
 </head>
 <body data-default-theme="fall2">
 <div class="almanac-page" id="almanacApp">
@@ -476,42 +476,6 @@ document.addEventListener("DOMContentLoaded", () => {
             linkEdit.title = item.linkUrl ? "Edit meal link" : "Add meal link";
             linkEdit.addEventListener("click", () => openMealLinkEditor(item));
 
-            const moveControls = document.createElement("div");
-            moveControls.className = "almanac-item-move-controls";
-
-            const up = document.createElement("button");
-            up.type = "button";
-            up.className = "almanac-item-nudge";
-            up.textContent = "↑";
-            up.title = "Move item up";
-            up.disabled = index === 0;
-            up.addEventListener("click", () => nudgeAlmanacListItem(kind, item.id, -1));
-
-            const down = document.createElement("button");
-            down.type = "button";
-            down.className = "almanac-item-nudge";
-            down.textContent = "↓";
-            down.title = "Move item down";
-            down.disabled = index === state[kind].length - 1;
-            down.addEventListener("click", () => nudgeAlmanacListItem(kind, item.id, 1));
-
-            const destination = document.createElement("select");
-            destination.className = "almanac-item-destination";
-            destination.setAttribute("aria-label", "Move item to another Almanac section");
-            MOVABLE_LIST_KINDS.forEach(targetKind => {
-                const option = document.createElement("option");
-                option.value = targetKind;
-                option.textContent = sectionTitle(targetKind);
-                destination.appendChild(option);
-            });
-            destination.value = kind;
-            destination.addEventListener("change", () => {
-                if (destination.value === kind) return;
-                moveAlmanacListItem(item.id, kind, destination.value, null);
-            });
-
-            moveControls.append(up, down, destination);
-
             const archive = document.createElement("button");
             archive.type = "button";
             archive.className = "archive-icon-button almanac-item-archive";
@@ -672,6 +636,42 @@ document.addEventListener("DOMContentLoaded", () => {
                 item.text = text.innerText;
                 saveState();
             });
+
+            const moveControls = document.createElement("div");
+            moveControls.className = "almanac-item-move-controls";
+
+            const up = document.createElement("button");
+            up.type = "button";
+            up.className = "almanac-item-nudge";
+            up.textContent = "↑";
+            up.title = "Move item up";
+            up.disabled = index === 0;
+            up.addEventListener("click", () => nudgeAlmanacListItem(kind, item.id, -1));
+
+            const down = document.createElement("button");
+            down.type = "button";
+            down.className = "almanac-item-nudge";
+            down.textContent = "↓";
+            down.title = "Move item down";
+            down.disabled = index === state[kind].length - 1;
+            down.addEventListener("click", () => nudgeAlmanacListItem(kind, item.id, 1));
+
+            const destination = document.createElement("select");
+            destination.className = "almanac-item-destination";
+            destination.setAttribute("aria-label", "Move item to another Almanac section");
+            MOVABLE_LIST_KINDS.forEach(targetKind => {
+                const option = document.createElement("option");
+                option.value = targetKind;
+                option.textContent = sectionTitle(targetKind);
+                destination.appendChild(option);
+            });
+            destination.value = kind;
+            destination.addEventListener("change", () => {
+                if (destination.value === kind) return;
+                moveAlmanacListItem(item.id, kind, destination.value, null);
+            });
+
+            moveControls.append(up, down, destination);
 
             const archive = document.createElement("button");
             archive.type = "button";

@@ -5613,6 +5613,33 @@ if (document.getElementById("longformApp")) {
         }
     });
 
+    function refreshLongformFromStorage() {
+        const latestState = readLongformState();
+        const latestSections = readLongformSections();
+        const latestCategories = readLongformCategories();
+
+        const stateChanged = JSON.stringify(latestState) !== JSON.stringify(longformState);
+        const sectionChanged = JSON.stringify(latestSections) !== JSON.stringify(longformSections);
+        const categoryChanged = JSON.stringify(latestCategories) !== JSON.stringify(longformCategories);
+
+        if (stateChanged) longformState = latestState;
+        if (sectionChanged) longformSections = latestSections;
+        if (categoryChanged) {
+            longformCategories = latestCategories;
+            if (!longformCategories.some(item => item.id === activeLongformFilter)) activeLongformFilter = "all";
+            populateLongformCategoryUi();
+        }
+
+        if (stateChanged || sectionChanged || categoryChanged) renderLongformEntries();
+    }
+
+    window.addEventListener("pageshow", refreshLongformFromStorage);
+    window.addEventListener("focus", refreshLongformFromStorage);
+    document.addEventListener("visibilitychange", () => {
+        if (!document.hidden) refreshLongformFromStorage();
+    });
+    setTimeout(refreshLongformFromStorage, 1400);
+
     saveLongformCategories(false);
     saveLongformSections(false);
     saveLongformState(false);

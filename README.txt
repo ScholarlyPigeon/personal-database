@@ -1,3 +1,37 @@
+PERSONAL INTRANET — STABILITY FINISH
+September 28, 2026
+
+This release repairs regressions introduced during Polish v2.
+
+ALMANAC
+- Fixed a real runtime bug from the new list-movement pass. Movement controls had been inserted into the Meals renderer by mistake and were missing from the actual list-item renderer.
+- Existing Almanac data remains in the same pi-almanac-state-v1 / pi-strain-journal-v1 stores.
+- Dailies / Things I Like / Restock / Wish List retain drag, up/down reorder, and destination-select movement.
+- Meals remain unchanged by list movement controls.
+
+MOBILE PAGE FLOW
+- Phones and coarse-pointer devices now use normal browser/document scrolling again.
+- The universal capture dock keeps bottom breathing room through page padding instead of forcing every page into a nested fixed-height viewport.
+- This is intentionally simpler and removes the main source of clipped/off-screen mobile content.
+
+DATABASE MOBILE
+- Rebuilt the mobile header deck with explicit layout ownership.
+- Pages is a full-width native details menu.
+- On mobile, the Pages menu expands in normal document flow instead of an absolutely-positioned popover, so it cannot be clipped behind another panel.
+- Theme / select / sync / backup controls receive stable mobile slots.
+- Database content panels return to natural vertical flow, with long lists scrolling internally only when useful.
+
+LONGFORM MOBILE
+- Longform returns to normal document scrolling on phones.
+- Composer remains first and Saved Thoughts follows beneath it.
+- Saved Thoughts / sections no longer live inside a clipped nested viewport.
+- Added a small storage-refresh safeguard on pageshow/focus/visibility return so a mobile page re-reads current Longform state after cloud/local changes.
+
+CACHE
+- Shared asset cache version: 20260928-stablefinish.
+
+======================================================================
+
 PERSONAL INTRANET — POLISH V2 ADDENDUM
 September 28, 2026
 
