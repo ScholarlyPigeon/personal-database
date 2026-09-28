@@ -1,3 +1,18 @@
+PERSONAL INTRANET — POLISH V1 ADDENDUM
+September 28, 2026
+
+- Home is now a fixed desktop dashboard designed to fill one viewport without document scrolling.
+- Home order is: capture + PI Inbox, full-width Focus Now, then Recent / larger Rooms / Today as three equal-height dashboard columns.
+- Home Inbox, Focus, Recent, Rooms, and Today switch to internal scrolling when their content outgrows the available panel.
+- Aquarium category tiles can now be collapsed individually. Collapse state syncs through pi-aquarium-collapsed-categories-v1.
+- Longform Saved Thoughts now supports independent sections in addition to categories.
+- Longform sections are editable, collapsible, addable, and removable. Individual notes can be moved between sections from each note's tools menu.
+- Existing Longform notes automatically appear in the default General section without changing note content or category data.
+- Longform section structure/assignments sync through pi-longform-sections-v1.
+- Shared asset cache version: 20260928-polish1.
+
+======================================================================
+
 PERSONAL INTRANET — FLOW V2 ADDENDUM
 September 28, 2026
 

@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Longform Notes</title>
-    <link rel="stylesheet" href="Style.css?v=20260928-flow2">
+    <link rel="stylesheet" href="Style.css?v=20260928-polish1">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-    <script src="CloudSync.js?v=20260928-flow2" defer></script>
-    <script src="Script.js?v=20260928-flow2" defer></script>
+    <script src="CloudSync.js?v=20260928-polish1" defer></script>
+    <script src="Script.js?v=20260928-polish1" defer></script>
 
     <style>
         /* =========================================================
@@ -267,12 +267,15 @@
                     <div class="longform-section-title editable-ui longform-ui-edit" contenteditable="true" data-longform-ui="library-title">Saved thoughts</div>
                     <div class="longform-section-note editable-ui longform-ui-edit" contenteditable="true" data-longform-ui="library-note">pin what matters now; titles stay visible while thoughts fold underneath</div>
                 </div>
-                <label class="longform-filter-dropdown">
-                    <span>show</span>
-                    <select id="longformFilters" aria-label="Filter saved thoughts">
-                        <option value="all">All categories</option>
-                    </select>
-                </label>
+                <div class="longform-library-controls">
+                    <button id="addLongformSection" class="small-button longform-add-section" type="button">+ section</button>
+                    <label class="longform-filter-dropdown">
+                        <span>show</span>
+                        <select id="longformFilters" aria-label="Filter saved thoughts">
+                            <option value="all">All categories</option>
+                        </select>
+                    </label>
+                </div>
             </div>
             <div id="longformList" class="longform-list" data-collapse-body></div>
         </aside>

@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Personal Intranet · Home</title>
-    <link rel="stylesheet" href="Style.css?v=20260928-flow2">
+    <link rel="stylesheet" href="Style.css?v=20260928-polish1">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-    <script src="CloudSync.js?v=20260928-flow2" defer></script>
-    <script src="Script.js?v=20260928-flow2" defer></script>
+    <script src="CloudSync.js?v=20260928-polish1" defer></script>
+    <script src="Script.js?v=20260928-polish1" defer></script>
 </head>
 <body class="pi-home-body" data-default-theme="observatory">
 <div class="pi-home-page" id="piHomeApp">
@@ -46,23 +46,19 @@
             <div id="piHomeInboxList" class="pi-home-inbox-list"></div>
         </div>
     </section>
-
-    <main class="pi-home-grid">
-        <section class="pi-home-card pi-home-focus">
-            <div class="pi-home-card-head">
-                <strong>✦ Focus Now</strong>
-                <div><span id="piHomeFocusCount"></span> <span id="piHomeFocusWarning" class="pi-focus-warning" hidden></span></div>
-            </div>
+    <section class="pi-home-card pi-home-focus">
+        <div class="pi-home-card-head">
+            <strong>✦ Focus Now</strong>
+            <div><span id="piHomeFocusCount"></span> <span id="piHomeFocusWarning" class="pi-focus-warning" hidden></span></div>
+        </div>
+        <div class="pi-home-focus-body">
             <div id="piHomeFocusList" class="pi-focus-list"></div>
             <div class="pi-focus-entry"><input id="piHomeFocusInput" type="text" placeholder="What genuinely deserves the front row?"><button id="piHomeFocusAdd" type="button">add</button></div>
-        </section>
+        </div>
+    </section>
 
-        <section class="pi-home-card">
-            <div class="pi-home-card-head"><strong>🗓 Today</strong><a href="Database.html">open calendar →</a></div>
-            <div id="piHomeTodayList" class="pi-home-today-list"></div>
-        </section>
-
-        <section class="pi-home-card">
+    <main class="pi-home-grid">
+        <section class="pi-home-card pi-home-recent-card">
             <div class="pi-home-card-head"><strong>↺ Recent</strong><button class="small-button" data-pi-open-recent type="button">full trail</button></div>
             <div id="piHomeRecentList" class="pi-home-recent-wrap pi-recent-list"></div>
         </section>
@@ -78,7 +74,13 @@
                 <a class="pi-door" href="neopets.html"><div class="pi-door-top"><span class="pi-door-icon">✦</span><div><div class="pi-door-role">PLAY</div><strong>Neopian Field Notes</strong></div></div><p>Dailies first, then treasures, dreamies, streaks, and wandering.</p></a>
             </div>
         </section>
+
+        <section class="pi-home-card pi-home-today-card">
+            <div class="pi-home-card-head"><strong>🗓 Today</strong><a href="Database.html">open calendar →</a></div>
+            <div id="piHomeTodayList" class="pi-home-today-list"></div>
+        </section>
     </main>
+
 </div>
 </body>
 </html>

@@ -3568,11 +3568,32 @@ if (document.getElementById("aquariumApp")) {
         renderAquarium();
     }
 
+    const AQUARIUM_COLLAPSED_CATEGORIES_KEY = "pi-aquarium-collapsed-categories-v1";
+
+    function readCollapsedAquariumCategories() {
+        try {
+            const saved = JSON.parse(localStorage.getItem(AQUARIUM_COLLAPSED_CATEGORIES_KEY) || "[]");
+            return new Set(Array.isArray(saved) ? saved : []);
+        } catch {
+            return new Set();
+        }
+    }
+
+    let collapsedAquariumCategories = readCollapsedAquariumCategories();
+
+    function saveCollapsedAquariumCategories() {
+        localStorage.setItem(AQUARIUM_COLLAPSED_CATEGORIES_KEY, JSON.stringify([...collapsedAquariumCategories]));
+        showSaved();
+    }
+
     function makeAquariumCategoryShell(category) {
         const shell = document.createElement("section");
         shell.className = "aq-category";
         shell.dataset.categoryId = category.id;
         shell.dataset.accent = category.accent;
+
+        const categoryCollapsed = collapsedAquariumCategories.has(category.id);
+        shell.classList.toggle("collapsed", categoryCollapsed);
 
         const head = document.createElement("div");
         head.className = "aq-category-head";
@@ -3625,6 +3646,20 @@ if (document.getElementById("aquariumApp")) {
         const actions = document.createElement("div");
         actions.className = "aq-category-actions";
 
+        const collapse = document.createElement("button");
+        collapse.className = "aq-mini-button aq-category-collapse";
+        collapse.textContent = categoryCollapsed ? "▸" : "▾";
+        collapse.title = categoryCollapsed ? "Expand category" : "Collapse category";
+        collapse.setAttribute("aria-expanded", String(!categoryCollapsed));
+        collapse.addEventListener("click", event => {
+            event.preventDefault();
+            event.stopPropagation();
+            if (collapsedAquariumCategories.has(category.id)) collapsedAquariumCategories.delete(category.id);
+            else collapsedAquariumCategories.add(category.id);
+            saveCollapsedAquariumCategories();
+            renderAquariumCategories();
+        });
+
         const add = document.createElement("button");
         add.className = "aq-mini-button";
         add.textContent = "+";
@@ -3640,16 +3675,20 @@ if (document.getElementById("aquariumApp")) {
                 if (card.zone === category.id) card.zone = "inbox";
             });
             aquariumState.categories = aquariumState.categories.filter(item => item.id !== category.id);
+            collapsedAquariumCategories.delete(category.id);
+            saveCollapsedAquariumCategories();
             saveAquariumState();
             renderAquarium();
         });
 
-        actions.append(add, remove);
+        actions.append(collapse, add, remove);
         head.append(handle, name, actions);
 
         const zone = document.createElement("div");
         zone.className = "aq-category-zone aq-dropzone";
         zone.dataset.zone = category.id;
+        zone.hidden = categoryCollapsed;
+        zone.setAttribute("aria-hidden", String(categoryCollapsed));
 
         const cards = cardsForZone(category.id);
         if (!cards.length) {
@@ -4783,6 +4822,7 @@ if (document.getElementById("patternsApp")) {
 if (document.getElementById("longformApp")) {
     const LONGFORM_STORAGE_KEY = "pi-longform-state-v1";
     const LONGFORM_CATEGORY_KEY = "pi-longform-categories-v1";
+    const LONGFORM_SECTIONS_KEY = "pi-longform-sections-v1";
     const LONGFORM_CATEGORY_DEFAULTS = [
         { id: "important", label: "Important", accent: "rose" },
         { id: "database", label: "Database", accent: "teal" },
@@ -4811,6 +4851,99 @@ if (document.getElementById("longformApp")) {
 
     let longformCategories = readLongformCategories();
 
+    function normalizeLongformSections(value) {
+        const raw = value && typeof value === "object" ? value : {};
+        const sections = Array.isArray(raw.sections)
+            ? raw.sections
+                .filter(section => section && typeof section.id === "string")
+                .map(section => ({
+                    id: section.id,
+                    name: typeof section.name === "string" && section.name.trim() ? section.name.trim() : "Section",
+                    collapsed: Boolean(section.collapsed)
+                }))
+            : [];
+
+        if (!sections.length) {
+            sections.push({ id: "general", name: "General", collapsed: false });
+        }
+
+        const assignments = raw.assignments && typeof raw.assignments === "object" && !Array.isArray(raw.assignments)
+            ? { ...raw.assignments }
+            : {};
+
+        return { sections, assignments };
+    }
+
+    function readLongformSections() {
+        try {
+            return normalizeLongformSections(JSON.parse(localStorage.getItem(LONGFORM_SECTIONS_KEY) || "null"));
+        } catch {
+            return normalizeLongformSections(null);
+        }
+    }
+
+    let longformSections = readLongformSections();
+
+    function saveLongformSections(show = true) {
+        localStorage.setItem(LONGFORM_SECTIONS_KEY, JSON.stringify(longformSections));
+        if (show) showSaved();
+    }
+
+    function longformSectionForEntry(entryId) {
+        const assigned = longformSections.assignments?.[entryId];
+        if (longformSections.sections.some(section => section.id === assigned)) return assigned;
+        return longformSections.sections[0]?.id || "general";
+    }
+
+    function removeLongformSectionAssignment(entryId) {
+        if (!longformSections.assignments || !Object.prototype.hasOwnProperty.call(longformSections.assignments, entryId)) return;
+        delete longformSections.assignments[entryId];
+        saveLongformSections(false);
+    }
+
+    function makeLongformSectionSelect(entry) {
+        const wrap = document.createElement("label");
+        wrap.className = "longform-section-move";
+        const caption = document.createElement("span");
+        caption.textContent = "section";
+        const select = document.createElement("select");
+        select.setAttribute("aria-label", "Move thought to section");
+        longformSections.sections.forEach(section => {
+            const option = document.createElement("option");
+            option.value = section.id;
+            option.textContent = section.name;
+            select.appendChild(option);
+        });
+        select.value = longformSectionForEntry(entry.id);
+        select.addEventListener("change", event => {
+            event.stopPropagation();
+            longformSections.assignments[entry.id] = select.value;
+            saveLongformSections(false);
+            renderLongformEntries();
+            showSaved();
+        });
+        wrap.append(caption, select);
+        return wrap;
+    }
+
+    function addLongformSection() {
+        const id = `section-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+        longformSections.sections.push({ id, name: "New section", collapsed: false });
+        saveLongformSections(false);
+        renderLongformEntries();
+        showSaved();
+        requestAnimationFrame(() => {
+            const field = longformList.querySelector(`[data-longform-section-id="${id}"] .longform-section-name`);
+            if (!field) return;
+            field.focus();
+            const range = document.createRange();
+            range.selectNodeContents(field);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+        });
+    }
+
     const longformList = document.getElementById("longformList");
     const longformInput = document.getElementById("longformInput");
     const longformCategory = document.getElementById("longformCategory");
@@ -4820,6 +4953,7 @@ if (document.getElementById("longformApp")) {
     const saveLongformEntry = document.getElementById("saveLongformEntry");
     const longformFilters = document.getElementById("longformFilters");
     const manageLongformCategories = document.getElementById("manageLongformCategories");
+    const addLongformSectionButton = document.getElementById("addLongformSection");
 
     let activeLongformFilter = "all";
     const expandedLongformIds = new Set();
@@ -5080,25 +5214,7 @@ if (document.getElementById("longformApp")) {
         showSaved();
     }
 
-    function renderLongformEntries() {
-        longformList.innerHTML = "";
-        const visible = longformState.entries
-            .filter(entry => (
-                activeLongformFilter === "all" || entry.category === activeLongformFilter
-            ))
-            .sort((a, b) => Number(Boolean(b.pinned)) - Number(Boolean(a.pinned)));
-
-        if (!visible.length) {
-            const empty = document.createElement("div");
-            empty.className = "longform-empty";
-            empty.innerHTML = activeLongformFilter === "all"
-                ? "<strong>No saved thoughts yet.</strong><span>The first one will land here by title, ready to unfold when needed.</span>"
-                : `<strong>No ${categoryLabel(activeLongformFilter).toLowerCase()} thoughts here.</strong><span>Nothing is being hidden except by your current filter.</span>`;
-            longformList.appendChild(empty);
-            return;
-        }
-
-        visible.forEach(entry => {
+    function makeLongformEntryCard(entry) {
             const card = document.createElement("article");
             const expanded = expandedLongformIds.has(entry.id);
             card.className = `longform-entry${entry.done ? " done" : ""}${expanded ? " expanded" : ""}`;
@@ -5194,6 +5310,7 @@ if (document.getElementById("longformApp")) {
                 if (!archived) return;
                 longformState.entries = longformState.entries.filter(item => item.id !== entry.id);
                 expandedLongformIds.delete(entry.id);
+                removeLongformSectionAssignment(entry.id);
                 saveLongformState(false);
                 renderLongformEntries();
                 showSaved();
@@ -5207,12 +5324,14 @@ if (document.getElementById("longformApp")) {
             remove.addEventListener("click", () => {
                 longformState.entries = longformState.entries.filter(item => item.id !== entry.id);
                 expandedLongformIds.delete(entry.id);
+                removeLongformSectionAssignment(entry.id);
                 saveLongformState(false);
                 renderLongformEntries();
                 showSaved();
             });
 
-            toolsPanel.append(pinButton, doneButton, mediaEdit, archive, remove);
+            const sectionMove = makeLongformSectionSelect(entry);
+            toolsPanel.append(sectionMove, pinButton, doneButton, mediaEdit, archive, remove);
             tools.append(toolsSummary, toolsPanel);
 
             const expand = document.createElement("button");
@@ -5294,7 +5413,132 @@ if (document.getElementById("longformApp")) {
             }
 
             card.append(top, summary, body);
-            longformList.appendChild(card);
+            return card;
+        
+    }
+
+    function makeLongformSectionShell(section, entries) {
+        const shell = document.createElement("section");
+        shell.className = `longform-saved-section${section.collapsed ? " collapsed" : ""}`;
+        shell.dataset.longformSectionId = section.id;
+
+        const head = document.createElement("div");
+        head.className = "longform-saved-section-head";
+
+        const toggle = document.createElement("button");
+        toggle.type = "button";
+        toggle.className = "longform-section-toggle";
+        toggle.textContent = section.collapsed ? "▸" : "▾";
+        toggle.title = section.collapsed ? "Expand section" : "Collapse section";
+        toggle.setAttribute("aria-expanded", String(!section.collapsed));
+        toggle.addEventListener("click", () => {
+            section.collapsed = !section.collapsed;
+            saveLongformSections(false);
+            renderLongformEntries();
+            showSaved();
+        });
+
+        const name = document.createElement("div");
+        name.className = "longform-section-name";
+        name.contentEditable = "true";
+        name.spellcheck = false;
+        name.textContent = section.name;
+        name.setAttribute("role", "textbox");
+        name.setAttribute("aria-label", "Longform section name");
+        name.addEventListener("keydown", event => {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                name.blur();
+            }
+        });
+        name.addEventListener("input", () => {
+            section.name = name.innerText.replace(/\s+/g, " ").trim() || "Section";
+            saveLongformSections(false);
+        });
+        name.addEventListener("blur", () => {
+            name.textContent = section.name || "Section";
+            showSaved();
+        });
+
+        const count = document.createElement("span");
+        count.className = "longform-section-count";
+        count.textContent = `${entries.length}`;
+
+        const removeSection = document.createElement("button");
+        removeSection.type = "button";
+        removeSection.className = "longform-section-remove";
+        removeSection.textContent = "×";
+        removeSection.title = "Remove section and move its notes to the first remaining section";
+        removeSection.disabled = longformSections.sections.length <= 1;
+        removeSection.addEventListener("click", () => {
+            if (longformSections.sections.length <= 1) return;
+            const fallback = longformSections.sections.find(candidate => candidate.id !== section.id);
+            Object.keys(longformSections.assignments).forEach(entryId => {
+                if (longformSections.assignments[entryId] === section.id) {
+                    longformSections.assignments[entryId] = fallback.id;
+                }
+            });
+            longformSections.sections = longformSections.sections.filter(candidate => candidate.id !== section.id);
+            saveLongformSections(false);
+            renderLongformEntries();
+            showSaved();
+        });
+
+        const headActions = document.createElement("div");
+        headActions.className = "longform-section-head-actions";
+        headActions.append(count, removeSection);
+        head.append(toggle, name, headActions);
+
+        const body = document.createElement("div");
+        body.className = "longform-saved-section-body";
+        body.hidden = section.collapsed;
+        body.setAttribute("aria-hidden", String(section.collapsed));
+
+        if (!entries.length) {
+            const empty = document.createElement("div");
+            empty.className = "longform-section-empty";
+            empty.textContent = activeLongformFilter === "all"
+                ? "No notes in this section yet."
+                : "No notes in this section match the current category filter.";
+            body.appendChild(empty);
+        } else {
+            entries.forEach(entry => body.appendChild(makeLongformEntryCard(entry)));
+        }
+
+        shell.append(head, body);
+        return shell;
+    }
+
+    function renderLongformEntries() {
+        longformList.innerHTML = "";
+
+        const liveIds = new Set(longformState.entries.map(entry => entry.id));
+        let sectionStateChanged = false;
+        Object.keys(longformSections.assignments).forEach(entryId => {
+            if (!liveIds.has(entryId)) {
+                delete longformSections.assignments[entryId];
+                sectionStateChanged = true;
+            }
+        });
+        if (sectionStateChanged) saveLongformSections(false);
+
+        const visible = longformState.entries
+            .filter(entry => (
+                activeLongformFilter === "all" || entry.category === activeLongformFilter
+            ))
+            .sort((a, b) => Number(Boolean(b.pinned)) - Number(Boolean(a.pinned)));
+
+        if (!visible.length && activeLongformFilter !== "all") {
+            const empty = document.createElement("div");
+            empty.className = "longform-empty";
+            empty.innerHTML = `<strong>No ${categoryLabel(activeLongformFilter).toLowerCase()} thoughts here.</strong><span>Nothing is being hidden except by your current filter.</span>`;
+            longformList.appendChild(empty);
+            return;
+        }
+
+        longformSections.sections.forEach(section => {
+            const entries = visible.filter(entry => longformSectionForEntry(entry.id) === section.id);
+            longformList.appendChild(makeLongformSectionShell(section, entries));
         });
     }
 
@@ -5333,6 +5577,7 @@ if (document.getElementById("longformApp")) {
 
     populateLongformCategoryUi();
     if (manageLongformCategories) manageLongformCategories.addEventListener("click", openLongformCategoryManager);
+    if (addLongformSectionButton) addLongformSectionButton.addEventListener("click", addLongformSection);
     longformDate.value = makeLocalIsoDate();
     saveLongformEntry.addEventListener("click", submitLongformEntry);
     longformInput.addEventListener("keydown", event => {
@@ -5354,9 +5599,14 @@ if (document.getElementById("longformApp")) {
             populateLongformCategoryUi();
             renderLongformEntries();
         }
+        if (event.key === LONGFORM_SECTIONS_KEY) {
+            longformSections = readLongformSections();
+            renderLongformEntries();
+        }
     });
 
     saveLongformCategories(false);
+    saveLongformSections(false);
     saveLongformState(false);
     renderLongformEntries();
 }
