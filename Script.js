@@ -7,7 +7,7 @@
    any page module reads localStorage, then stores the old values in
    one local recovery snapshot. The recovery snapshot is not synced.
    ========================================================= */
-const PI_LEGACY_RECOVERY_KEY = "personal-intranet-legacy-recovery-v1";
+const PI_MIGRATION_REPORT_KEY = "personal-intranet-storage-migration-v1";
 const PI_LEGACY_EXACT_KEYS = new Map([
     ["pigeonhole-reconfig-activity-v1", "pi-activity-v1"],
     ["pigeonhole-reconfig-archive-mode-v1", "pi-archive-view-mode-v1"],
@@ -62,38 +62,105 @@ function piCanonicalStorageKey(key) {
 }
 
 function migrateLegacyLocalStorage() {
-    const legacySnapshot = {};
-    const keysToRemove = [];
+    /*
+       Quota-safe rename bridge.
+
+       Earlier cleanup code briefly duplicated every legacy value under a new
+       pi-* key and then attempted to write a second full recovery copy before
+       deleting the originals. On a mature intranet that can exceed the
+       browser's localStorage quota and stop Script.js before the app starts.
+
+       This version moves one key at a time. When a canonical key is absent,
+       the legacy value is held in memory, the old key is removed, and the same
+       value is written under its pi-* name. If that write fails, the old key is
+       immediately restored. Equal duplicate keys are simply collapsed. If old
+       and new values differ, both are left untouched and the key names are
+       reported so no content is silently discarded.
+    */
+    const moved = [];
+    const collapsedDuplicates = [];
+    const conflicts = [];
+    const failed = [];
+    const keys = [];
+
     for (let index = 0; index < localStorage.length; index += 1) {
         const key = localStorage.key(index);
-        const canonicalKey = piCanonicalStorageKey(key);
-        if (!key || !canonicalKey || canonicalKey === key) continue;
-        const value = localStorage.getItem(key);
-        legacySnapshot[key] = value;
-        if (localStorage.getItem(canonicalKey) === null) {
-            localStorage.setItem(canonicalKey, value);
-        }
-        keysToRemove.push(key);
+        if (key) keys.push(key);
     }
-    if (!keysToRemove.length) return;
+
+    keys.forEach(key => {
+        const canonicalKey = piCanonicalStorageKey(key);
+        if (!canonicalKey || canonicalKey === key) return;
+
+        const legacyValue = localStorage.getItem(key);
+        if (legacyValue === null) return;
+
+        const canonicalValue = localStorage.getItem(canonicalKey);
+
+        if (canonicalValue !== null) {
+            if (canonicalValue === legacyValue) {
+                try {
+                    localStorage.removeItem(key);
+                    collapsedDuplicates.push({ legacyKey: key, canonicalKey });
+                } catch (error) {
+                    failed.push({ legacyKey: key, canonicalKey, stage: "remove duplicate", message: String(error?.message || error) });
+                }
+            } else {
+                conflicts.push({ legacyKey: key, canonicalKey });
+            }
+            return;
+        }
+
+        try {
+            /* Free the legacy slot before writing the equally-sized value under
+               its new name. This avoids a temporary 2x storage spike. */
+            localStorage.removeItem(key);
+
+            try {
+                localStorage.setItem(canonicalKey, legacyValue);
+
+                if (localStorage.getItem(canonicalKey) !== legacyValue) {
+                    throw new Error("Canonical value did not verify after migration.");
+                }
+
+                moved.push({ legacyKey: key, canonicalKey });
+            } catch (writeError) {
+                /* Roll back immediately. The legacy value remains the safety copy. */
+                try {
+                    localStorage.removeItem(canonicalKey);
+                    localStorage.setItem(key, legacyValue);
+                } catch (restoreError) {
+                    console.error("Personal Intranet migration rollback failed:", key, restoreError);
+                }
+                failed.push({ legacyKey: key, canonicalKey, stage: "write canonical", message: String(writeError?.message || writeError) });
+            }
+        } catch (error) {
+            failed.push({ legacyKey: key, canonicalKey, stage: "move", message: String(error?.message || error) });
+        }
+    });
+
+    const report = {
+        version: 2,
+        checkedAt: new Date().toISOString(),
+        moved,
+        collapsedDuplicates,
+        conflicts,
+        failed
+    };
 
     try {
-        const existing = JSON.parse(localStorage.getItem(PI_LEGACY_RECOVERY_KEY) || "null");
-        const prior = existing && typeof existing === "object" && existing.data && typeof existing.data === "object"
-            ? existing.data
-            : {};
-        localStorage.setItem(PI_LEGACY_RECOVERY_KEY, JSON.stringify({
-            migratedAt: new Date().toISOString(),
-            data: { ...prior, ...legacySnapshot }
-        }));
-    } catch {
-        localStorage.setItem(PI_LEGACY_RECOVERY_KEY, JSON.stringify({
-            migratedAt: new Date().toISOString(),
-            data: legacySnapshot
-        }));
+        /* Small metadata only: never duplicate the user's actual content here. */
+        localStorage.setItem(PI_MIGRATION_REPORT_KEY, JSON.stringify(report));
+    } catch (error) {
+        console.warn("Could not save the small PI migration report:", error);
     }
 
-    keysToRemove.forEach(key => localStorage.removeItem(key));
+    if (conflicts.length) {
+        console.warn("PI storage migration left differing legacy values untouched for safety:", conflicts);
+    }
+    if (failed.length) {
+        console.warn("PI storage migration could not move some keys; legacy values were retained where possible:", failed);
+    }
 }
 
 migrateLegacyLocalStorage();

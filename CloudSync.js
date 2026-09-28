@@ -1,3 +1,9 @@
+/* =========================================================
+   PERSONAL INTRANET CLOUD MODULE
+   Isolated scope prevents cloud-internal migration helpers from colliding
+   with the shared application Script.js lexical bindings.
+   ========================================================= */
+(() => {
 const SUPABASE_URL = "https://haydgzxjgwworgmmckwk.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_wL4Uye0U6WHtXiVQJ9buhQ_dRtLh8nk";
 
@@ -119,6 +125,36 @@ const SYNC_CONFLICT_KEY = "personal-intranet-sync-conflicts-v3";
 const LEGACY_SYNC_CONFLICT_KEY = "personal-database-sync-conflicts-v2";
 const LEGACY_RECOVERY_KEY = "personal-intranet-legacy-recovery-v1";
 const ABSENT_HASH = "__PI_ABSENT__";
+const STORAGE_MIGRATION_REPORT_KEY = "personal-intranet-storage-migration-v1";
+
+function readMigrationPreferredLocalKeys() {
+    try {
+        const report = JSON.parse(localStorage.getItem(STORAGE_MIGRATION_REPORT_KEY) || "null");
+        if (!report || report.cloudReconciledAt) return new Set();
+        const keys = new Set();
+        [
+            ...(Array.isArray(report.moved) ? report.moved : []),
+            ...(Array.isArray(report.collapsedDuplicates) ? report.collapsedDuplicates : []),
+            ...(Array.isArray(report.conflicts) ? report.conflicts : [])
+        ].forEach(item => {
+            if (item?.canonicalKey && String(item.canonicalKey).startsWith("pi-")) keys.add(String(item.canonicalKey));
+        });
+        return keys;
+    } catch {
+        return new Set();
+    }
+}
+
+function markMigrationCloudReconciled() {
+    try {
+        const report = JSON.parse(localStorage.getItem(STORAGE_MIGRATION_REPORT_KEY) || "null");
+        if (!report || report.cloudReconciledAt) return;
+        report.cloudReconciledAt = new Date().toISOString();
+        localStorage.setItem(STORAGE_MIGRATION_REPORT_KEY, JSON.stringify(report));
+    } catch (error) {
+        console.warn("Could not mark PI storage migration as cloud-reconciled:", error);
+    }
+}
 
 function isSyncedStorageKey(key) {
     return Boolean(key) && key.startsWith("pi-") && !key.startsWith("pi-share-");
@@ -219,6 +255,7 @@ function writeSyncMeta(cloudData, cloudUpdatedAt) {
         SYNC_META_KEY,
         JSON.stringify(meta)
     );
+    markMigrationCloudReconciled();
 
     return meta;
 }
@@ -302,6 +339,22 @@ function downloadLocalBackup() {
     if (legacyRecovery) {
         try { backup.__legacy_migration_recovery = JSON.parse(legacyRecovery); }
         catch { backup.__legacy_migration_recovery = legacyRecovery; }
+    }
+
+    /* If a legacy/canonical pair intentionally remains because the two values
+       differ, include the legacy copy in the downloaded JSON without storing
+       another duplicate in localStorage. */
+    const remainingLegacy = {};
+    for (let index = 0; index < localStorage.length; index += 1) {
+        const key = localStorage.key(index);
+        if (isLegacyAppStorageKey(key)) remainingLegacy[key] = localStorage.getItem(key);
+    }
+    if (Object.keys(remainingLegacy).length) backup.__remaining_legacy_values = remainingLegacy;
+
+    const migrationReport = localStorage.getItem("personal-intranet-storage-migration-v1");
+    if (migrationReport) {
+        try { backup.__storage_migration_report = JSON.parse(migrationReport); }
+        catch { backup.__storage_migration_report = migrationReport; }
     }
 
     const blob = new Blob(
@@ -757,32 +810,51 @@ document.addEventListener("DOMContentLoaded", async () => {
             return true;
         }
 
-        const cloudData =
+        let cloudData =
             filteredCloudData(
                 cloudRow.data
             );
+        let cloudUpdatedAt = cloudRow.updated_at;
 
         /*
             One-time Safe Sync migration:
-            the existing cloud state is the baseline. This mirrors
-            the old fresh-device protection, but only happens once.
-            From this point forward Safe Sync performs key-by-key merges.
+            normally the existing cloud state is the baseline. During the
+            September 28 storage-namespace repair, however, a broken client may
+            have briefly produced a cloud row missing keys that still exist in
+            this browser's legacy/canonical migration set. Those specifically
+            migrated local keys are allowed to heal REMOTE ABSENCE before the
+            cloud becomes the baseline. A real remote value still wins here.
         */
-        const localBefore =
-            collectState();
+        const localBefore = collectState();
+        const preferredLocalKeys = readMigrationPreferredLocalKeys();
+        const healedCloudData = { ...cloudData };
+        let healNeeded = false;
+
+        preferredLocalKeys.forEach(key => {
+            if (hasOwn(localBefore, key) && !hasOwn(healedCloudData, key)) {
+                healedCloudData[key] = localBefore[key];
+                healNeeded = true;
+            }
+        });
+
+        if (healNeeded) {
+            const repairWrite = await writeMergedState(healedCloudData, cloudRow.updated_at);
+            if (repairWrite.error) {
+                console.error("Cloud migration repair failed:", repairWrite.error);
+                setStatus("☁ migration repair paused", "error");
+                return false;
+            }
+            cloudData = filteredCloudData(repairWrite.data?.data || healedCloudData);
+            cloudUpdatedAt = repairWrite.data?.updated_at || cloudUpdatedAt;
+        }
 
         const changed =
             makeStateSnapshot(localBefore) !==
             makeStateSnapshot(cloudData);
 
-        replaceLocalState(
-            cloudData
-        );
-
-        writeSyncMeta(
-            cloudData,
-            cloudRow.updated_at
-        );
+        replaceLocalState(cloudData);
+        writeSyncMeta(cloudData, cloudUpdatedAt);
+        markMigrationCloudReconciled();
 
         setStatus(
             "☁ safe sync ready ✓",
@@ -901,6 +973,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
                 const baseHashes =
                     meta.hashes || {};
+                const preferredLocalKeys =
+                    readMigrationPreferredLocalKeys();
 
                 const allKeys =
                     new Set([
@@ -977,6 +1051,21 @@ document.addEventListener("DOMContentLoaded", async () => {
                     const remoteChanged =
                         remoteHash !==
                         baseHash;
+
+                    /* Repair guard: for keys freshly migrated from the legacy
+                       namespace, a missing remote value may be damage from the
+                       broken cleanup build rather than an intentional deletion.
+                       Restore local content only when the remote key is absent;
+                       never overwrite an actual remote value under this rule. */
+                    if (
+                        preferredLocalKeys.has(key) &&
+                        localPresent &&
+                        !remotePresent
+                    ) {
+                        cloudWriteNeeded = true;
+                        mergedData[key] = localValue;
+                        continue;
+                    }
 
                     if (
                         localChanged &&
@@ -1538,3 +1627,4 @@ document.addEventListener("DOMContentLoaded", async () => {
             () => getConflictLog()
     };
 });
+})();
