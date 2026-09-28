@@ -1,3 +1,19 @@
+PERSONAL INTRANET — FLOW V2 ADDENDUM
+September 28, 2026
+
+- Universal capture now lands in a dedicated pi-capture-inbox-v1 rather than automatically becoming an Aquarium card.
+- Home shows the Inbox and can route captures to Database Notes, Aquarium Inbox, Longform, Archive Notes, Focus Now, Radar, or Today.
+- Desktop Home supports dragging Inbox items onto Database / Aquarium / Longform / Archive room cards.
+- Archive Timeline recovery now reconciles legacy/canonical workspace stores by id every load instead of trusting the old migration flag.
+- If Timeline is still empty, Archive shows a "recover backup" button. Select an existing Personal Intranet JSON backup; Timeline entries are merged into the current workspace without overwriting unrelated data.
+- Archive "All" is now the default view (stored under a fresh v2 view-preference key so the previous automatic Synthesis default does not stick). On wide desktop screens, Day Archive / Archive / Notes / Patterns / Timeline are five equal-height side-by-side panels inside one viewport.
+- Mobile remains stacked and touch-safe.
+- Shared asset cache version: 20260928-flow2.
+
+IMPORTANT: Do not upload personal JSON backups to GitHub. Backup recovery reads the file locally in the browser.
+
+======================================================================
+
 PERSONAL INTRANET — CANONICAL README
 Current production version: September 28, 2026
 Status: GitHub Pages / Supabase production-ready · stability repair applied

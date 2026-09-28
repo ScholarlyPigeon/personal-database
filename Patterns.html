@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Archive & Patterns</title>
-    <link rel="stylesheet" href="Style.css?v=20260928-stable1">
+    <link rel="stylesheet" href="Style.css?v=20260928-flow2">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-    <script src="CloudSync.js?v=20260928-stable1" defer></script>
-    <script src="Script.js?v=20260928-stable1" defer></script>
+    <script src="CloudSync.js?v=20260928-flow2" defer></script>
+    <script src="Script.js?v=20260928-flow2" defer></script>
 </head>
 <body data-default-theme="study">
 <div class="patterns-page archive-v2-page" id="archiveApp">
@@ -107,7 +107,10 @@
             <section class="panel archive-insight-panel timeline-insight-panel" data-collapsible-panel="archive-timeline">
                 <div class="panel-header">
                     <div class="panel-title"><span>📍</span><span data-pi-ui="archive-timeline-title" data-pi-ui-fallback="Timeline">Timeline</span></div>
-                    <div class="panel-subtitle">turning points · newest first</div>
+                    <div class="archive-timeline-head-actions">
+                        <div class="panel-subtitle">turning points · newest first</div>
+                        <button id="recoverTimelineBackup" class="small-button archive-recover-button" type="button">recover backup</button>
+                    </div>
                 </div>
                 <div id="archiveTimelineList" class="archive-workspace-list scroll-blue" data-collapse-body></div>
             </section>
@@ -115,6 +118,7 @@
     </main>
 </div>
 
+<input id="archiveTimelineRecoveryInput" type="file" accept=".json,application/json" hidden>
 <script>
 document.addEventListener("DOMContentLoaded", () => {
     const WORKSPACE_KEY = "pi-archive-workspace-v1";
@@ -190,38 +194,119 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let workspace = readWorkspace();
 
-    function migrateLegacyOnce() {
-        if (localStorage.getItem(WORKSPACE_MIGRATION_KEY) === "true") return;
-        const patterns = readArray(LEGACY_PATTERN_KEY);
-        const timeline = readArray(LEGACY_TIMELINE_KEY);
-        const existingIds = new Set(workspace.map(item => item.id));
+    function mergeWorkspaceCandidate(candidate, forcedZone = null) {
+        if (!candidate || typeof candidate !== "object") return false;
+        const normalized = normalizeItem({
+            ...candidate,
+            zone: forcedZone || candidate.zone || "notes",
+            title: candidate.title || candidate.text || "Untitled",
+            text: typeof candidate.text === "string" ? candidate.text : "",
+            html: typeof candidate.html === "string" ? candidate.html : "",
+            createdAt: candidate.createdAt || new Date().toISOString(),
+            date: candidate.date || itemDate(candidate)
+        });
 
-        patterns.forEach(note => {
-            if (!note || existingIds.has(note.id)) return;
-            workspace.push(normalizeItem({
-                id: note.id || workspaceId("pattern"),
-                zone: "patterns",
-                title: String(note.text || "Pattern").trim() || "Pattern",
-                text: "",
-                html: "",
-                createdAt: note.createdAt || new Date().toISOString(),
-                date: itemDate(note)
-            }));
-        });
-        timeline.forEach(marker => {
-            if (!marker || existingIds.has(marker.id)) return;
-            workspace.push(normalizeItem({
-                id: marker.id || workspaceId("timeline"),
-                zone: "timeline",
-                title: String(marker.text || "Timeline marker").trim() || "Timeline marker",
-                text: "",
-                html: "",
-                createdAt: marker.createdAt || new Date().toISOString(),
-                date: marker.date || itemDate(marker)
-            }));
-        });
+        const existing = workspace.find(item => item.id === normalized.id);
+        if (!existing) {
+            workspace.push(normalized);
+            return true;
+        }
+
+        let changed = false;
+        const richerText = String(normalized.text || "").trim();
+        const currentText = String(existing.text || "").trim();
+        if (!currentText && richerText) { existing.text = normalized.text; changed = true; }
+        if (!String(existing.html || "").trim() && String(normalized.html || "").trim()) { existing.html = normalized.html; changed = true; }
+        if ((!existing.title || existing.title === "Untitled") && normalized.title) { existing.title = normalized.title; changed = true; }
+        if ((!existing.date || existing.date === makeLocalIsoDate()) && normalized.date) { existing.date = normalized.date; changed = true; }
+        if (existing.zone === "notes" && normalized.zone !== "notes") { existing.zone = normalized.zone; changed = true; }
+        return changed;
+    }
+
+    function readAnyArray(key) {
+        try {
+            const raw = localStorage.getItem(key);
+            if (raw === null) return [];
+            const value = JSON.parse(raw);
+            return Array.isArray(value) ? value : [];
+        } catch { return []; }
+    }
+
+    function recoverLegacyWorkspaceAlways() {
+        let changed = false;
+
+        // A cautious cleanup build may have left an old and new workspace side-by-side.
+        // Merge them by id instead of trusting an "already migrated" flag.
+        [
+            ...readAnyArray("pigeonhole-archive-workspace-v1"),
+            ...readAnyArray("brain-aquarium-archive-workspace-v1")
+        ].forEach(item => { if (mergeWorkspaceCandidate(item)) changed = true; });
+
+        // Timeline / Pattern marker stores are evidence too. Always reconcile them.
+        [
+            ...readAnyArray("pi-pattern-notes-v1"),
+            ...readAnyArray("pigeonhole-v10-pattern-notes")
+        ].forEach(item => { if (mergeWorkspaceCandidate(item, "patterns")) changed = true; });
+
+        [
+            ...readAnyArray("pi-timeline-markers-v1"),
+            ...readAnyArray("pigeonhole-v15-timeline-markers")
+        ].forEach(item => { if (mergeWorkspaceCandidate(item, "timeline")) changed = true; });
+
         localStorage.setItem(WORKSPACE_MIGRATION_KEY, "true");
-        saveWorkspace(false);
+        if (changed) saveWorkspace(false);
+        return changed;
+    }
+
+    function backupValue(backup, key) {
+        if (!backup || typeof backup !== "object") return null;
+        if (Object.prototype.hasOwnProperty.call(backup, key)) return backup[key];
+        const legacy = backup.__remaining_legacy_values;
+        if (legacy && typeof legacy === "object" && Object.prototype.hasOwnProperty.call(legacy, key)) return legacy[key];
+        const recovery = backup.__legacy_migration_recovery?.data;
+        if (recovery && typeof recovery === "object" && Object.prototype.hasOwnProperty.call(recovery, key)) return recovery[key];
+        return null;
+    }
+
+    function parseBackupArray(value) {
+        if (Array.isArray(value)) return value;
+        if (typeof value !== "string") return [];
+        try {
+            const parsed = JSON.parse(value);
+            return Array.isArray(parsed) ? parsed : [];
+        } catch { return []; }
+    }
+
+    function recoverTimelineFromBackupObject(backup) {
+        let changed = false;
+        [
+            ...parseBackupArray(backupValue(backup, "pi-archive-workspace-v1")),
+            ...parseBackupArray(backupValue(backup, "pigeonhole-archive-workspace-v1"))
+        ].filter(item => item?.zone === "timeline")
+         .forEach(item => { if (mergeWorkspaceCandidate(item, "timeline")) changed = true; });
+
+        [
+            ...parseBackupArray(backupValue(backup, "pi-timeline-markers-v1")),
+            ...parseBackupArray(backupValue(backup, "pigeonhole-v15-timeline-markers"))
+        ].forEach(item => { if (mergeWorkspaceCandidate(item, "timeline")) changed = true; });
+
+        if (changed) {
+            saveWorkspace(false);
+            renderWorkspace();
+            renderArchiveHistory();
+            showSaved();
+        }
+        updateTimelineRecoveryButton();
+        return changed;
+    }
+
+    function updateTimelineRecoveryButton() {
+        const button = document.getElementById("recoverTimelineBackup");
+        if (!button) return;
+        const hasTimeline = workspace.some(item => item.zone === "timeline");
+        button.hidden = false;
+        button.textContent = hasTimeline ? "merge backup" : "recover backup";
+        button.title = "Merge any missing Timeline items from a Personal Intranet JSON backup";
     }
 
     function saveWorkspace(announce = true) {
@@ -423,6 +508,7 @@ document.addEventListener("DOMContentLoaded", () => {
             bindWorkspaceDropZone(zone.id);
         });
         if (activeWorkspaceMoveId) setWorkspaceMoveMode(activeWorkspaceMoveId);
+        updateTimelineRecoveryButton();
     }
 
     function saveNewWorkspaceItem() {
@@ -438,7 +524,29 @@ document.addEventListener("DOMContentLoaded", () => {
         saveWorkspace(false); renderWorkspace(); renderArchiveHistory(); showSaved(); titleInput.focus();
     }
 
-    migrateLegacyOnce();
+    recoverLegacyWorkspaceAlways();
+
+    const timelineRecoveryButton = document.getElementById("recoverTimelineBackup");
+    const timelineRecoveryInput = document.getElementById("archiveTimelineRecoveryInput");
+    timelineRecoveryButton?.addEventListener("click", () => timelineRecoveryInput?.click());
+    timelineRecoveryInput?.addEventListener("change", async () => {
+        const file = timelineRecoveryInput.files?.[0];
+        if (!file) return;
+        try {
+            const backup = JSON.parse(await file.text());
+            const recovered = recoverTimelineFromBackupObject(backup);
+            window.alert(recovered
+                ? "Timeline recovery complete. Missing Timeline items were merged back into the current workspace."
+                : "No missing Timeline items were found in that backup.");
+        } catch (error) {
+            console.error("Timeline backup recovery failed:", error);
+            window.alert("That file could not be read as a Personal Intranet JSON backup.");
+        } finally {
+            timelineRecoveryInput.value = "";
+        }
+    });
+    updateTimelineRecoveryButton();
+
     dateInput.value = makeLocalIsoDate();
     saveButton.addEventListener("click", saveNewWorkspaceItem);
     bodyInput.addEventListener("keydown", event => { if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) { event.preventDefault(); saveNewWorkspaceItem(); } });

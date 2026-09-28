@@ -12781,3 +12781,176 @@ html.pi-shell-active body.neopets-page > .neo-field-page {
         overflow: visible !important;
     }
 }
+
+
+/* =========================================================
+   FLOW V2 — PERSONAL INTRANET INBOX + DESKTOP DENSITY
+   ========================================================= */
+
+/* Home capture becomes a true routing desk rather than an Aquarium-only shortcut. */
+.pi-home-inbox {
+    margin-top: 10px;
+    border-top: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+    padding-top: 9px;
+}
+.pi-home-inbox-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 7px;
+}
+.pi-home-inbox-head strong { font-size: 12px; }
+.pi-home-inbox-head span { color: var(--faint); font-size: 10px; }
+.pi-home-inbox-list {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    max-height: 156px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+}
+.pi-home-inbox-item {
+    min-width: 0;
+    display: grid;
+    grid-template-columns: auto minmax(0,1fr) minmax(128px, .4fr) auto auto;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 7px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    background: color-mix(in srgb, var(--panel-light) 88%, var(--bg));
+}
+.pi-home-inbox-item.dragging { opacity: .45; }
+.pi-home-inbox-drag { color: var(--faint); cursor: grab; user-select: none; }
+.pi-home-inbox-text {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--text);
+    font-size: 11px;
+}
+.pi-home-inbox-destination,
+.pi-home-inbox-send,
+.pi-home-inbox-remove {
+    min-width: 0;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    background: var(--panel);
+    color: var(--muted);
+    font-size: 10px;
+}
+.pi-home-inbox-destination { padding: 5px 6px; }
+.pi-home-inbox-send { padding: 5px 8px; cursor: pointer; color: var(--teal-soft); }
+.pi-home-inbox-remove { width: 28px; height: 28px; cursor: pointer; color: var(--faint); }
+.pi-door[data-pi-route-destination] { transition: border-color .12s ease, transform .12s ease, background .12s ease; }
+.pi-door.pi-door-drop-target {
+    border-color: var(--teal) !important;
+    background: color-mix(in srgb, var(--teal) 12%, var(--panel-light));
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--teal) 45%, transparent);
+}
+
+/* Timeline recovery stays quiet unless it is actually needed. */
+.archive-timeline-head-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+    min-width: 0;
+}
+.archive-recover-button {
+    padding: 3px 6px;
+    font-size: 9px;
+    white-space: nowrap;
+}
+
+/* Desktop Archive: one viewport, five equal work surfaces, internal scrolling.
+   "All" becomes the useful dashboard view. */
+@media (min-width: 1200px) {
+    html.patterns-page-html body.pi-shell-active .patterns-page {
+        height: calc(100dvh - var(--pi-dock-space)) !important;
+        max-height: calc(100dvh - var(--pi-dock-space));
+        overflow: hidden !important;
+        display: grid;
+        grid-template-rows: auto auto auto minmax(0,1fr);
+        gap: 8px;
+        padding-bottom: 8px !important;
+    }
+
+    body[data-pi-archive-mode="all"] .archive-v2-grid {
+        min-height: 0;
+        height: 100%;
+        grid-template-columns: repeat(5, minmax(0,1fr)) !important;
+        gap: 8px !important;
+        align-items: stretch;
+    }
+
+    body[data-pi-archive-mode="all"] .archive-v2-stack {
+        display: contents !important;
+    }
+
+    body[data-pi-archive-mode="all"] .archive-v2-grid > .panel,
+    body[data-pi-archive-mode="all"] .archive-v2-grid > .archive-v2-stack > .panel {
+        min-width: 0;
+        min-height: 0;
+        height: 100%;
+    }
+
+    body[data-pi-archive-mode="all"] .archive-column,
+    body[data-pi-archive-mode="all"] .archive-insight-panel,
+    body[data-pi-archive-mode="all"] .archive-notes-column {
+        display: grid;
+        grid-template-rows: auto minmax(0,1fr);
+        min-height: 0;
+    }
+
+    body[data-pi-archive-mode="all"] .archive-notes-body,
+    body[data-pi-archive-mode="all"] .archive-list,
+    body[data-pi-archive-mode="all"] .archive-workspace-list {
+        min-height: 0;
+        overflow-y: auto;
+    }
+
+    body[data-pi-archive-mode="all"] .archive-note-composer {
+        padding: 7px;
+    }
+
+    body[data-pi-archive-mode="all"] .archive-note-compose-row {
+        grid-template-columns: minmax(0,1fr);
+    }
+
+    body[data-pi-archive-mode="all"] .archive-note-submit-row span {
+        display: none;
+    }
+}
+
+/* Medium desktop: preserve the current grouped layout but still lock the page
+   into the viewport so only the panels themselves scroll. */
+@media (min-width: 901px) and (max-width: 1199px) {
+    html.patterns-page-html body.pi-shell-active .patterns-page {
+        height: calc(100dvh - var(--pi-dock-space)) !important;
+        max-height: calc(100dvh - var(--pi-dock-space));
+        overflow: hidden !important;
+        padding-bottom: 8px !important;
+    }
+    html.patterns-page-html body.pi-shell-active .archive-v2-grid {
+        min-height: 0;
+        overflow: hidden;
+    }
+}
+
+@media (max-width: 760px) {
+    .pi-home-inbox-list { max-height: 220px; }
+    .pi-home-inbox-item {
+        grid-template-columns: auto minmax(0,1fr) auto;
+        grid-template-areas:
+            "drag text remove"
+            ". destination send";
+    }
+    .pi-home-inbox-drag { grid-area: drag; }
+    .pi-home-inbox-text { grid-area: text; white-space: normal; max-height: 3.2em; overflow: hidden; }
+    .pi-home-inbox-destination { grid-area: destination; }
+    .pi-home-inbox-send { grid-area: send; }
+    .pi-home-inbox-remove { grid-area: remove; }
+}

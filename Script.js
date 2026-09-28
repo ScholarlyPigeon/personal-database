@@ -6217,8 +6217,9 @@ if (document.getElementById("neopetsApp")) {
     const PI_KEYS = {
         focusKey: "pi-focus-now-v1",
         activityKey: "pi-activity-v1",
+        captureInboxKey: "pi-capture-inbox-v1",
         draftKey: "pi-longform-draft-v1",
-        archiveModeKey: "pi-archive-view-mode-v1",
+        archiveModeKey: "pi-archive-view-mode-v2",
         aquariumKey: "pi-aquarium-state-v3",
         radarKey: "pi-database-radar-v1",
         nearRadarKey: "pi-database-near-radar-v1",
@@ -6513,42 +6514,56 @@ if (document.getElementById("neopetsApp")) {
         if (typeof showSaved === "function") showSaved();
     }
 
-    function catchToAquarium(rawText) {
+    function readCaptureInbox() {
+        const value = jsonRead(PI_KEYS.captureInboxKey, []);
+        return Array.isArray(value) ? value.filter(item => item && typeof item.id === "string") : [];
+    }
+
+    function saveCaptureInbox(items, announce = true) {
+        localStorage.setItem(PI_KEYS.captureInboxKey, JSON.stringify(items));
+        if (announce && typeof showSaved === "function") showSaved();
+        refreshCaptureInboxViews();
+    }
+
+    function catchToInbox(rawText) {
         const text = String(rawText || "").trim();
         if (!text) return null;
-        const state = readAquarium();
-        const id = uid("capture");
-        const title = cleanText(text).slice(0, 88) || "Captured thought";
-        state.cards.unshift({
-            id,
-            title,
+        const item = {
+            id: uid("capture"),
+            title: cleanText(text).slice(0, 88) || "Captured thought",
             text,
             html: escapeHtml(text),
+            createdAt: new Date().toISOString()
+        };
+        const items = readCaptureInbox();
+        items.unshift(item);
+        saveCaptureInbox(items, false);
+        recordActivity("home", "caught in Personal Intranet Inbox", item.title);
+        if (typeof showSaved === "function") showSaved();
+        return item;
+    }
+
+    function removeCaptureInboxItem(itemId) {
+        const items = readCaptureInbox();
+        const next = items.filter(item => item.id !== itemId);
+        if (next.length !== items.length) saveCaptureInbox(next, false);
+    }
+
+    function addPayloadToAquarium(payload, wantedKind = "thought") {
+        const state = readAquarium();
+        state.cards.unshift({
+            id: uid("capture"),
+            title: payload.title || cleanText(payload.text).slice(0, 88) || "Captured thought",
+            text: payload.text || "",
+            html: payload.html || escapeHtml(payload.text || ""),
             zone: "inbox",
-            kind: aquariumKindId(state, "thought"),
+            kind: aquariumKindId(state, wantedKind),
             done: false,
             collapsed: false,
-            createdAt: new Date().toISOString()
+            createdAt: payload.createdAt || new Date().toISOString()
         });
         saveAquarium(state);
-        recordActivity("aquarium", "caught in Aquarium Inbox", title);
-        return { id, text, title };
-    }
-
-    function removeAquariumCard(cardId) {
-        const state = readAquarium();
-        const before = state.cards.length;
-        state.cards = state.cards.filter(card => card.id !== cardId);
-        if (state.cards.length !== before) saveAquarium(state);
-    }
-
-    function changeAquariumKind(cardId, wanted) {
-        const state = readAquarium();
-        const card = state.cards.find(item => item.id === cardId);
-        if (!card) return;
-        card.kind = aquariumKindId(state, wanted);
-        saveAquarium(state);
-        recordActivity("aquarium", `classified as ${wanted}`, card.title || card.text);
+        return true;
     }
 
     function pushChecklist(key, text) {
@@ -6556,83 +6571,118 @@ if (document.getElementById("neopetsApp")) {
         items.push({ id: uid("task"), text: cleanText(text), done: false, createdAt: new Date().toISOString() });
         localStorage.setItem(key, JSON.stringify(items));
         if (typeof showSaved === "function") showSaved();
+        return true;
     }
 
-    function moveCapture(card, destination) {
-        if (!card) return;
-        if (destination === "focus") {
-            addFocus(card.text);
-            removeAquariumCard(card.id);
-            return;
-        }
-        if (destination === "radar") {
-            pushChecklist(PI_KEYS.radarKey, card.text);
-            removeAquariumCard(card.id);
-            recordActivity("database", "moved capture to Radar", card.title);
-            return;
-        }
-        if (destination === "today") {
-            pushChecklist(`pi-calendar-day-${localIsoDate()}`, card.text);
-            removeAquariumCard(card.id);
-            recordActivity("database", "moved capture to Today", card.title);
-            return;
-        }
-        if (destination === "longform") {
-            const state = jsonRead(PI_KEYS.longformKey, { entries: [] });
-            if (!state || typeof state !== "object") return;
-            if (!Array.isArray(state.entries)) state.entries = [];
-            const categories = jsonRead(PI_KEYS.longformCategoriesKey, []);
-            const category = Array.isArray(categories) && categories.length
-                ? (categories.find(item => item.id === "database")?.id || categories[0].id)
-                : "database";
-            const id = uid("longform");
-            state.entries.unshift({
-                id,
-                text: card.text,
-                html: escapeHtml(card.text),
-                category,
-                date: localIsoDate(),
-                done: false,
-                createdAt: new Date().toISOString(),
-                imageUrl: "",
-                linkUrl: "",
-                pinned: false
-            });
-            localStorage.setItem(PI_KEYS.longformKey, JSON.stringify(state));
-            const titles = jsonRead(PI_KEYS.longformTitlesKey, {});
-            const titleMap = titles && typeof titles === "object" && !Array.isArray(titles) ? titles : {};
-            titleMap[id] = card.title;
-            localStorage.setItem(PI_KEYS.longformTitlesKey, JSON.stringify(titleMap));
-            removeAquariumCard(card.id);
-            recordActivity("longform", "moved capture to Longform", card.title);
-            if (typeof showSaved === "function") showSaved();
-        }
+    function addPayloadToLongform(payload) {
+        const state = jsonRead(PI_KEYS.longformKey, { entries: [] });
+        if (!state || typeof state !== "object") return false;
+        if (!Array.isArray(state.entries)) state.entries = [];
+        const categories = jsonRead(PI_KEYS.longformCategoriesKey, []);
+        const category = Array.isArray(categories) && categories.length
+            ? (categories.find(item => item.id === "database")?.id || categories[0].id)
+            : "database";
+        const id = uid("longform");
+        state.entries.unshift({
+            id,
+            text: payload.text || "",
+            html: payload.html || escapeHtml(payload.text || ""),
+            category,
+            date: localIsoDate(payload.createdAt ? new Date(payload.createdAt) : new Date()),
+            done: false,
+            createdAt: payload.createdAt || new Date().toISOString(),
+            imageUrl: "",
+            linkUrl: "",
+            pinned: false
+        });
+        localStorage.setItem(PI_KEYS.longformKey, JSON.stringify(state));
+        const titles = jsonRead(PI_KEYS.longformTitlesKey, {});
+        const titleMap = titles && typeof titles === "object" && !Array.isArray(titles) ? titles : {};
+        titleMap[id] = payload.title || cleanText(payload.text).slice(0, 88) || "Untitled note";
+        localStorage.setItem(PI_KEYS.longformTitlesKey, JSON.stringify(titleMap));
+        if (typeof showSaved === "function") showSaved();
+        return true;
     }
 
-    function routeBar(lastCard, container) {
+    function addPayloadToArchive(payload) {
+        const items = humanArray(PI_KEYS.archiveWorkspaceKey);
+        items.unshift({
+            id: uid("insight"),
+            zone: "notes",
+            title: payload.title || cleanText(payload.text).slice(0, 120) || "Untitled",
+            text: payload.text || "",
+            html: payload.html || escapeHtml(payload.text || ""),
+            date: localIsoDate(payload.createdAt ? new Date(payload.createdAt) : new Date()),
+            createdAt: payload.createdAt || new Date().toISOString(),
+            expanded: false
+        });
+        localStorage.setItem(PI_KEYS.archiveWorkspaceKey, JSON.stringify(items));
+        if (typeof showSaved === "function") showSaved();
+        return true;
+    }
+
+    function routeInboxItem(itemOrId, destination) {
+        const inbox = readCaptureInbox();
+        const item = typeof itemOrId === "string"
+            ? inbox.find(candidate => candidate.id === itemOrId)
+            : itemOrId;
+        if (!item) return false;
+
+        let success = false;
+        let targetPage = "home";
+        let action = "";
+
+        if (destination === "aquarium" || destination === "action" || destination === "ask") {
+            success = addPayloadToAquarium(item, destination === "aquarium" ? "thought" : destination);
+            targetPage = "aquarium";
+            action = destination === "aquarium" ? "sent Inbox item to Aquarium" : `sent Inbox item to Aquarium as ${destination}`;
+        } else if (destination === "database") {
+            success = pushChecklist(PI_KEYS.databaseNotesKey, item.text);
+            targetPage = "database"; action = "sent Inbox item to Database Notes";
+        } else if (destination === "longform") {
+            success = addPayloadToLongform(item);
+            targetPage = "longform"; action = "sent Inbox item to Longform";
+        } else if (destination === "archive") {
+            success = addPayloadToArchive(item);
+            targetPage = "archive"; action = "sent Inbox item to Archive Notes";
+        } else if (destination === "focus") {
+            addFocus(item.text); success = true;
+            targetPage = "database"; action = "sent Inbox item to Focus Now";
+        } else if (destination === "radar") {
+            success = pushChecklist(PI_KEYS.radarKey, item.text);
+            targetPage = "database"; action = "sent Inbox item to Radar";
+        } else if (destination === "today") {
+            success = pushChecklist(`pi-calendar-day-${localIsoDate()}`, item.text);
+            targetPage = "database"; action = "sent Inbox item to Today";
+        }
+
+        if (!success) return false;
+        removeCaptureInboxItem(item.id);
+        recordActivity(targetPage, action, item.title || item.text);
+        refreshHomeCounts();
+        return true;
+    }
+
+    function routeBar(lastItem, container) {
         if (!container) return;
         container.innerHTML = "";
-        if (!lastCard) { container.hidden = true; return; }
+        if (!lastItem) { container.hidden = true; return; }
         container.hidden = false;
         const label = document.createElement("span");
         label.className = "pi-route-label";
-        label.textContent = "safe in Aquarium · optionally route:";
+        label.textContent = "safe in Inbox · send now:";
         container.appendChild(label);
         [
-            ["action", "Action"], ["ask", "Ask"], ["focus", "Focus"], ["radar", "Radar"], ["today", "Today"], ["longform", "Longform"]
+            ["database", "Database"], ["aquarium", "Aquarium"], ["longform", "Longform"],
+            ["archive", "Archive"], ["focus", "Focus"], ["radar", "Radar"], ["today", "Today"]
         ].forEach(([id, text]) => {
             const button = document.createElement("button");
             button.type = "button";
             button.textContent = text;
             button.dataset.route = id;
             button.addEventListener("click", () => {
-                if (id === "action" || id === "ask") {
-                    changeAquariumKind(lastCard.id, id);
-                    routeBar(null, container);
-                } else {
-                    moveCapture(lastCard, id);
-                    routeBar(null, container);
-                }
+                routeInboxItem(lastItem.id, id);
+                routeBar(null, container);
             });
             container.appendChild(button);
         });
@@ -6644,9 +6694,9 @@ if (document.getElementById("neopetsApp")) {
         const submit = () => {
             const value = input.value.trim();
             if (!value) { input.focus(); return; }
-            const card = catchToAquarium(value);
+            const item = catchToInbox(value);
             input.value = "";
-            routeBar(card, routes);
+            routeBar(item, routes);
             input.focus();
             refreshHomeCounts();
         };
@@ -6657,6 +6707,102 @@ if (document.getElementById("neopetsApp")) {
                 event.preventDefault();
                 submit();
             }
+        });
+    }
+
+    function homeInboxRow(item) {
+        const row = document.createElement("div");
+        row.className = "pi-home-inbox-item";
+        row.draggable = true;
+        row.dataset.captureId = item.id;
+
+        const drag = document.createElement("span");
+        drag.className = "pi-home-inbox-drag";
+        drag.textContent = "⋮⋮";
+        drag.title = "Drag onto a room card";
+
+        const text = document.createElement("div");
+        text.className = "pi-home-inbox-text";
+        text.textContent = item.text;
+
+        const select = document.createElement("select");
+        select.className = "pi-home-inbox-destination";
+        select.setAttribute("aria-label", "Send capture to");
+        [
+            ["aquarium","Aquarium Inbox"],
+            ["database","Database Notes"],
+            ["longform","Longform"],
+            ["archive","Archive Notes"],
+            ["focus","Focus Now"],
+            ["radar","Radar"],
+            ["today","Today"]
+        ].forEach(([value,label]) => {
+            const option = document.createElement("option");
+            option.value = value; option.textContent = label; select.appendChild(option);
+        });
+
+        const send = document.createElement("button");
+        send.type = "button";
+        send.className = "pi-home-inbox-send";
+        send.textContent = "send";
+        send.addEventListener("click", () => routeInboxItem(item.id, select.value));
+
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.className = "pi-home-inbox-remove";
+        remove.textContent = "×";
+        remove.title = "Delete captured Inbox item";
+        remove.addEventListener("click", () => {
+            removeCaptureInboxItem(item.id);
+            recordActivity("home", "removed Inbox item", item.title || item.text);
+        });
+
+        row.addEventListener("dragstart", event => {
+            event.dataTransfer.effectAllowed = "move";
+            event.dataTransfer.setData("application/x-pi-capture", item.id);
+            row.classList.add("dragging");
+        });
+        row.addEventListener("dragend", () => row.classList.remove("dragging"));
+
+        row.append(drag, text, select, send, remove);
+        return row;
+    }
+
+    function refreshCaptureInboxViews() {
+        const list = document.getElementById("piHomeInboxList");
+        const count = document.getElementById("piHomeInboxCount");
+        if (!list && !count) return;
+        const items = readCaptureInbox();
+        if (count) count.textContent = String(items.length);
+        if (!list) return;
+        list.innerHTML = "";
+        if (!items.length) {
+            const empty = document.createElement("div");
+            empty.className = "pi-empty-state";
+            empty.textContent = "Inbox clear. Anything you catch can wait here until you know where it belongs.";
+            list.appendChild(empty);
+            return;
+        }
+        items.forEach(item => list.appendChild(homeInboxRow(item)));
+    }
+
+    function bindHomeRoomDrops() {
+        document.querySelectorAll("[data-pi-route-destination]").forEach(card => {
+            if (card.dataset.piDropBound === "true") return;
+            card.dataset.piDropBound = "true";
+            card.addEventListener("dragover", event => {
+                if (!event.dataTransfer.types.includes("application/x-pi-capture")) return;
+                event.preventDefault();
+                card.classList.add("pi-door-drop-target");
+            });
+            card.addEventListener("dragleave", () => card.classList.remove("pi-door-drop-target"));
+            card.addEventListener("drop", event => {
+                const id = event.dataTransfer.getData("application/x-pi-capture");
+                if (!id) return;
+                event.preventDefault();
+                card.classList.remove("pi-door-drop-target");
+                routeInboxItem(id, card.dataset.piRouteDestination);
+            });
         });
     }
 
@@ -6738,6 +6884,7 @@ if (document.getElementById("neopetsApp")) {
 
     function collectSearchDocs() {
         const docs = [];
+        readCaptureInbox().forEach(item => addDoc(docs, "home", "Inbox", [item.title, item.text].filter(Boolean).join(" · ")));
         const focus = readFocus();
         focus.forEach(item => addDoc(docs, "database", "Focus Now", item.text));
         [
@@ -6961,6 +7108,8 @@ if (document.getElementById("neopetsApp")) {
         refreshFocusViews();
         refreshHomeToday();
         refreshRecentViews();
+        refreshCaptureInboxViews();
+        bindHomeRoomDrops();
         refreshHomeCounts();
         document.getElementById("piHomeFind")?.addEventListener("click", openSearch);
         document.getElementById("piHomeRecent")?.addEventListener("click", openRecent);
@@ -7050,10 +7199,10 @@ if (document.getElementById("neopetsApp")) {
         const bar = document.createElement("div");
         bar.id = "piArchiveModes";
         bar.className = "pi-archive-modes";
-        bar.innerHTML = `<span>view</span><button type="button" data-mode="synthesis">Synthesis</button><button type="button" data-mode="history">History</button><button type="button" data-mode="timeline">Timeline</button>`;
+        bar.innerHTML = `<span>view</span><button type="button" data-mode="all">All</button><button type="button" data-mode="synthesis">Synthesis</button><button type="button" data-mode="history">History</button><button type="button" data-mode="timeline">Timeline</button>`;
         intro.insertAdjacentElement("afterend", bar);
         const apply = mode => {
-            const valid = ["synthesis", "history", "timeline"].includes(mode) ? mode : "synthesis";
+            const valid = ["all", "synthesis", "history", "timeline"].includes(mode) ? mode : "all";
             document.body.dataset.piArchiveMode = valid;
             localStorage.setItem(PI_KEYS.archiveModeKey, valid);
             bar.querySelectorAll("button").forEach(button => button.classList.toggle("active", button.dataset.mode === valid));
@@ -7062,7 +7211,7 @@ if (document.getElementById("neopetsApp")) {
             const button = event.target.closest("button[data-mode]");
             if (button) apply(button.dataset.mode);
         });
-        apply(localStorage.getItem(PI_KEYS.archiveModeKey) || "synthesis");
+        apply(localStorage.getItem(PI_KEYS.archiveModeKey) || "all");
     }
 
     function captureActivityFromExistingUi(event) {
@@ -7097,6 +7246,7 @@ if (document.getElementById("neopetsApp")) {
     window.addEventListener("storage", event => {
         if (event.key === PI_KEYS.focusKey) refreshFocusViews();
         if (event.key === PI_KEYS.activityKey) refreshRecentViews();
+        if (event.key === PI_KEYS.captureInboxKey) refreshCaptureInboxViews();
         if (event.key?.startsWith("pi-calendar-day-")) refreshHomeToday();
         if ([PI_KEYS.radarKey, PI_KEYS.aquariumKey, PI_KEYS.longformKey, PI_KEYS.archiveWorkspaceKey].includes(event.key)) refreshHomeCounts();
     });
