@@ -13302,3 +13302,673 @@ html.pi-shell-active body.neopets-page > .neo-field-page {
         min-height: 0 !important;
     }
 }
+
+
+/* =========================================================
+   POLISH V2 — LAYOUT CORRECTION + MOBILE STABILITY
+   ========================================================= */
+
+/* ---------- HOME: header + low-profile room strip ---------- */
+.pi-home-header {
+    overflow: visible;
+}
+.pi-home-header-actions {
+    position: relative;
+    z-index: 20;
+}
+.pi-home-pages-menu {
+    min-width: 108px;
+    max-width: 126px;
+}
+
+.pi-home-room-strip {
+    min-width: 0;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 6px;
+    padding: 5px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--panel) 92%, transparent);
+    overflow: hidden;
+}
+.pi-home-room-strip a {
+    min-width: 0;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 4px 8px;
+    border: 1px solid transparent;
+    border-radius: 7px;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 10.5px;
+    white-space: nowrap;
+    position: relative;
+}
+.pi-home-room-strip a:hover,
+.pi-home-room-strip a:focus-visible,
+.pi-home-room-strip a.pi-door-drop-target {
+    color: var(--text);
+    border-color: color-mix(in srgb, var(--teal) 45%, var(--border));
+    background: color-mix(in srgb, var(--teal) 8%, var(--panel-light));
+    outline: none;
+}
+.pi-home-room-strip .pi-door-count {
+    position: static;
+    min-width: 17px;
+    height: 17px;
+    display: inline-grid;
+    place-items: center;
+    border-radius: 999px;
+    padding: 0 4px;
+    background: var(--plum);
+    color: #fff;
+    font-size: 8px;
+    font-weight: 800;
+}
+.pi-home-room-strip .pi-door-count[hidden] { display: none; }
+
+/* ---------- HOME: three-column dashboard ---------- */
+@media (min-width: 901px) {
+    html.pi-home-html,
+    html.pi-home-html body {
+        width: 100%;
+        height: 100dvh !important;
+        min-height: 0 !important;
+        overflow: hidden !important;
+    }
+
+    .pi-home-page {
+        width: min(1380px, calc(100% - 24px));
+        height: 100dvh;
+        max-height: 100dvh;
+        margin: 0 auto;
+        padding: 9px 0 10px;
+        display: grid;
+        grid-template-rows: auto auto minmax(0,1fr);
+        gap: 8px;
+        overflow: hidden;
+    }
+
+    .pi-home-header {
+        min-height: 48px;
+    }
+
+    .pi-home-dashboard {
+        min-height: 0;
+        display: grid;
+        grid-template-columns: minmax(250px,.78fr) minmax(450px,1.52fr) minmax(250px,.78fr);
+        gap: 9px;
+        overflow: hidden;
+    }
+
+    .pi-home-left-stack {
+        min-height: 0;
+        display: grid;
+        grid-template-rows: minmax(150px,.72fr) minmax(0,1.28fr);
+        gap: 9px;
+        overflow: hidden;
+    }
+
+    .pi-home-left-stack > .pi-home-card,
+    .pi-home-today-card {
+        min-height: 0;
+        height: 100%;
+        display: grid;
+        grid-template-rows: auto minmax(0,1fr);
+        overflow: hidden;
+    }
+
+    .pi-home-capture-center {
+        min-height: 0;
+        height: 100%;
+        margin: 0;
+        padding: 11px 12px;
+        display: grid;
+        grid-template-rows: auto auto auto minmax(0,1fr);
+        overflow: hidden;
+    }
+
+    .pi-home-capture-center .pi-home-capture-title {
+        margin-bottom: 7px;
+    }
+
+    .pi-home-capture-center .pi-home-capture-row {
+        min-height: 54px;
+    }
+
+    .pi-home-capture-center textarea {
+        min-height: 54px;
+        max-height: 96px;
+        resize: none;
+    }
+
+    .pi-home-capture-center .pi-home-inbox {
+        min-height: 0;
+        margin-top: 8px;
+        padding-top: 8px;
+        display: grid;
+        grid-template-rows: auto minmax(0,1fr);
+        overflow: hidden;
+    }
+
+    .pi-home-capture-center .pi-home-inbox-list,
+    .pi-home-focus .pi-focus-list,
+    .pi-home-recent-wrap,
+    .pi-home-today-list {
+        min-height: 0;
+        max-height: none !important;
+        overflow-y: auto !important;
+        overscroll-behavior: contain;
+    }
+
+    .pi-home-focus-body {
+        min-height: 0;
+        display: grid;
+        grid-template-rows: minmax(0,1fr) auto;
+        gap: 7px;
+        padding: 8px;
+        overflow: hidden;
+    }
+
+    .pi-home-focus .pi-focus-list {
+        padding: 0;
+    }
+
+    .pi-home-focus .pi-focus-entry {
+        padding: 0;
+        flex: 0 0 auto;
+    }
+
+    .pi-home-recent-wrap,
+    .pi-home-today-list {
+        padding: 8px;
+    }
+}
+
+/* Short desktop windows keep the same composition and simply hand off to inner scroll areas sooner. */
+@media (min-width: 901px) and (max-height: 690px) {
+    .pi-home-room-strip a {
+        height: 29px;
+        padding-block: 2px;
+    }
+    .pi-home-capture-title > span:last-child {
+        display: none;
+    }
+    .pi-home-left-stack {
+        grid-template-rows: minmax(125px,.64fr) minmax(0,1.36fr);
+    }
+}
+
+/* ---------- ARCHIVE: logical grouping by view ---------- */
+@media (min-width: 901px) {
+    body[data-pi-archive-mode="all"] .archive-v2-grid {
+        min-height: 0;
+        height: 100%;
+        display: grid !important;
+        grid-template-columns: repeat(6, minmax(0,1fr)) !important;
+        grid-template-rows: minmax(0,1.08fr) minmax(0,.92fr) !important;
+        gap: 8px !important;
+        overflow: hidden;
+        align-items: stretch !important;
+    }
+
+    body[data-pi-archive-mode="all"] .archive-v2-grid > .archive-stack,
+    body[data-pi-archive-mode="all"] .archive-v2-grid > .insight-stack {
+        display: contents !important;
+    }
+
+    body[data-pi-archive-mode="all"] .archive-notes-column {
+        grid-column: 1 / span 2;
+        grid-row: 1;
+    }
+    body[data-pi-archive-mode="all"] .patterns-insight-panel {
+        grid-column: 3 / span 2;
+        grid-row: 1;
+    }
+    body[data-pi-archive-mode="all"] .timeline-insight-panel {
+        grid-column: 5 / span 2;
+        grid-row: 1;
+    }
+    body[data-pi-archive-mode="all"] .day-archive-column {
+        grid-column: 1 / span 3;
+        grid-row: 2;
+    }
+    body[data-pi-archive-mode="all"] .item-archive-column {
+        grid-column: 4 / span 3;
+        grid-row: 2;
+    }
+
+    body[data-pi-archive-mode="all"] .archive-column,
+    body[data-pi-archive-mode="all"] .archive-insight-panel,
+    body[data-pi-archive-mode="all"] .archive-notes-column {
+        min-width: 0;
+        min-height: 0;
+        height: 100%;
+        max-height: none;
+        display: grid;
+        grid-template-rows: auto minmax(0,1fr);
+        overflow: hidden;
+    }
+
+    body[data-pi-archive-mode="all"] .archive-list,
+    body[data-pi-archive-mode="all"] .archive-workspace-list,
+    body[data-pi-archive-mode="all"] .archive-notes-body {
+        min-height: 0;
+        overflow-y: auto;
+    }
+
+    body[data-pi-archive-mode="history"] .archive-v2-grid {
+        min-height: 0;
+        height: 100%;
+        grid-template-columns: 1fr !important;
+        overflow: hidden;
+    }
+
+    body[data-pi-archive-mode="history"] .archive-v2-grid > .archive-stack {
+        min-height: 0 !important;
+        max-height: none !important;
+        height: 100%;
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0,1fr));
+        grid-template-rows: minmax(0,1fr);
+        gap: 8px;
+    }
+
+    body[data-pi-archive-mode="history"] .archive-stack > .archive-column {
+        min-width: 0;
+        min-height: 0;
+        height: 100%;
+        max-height: none;
+        display: grid;
+        grid-template-rows: auto minmax(0,1fr);
+    }
+
+    body[data-pi-archive-mode="history"] .archive-stack .archive-list {
+        min-height: 0;
+        overflow-y: auto;
+    }
+}
+
+/* ---------- ALMANAC: steady 3 x 2 board, no guillotined bodies ---------- */
+@media (min-width: 1101px) {
+    body.pi-shell-active .almanac-page,
+    .almanac-page {
+        height: calc(100dvh - var(--pi-dock-space));
+        max-height: calc(100dvh - var(--pi-dock-space));
+        display: grid;
+        grid-template-rows: auto auto minmax(0,1fr);
+        gap: 9px;
+        overflow: hidden;
+    }
+
+    .almanac-grid,
+    .almanac-grid.almanac-focus-1,
+    .almanac-grid.almanac-focus-2,
+    .almanac-grid.almanac-focus-3,
+    .almanac-grid.almanac-focus-4,
+    .almanac-grid.almanac-focus-one,
+    .almanac-grid.almanac-focus-two {
+        min-height: 0;
+        height: 100%;
+        display: grid !important;
+        grid-template-columns: repeat(3, minmax(0,1fr)) !important;
+        grid-template-rows: repeat(2, minmax(0,1fr)) !important;
+        grid-auto-columns: auto !important;
+        grid-auto-rows: minmax(0,1fr) !important;
+        grid-auto-flow: row !important;
+        gap: 9px;
+        overflow: hidden;
+    }
+
+    .almanac-grid > .almanac-panel,
+    .almanac-grid.almanac-focus-1 > .almanac-panel,
+    .almanac-grid.almanac-focus-2 > .almanac-panel,
+    .almanac-grid.almanac-focus-3 > .almanac-panel,
+    .almanac-grid.almanac-focus-4 > .almanac-panel {
+        grid-column: auto !important;
+        grid-row: auto !important;
+        min-width: 0;
+        min-height: 0 !important;
+        height: auto !important;
+        max-height: none !important;
+        align-self: stretch;
+        overflow: hidden;
+    }
+
+    .almanac-grid > .almanac-panel:not(.is-collapsed) {
+        display: grid;
+        grid-template-rows: auto minmax(0,1fr);
+    }
+
+    .almanac-grid > .almanac-panel.is-collapsed {
+        min-height: 40px !important;
+        align-self: start;
+    }
+
+    .almanac-checklist-body,
+    .almanac-strain-body,
+    .almanac-meal-workspace,
+    .almanac-note-list,
+    .almanac-meals-list {
+        min-height: 0;
+    }
+
+    .almanac-checklist,
+    .almanac-simple-list,
+    .almanac-strain-list,
+    .almanac-note-list {
+        min-height: 0;
+        overflow-y: auto !important;
+        overscroll-behavior: contain;
+    }
+}
+
+/* Almanac list movement controls. */
+.almanac-list-item {
+    grid-template-columns: auto minmax(0,1fr) auto auto auto !important;
+    align-items: start;
+}
+.almanac-list-item.dragging {
+    opacity: .46;
+}
+.almanac-list-drop-target {
+    outline: 1px dashed color-mix(in srgb, var(--teal) 70%, transparent);
+    outline-offset: -3px;
+    border-radius: 7px;
+    background: color-mix(in srgb, var(--teal) 5%, transparent);
+}
+.almanac-item-move-controls {
+    display: grid;
+    grid-template-columns: auto auto minmax(88px, 1fr);
+    align-items: center;
+    gap: 3px;
+}
+.almanac-item-nudge {
+    width: 23px;
+    height: 23px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--panel-light);
+    color: var(--faint);
+    padding: 0;
+    cursor: pointer;
+}
+.almanac-item-nudge:disabled {
+    opacity: .28;
+    cursor: default;
+}
+.almanac-item-destination {
+    min-width: 88px;
+    max-width: 116px;
+    height: 24px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg);
+    color: var(--muted);
+    padding: 1px 4px;
+    font-size: 9.5px;
+}
+
+/* ---------- LONGFORM: real scroll rail + real section collapse ---------- */
+.longform-library {
+    min-height: 0 !important;
+    overflow: hidden !important;
+}
+.longform-list {
+    min-height: 0 !important;
+    height: 100%;
+    max-height: 100%;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    overscroll-behavior: contain;
+}
+.longform-saved-section {
+    flex: 0 0 auto;
+}
+.longform-saved-section-body[hidden] {
+    display: none !important;
+}
+.longform-saved-section.collapsed .longform-saved-section-body {
+    display: none !important;
+}
+
+/* ---------- MOBILE: native page menus and dropdowns must remain reachable ---------- */
+@media (max-width: 760px) {
+    html,
+    body {
+        max-width: 100%;
+        overflow-x: hidden !important;
+    }
+
+    /* Home returns to normal document flow on phones. */
+    html.pi-home-html,
+    html.pi-home-html body {
+        height: auto !important;
+        min-height: 100% !important;
+        overflow-y: auto !important;
+    }
+    .pi-home-page {
+        width: calc(100% - 12px);
+        height: auto !important;
+        max-height: none !important;
+        padding: 7px 0 calc(var(--pi-dock-space) + 12px);
+        display: flex !important;
+        flex-direction: column;
+        gap: 8px;
+        overflow: visible !important;
+    }
+    .pi-home-header {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 7px;
+    }
+    .pi-home-header-actions {
+        width: 100%;
+        display: grid;
+        grid-template-columns: minmax(0,1fr) auto;
+        gap: 6px;
+        overflow: visible;
+    }
+    .pi-home-header-actions #saveStatus {
+        grid-column: 1 / -1;
+    }
+    .pi-home-header-actions .cloud-login-button,
+    .pi-home-header-actions .pi-home-pages-menu,
+    .pi-home-header-actions .theme-select {
+        min-width: 0;
+        width: 100%;
+        max-width: none;
+    }
+    .pi-home-header-actions .theme-select {
+        grid-column: 1 / -1;
+    }
+
+    .pi-home-room-strip {
+        display: flex;
+        gap: 5px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding: 5px;
+        scrollbar-width: thin;
+    }
+    .pi-home-room-strip a {
+        flex: 0 0 auto;
+        min-width: 108px;
+    }
+
+    .pi-home-dashboard {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    .pi-home-capture-center { order: 1; }
+    .pi-home-left-stack { order: 2; display: flex; flex-direction: column; gap: 8px; }
+    .pi-home-today-card { order: 3; }
+    .pi-home-capture-center,
+    .pi-home-left-stack > .pi-home-card,
+    .pi-home-today-card {
+        min-height: 0;
+        height: auto;
+    }
+    .pi-home-inbox-list {
+        max-height: 260px !important;
+        overflow-y: auto;
+    }
+
+    /* Database header: make every control occupy an explicit row.
+       This overrides older rules that still targeted the retired select-based nav. */
+    .database-page .header-right {
+        width: 100% !important;
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0,1fr)) !important;
+        gap: 6px !important;
+        overflow: visible !important;
+    }
+    .database-page .sync-tools {
+        grid-column: 1 / -1 !important;
+        order: 1;
+        display: grid !important;
+        grid-template-columns: minmax(0,1fr) auto auto !important;
+        gap: 5px;
+    }
+    .database-page .page-nav {
+        grid-column: 1 / -1 !important;
+        order: 2 !important;
+        display: block !important;
+        width: 100% !important;
+        min-width: 0;
+        overflow: visible !important;
+        position: relative;
+        z-index: 30;
+    }
+    .database-page .page-nav .ecosystem-menu {
+        display: block !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: none !important;
+        position: relative;
+        z-index: 40;
+    }
+    .database-page .page-nav .ecosystem-menu > summary {
+        display: flex !important;
+        width: 100% !important;
+        min-height: 38px !important;
+        height: 38px !important;
+        align-items: center;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+    .database-page .page-nav .ecosystem-menu[open] {
+        z-index: 9000;
+    }
+    .database-page .page-nav .ecosystem-menu-popover {
+        display: block;
+        position: absolute !important;
+        left: 0 !important;
+        right: auto !important;
+        top: calc(100% + 4px) !important;
+        width: min(100%, 290px) !important;
+        min-width: 210px !important;
+        max-height: min(60dvh, 420px);
+        overflow-y: auto;
+        z-index: 9500 !important;
+    }
+    .database-page #selectModeButton {
+        grid-column: 1 !important;
+        order: 3;
+    }
+    .database-page .selection-action-button:not([hidden]) {
+        grid-column: 1 / -1 !important;
+        order: 4;
+    }
+    .database-page .theme-select {
+        grid-column: 2 !important;
+        order: 3 !important;
+        display: block !important;
+        width: 100% !important;
+        max-width: none !important;
+        min-width: 0 !important;
+        height: 38px !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+
+    /* All native page menus get a high mobile stacking context. */
+    .ecosystem-menu {
+        position: relative;
+    }
+    .ecosystem-menu[open] {
+        z-index: 9000;
+    }
+    .ecosystem-menu-popover {
+        z-index: 9500 !important;
+    }
+
+    /* Almanac: mobile uses natural-height tiles, with internal lists capped rather than clipped. */
+    .almanac-page {
+        height: auto !important;
+        max-height: none !important;
+        overflow: visible !important;
+    }
+    .almanac-grid {
+        height: auto !important;
+        overflow: visible !important;
+    }
+    .almanac-grid > .almanac-panel:not(.is-collapsed) {
+        min-height: 260px !important;
+        max-height: 520px;
+    }
+    .almanac-list-item {
+        grid-template-columns: auto minmax(0,1fr) auto auto !important;
+        grid-template-areas:
+            "check text archive remove"
+            ". move move move";
+        gap: 5px;
+    }
+    .almanac-list-item > input[type="checkbox"],
+    .almanac-list-item > .almanac-list-spark { grid-area: check; }
+    .almanac-list-text { grid-area: text; }
+    .almanac-item-move-controls {
+        grid-area: move;
+        grid-template-columns: auto auto minmax(0,1fr);
+        width: 100%;
+    }
+    .almanac-item-destination {
+        width: 100%;
+        max-width: none;
+        min-height: 34px;
+        font-size: 13px;
+    }
+    .almanac-item-archive { grid-area: archive; }
+    .almanac-list-item > .archive-remove { grid-area: remove; }
+
+    /* Longform: the library becomes naturally scrollable on the phone page. */
+    .longform-library {
+        overflow: visible !important;
+    }
+    .longform-list {
+        height: auto !important;
+        max-height: 65dvh;
+        overflow-y: auto !important;
+    }
+}
+
+@media (max-width: 430px) {
+    .database-page .sync-tools {
+        grid-template-columns: minmax(0,1fr) auto !important;
+    }
+    .database-page .sync-tools .backup-button {
+        grid-column: 2;
+    }
+    .database-page .sync-tools .cloud-login-button:not([hidden]) {
+        grid-column: 2;
+    }
+    .database-page .page-nav .ecosystem-menu-popover {
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+}

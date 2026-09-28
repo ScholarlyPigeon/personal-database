@@ -5434,7 +5434,15 @@ if (document.getElementById("longformApp")) {
         toggle.addEventListener("click", () => {
             section.collapsed = !section.collapsed;
             saveLongformSections(false);
-            renderLongformEntries();
+
+            const collapsed = section.collapsed;
+            shell.classList.toggle("collapsed", collapsed);
+            body.hidden = collapsed;
+            body.setAttribute("aria-hidden", String(collapsed));
+            toggle.textContent = collapsed ? "▸" : "▾";
+            toggle.title = collapsed ? "Expand section" : "Collapse section";
+            toggle.setAttribute("aria-expanded", String(!collapsed));
+
             showSaved();
         });
 

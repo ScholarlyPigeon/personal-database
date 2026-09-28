@@ -1,3 +1,44 @@
+PERSONAL INTRANET — POLISH V2 ADDENDUM
+September 28, 2026
+
+HOME
+- Restored the native Pages dropdown to the Home header.
+- Added a low-profile top room strip for Database, Aquarium, Longform, Archive, and Almanac. Neopets remains available from the Pages menu but is intentionally omitted from the prominent room strip.
+- Desktop Home is now a three-column dashboard:
+    left: Focus Now + Recent
+    center: Catch It + Personal Intranet Inbox
+    right: Today
+- Home remains a one-screen desktop dashboard with internal scroll areas; phones use natural vertical page flow.
+
+ARCHIVE
+- All view now groups Notes / Patterns / Timeline as three equal top panels.
+- Day Archive / Archive sit together as two equal bottom panels.
+- History view shows Day Archive and Archive side by side at equal size.
+- Individual panel content scrolls internally when needed.
+
+ALMANAC
+- Desktop Almanac now uses a steady 3 x 2 equal-tile board rather than adaptive focus resizing, preventing clipped/cut-off tile bodies.
+- List items in Dailies, Things I Like, Restock, and Wish List are movable:
+    drag on desktop
+    up/down reorder buttons
+    destination dropdown for moving between compatible list sections
+- Mobile retains explicit movement controls and natural-height tiles.
+
+LONGFORM
+- Saved Thoughts now has a guaranteed scrollable library rail on desktop.
+- Longform section collapse now toggles in place and hidden section bodies are explicitly removed from layout, fixing the prior non-collapsing behavior.
+- Mobile Saved Thoughts uses a capped scroll region rather than clipping off-screen.
+
+MOBILE STABILITY
+- Database mobile navigation now explicitly supports the current native <details> Pages menu rather than the retired select-based navigator.
+- Database Pages and Theme controls are forced into visible mobile grid slots.
+- Open menu popovers receive a high stacking context and mobile-safe max height.
+- Home, Almanac, Longform, and shared native page menus received additional small-screen overflow/scroll safeguards.
+
+Shared asset cache version: 20260928-polish2.
+
+======================================================================
+
 PERSONAL INTRANET — POLISH V1 ADDENDUM
 September 28, 2026
 

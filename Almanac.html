@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Personal Almanac</title>
-    <link rel="stylesheet" href="Style.css?v=20260928-polish1">
+    <link rel="stylesheet" href="Style.css?v=20260928-polish2">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-    <script src="CloudSync.js?v=20260928-polish1" defer></script>
-    <script src="Script.js?v=20260928-polish1" defer></script>
+    <script src="CloudSync.js?v=20260928-polish2" defer></script>
+    <script src="Script.js?v=20260928-polish2" defer></script>
 </head>
 <body data-default-theme="fall2">
 <div class="almanac-page" id="almanacApp">
@@ -175,6 +175,45 @@ document.addEventListener("DOMContentLoaded", () => {
         wishlist: document.getElementById("almanacWishlistInput"),
         rotation: document.getElementById("almanacRotationInput")
     };
+
+    const MOVABLE_LIST_KINDS = ["dailies", "rotation", "restock", "wishlist"];
+    let draggedAlmanacListItem = null;
+
+    function rerenderMovableLists() {
+        MOVABLE_LIST_KINDS.forEach(kind => renderList(kind));
+    }
+
+    function moveAlmanacListItem(itemId, sourceKind, targetKind, targetIndex = null) {
+        if (!MOVABLE_LIST_KINDS.includes(sourceKind) || !MOVABLE_LIST_KINDS.includes(targetKind)) return;
+        const sourceIndex = state[sourceKind].findIndex(item => item.id === itemId);
+        if (sourceIndex < 0) return;
+
+        const [item] = state[sourceKind].splice(sourceIndex, 1);
+        if (!item) return;
+
+        if (sourceKind !== targetKind) item.done = false;
+
+        let insertAt = targetIndex;
+        if (insertAt === null || !Number.isFinite(insertAt)) insertAt = state[targetKind].length;
+        if (sourceKind === targetKind && sourceIndex < insertAt) insertAt -= 1;
+        insertAt = Math.max(0, Math.min(insertAt, state[targetKind].length));
+
+        state[targetKind].splice(insertAt, 0, item);
+        saveState(false);
+        rerenderMovableLists();
+        showSaved();
+    }
+
+    function nudgeAlmanacListItem(kind, itemId, direction) {
+        const index = state[kind].findIndex(item => item.id === itemId);
+        const next = index + direction;
+        if (index < 0 || next < 0 || next >= state[kind].length) return;
+        const [item] = state[kind].splice(index, 1);
+        state[kind].splice(next, 0, item);
+        saveState(false);
+        renderList(kind);
+        showSaved();
+    }
     const almanacGrid = document.getElementById("almanacGrid");
     const panelIds = [...almanacGrid.querySelectorAll(":scope > .almanac-panel")]
         .map(panel => panel.dataset.collapsiblePanel);
@@ -437,6 +476,42 @@ document.addEventListener("DOMContentLoaded", () => {
             linkEdit.title = item.linkUrl ? "Edit meal link" : "Add meal link";
             linkEdit.addEventListener("click", () => openMealLinkEditor(item));
 
+            const moveControls = document.createElement("div");
+            moveControls.className = "almanac-item-move-controls";
+
+            const up = document.createElement("button");
+            up.type = "button";
+            up.className = "almanac-item-nudge";
+            up.textContent = "↑";
+            up.title = "Move item up";
+            up.disabled = index === 0;
+            up.addEventListener("click", () => nudgeAlmanacListItem(kind, item.id, -1));
+
+            const down = document.createElement("button");
+            down.type = "button";
+            down.className = "almanac-item-nudge";
+            down.textContent = "↓";
+            down.title = "Move item down";
+            down.disabled = index === state[kind].length - 1;
+            down.addEventListener("click", () => nudgeAlmanacListItem(kind, item.id, 1));
+
+            const destination = document.createElement("select");
+            destination.className = "almanac-item-destination";
+            destination.setAttribute("aria-label", "Move item to another Almanac section");
+            MOVABLE_LIST_KINDS.forEach(targetKind => {
+                const option = document.createElement("option");
+                option.value = targetKind;
+                option.textContent = sectionTitle(targetKind);
+                destination.appendChild(option);
+            });
+            destination.value = kind;
+            destination.addEventListener("change", () => {
+                if (destination.value === kind) return;
+                moveAlmanacListItem(item.id, kind, destination.value, null);
+            });
+
+            moveControls.append(up, down, destination);
+
             const archive = document.createElement("button");
             archive.type = "button";
             archive.className = "archive-icon-button almanac-item-archive";
@@ -515,6 +590,38 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function renderList(kind) {
         const container = listContainers[kind];
+
+        if (container.dataset.almanacMoveBound !== "true") {
+            container.dataset.almanacMoveBound = "true";
+
+            container.addEventListener("dragover", event => {
+                if (!draggedAlmanacListItem) return;
+                event.preventDefault();
+                container.classList.add("almanac-list-drop-target");
+            });
+
+            container.addEventListener("dragleave", event => {
+                if (!container.contains(event.relatedTarget)) container.classList.remove("almanac-list-drop-target");
+            });
+
+            container.addEventListener("drop", event => {
+                if (!draggedAlmanacListItem) return;
+                event.preventDefault();
+                container.classList.remove("almanac-list-drop-target");
+                const targetRow = event.target.closest(".almanac-list-item");
+                const targetIndex = targetRow
+                    ? state[kind].findIndex(item => item.id === targetRow.dataset.itemId)
+                    : state[kind].length;
+                moveAlmanacListItem(
+                    draggedAlmanacListItem.id,
+                    draggedAlmanacListItem.kind,
+                    kind,
+                    targetIndex < 0 ? state[kind].length : targetIndex
+                );
+                draggedAlmanacListItem = null;
+            });
+        }
+
         container.innerHTML = "";
         if (!state[kind].length) {
             empty(container, kind === "rotation" ? "A tiny place for things you keep reaching for lately." : "Nothing here yet.");
@@ -523,6 +630,20 @@ document.addEventListener("DOMContentLoaded", () => {
         state[kind].forEach((item, index) => {
             const row = document.createElement("div");
             row.className = "almanac-list-item" + (item.done ? " done" : "");
+            row.dataset.itemId = item.id;
+            row.dataset.itemKind = kind;
+            row.draggable = true;
+            row.addEventListener("dragstart", event => {
+                draggedAlmanacListItem = { id: item.id, kind };
+                row.classList.add("dragging");
+                event.dataTransfer.effectAllowed = "move";
+                event.dataTransfer.setData("text/plain", item.id);
+            });
+            row.addEventListener("dragend", () => {
+                draggedAlmanacListItem = null;
+                row.classList.remove("dragging");
+                document.querySelectorAll(".almanac-list-drop-target").forEach(node => node.classList.remove("almanac-list-drop-target"));
+            });
 
             if (kind !== "rotation") {
                 const check = document.createElement("input");
@@ -578,7 +699,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 renderList(kind);
                 showSaved();
             });
-            row.append(text, archive, remove);
+            row.append(text, moveControls, archive, remove);
             container.appendChild(row);
         });
     }
