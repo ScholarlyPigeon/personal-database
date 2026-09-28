@@ -1,3 +1,21 @@
+PERSONAL INTRANET — MOBILE STABILITY V2
+September 28, 2026
+
+- Mobile document scrolling is now unconditional at the root HTML/BODY level.
+  This removes the remaining dependence on page-specific shell classes and
+  prevents a room from trapping the viewport with overflow:hidden.
+- Mobile Pages menus are again overlays, but with explicit overflow and z-index
+  ownership. Opening a menu no longer adds a giant row to the header or stretches
+  the sync indicator.
+- Sync status badges are content-sized on phones and cannot expand to fill a grid cell.
+- Aquarium / Archive / Longform / Neopets mobile headers now use predictable
+  named grid areas for sync, pages, actions, and theme.
+- Aquarium, Archive, Almanac, Longform, Database, and Neopets mobile workspaces
+  explicitly return to natural document height/flow.
+- Shared asset cache version: 20260928-mobile2.
+
+======================================================================
+
 PERSONAL INTRANET — STABILITY FINISH
 September 28, 2026
 

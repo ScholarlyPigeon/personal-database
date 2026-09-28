@@ -14289,3 +14289,369 @@ html.pi-shell-active body.neopets-page > .neo-field-page {
         align-self: stretch;
     }
 }
+
+
+/* =========================================================
+   MOBILE STABILITY V2
+   One rule for phones: the DOCUMENT scrolls.
+   Page menus float over content without reflowing header controls.
+   ========================================================= */
+@media (max-width: 900px), (pointer: coarse) {
+    /* Kill the original global overflow:hidden at the root. */
+    html,
+    html.pi-shell-active,
+    html.aquarium-page,
+    html.patterns-page-html,
+    html.longform-page-html,
+    html.neopets-page-html {
+        width: 100% !important;
+        height: auto !important;
+        min-height: 100% !important;
+        max-height: none !important;
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+        overscroll-behavior-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+
+    body,
+    body.pi-shell-active,
+    html.aquarium-page body,
+    html.patterns-page-html body,
+    html.longform-page-html body,
+    html.neopets-page-html body,
+    body.neopets-page {
+        width: 100% !important;
+        height: auto !important;
+        min-height: 100dvh !important;
+        max-height: none !important;
+        overflow-x: hidden !important;
+        overflow-y: visible !important;
+        position: static !important;
+        overscroll-behavior-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+
+    /* Every room becomes a normal-height document section on mobile. */
+    body > .database-page.page,
+    body > .aq-page,
+    body > .patterns-page,
+    body > .almanac-page,
+    body > .longform-page,
+    body.neopets-page > .neo-field-page,
+    body.pi-shell-active > .database-page.page,
+    body.pi-shell-active > .aq-page,
+    body.pi-shell-active > .patterns-page,
+    body.pi-shell-active > .almanac-page,
+    body.pi-shell-active > .longform-page,
+    body.pi-shell-active.neopets-page > .neo-field-page {
+        width: calc(100% - 12px) !important;
+        height: auto !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        overflow-x: hidden !important;
+        overflow-y: visible !important;
+        position: relative !important;
+        padding-bottom: calc(var(--pi-dock-space) + 26px) !important;
+    }
+
+    /* Headers and action decks are always allowed to paint outside themselves. */
+    .database-header,
+    html.aquarium-page .aq-header,
+    html.patterns-page-html .patterns-header,
+    .longform-header,
+    .neo-field-header,
+    .database-page .header-right,
+    html.aquarium-page .aq-header-actions,
+    html.patterns-page-html .patterns-header-actions,
+    .longform-header-actions,
+    .neo-header-tools,
+    .page-nav {
+        overflow: visible !important;
+    }
+
+    /* Native menu: summary participates in layout, menu panel does NOT.
+       This prevents the sync indicator / surrounding controls from jumping. */
+    .ecosystem-menu {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: none !important;
+        position: relative !important;
+        z-index: 7000 !important;
+    }
+
+    .ecosystem-menu > summary {
+        width: 100% !important;
+        min-height: 38px !important;
+        height: 38px !important;
+        display: flex !important;
+        align-items: center !important;
+        padding: 5px 10px !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+
+    .ecosystem-menu[open] {
+        z-index: 9900 !important;
+    }
+
+    .ecosystem-menu-popover,
+    .ecosystem-menu[open] > .ecosystem-menu-popover {
+        position: absolute !important;
+        left: 0 !important;
+        right: auto !important;
+        top: calc(100% + 5px) !important;
+        bottom: auto !important;
+        width: 100% !important;
+        min-width: 210px !important;
+        max-width: min(92vw, 340px) !important;
+        max-height: min(62dvh, 470px) !important;
+        margin: 0 !important;
+        padding: 6px !important;
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+        z-index: 10000 !important;
+        box-shadow: 0 16px 36px rgba(0,0,0,.48) !important;
+    }
+
+    .ecosystem-menu-popover a {
+        min-height: 43px !important;
+        display: flex !important;
+        align-items: center !important;
+        padding: 9px 11px !important;
+        font-size: 14px !important;
+    }
+
+    /* Sync status must stay a content-sized badge, never stretch into a grid cell. */
+    .sync-status,
+    #saveStatus,
+    .database-page .sync-status,
+    html.aquarium-page .sync-status,
+    html.patterns-page-html .sync-status,
+    .longform-header-actions .sync-status,
+    .neo-header-tools .sync-status {
+        width: max-content !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        justify-self: start !important;
+        align-self: center !important;
+        flex: 0 0 auto !important;
+    }
+
+    /* AQUARIUM header: clean, predictable mobile deck. */
+    html.aquarium-page .aq-header {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 8px !important;
+    }
+
+    html.aquarium-page .aq-header-actions {
+        width: 100% !important;
+        display: grid !important;
+        grid-template-columns: minmax(0,1fr) minmax(0,1fr) !important;
+        grid-template-areas:
+            "sync sync"
+            "pages pages"
+            "select archive"
+            "theme theme" !important;
+        gap: 6px !important;
+        align-items: center !important;
+    }
+
+    html.aquarium-page .aq-header-actions .sync-status { grid-area: sync !important; }
+    html.aquarium-page .aq-header-actions .ecosystem-menu { grid-area: pages !important; }
+    html.aquarium-page .aq-header-actions #selectModeButton { grid-area: select !important; }
+    html.aquarium-page .aq-header-actions .selection-action-button:not([hidden]) { grid-area: archive !important; }
+    html.aquarium-page .aq-header-actions .theme-select {
+        grid-area: theme !important;
+        width: 100% !important;
+        max-width: none !important;
+    }
+
+    /* ARCHIVE header. */
+    html.patterns-page-html .patterns-header {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 8px !important;
+    }
+
+    html.patterns-page-html .patterns-header-actions {
+        width: 100% !important;
+        display: grid !important;
+        grid-template-columns: minmax(0,1fr) minmax(0,1fr) !important;
+        grid-template-areas:
+            "sync sync"
+            "pages pages"
+            "select select"
+            "theme theme" !important;
+        gap: 6px !important;
+        align-items: center !important;
+    }
+
+    html.patterns-page-html .patterns-header-actions .sync-status { grid-area: sync !important; }
+    html.patterns-page-html .patterns-header-actions .ecosystem-menu { grid-area: pages !important; }
+    html.patterns-page-html .patterns-header-actions #selectModeButton { grid-area: select !important; width: 100% !important; }
+    html.patterns-page-html .patterns-header-actions .theme-select {
+        grid-area: theme !important;
+        width: 100% !important;
+        max-width: none !important;
+    }
+
+    /* LONGFORM header. */
+    .longform-header {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 8px !important;
+    }
+
+    .longform-header-actions {
+        width: 100% !important;
+        display: grid !important;
+        grid-template-columns: minmax(0,1fr) minmax(0,1fr) !important;
+        grid-template-areas:
+            "sync sync"
+            "pages pages"
+            "theme theme" !important;
+        gap: 6px !important;
+        align-items: center !important;
+    }
+
+    .longform-header-actions .sync-status { grid-area: sync !important; }
+    .longform-header-actions .ecosystem-menu { grid-area: pages !important; }
+    .longform-header-actions .theme-select {
+        grid-area: theme !important;
+        width: 100% !important;
+        max-width: none !important;
+    }
+
+    /* NEOPETS header. */
+    .neo-field-header {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 8px !important;
+    }
+
+    .neo-header-tools {
+        width: 100% !important;
+        display: grid !important;
+        grid-template-columns: minmax(0,1fr) minmax(0,1fr) !important;
+        grid-template-areas:
+            "sync sync"
+            "pages pages"
+            "theme theme" !important;
+        gap: 6px !important;
+        align-items: center !important;
+    }
+
+    .neo-header-tools .sync-status { grid-area: sync !important; }
+    .neo-header-tools .ecosystem-menu { grid-area: pages !important; }
+    .neo-header-tools .theme-select {
+        grid-area: theme !important;
+        width: 100% !important;
+        max-width: none !important;
+    }
+
+    /* DATABASE header remains its own deck but menu floats instead of reflowing. */
+    .database-page .page-nav {
+        overflow: visible !important;
+        z-index: 7000 !important;
+    }
+
+    .database-page .page-nav .ecosystem-menu-popover {
+        position: absolute !important;
+        left: 0 !important;
+        top: calc(100% + 5px) !important;
+        width: min(100%, 340px) !important;
+        min-width: 210px !important;
+    }
+
+    /* Page-specific shells that previously created nested viewport traps. */
+    html.aquarium-page .aq-workspace,
+    html.aquarium-page .aq-board-workspace,
+    html.patterns-page-html .patterns-grid,
+    .longform-workspace,
+    .almanac-grid,
+    .neo-field-page {
+        height: auto !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        overflow: visible !important;
+    }
+
+    /* Aquarium becomes a normal vertical document on mobile. */
+    html.aquarium-page .aq-workspace {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 9px !important;
+    }
+    html.aquarium-page .aq-capture-panel,
+    html.aquarium-page .aq-board-workspace {
+        width: 100% !important;
+        min-width: 0 !important;
+        height: auto !important;
+        max-height: none !important;
+        position: static !important;
+    }
+    html.aquarium-page .aq-category-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Archive and Almanac are normal stacked documents on phones. */
+    html.patterns-page-html .patterns-grid,
+    .almanac-grid {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 8px !important;
+    }
+
+    html.patterns-page-html .archive-v2-stack,
+    html.patterns-page-html .archive-notes-column,
+    html.patterns-page-html .archive-insight-panel,
+    .almanac-grid > .almanac-panel {
+        width: 100% !important;
+        min-width: 0 !important;
+        height: auto !important;
+        max-height: none !important;
+        flex: 0 0 auto !important;
+    }
+
+    /* Neopets vertical flow. */
+    .neo-field-page {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 9px !important;
+    }
+
+    .neo-field-page > .neo-card,
+    .neo-right-stack {
+        width: 100% !important;
+        min-width: 0 !important;
+        height: auto !important;
+        max-height: none !important;
+        flex: 0 0 auto !important;
+    }
+
+    .neo-right-stack {
+        display: flex !important;
+        flex-direction: column !important;
+    }
+
+    /* Dock stays fixed but never dictates document height. */
+    .pi-quick-dock {
+        max-width: calc(100vw - 14px) !important;
+    }
+}
+
+/* Very narrow phones: keep native controls legible without rearranging sync badge. */
+@media (max-width: 430px) {
+    .ecosystem-menu-popover,
+    .ecosystem-menu[open] > .ecosystem-menu-popover {
+        max-width: calc(100vw - 24px) !important;
+    }
+}
