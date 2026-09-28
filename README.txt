@@ -1,3 +1,29 @@
+PERSONAL INTRANET — MOBILE SINGLE-SCROLL FIX
+September 28, 2026
+
+Root cause of the remaining mobile scrolling problem:
+- The document itself was scrollable, but many page panels/lists were also
+  independent vertical scroll containers.
+- On touch screens (and desktop mobile emulation), swipes/wheel events that
+  began over a large table such as Day Archive, Dailies, Aquarium categories,
+  Longform Saved Thoughts, etc. were consumed by that inner panel.
+- This made the page appear stuck and could prevent other tables lower on the
+  document from ever coming naturally into view.
+
+Current mobile contract:
+- On phones/coarse-pointer layouts there is ONE vertical scroll surface:
+  the browser document.
+- Database, Aquarium, Archive, Almanac, Longform, and Neopets lists/panels
+  expand to their full content height.
+- Internal vertical scrolling remains a desktop behavior.
+- Horizontal strips such as Database Links may still scroll horizontally.
+- The universal capture dock remains fixed, with page-bottom space reserved
+  so final content is reachable above it.
+
+Shared asset cache version: 20260928-singlescroll.
+
+======================================================================
+
 PERSONAL INTRANET — MOBILE STABILITY V2
 September 28, 2026
 

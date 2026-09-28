@@ -14655,3 +14655,294 @@ html.pi-shell-active body.neopets-page > .neo-field-page {
         max-width: calc(100vw - 24px) !important;
     }
 }
+
+
+/* =========================================================
+   MOBILE SINGLE-SCROLL CONTRACT
+   Phones get ONE vertical scroll surface: the document.
+   No room/table/list is allowed to trap vertical swipes.
+   Desktop dashboard scrolling is unchanged.
+   ========================================================= */
+@media (max-width: 900px), (pointer: coarse) {
+
+    /* Root document is the sole vertical scroller. */
+    html,
+    html.pi-shell-active,
+    html.aquarium-page,
+    html.patterns-page-html,
+    html.longform-page-html,
+    html.neopets-page-html {
+        height: auto !important;
+        min-height: 100% !important;
+        max-height: none !important;
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+        overscroll-behavior-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+
+    body,
+    body.pi-shell-active,
+    body.neopets-page {
+        height: auto !important;
+        min-height: 100dvh !important;
+        max-height: none !important;
+        overflow-x: hidden !important;
+        overflow-y: visible !important;
+        overscroll-behavior-y: auto !important;
+    }
+
+    /* Main room shells grow with all their content. */
+    html.pi-shell-active body > .database-page.page,
+    html.pi-shell-active body > .aq-page,
+    html.pi-shell-active body > .patterns-page,
+    html.pi-shell-active body > .almanac-page,
+    html.pi-shell-active body > .longform-page,
+    html.pi-shell-active body.neopets-page > .neo-field-page,
+    body > .database-page.page,
+    body > .aq-page,
+    body > .patterns-page,
+    body > .almanac-page,
+    body > .longform-page,
+    body.neopets-page > .neo-field-page {
+        height: auto !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        overflow-x: hidden !important;
+        overflow-y: visible !important;
+        overscroll-behavior: auto !important;
+        padding-bottom: calc(var(--pi-dock-space) + 34px) !important;
+    }
+
+    /* ---------- DATABASE ---------- */
+    .database-page .database-grid.content-shell,
+    .database-page .left-rail,
+    .database-page .center-workspace,
+    .database-page .right-date-rail,
+    .database-page .panel,
+    .database-page .checklist-panel,
+    .database-page .database-notes-panel,
+    .database-page .date-rail-panel,
+    .database-page .checklist-list,
+    .database-page .database-notes-list,
+    .database-page .day-rail,
+    .database-page .day-list,
+    .database-page .tile-item-list,
+    .database-page .board-body,
+    .database-page .tile-body {
+        height: auto !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        overflow-y: visible !important;
+        overscroll-behavior-y: auto !important;
+    }
+
+    /* Keep the Links strip horizontally scrollable only. */
+    .database-page .links-container {
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+    }
+
+    /* ---------- AQUARIUM ---------- */
+    html.aquarium-page .aq-workspace,
+    html.aquarium-page .aq-board-workspace,
+    html.aquarium-page .aq-board,
+    html.aquarium-page .aq-section-band,
+    html.aquarium-page .aq-category-grid,
+    html.aquarium-page .aq-category,
+    html.aquarium-page .aq-category-zone,
+    html.aquarium-page .aq-inbox,
+    html.aquarium-page .aq-inbox-list,
+    html.aquarium-page .aq-capture-panel {
+        height: auto !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        overflow-y: visible !important;
+        overscroll-behavior-y: auto !important;
+    }
+
+    html.aquarium-page .aq-category.collapsed .aq-category-zone,
+    html.aquarium-page [hidden] {
+        display: none !important;
+    }
+
+    /* ---------- ARCHIVE / PATTERNS ---------- */
+    html.patterns-page-html .patterns-grid,
+    html.patterns-page-html .patterns-stack,
+    html.patterns-page-html .archive-v2-stack,
+    html.patterns-page-html .archive-column,
+    html.patterns-page-html .archive-notes-column,
+    html.patterns-page-html .archive-insight-panel,
+    html.patterns-page-html .archive-list,
+    html.patterns-page-html .archive-workspace-list,
+    html.patterns-page-html .archive-notes-body {
+        height: auto !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        overflow-y: visible !important;
+        overscroll-behavior-y: auto !important;
+    }
+
+    /* All mobile Archive views stack their visible panels in document flow. */
+    body[data-pi-archive-mode="all"] .archive-v2-grid,
+    body[data-pi-archive-mode="history"] .archive-v2-grid,
+    body[data-pi-archive-mode="synthesis"] .archive-v2-grid,
+    body[data-pi-archive-mode="timeline"] .archive-v2-grid {
+        height: auto !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        overflow: visible !important;
+    }
+
+    body[data-pi-archive-mode="history"] .archive-v2-grid > .archive-stack {
+        height: auto !important;
+        min-height: 0 !important;
+        max-height: none !important;
+    }
+
+    /* ---------- ALMANAC ---------- */
+    .almanac-page,
+    .almanac-grid,
+    .almanac-grid > .almanac-panel,
+    .almanac-checklist-body,
+    .almanac-checklist,
+    .almanac-simple-list,
+    .almanac-note-list,
+    .almanac-meal-workspace,
+    .almanac-meals-list,
+    .almanac-strain-body,
+    .almanac-strain-list {
+        height: auto !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        overflow-y: visible !important;
+        overscroll-behavior-y: auto !important;
+    }
+
+    .almanac-grid > .almanac-panel:not(.is-collapsed) {
+        min-height: 0 !important;
+    }
+
+    /* ---------- LONGFORM ---------- */
+    .longform-page,
+    .longform-workspace,
+    .longform-library,
+    .longform-list,
+    .longform-saved-section,
+    .longform-saved-section-body,
+    .longform-composer {
+        height: auto !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        overflow-y: visible !important;
+        overscroll-behavior-y: auto !important;
+    }
+
+    .longform-saved-section-body[hidden] {
+        display: none !important;
+    }
+
+    /* ---------- NEOPETS ---------- */
+    body.neopets-page .neo-field-page,
+    body.neopets-page .neo-dailies-card,
+    body.neopets-page .neo-dailies-collapse-body,
+    body.neopets-page .neo-link-sections,
+    body.neopets-page .neo-dream-card,
+    body.neopets-page .neo-dream-list,
+    body.neopets-page .neo-right-stack,
+    body.neopets-page .neo-task-card,
+    body.neopets-page .neo-task-list,
+    body.neopets-page .neo-treasure-card,
+    body.neopets-page .neo-want-list {
+        height: auto !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        overflow-y: visible !important;
+        overscroll-behavior-y: auto !important;
+    }
+
+    /* Fixed capture dock is the only fixed mobile UI.
+       It does not become a scroll container itself unless routes are expanded. */
+    .pi-universal-dock {
+        touch-action: manipulation;
+    }
+
+    .pi-route-bar {
+        max-height: 34dvh !important;
+        overflow-y: auto !important;
+    }
+}
+
+
+/* Final mobile overflow normalization.
+   `overflow-y: visible` computes back to `auto` if overflow-x is hidden,
+   so content lists must be fully visible on both axes to guarantee that
+   the document remains the only vertical scroller. */
+@media (max-width: 900px), (pointer: coarse) {
+    .database-page .checklist-list,
+    .database-page .database-notes-list,
+    .database-page .day-rail,
+    .database-page .day-list,
+    .database-page .tile-item-list,
+    .database-page .board-body,
+    .database-page .tile-body,
+
+    html.aquarium-page .aq-category-zone,
+    html.aquarium-page .aq-inbox-list,
+
+    html.patterns-page-html .archive-list,
+    html.patterns-page-html .archive-workspace-list,
+
+    .almanac-checklist,
+    .almanac-simple-list,
+    .almanac-note-list,
+    .almanac-strain-list,
+    .almanac-meals-list,
+
+    .longform-list,
+    .longform-saved-section-body,
+
+    body.neopets-page .neo-dailies-collapse-body,
+    body.neopets-page .neo-link-sections,
+    body.neopets-page .neo-dream-list,
+    body.neopets-page .neo-task-list,
+    body.neopets-page .neo-want-list {
+        overflow: visible !important;
+        overflow-x: visible !important;
+        overflow-y: visible !important;
+        height: auto !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        overscroll-behavior: auto !important;
+    }
+
+    /* Horizontal-only strips are the intentional exception. */
+    .database-page .links-container {
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+    }
+}
+
+
+/* Database's old Radar-collapse rule is intentionally very specific and
+   used !important, so the mobile single-scroll contract must override it
+   at the same structural level. */
+@media (max-width: 900px), (pointer: coarse) {
+    .database-page .left-rail > .checklist-panel:not(.is-collapsed) > .checklist-body {
+        height: auto !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        overflow: visible !important;
+        grid-template-rows: auto auto !important;
+    }
+
+    .database-page .left-rail > .checklist-panel:not(.is-collapsed) > .checklist-body > .checklist-list {
+        height: auto !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        overflow: visible !important;
+        overflow-x: visible !important;
+        overflow-y: visible !important;
+        margin-bottom: 8px;
+    }
+}
