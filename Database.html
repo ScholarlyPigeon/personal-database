@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Database</title>
-    <link rel="stylesheet" href="Style.css?v=20260928-singlescroll">
+    <link rel="stylesheet" href="Style.css?v=20260929-clarity1">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-    <script src="CloudSync.js?v=20260928-singlescroll" defer></script>
-    <script src="Script.js?v=20260928-singlescroll" defer></script>
+    <script src="CloudSync.js?v=20260929-clarity1" defer></script>
+    <script src="Script.js?v=20260929-clarity1" defer></script>
 </head>
 <body class="database-body" data-theme="dark">
 <div class="page database-page">
@@ -17,7 +17,7 @@
             <div class="pi-mark" aria-hidden="true">🗃️</div>
             <div>
                 <h1 class="editable-ui" contenteditable="true" data-ui-save="page-title">database</h1>
-                <div class="subtitle editable-ui" contenteditable="true" data-ui-save="page-subtitle">private notebook · life admin · brain annex · ongoing construction</div>
+                
             </div>
         </div>
 
@@ -70,18 +70,12 @@
         </div>
     </header>
 
-    <section class="link-strip database-global-links">
-        <div class="link-strip-label editable-ui" contenteditable="true" data-ui-save="links-title">🔗 Links</div>
-        <div id="linksContainer" class="links-container"></div>
-        <button id="addLinkButton" class="link-add-button" type="button" title="Add a new link">+ link</button>
-    </section>
-
     <div class="content-shell database-grid">
         <aside class="left-rail">
             <section class="panel checklist-panel" data-collapsible-panel="database-radar">
                 <div class="panel-header">
                     <div class="panel-title"><span>📡</span><span class="editable-ui" contenteditable="true" data-ui-save="radar-title">On My Radar</span></div>
-                    <div class="panel-subtitle editable-ui" contenteditable="true" data-ui-save="radar-subtitle">editable · moveable checklist</div>
+                    
                 </div>
 
                 <div class="checklist-body" data-collapse-body>
@@ -96,7 +90,7 @@
             <section class="panel checklist-panel near-radar-panel" data-collapsible-panel="database-near-radar">
                 <div class="panel-header">
                     <div class="panel-title"><span>◌</span><span class="editable-ui" contenteditable="true" data-ui-save="near-radar-title">Near My Radar</span></div>
-                    <div class="panel-subtitle editable-ui" contenteditable="true" data-ui-save="near-radar-subtitle">worth keeping close · not urgent yet</div>
+                    
                 </div>
 
                 <div class="checklist-body" data-collapse-body>
@@ -128,25 +122,12 @@
         <aside class="right-date-rail panel">
             <div class="panel-header date-rail-header">
                 <div class="panel-title"><span>🗓️</span><span class="editable-ui" contenteditable="true" data-ui-save="days-title">Next 4 Weeks</span></div>
-                <div class="panel-subtitle editable-ui" contenteditable="true" data-ui-save="days-subtitle">two days in view · four weeks are a scroll away</div>
+                
             </div>
             <div id="dayRail" class="day-rail scroll-blue"></div>
         </aside>
     </div>
 </div>
 
-<div id="linkEditorBackdrop" class="link-editor-backdrop" aria-hidden="true">
-    <div class="link-editor" role="dialog" aria-modal="true" aria-labelledby="linkEditorTitle">
-        <h2 id="linkEditorTitle">Edit Link</h2>
-        <label for="linkLabelInput">Label</label>
-        <input id="linkLabelInput" type="text">
-        <label for="linkUrlInput">URL or local file</label>
-        <input id="linkUrlInput" type="text" placeholder="example.html or https://...">
-        <div class="link-editor-actions">
-            <button id="cancelLinkEdit" type="button">Cancel</button>
-            <button id="saveLinkEdit" type="button">Save</button>
-        </div>
-    </div>
-</div>
 </body>
 </html>

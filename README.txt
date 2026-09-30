@@ -1,3 +1,41 @@
+SEPTEMBER 29, 2026 — MOBILE + CLARITY UPDATE
+
+Included changes
+- Removed page/header subtext and compacted phone navigation.
+- Moved the editable Links strip from Database to Aquarium, using the same saved links.
+- Database on phones: Focus Now, calendar, Radar/Near Radar, then Notes.
+- Enlarged the Home text composer.
+- Aquarium: + section, editable section names, and remove section. Removing a section
+  moves its categories into the first remaining section and keeps all cards.
+  At least one section remains. Custom sections persist on reload.
+- Almanac: add named Checklist or Notes tiles; change a custom tile's type; edit
+  entries; remove/restore tiles without losing their saved contents.
+  Existing specialist Meals and Strain Journal tiles keep their original features.
+- Almanac open tiles expand as others collapse on desktop. Mobile stays stacked.
+- Clarity · Dark and Clarity · Light: solid surfaces, clear borders, larger writing
+  text, system sans-serif font, and no gradients. Choose in the theme menu in tools.
+
+INSTALL
+1. Download your usual JSON backup from the current intranet.
+2. Extract this ZIP and replace the files in the ROOT of the existing GitHub Pages
+   repository. Keep the filenames exactly as packaged.
+3. Refresh the page after publication. If an old layout persists, close/reopen it
+   or hard-refresh on desktop. Shared asset URLs have a fresh cache version.
+
+No Supabase changes are needed. CloudSync.js is byte-for-byte unchanged.
+Existing storage keys are retained. New Almanac tile data uses pi-almanac-tiles-v1,
+which is covered by the existing pi-* backup and cloud-sync rules.
+
+VALIDATION
+All seven pages checked at 390px for horizontal overflow; desktop previews checked.
+Tested Aquarium sections across reload, section removal with category preservation,
+link saving after the move, custom Almanac items across reload, tile removal/restore,
+and adaptive Almanac sizing. Both new themes visually inspected.
+Live authenticated cloud sync was not exercised in the isolated local preview.
+
+
+--- PREVIOUS RELEASE DOCUMENTATION ---
+
 PERSONAL INTRANET — MOBILE SINGLE-SCROLL FIX
 September 28, 2026
 

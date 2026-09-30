@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Personal Almanac</title>
-    <link rel="stylesheet" href="Style.css?v=20260928-singlescroll">
+    <link rel="stylesheet" href="Style.css?v=20260929-clarity1">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-    <script src="CloudSync.js?v=20260928-singlescroll" defer></script>
-    <script src="Script.js?v=20260928-singlescroll" defer></script>
+    <script src="CloudSync.js?v=20260929-clarity1" defer></script>
+    <script src="Script.js?v=20260929-clarity1" defer></script>
 </head>
 <body data-default-theme="fall2">
 <div class="almanac-page" id="almanacApp">
@@ -16,7 +16,7 @@
             <div class="pi-mark" aria-hidden="true">📖</div>
             <div>
                 <h1 data-pi-ui="almanac-page-title" data-pi-ui-fallback="Personal Almanac">Personal Almanac</h1>
-                <div class="subtitle" data-pi-ui="almanac-page-subtitle" data-pi-ui-fallback="things worth keeping close · useful rituals · provisions · little truths">things worth keeping close · useful rituals · provisions · little truths</div>
+                
             </div>
         </div>
         <div class="header-right almanac-header-actions">
@@ -263,7 +263,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function readPanelOrder() {
         try {
             const saved = JSON.parse(localStorage.getItem(PANEL_ORDER_KEY) || "[]");
-            const clean = Array.isArray(saved) ? saved.filter(id => panelIds.includes(id)) : [];
+            const clean = Array.isArray(saved) ? saved.filter(id => panelIds.includes(id) || String(id).startsWith("almanac-custom-")) : [];
             panelIds.forEach(id => { if (!clean.includes(id)) clean.push(id); });
             return clean;
         } catch { return [...panelIds]; }
@@ -347,6 +347,8 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         });
 
+        if (almanacGrid.dataset.moveBound) return;
+        almanacGrid.dataset.moveBound = "true";
         almanacGrid.addEventListener("click", event => {
             if (!activeAlmanacPanelMove || event.target.closest(".almanac-panel-move")) return;
             const target = event.target.closest(".almanac-panel");
@@ -358,9 +360,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function updateAlmanacFocusLayout() {
-        const panels = [...almanacGrid.querySelectorAll(":scope > .almanac-panel")];
+        const panels = [...almanacGrid.querySelectorAll(":scope > .almanac-panel")].filter(panel => !panel.hidden);
         const openPanels = panels.filter(panel => !panel.classList.contains("is-collapsed"));
 
+        almanacGrid.style.setProperty("--open-tiles", String(Math.max(1, Math.min(3, openPanels.length))));
         [1, 2, 3, 4].forEach(count => {
             almanacGrid.classList.toggle(`almanac-focus-${count}`, openPanels.length === count);
         });
@@ -893,6 +896,96 @@ document.addEventListener("DOMContentLoaded", () => {
         renderStrains();
         updateAlmanacFocusLayout();
     }
+
+    // Tile configuration is separate from the original content stores.
+    const TILE_KEY = "pi-almanac-tiles-v1";
+    let tileConfig;
+    try { tileConfig = JSON.parse(localStorage.getItem(TILE_KEY) || "null"); } catch {}
+    if (!tileConfig || !Array.isArray(tileConfig.custom)) tileConfig = {custom: [], hidden: []};
+    if (!Array.isArray(tileConfig.hidden)) tileConfig.hidden = [];
+    const saveTiles = () => { localStorage.setItem(TILE_KEY, JSON.stringify(tileConfig)); showSaved(); };
+    const tileTools = document.createElement("div");
+    tileTools.className = "pi-tile-tools";
+    const newName = document.createElement("input"); newName.placeholder = "New tile name"; newName.setAttribute("aria-label", "New tile name");
+    const newType = document.createElement("select"); newType.setAttribute("aria-label", "New tile type");
+    newType.innerHTML = '<option value="checklist">Checklist</option><option value="notes">Notes</option>';
+    const newButton = document.createElement("button"); newButton.textContent = "+ tile"; newButton.type = "button";
+    const restore = document.createElement("select"); restore.setAttribute("aria-label", "Restore removed tile");
+    tileTools.append(newName, newType, newButton, restore);
+    document.querySelector(".almanac-intro").replaceWith(tileTools);
+    function updateRestore() {
+        restore.replaceChildren(new Option("Restore tile…", ""));
+        almanacGrid.querySelectorAll(":scope > .almanac-panel").forEach(panel => {
+            const id = panel.dataset.collapsiblePanel;
+            panel.hidden = tileConfig.hidden.includes(id);
+            if (panel.hidden) restore.add(new Option(panel.querySelector(".panel-title")?.textContent || id, id));
+        });
+        restore.hidden = !tileConfig.hidden.length;
+        updateAlmanacFocusLayout();
+    }
+    restore.addEventListener("change", () => {
+        tileConfig.hidden = tileConfig.hidden.filter(id => id !== restore.value);
+        saveTiles(); updateRestore();
+    });
+    function addRemoveControl(panel) {
+        const button = document.createElement("button"); button.type = "button";
+        button.className = "small-button"; button.textContent = "remove";
+        button.addEventListener("click", () => {
+            if (!confirm("Remove this tile from the board? Its contents are kept; use Restore tile to bring it back.")) return;
+            tileConfig.hidden.push(panel.dataset.collapsiblePanel); saveTiles(); updateRestore();
+        });
+        panel.querySelector(".almanac-panel-head").append(button);
+    }
+    function buildCustomTile(tile) {
+        const panel = document.createElement("section"); panel.className = "panel almanac-panel pi-custom-tile";
+        panel.dataset.collapsiblePanel = tile.id;
+        const head = document.createElement("div"); head.className = "almanac-panel-head";
+        const title = document.createElement("div"); title.className = "panel-title"; title.contentEditable = "true"; title.textContent = tile.name;
+        title.addEventListener("input", () => {tile.name = title.textContent.trim() || "Untitled"; saveTiles();});
+        const type = newType.cloneNode(true); type.setAttribute("aria-label", "Tile type"); type.value = tile.type;
+        type.addEventListener("change", () => {tile.type = type.value; saveTiles(); paintItems();});
+        head.append(title, type);
+        const body = document.createElement("div"); body.className = "pi-custom-tile-body"; body.dataset.collapseBody = "";
+        const items = document.createElement("div"); items.className = "pi-custom-tile-items";
+        const entry = document.createElement("textarea"); entry.rows = 3; entry.placeholder = "Add an item…"; entry.setAttribute("aria-label", "New tile item");
+        const add = document.createElement("button"); add.type = "button"; add.textContent = "Add";
+        add.addEventListener("click", () => {
+            if (!entry.value.trim()) return;
+            tile.items.push({id: makeId("item"), text: entry.value.trim(), done: false});
+            entry.value = ""; saveTiles(); paintItems(); entry.focus();
+        });
+        function paintItems() {
+            items.replaceChildren();
+            tile.items.forEach(item => {
+                const row = document.createElement("div"); row.className = "pi-custom-item";
+                if (tile.type === "checklist") {
+                    const check = document.createElement("input"); check.type = "checkbox"; check.checked = item.done;
+                    check.setAttribute("aria-label", "Mark item complete");
+                    check.addEventListener("change", () => {item.done = check.checked; saveTiles();}); row.append(check);
+                }
+                const text = document.createElement("div"); text.contentEditable = "true"; text.className = "pi-custom-item-text"; text.textContent = item.text;
+                text.setAttribute("role", "textbox"); text.setAttribute("aria-label", "Item text");
+                text.addEventListener("input", () => {item.text = text.innerText; saveTiles();});
+                const remove = document.createElement("button"); remove.type = "button"; remove.textContent = "×"; remove.setAttribute("aria-label", "Delete item");
+                remove.addEventListener("click", () => {if (!confirm("Delete this item?")) return; tile.items = tile.items.filter(i => i.id !== item.id); saveTiles(); paintItems();});
+                row.append(text, remove); items.append(row);
+            });
+        }
+        body.append(items, entry, add); panel.append(head, body); almanacGrid.append(panel);
+        if (!panelIds.includes(tile.id)) panelIds.push(tile.id);
+        if (!panelOrder.includes(tile.id)) panelOrder.push(tile.id);
+        panelClassObserver.observe(panel, {attributes:true, attributeFilter:["class"]});
+        paintItems(); return panel;
+    }
+    tileConfig.custom.forEach(buildCustomTile);
+    almanacGrid.querySelectorAll(":scope > .almanac-panel").forEach(addRemoveControl);
+    newButton.addEventListener("click", () => {
+        if (!newName.value.trim()) {newName.focus(); return;}
+        const tile = {id: makeId("almanac-custom"), name: newName.value.trim(), type:newType.value, items:[]};
+        tileConfig.custom.push(tile); addRemoveControl(buildCustomTile(tile)); newName.value = "";
+        saveTiles(); bindAlmanacPanelMovement(); savePanelOrder(); window.PIBindCollapsiblePanels?.(); updateRestore();
+    });
+    updateRestore();
 
     bindSectionTitles();
     bindAlmanacPanelMovement();

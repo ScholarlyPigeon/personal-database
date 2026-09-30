@@ -209,6 +209,8 @@ const THEME_STORAGE_KEY = "pi-theme";
 
 /* One shared catalog keeps every page's theme menu identical. */
 const THEME_OPTIONS = [
+    { value: "clarity-dark", label: "Clarity · Dark", group: "Readable themes" },
+    { value: "clarity-light", label: "Clarity · Light", group: "Readable themes" },
     { value: "dark", label: "🌙 Dark Original", group: "Dark themes" },
     { value: "aquarium", label: "🐠 Dark Teal Celestial Aquarium", group: "Dark themes" },
     { value: "observatory", label: "🔭 Midnight Observatory", group: "Dark themes" },
@@ -1929,195 +1931,6 @@ if (document.getElementById("tileGrid")) {
     /* =========================================================
        EDITABLE / MOVEABLE LINKS
        ========================================================= */
-    const defaultLinks = [
-        { id: "notion", label: "Notion", url: "#" },
-        { id: "calendar", label: "Calendar", url: "#" },
-        { id: "neopets", label: "Neopets", url: "neopets.html" },
-        { id: "banking", label: "Banking", url: "#" },
-        { id: "work", label: "Work", url: "#" }
-    ];
-
-    const linksContainer = document.getElementById("linksContainer");
-    let links = defaultLinks;
-    try {
-        const savedLinks = JSON.parse(localStorage.getItem("pi-database-links-v1") || "null");
-        if (Array.isArray(savedLinks)) links = savedLinks;
-    } catch (error) {
-        console.warn("Could not read saved Database links; leaving the stored value untouched and using defaults for this load.", error);
-    }
-    let draggedLinkId = null;
-    let editingLinkId = null;
-
-    const linkEditorBackdrop = document.getElementById("linkEditorBackdrop");
-    const linkEditorTitle = document.getElementById("linkEditorTitle");
-    const linkLabelInput = document.getElementById("linkLabelInput");
-    const linkUrlInput = document.getElementById("linkUrlInput");
-    const saveLinkEdit = document.getElementById("saveLinkEdit");
-    const cancelLinkEdit = document.getElementById("cancelLinkEdit");
-    const addLinkButton = document.getElementById("addLinkButton");
-    let creatingLink = false;
-
-    const savedNeopets = links.find(item => item.id === "neopets");
-    if (savedNeopets && savedNeopets.url === "https://www.neopets.com/") {
-        savedNeopets.url = "neopets.html";
-        localStorage.setItem("pi-database-links-v1", JSON.stringify(links));
-    }
-
-    function openLinkEditor(link) {
-        creatingLink = false;
-        editingLinkId = link.id;
-        linkEditorTitle.textContent = "Edit Link";
-        linkLabelInput.value = link.label;
-        linkUrlInput.value = link.url === "#" ? "" : link.url;
-        linkEditorBackdrop.classList.add("open");
-        linkEditorBackdrop.setAttribute("aria-hidden", "false");
-        setTimeout(() => linkLabelInput.focus(), 0);
-    }
-
-    function openNewLinkEditor() {
-        creatingLink = true;
-        editingLinkId = null;
-        linkEditorTitle.textContent = "Add Link";
-        linkLabelInput.value = "";
-        linkUrlInput.value = "";
-        linkEditorBackdrop.classList.add("open");
-        linkEditorBackdrop.setAttribute("aria-hidden", "false");
-        setTimeout(() => linkLabelInput.focus(), 0);
-    }
-
-    function closeLinkEditor() {
-        editingLinkId = null;
-        creatingLink = false;
-        linkEditorBackdrop.classList.remove("open");
-        linkEditorBackdrop.setAttribute("aria-hidden", "true");
-    }
-
-    addLinkButton.addEventListener("click", openNewLinkEditor);
-
-    saveLinkEdit.addEventListener("click", () => {
-        const label = linkLabelInput.value.trim();
-        const url = linkUrlInput.value.trim() || "#";
-
-        if (creatingLink) {
-            if (!label) return;
-            links.push({
-                id: `custom-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-                label,
-                url
-            });
-        } else {
-            const link = links.find(item => item.id === editingLinkId);
-            if (!link) return closeLinkEditor();
-            link.label = label || link.label;
-            link.url = url;
-        }
-
-        saveLinks();
-        renderLinks();
-        closeLinkEditor();
-    });
-
-    [linkLabelInput, linkUrlInput].forEach(input => {
-        input.addEventListener("keydown", event => {
-            if (event.key === "Enter") {
-                event.preventDefault();
-                saveLinkEdit.click();
-            }
-        });
-    });
-
-    cancelLinkEdit.addEventListener("click", closeLinkEditor);
-    linkEditorBackdrop.addEventListener("click", event => {
-        if (event.target === linkEditorBackdrop) closeLinkEditor();
-    });
-
-    document.addEventListener("keydown", event => {
-        if (event.key === "Escape" && linkEditorBackdrop.classList.contains("open")) {
-            closeLinkEditor();
-        }
-    });
-
-    function saveLinks() {
-        localStorage.setItem("pi-database-links-v1", JSON.stringify(links));
-        showSaved();
-    }
-
-    function renderLinks() {
-        linksContainer.innerHTML = "";
-
-        links.forEach(link => {
-            const chip = document.createElement("div");
-            chip.className = "link-chip";
-            chip.dataset.id = link.id;
-
-            const drag = document.createElement("span");
-            drag.className = "link-drag";
-            drag.textContent = "⋮⋮";
-            drag.draggable = true;
-            drag.title = "Drag to rearrange";
-
-            const anchor = document.createElement("a");
-            anchor.textContent = link.label;
-            anchor.href = link.url || "#";
-            if (!link.url || link.url === "#") {
-                anchor.addEventListener("click", event => event.preventDefault());
-            }
-
-            const edit = document.createElement("button");
-            edit.className = "link-edit";
-            edit.textContent = "✎";
-            edit.title = "Edit link";
-            edit.addEventListener("click", event => {
-                event.preventDefault();
-                event.stopPropagation();
-                openLinkEditor(link);
-            });
-
-            const remove = document.createElement("button");
-            remove.className = "link-remove";
-            remove.textContent = "×";
-            remove.title = "Remove link";
-            remove.addEventListener("click", event => {
-                event.preventDefault();
-                event.stopPropagation();
-                links = links.filter(item => item.id !== link.id);
-                saveLinks();
-                renderLinks();
-            });
-
-            drag.addEventListener("dragstart", event => {
-                draggedLinkId = link.id;
-                chip.classList.add("dragging");
-                event.dataTransfer.effectAllowed = "move";
-                event.dataTransfer.setData("text/plain", link.id);
-            });
-
-            drag.addEventListener("dragend", () => {
-                draggedLinkId = null;
-                chip.classList.remove("dragging");
-            });
-
-            chip.addEventListener("dragover", event => event.preventDefault());
-            chip.addEventListener("drop", event => {
-                event.preventDefault();
-                const sourceId = draggedLinkId || event.dataTransfer.getData("text/plain");
-                if (!sourceId || sourceId === link.id) return;
-                const from = links.findIndex(item => item.id === sourceId);
-                const to = links.findIndex(item => item.id === link.id);
-                if (from < 0 || to < 0) return;
-                const [moved] = links.splice(from, 1);
-                links.splice(to, 0, moved);
-                saveLinks();
-                renderLinks();
-            });
-
-            chip.append(drag, anchor, edit, remove);
-            linksContainer.appendChild(chip);
-        });
-    }
-
-    renderLinks();
-
     /* =========================================================
        SHARED CHECKLIST SYSTEM
        Radar and all 14 dates can exchange items by drag.
@@ -3044,16 +2857,10 @@ if (document.getElementById("aquariumApp")) {
 
         /* V15 migration: the board now has three lightweight section bands.
            Existing categories are distributed without touching any card data. */
-        const suppliedSections = Array.isArray(state.sections) ? state.sections : [];
-        state.sections = AQUARIUM_SECTION_DEFAULTS.map(defaultSection => {
-            const saved = suppliedSections.find(section => section && section.id === defaultSection.id);
-            return {
-                id: defaultSection.id,
-                name: saved && typeof saved.name === "string" && saved.name.trim()
-                    ? saved.name
-                    : defaultSection.name
-            };
-        });
+        const suppliedSections = Array.isArray(state.sections) ? state.sections : AQUARIUM_SECTION_DEFAULTS;
+        state.sections = suppliedSections.filter(section => section && typeof section.id === "string")
+            .map(section => ({ id: section.id, name: String(section.name || "Section") }));
+        if (!state.sections.length) state.sections = [{ id: "surface", name: "Surface" }];
         const validSectionIds = new Set(state.sections.map(section => section.id));
 
         state.categories = state.categories
@@ -3064,6 +2871,7 @@ if (document.getElementById("aquariumApp")) {
                     if (index < 3) section = "surface";
                     else if (index < 6) section = "midwater";
                     else section = "deep";
+                    if (!validSectionIds.has(section)) section = state.sections[0].id;
                 }
                 return {
                     ...category,
@@ -3765,6 +3573,24 @@ if (document.getElementById("aquariumApp")) {
             const lineRight = document.createElement("span");
             lineRight.className = "aq-section-line";
             divider.append(toggle, lineLeft, label, lineRight);
+            const removeSection = document.createElement("button");
+            removeSection.type = "button";
+            removeSection.className = "small-button";
+            removeSection.textContent = "remove";
+            removeSection.disabled = aquariumState.sections.length === 1;
+            removeSection.title = "Remove section; keep its categories in the first remaining section";
+            removeSection.addEventListener("click", event => {
+                event.stopPropagation();
+                if (!confirm("Remove this section? Its categories and cards will move to the first remaining section.")) return;
+                aquariumState.sections = aquariumState.sections.filter(item => item.id !== section.id);
+                aquariumState.categories.forEach(category => {
+                    if (category.section === section.id) category.section = aquariumState.sections[0].id;
+                });
+                collapsedAquariumSections.delete(section.id);
+                saveCollapsedAquariumSections(); saveAquariumState(); renderAquarium();
+            });
+            removeSection.addEventListener("keydown", event => event.stopPropagation());
+            divider.append(removeSection);
 
             function toggleSection() {
                 if (collapsedAquariumSections.has(section.id)) collapsedAquariumSections.delete(section.id);
@@ -4110,6 +3936,12 @@ if (document.getElementById("aquariumApp")) {
 
     document.getElementById("manageAquariumKinds")?.addEventListener("click", openAquariumKindManager);
 
+    document.getElementById("addAquariumSection")?.addEventListener("click", () => {
+        const name = prompt("Section name:", "New section");
+        if (!name?.trim()) return;
+        aquariumState.sections.push({ id: piUuid("section"), name: name.trim() });
+        saveAquariumState(); renderAquarium();
+    });
     document.getElementById("manageAquariumCategories")?.addEventListener("click", openAquariumCategoryManager);
 
     document.getElementById("archiveDone").addEventListener("click", () => {
@@ -6743,7 +6575,7 @@ if (document.getElementById("neopetsApp")) {
 
     function injectDatabaseFocus() {
         const page = document.querySelector(".database-page");
-        const links = page?.querySelector(".database-global-links");
+        const links = page?.querySelector(".database-header");
         if (!page || !links || document.getElementById("piDatabaseFocus")) return;
         const panel = document.createElement("section");
         panel.id = "piDatabaseFocus";
@@ -7183,6 +7015,10 @@ if (document.getElementById("neopetsApp")) {
             humanArray(key).forEach(item => addDoc(docs, "database", `Calendar · ${date}`, item.text));
         }
 
+        const customReference = jsonRead("pi-almanac-tiles-v1", {custom: [], hidden: []});
+        (customReference.custom || []).filter(tile => !(customReference.hidden || []).includes(tile.id)).forEach(tile => {
+            (tile.items || []).forEach(item => addDoc(docs, "almanac", tile.name || "Reference", item.text || ""));
+        });
         const aquarium = readAquarium();
         aquarium.cards.forEach(card => addDoc(docs, "aquarium", card.zone === "inbox" ? "Inbox" : (card.zone || "Aquarium"), [card.title, card.text].filter(Boolean).join(" · ")));
 
@@ -7536,3 +7372,196 @@ if (document.getElementById("neopetsApp")) {
         if ([PI_KEYS.radarKey, PI_KEYS.aquariumKey, PI_KEYS.longformKey, PI_KEYS.archiveWorkspaceKey].includes(event.key)) refreshHomeCounts();
     });
 })();
+
+if (document.getElementById("linksContainer")) {
+    const defaultLinks = [
+        { id: "notion", label: "Notion", url: "#" },
+        { id: "calendar", label: "Calendar", url: "#" },
+        { id: "neopets", label: "Neopets", url: "neopets.html" },
+        { id: "banking", label: "Banking", url: "#" },
+        { id: "work", label: "Work", url: "#" }
+    ];
+
+    const linksContainer = document.getElementById("linksContainer");
+    let links = defaultLinks;
+    try {
+        const savedLinks = JSON.parse(localStorage.getItem("pi-database-links-v1") || "null");
+        if (Array.isArray(savedLinks)) links = savedLinks;
+    } catch (error) {
+        console.warn("Could not read saved Database links; leaving the stored value untouched and using defaults for this load.", error);
+    }
+    let draggedLinkId = null;
+    let editingLinkId = null;
+
+    const linkEditorBackdrop = document.getElementById("linkEditorBackdrop");
+    const linkEditorTitle = document.getElementById("linkEditorTitle");
+    const linkLabelInput = document.getElementById("linkLabelInput");
+    const linkUrlInput = document.getElementById("linkUrlInput");
+    const saveLinkEdit = document.getElementById("saveLinkEdit");
+    const cancelLinkEdit = document.getElementById("cancelLinkEdit");
+    const addLinkButton = document.getElementById("addLinkButton");
+    let creatingLink = false;
+
+    const savedNeopets = links.find(item => item.id === "neopets");
+    if (savedNeopets && savedNeopets.url === "https://www.neopets.com/") {
+        savedNeopets.url = "neopets.html";
+        localStorage.setItem("pi-database-links-v1", JSON.stringify(links));
+    }
+
+    function openLinkEditor(link) {
+        creatingLink = false;
+        editingLinkId = link.id;
+        linkEditorTitle.textContent = "Edit Link";
+        linkLabelInput.value = link.label;
+        linkUrlInput.value = link.url === "#" ? "" : link.url;
+        linkEditorBackdrop.classList.add("open");
+        linkEditorBackdrop.setAttribute("aria-hidden", "false");
+        setTimeout(() => linkLabelInput.focus(), 0);
+    }
+
+    function openNewLinkEditor() {
+        creatingLink = true;
+        editingLinkId = null;
+        linkEditorTitle.textContent = "Add Link";
+        linkLabelInput.value = "";
+        linkUrlInput.value = "";
+        linkEditorBackdrop.classList.add("open");
+        linkEditorBackdrop.setAttribute("aria-hidden", "false");
+        setTimeout(() => linkLabelInput.focus(), 0);
+    }
+
+    function closeLinkEditor() {
+        editingLinkId = null;
+        creatingLink = false;
+        linkEditorBackdrop.classList.remove("open");
+        linkEditorBackdrop.setAttribute("aria-hidden", "true");
+    }
+
+    addLinkButton.addEventListener("click", openNewLinkEditor);
+
+    saveLinkEdit.addEventListener("click", () => {
+        const label = linkLabelInput.value.trim();
+        const url = linkUrlInput.value.trim() || "#";
+
+        if (creatingLink) {
+            if (!label) return;
+            links.push({
+                id: `custom-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+                label,
+                url
+            });
+        } else {
+            const link = links.find(item => item.id === editingLinkId);
+            if (!link) return closeLinkEditor();
+            link.label = label || link.label;
+            link.url = url;
+        }
+
+        saveLinks();
+        renderLinks();
+        closeLinkEditor();
+    });
+
+    [linkLabelInput, linkUrlInput].forEach(input => {
+        input.addEventListener("keydown", event => {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                saveLinkEdit.click();
+            }
+        });
+    });
+
+    cancelLinkEdit.addEventListener("click", closeLinkEditor);
+    linkEditorBackdrop.addEventListener("click", event => {
+        if (event.target === linkEditorBackdrop) closeLinkEditor();
+    });
+
+    document.addEventListener("keydown", event => {
+        if (event.key === "Escape" && linkEditorBackdrop.classList.contains("open")) {
+            closeLinkEditor();
+        }
+    });
+
+    function saveLinks() {
+        localStorage.setItem("pi-database-links-v1", JSON.stringify(links));
+        showSaved();
+    }
+
+    function renderLinks() {
+        linksContainer.innerHTML = "";
+
+        links.forEach(link => {
+            const chip = document.createElement("div");
+            chip.className = "link-chip";
+            chip.dataset.id = link.id;
+
+            const drag = document.createElement("span");
+            drag.className = "link-drag";
+            drag.textContent = "⋮⋮";
+            drag.draggable = true;
+            drag.title = "Drag to rearrange";
+
+            const anchor = document.createElement("a");
+            anchor.textContent = link.label;
+            anchor.href = link.url || "#";
+            if (!link.url || link.url === "#") {
+                anchor.addEventListener("click", event => event.preventDefault());
+            }
+
+            const edit = document.createElement("button");
+            edit.className = "link-edit";
+            edit.textContent = "✎";
+            edit.title = "Edit link";
+            edit.addEventListener("click", event => {
+                event.preventDefault();
+                event.stopPropagation();
+                openLinkEditor(link);
+            });
+
+            const remove = document.createElement("button");
+            remove.className = "link-remove";
+            remove.textContent = "×";
+            remove.title = "Remove link";
+            remove.addEventListener("click", event => {
+                event.preventDefault();
+                event.stopPropagation();
+                links = links.filter(item => item.id !== link.id);
+                saveLinks();
+                renderLinks();
+            });
+
+            drag.addEventListener("dragstart", event => {
+                draggedLinkId = link.id;
+                chip.classList.add("dragging");
+                event.dataTransfer.effectAllowed = "move";
+                event.dataTransfer.setData("text/plain", link.id);
+            });
+
+            drag.addEventListener("dragend", () => {
+                draggedLinkId = null;
+                chip.classList.remove("dragging");
+            });
+
+            chip.addEventListener("dragover", event => event.preventDefault());
+            chip.addEventListener("drop", event => {
+                event.preventDefault();
+                const sourceId = draggedLinkId || event.dataTransfer.getData("text/plain");
+                if (!sourceId || sourceId === link.id) return;
+                const from = links.findIndex(item => item.id === sourceId);
+                const to = links.findIndex(item => item.id === link.id);
+                if (from < 0 || to < 0) return;
+                const [moved] = links.splice(from, 1);
+                links.splice(to, 0, moved);
+                saveLinks();
+                renderLinks();
+            });
+
+            chip.append(drag, anchor, edit, remove);
+            linksContainer.appendChild(chip);
+        });
+    }
+
+    renderLinks();
+
+
+}

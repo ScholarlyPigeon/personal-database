@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Brain Aquarium</title>
-    <link rel="stylesheet" href="Style.css?v=20260928-singlescroll">
+    <link rel="stylesheet" href="Style.css?v=20260929-clarity1">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-    <script src="CloudSync.js?v=20260928-singlescroll" defer></script>
-    <script src="Script.js?v=20260928-singlescroll" defer></script>
+    <script src="CloudSync.js?v=20260929-clarity1" defer></script>
+    <script src="Script.js?v=20260929-clarity1" defer></script>
 </head>
 <body data-default-theme="aquarium">
 <div class="aq-page" id="aquariumApp">
@@ -17,7 +17,7 @@
             <div class="pi-mark" aria-hidden="true">🪼</div>
             <div class="aq-title">
                 <h1 data-pi-ui="aquarium-page-title" data-pi-ui-fallback="Brain Aquarium">Brain Aquarium</h1>
-                <div class="aq-subtitle" data-pi-ui="aquarium-page-subtitle" data-pi-ui-fallback="capture first · sort second · obligation is optional">capture first · sort second · obligation is optional</div>
+                
             </div>
         </div>
 
@@ -66,6 +66,12 @@
         </div>
     </header>
 
+    <section class="link-strip database-global-links">
+        <div class="link-strip-label editable-ui" contenteditable="true" data-ui-save="links-title">🔗 Links</div>
+        <div id="linksContainer" class="links-container"></div>
+        <button id="addLinkButton" class="link-add-button" type="button" title="Add a new link">+ link</button>
+    </section>
+
     <div class="aq-workspace">
         <main class="aq-board-workspace">
             <div id="categoryGrid" class="aq-section-board"></div>
@@ -83,6 +89,7 @@
                         <option value="all">All types</option>
                     </select>
                 </label>
+                <button class="small-button" id="addAquariumSection" type="button">+ section</button>
                 <button class="small-button aq-add-category-inline" id="manageAquariumCategories" type="button">categories</button>
             </div>
 
@@ -120,6 +127,19 @@
         </div>
     </div>
 
+</div>
+<div id="linkEditorBackdrop" class="link-editor-backdrop" aria-hidden="true">
+    <div class="link-editor" role="dialog" aria-modal="true" aria-labelledby="linkEditorTitle">
+        <h2 id="linkEditorTitle">Edit Link</h2>
+        <label for="linkLabelInput">Label</label>
+        <input id="linkLabelInput" type="text">
+        <label for="linkUrlInput">URL or local file</label>
+        <input id="linkUrlInput" type="text" placeholder="example.html or https://...">
+        <div class="link-editor-actions">
+            <button id="cancelLinkEdit" type="button">Cancel</button>
+            <button id="saveLinkEdit" type="button">Save</button>
+        </div>
+    </div>
 </div>
 </body>
 </html>
