@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>This Week</title>
+    <link rel="stylesheet" href="Style.css?v=20261004-planners1">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+    <script src="CloudSync.js?v=20261004-planners1" defer></script>
+    <script src="Script.js?v=20261004-planners1" defer></script>
+    <link rel="stylesheet" href="Planner.css?v=20261004-planners1">
+    <script src="Planner.js?v=20261004-planners1" defer></script>
+</head>
+<body class="planner-body" data-planner="week" data-theme="dark">
+<div class="planner-page">    <header class="database-header">
+        <div class="brand">
+            <div class="pi-mark" aria-hidden="true">W</div>
+            <div>
+                <h1>This Week</h1>
+                
+            </div>
+        </div>
+
+        <div class="header-right">
+            <div class="sync-tools">
+                <span id="saveStatus" class="sync-status" aria-live="polite">cloud ready</span>
+                <button id="cloudLoginButton" class="small-button cloud-login-button" type="button">cloud login</button>
+                <button id="localBackupButton" class="small-button backup-button" type="button" title="Download a JSON snapshot of your current Personal Intranet data">backup</button>
+            </div>
+
+            <nav class="page-nav" aria-label="Database pages">
+                <details class="ecosystem-menu">
+                <summary>pages</summary>
+                <nav class="ecosystem-menu-popover" aria-label="Open another page">
+                    
+                    <a href="index.html">⌂ Home</a>
+<a href="Database.html" >🗃 Database</a>
+                    <a href="Week.html" class="current" aria-current="page">This Week</a>
+<a href="Month.html">This Month</a>
+<a href="Aquarium.html">🪼 Aquarium</a>
+                    <a href="Patterns.html">🧭 Archives</a>
+                    <a href="Almanac.html">📖 Almanac</a>
+                    <a href="Longform.html">✎ Longform</a>
+                    <a href="neopets.html">✦ Neopets</a>
+                </nav>
+            </details>
+            </nav>
+
+            <select id="themeSelect" class="theme-select" aria-label="Database theme" title="Choose a Database theme">
+                <optgroup label="Dark themes">
+                    <option value="dark">🌙 Dark Original</option>
+                    <option value="aquarium">🐠 Dark Teal Celestial Aquarium</option>
+                    <option value="observatory">🔭 Midnight Observatory</option>
+                    <option value="nightgarden">🪻 Night Garden</option>
+                    <option value="fieldnotes">📓 Universal Field Notes</option>
+                    <option value="fall2">🍁 Fall 2</option>
+                </optgroup>
+                <optgroup label="Retro themes">
+                    <option value="y2k">🖥️ Y2K Web Portal</option>
+                </optgroup>
+                <optgroup label="Light themes">
+                    <option value="cozy">💿 Cozy 2000s</option>
+                    <option value="green">🌿 Full Green</option>
+                    <option value="fall">🍂 Fall</option>
+                    <option value="study">📜 Study</option>
+                </optgroup>
+            </select>
+
+        </div>
+    </header>
+
+
+<nav class="planner-mobile-jumps"><a href="#plannerRange">Calendar</a><a href="#plannerNotes">Notes ↓</a></nav>
+<main class="planner-layout">
+<section class="planner-calendar" aria-label="This Week">
+<div class="planner-heading"><h2 id="plannerRange"></h2><span id="plannerHint"></span></div>
+<div id="plannerGrid" class="planner-grid"></div>
+</section>
+<aside class="planner-notes panel" aria-label="This Week notes">
+<div class="panel-header"><h2>Notes</h2><span>drag or use arrows to reorder</span></div>
+<div id="plannerNotes" class="planner-note-list"></div>
+<form id="plannerComposer" class="planner-composer">
+<label for="plannerNoteInput">Room to think</label>
+<textarea id="plannerNoteInput" placeholder="Write something to keep in view…" rows="7"></textarea>
+<div class="planner-compose-actions"><label><input id="plannerCheckable" type="checkbox" checked> Checklist item</label><button class="small-button" type="submit">Save note ↑</button></div>
+</form>
+</aside>
+</main><p id="plannerMessage" role="status" aria-live="polite"></p></div>
+</body></html>

@@ -6352,6 +6352,8 @@ if (document.getElementById("neopetsApp")) {
     };
 
     const PAGES = {
+        week: { role: "PLAN", note: "", href: "Week.html", label: "This Week", icon: "◷" },
+        month: { role: "PLAN", note: "", href: "Month.html", label: "This Month", icon: "▦" },
         home: { role: "ORIENT", note: "See what matters, catch what appeared, then choose a room.", href: "index.html", label: "Home", icon: "⌂" },
         database: { role: "FOCUS", note: "See what needs attention and where things currently stand.", href: "Database.html", label: "Database", icon: "🗃" },
         aquarium: { role: "CAPTURE", note: "Catch something before deciding what it needs to become.", href: "Aquarium.html", label: "Aquarium", icon: "🪼" },
@@ -6394,6 +6396,7 @@ if (document.getElementById("neopetsApp")) {
     }
 
     function pageId() {
+        if (document.body.dataset.planner) return document.body.dataset.planner;
         if (document.getElementById("piHomeApp")) return "home";
         if (document.getElementById("aquariumApp")) return "aquarium";
         if (document.getElementById("longformApp")) return "longform";
@@ -7015,6 +7018,10 @@ if (document.getElementById("neopetsApp")) {
             humanArray(key).forEach(item => addDoc(docs, "database", `Calendar · ${date}`, item.text));
         }
 
+        humanArray("pi-planner-week-notes-v1").forEach(item => addDoc(docs, "week", "Notes", item.text));
+        Object.keys(localStorage).filter(key => /^pi-planner-month-\d{4}-\d{2}$/.test(key)).forEach(key => {
+            humanArray(key).forEach(item => addDoc(docs, key.slice(-7) === makeLocalIsoDate().slice(0,7) ? "month" : "archive", `Month notes · ${key.slice(-7)}`, item.text));
+        });
         const customReference = jsonRead("pi-almanac-tiles-v1", {custom: [], hidden: []});
         (customReference.custom || []).filter(tile => !(customReference.hidden || []).includes(tile.id)).forEach(tile => {
             (tile.items || []).forEach(item => addDoc(docs, "almanac", tile.name || "Reference", item.text || ""));

@@ -4,10 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Personal Intranet · Home</title>
-    <link rel="stylesheet" href="Style.css?v=20260929-clarity1">
+    <link rel="stylesheet" href="Style.css?v=20261004-planners1">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-    <script src="CloudSync.js?v=20260929-clarity1" defer></script>
-    <script src="Script.js?v=20260929-clarity1" defer></script>
+    <script src="CloudSync.js?v=20261004-planners1" defer></script>
+    <script src="Script.js?v=20261004-planners1" defer></script>
+    <link rel="stylesheet" href="Planner.css?v=20261004-planners1">
+    <script src="Planner.js?v=20261004-planners1" defer></script>
 </head>
 <body class="pi-home-body" data-default-theme="observatory">
 <div class="pi-home-page" id="piHomeApp">
@@ -27,7 +29,9 @@
                 <nav class="ecosystem-menu-popover" aria-label="Open another page">
                     <a href="index.html" class="current" aria-current="page">⌂ Home</a>
                     <a href="Database.html">🗃 Database</a>
-                    <a href="Aquarium.html">🪼 Aquarium</a>
+                    <a href="Week.html">This Week</a>
+<a href="Month.html">This Month</a>
+<a href="Aquarium.html">🪼 Aquarium</a>
                     <a href="Patterns.html">🧭 Archives</a>
                     <a href="Almanac.html">📖 Almanac</a>
                     <a href="Longform.html">✎ Longform</a>
@@ -44,6 +48,8 @@
             <span>🗃</span><strong>Database</strong>
             <span class="pi-door-count" data-pi-door-count="database" hidden></span>
         </a>
+        <a href="Week.html"><span>◷</span><strong>This Week</strong></a>
+        <a href="Month.html"><span>▦</span><strong>This Month</strong></a>
         <a href="Aquarium.html" data-pi-route-destination="aquarium">
             <span>🪼</span><strong>Aquarium</strong>
             <span class="pi-door-count" data-pi-door-count="aquarium" hidden></span>

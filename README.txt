@@ -1,3 +1,58 @@
+OCTOBER 4, 2026 — THIS WEEK + THIS MONTH
+
+INSTALL
+1. Download your usual JSON backup from your current intranet.
+2. Extract Personal-Intranet-Week-Month.zip.
+3. Upload all files inside it to the ROOT of your existing GitHub Pages repository,
+   replacing the matching files. Keep the exact filenames in this package.
+4. Refresh after GitHub Pages publishes. Open This Week / This Month in pages,
+   or use the new Home links. Shared files have a fresh cache version.
+
+NEW FILES
+Week.html, Month.html, Planner.js, Planner.css.
+The ZIP also contains all existing pages and shared files so installation is one pass.
+No Supabase setup changes. CloudSync.js is unchanged.
+
+THIS WEEK
+Eight equal-sized day cards: TODAY and the next seven days (a rolling window).
+Day items share pi-calendar-day-YYYY-MM-DD with Database and This Month.
+Right-side notes: large bottom composer; newest saved notes at the top.
+Optional checklist items, editing, check/uncheck, drag reorder, and move-up/down.
+Weekly notes persist as the eight-day window advances, until you remove them.
+
+THIS MONTH
+Current calendar month, with Monday-first calendar columns.
+Today/future days share editable entries with Database. Past days show retained
+Day Archive items read-only. Click a date for a larger day panel.
+Month-specific notes and unfinished note drafts are preserved.
+At month change, the current month updates while a dashboard is open (within
+30 seconds, or when the tab becomes visible). When closed, updates happen on
+next opening. Historical months with saved data appear in Archives > Month Archive.
+Completed months include their days, notes, and unfinished month-note draft.
+An archived month can be opened as a read-only calendar.
+
+MOBILE
+Week: two columns of equal day cards. Notes below; Calendar/Notes jump links.
+Month: compact seven-column calendar; tap a date to open a roomy day editor.
+Notes below; touch controls support reordering without dragging.
+The composer retains multiline writing; use the visible save buttons.
+
+SHARED FEATURES
+All existing themes, tools menu, backup, universal capture, and Find.
+Week/month notes are included in Find and in the existing pi-* backup/sync rules.
+New data uses pi-planner-* keys. No new sync protocol or data migration is needed.
+
+VALIDATION
+Browser checks: day saved in Week appears in Database; notes save/reorder;
+8-day range; current-month date count; 390px phone layouts without horizontal
+overflow; desktop and Clarity Dark previews; mobile date editor saves correctly.
+Simulated Oct 31 -> Nov 1: calendar advances; October calendar entry, saved note,
+and unfinished note draft preserved; no duplicate snapshot after reload;
+Archive dialog and archived-calendar link work; historical controls read-only.
+Live authenticated Supabase synchronization was not exercised in the isolated preview.
+
+--- PREVIOUS RELEASE DOCUMENTATION ---
+
 SEPTEMBER 29, 2026 — MOBILE + CLARITY UPDATE
 
 Included changes
