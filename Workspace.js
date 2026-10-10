@@ -60,22 +60,43 @@ function initArchive(){
    });card.append(top,body);dayList.append(card);
   });
   if(!items.length)itemList.append(el('p','pi-muted','Archived thoughts and completed items will appear here.'));
-  items.forEach(record=>{
-   const card=el('article','pi-history-record');const head=el('div','pi-history-head');
-   const name=el('strong','',summary([record.source,record.context].filter(Boolean).join(' · '))||'Archived item');
+  items.forEach((record, itemIndex)=>{
+   // Like Day Archive, Archived Items open on demand. Keep a short preview
+   // for identification so dozens of long entries remain easy to scan.
+   const card=el('article','pi-history-record pi-archived-item');
+   const head=el('div','pi-history-head pi-archived-item-head');
+   const detailsId=`pi-archived-item-details-${itemIndex}`;
+   const toggle=btn('▸','Expand archived item',()=>{
+     const expanded=card.classList.toggle('expanded');
+     toggle.textContent=expanded?'▾':'▸';
+     toggle.title=expanded?'Collapse archived item':'Expand archived item';
+     toggle.setAttribute('aria-label',toggle.title);
+     toggle.setAttribute('aria-expanded',String(expanded));
+   },'pi-mini-icon');
+   toggle.setAttribute('aria-expanded','false');
+   toggle.setAttribute('aria-controls',detailsId);
+   const heading=el('div','pi-archived-item-heading');
+   const source=summary([record.source,record.context].filter(Boolean).join(' · '))||'Archived item';
+   heading.append(el('strong','',source));
+   const preview=String(record.text||'').replace(/\s+/g,' ').trim();
+   if(preview)heading.append(el('span','pi-archived-item-preview',preview));
    const del=btn('×','Delete archived item permanently',()=>{
     if(!confirm('Permanently delete this archived item?'))return;
     save(ARCHIVE_KEY,read(ARCHIVE_KEY,[]).filter(x=>x.id!==record.id));renderArchive();
    },'pi-mini-icon');
-   head.append(name,del);const body=el('div','pi-history-text',record.text||'');
-   const meta=el('small','pi-muted','archived '+dateLabel(record.archivedAt));card.append(head,body,meta);itemList.append(card);
+   head.append(toggle,heading,del);
+   const body=el('div','pi-history-body');body.id=detailsId;
+   body.append(el('div','pi-history-text',record.text||''));
+   const meta=el('small','pi-muted','archived '+dateLabel(record.archivedAt));
+   body.append(meta);
+   card.append(head,body);itemList.append(card);
   });
   const a=$('archiveSummary');if(a)a.textContent=`${days.length} day snapshots · ${items.length} archived items`;
  }
  function renderActivity(){
   const entries=read(ACT_KEY,[]);const list=Array.isArray(entries)?entries:[];
   recentList.replaceChildren();$('piActivityCount').textContent=String(list.length);
-  if(!list.length){recentList.append(el('p','pi-muted','Add or edit an item anywhere in the intranet to start your trail.'));return;}
+  if(!list.length){recentList.append(el('p','pi-muted','New notes from across your intranet will appear here, alongside other item changes.'));return;}
   list.forEach(item=>{
    const a=el('a','pi-activity-entry');a.href=routes[item.page]||'Database.html';
    a.append(el('span','pi-activity-action',item.action||'Updated item'),el('span','pi-activity-text',item.text||''),el('small','pi-muted',`${item.page==='database'?'Home':item.page==='almanac'?'Timeline & Notes':item.page||'Intranet'} · ${when(item.timestamp)}`));recentList.append(a);

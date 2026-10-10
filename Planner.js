@@ -178,12 +178,29 @@
      const readonly=!!historical||date<today();
      const card=el('section','planner-day'+(date===today()?' is-today':'')+(date<today()?' is-past':''));card.dataset.date=date;
      const d=new Date(date+'T12:00:00');const h=el('h3');h.append(el('span','',d.toLocaleDateString(undefined,{weekday:'short'})),el('strong','',String(d.getDate())));if(date===today())h.append(el('span','planner-today','Today'));card.append(h);
-     const list=el('div','planner-day-items');const entries=getDayEntries(date);
-     const shown=kind==='month'?entries.slice(0,3):entries;
-     shown.forEach(({item})=>list.append(row(item,-1,'',true,'preview')));
-     if(kind==='month'&&entries.length>shown.length){card.classList.add('has-extra-items');const extra=el('span','planner-extra-count',`+${entries.length-shown.length} more`);extra.title=`${entries.length-shown.length} additional items`;card.append(extra);}
-     card.append(list);
-     if(kind==='month')card.append(el('span','planner-mobile-count',entries.length?`${entries.length} item${entries.length===1?'':'s'}`:''));
+    const list=el('div','planner-day-items');const entries=getDayEntries(date);
+    // Month tiles are compact previews, not scrolling lists. Two lines always
+    // fit above the reserved footer; the pop-out shows every item in full.
+    const previewLimit=kind==='month'?2:entries.length;
+    const shown=entries.slice(0,previewLimit);
+    shown.forEach(({item})=>list.append(row(item,-1,'',true,'preview')));
+    if(kind==='month' && entries.length){
+      const count=el('span','planner-month-total',`${entries.length} item${entries.length===1?'':'s'}`);
+      count.title=`${entries.length} items on this date`;
+      h.append(count);
+    }
+    card.append(list);
+    if(kind==='month'){
+      const remaining=entries.length-shown.length;
+      const footer=el('div','planner-month-footer');
+      if(remaining>0){
+        const extra=el('span','planner-month-extra',`+${remaining} more`);
+        extra.title=`${remaining} additional items. ${entries.length} total. Click to open this day.`;
+        footer.append(extra);
+      }
+      card.append(footer);
+      card.append(el('span','planner-mobile-count',entries.length?`${entries.length} item${entries.length===1?'':'s'}`:''));
+    }
      if(!readonly){const plus=button('+','Add item for '+date,()=>openDay(date));plus.classList.add('planner-add-toggle');card.append(plus);}
      const activate=e=>{if(e.target.closest('button,input,textarea,a'))return;openDay(date);};
      card.addEventListener('click',activate);card.setAttribute('tabindex','0');card.setAttribute('role','button');card.setAttribute('aria-label','Open '+date+' day details');card.addEventListener('keydown',e=>{if(e.target===card&&(e.key==='Enter'||e.key===' ')){e.preventDefault();openDay(date);}});

@@ -124,3 +124,15 @@
  }
  html.patterns-page-html .pi-archive-clean .patterns-header-actions > .pi-tools-menu{order:3!important;}
 }
+
+/* Archived Items: concise summaries until opened, like the Day Archive cards. */
+.pi-archived-item-head{align-items:flex-start!important}
+.pi-archived-item-head .pi-mini-icon{margin-top:1px}
+.pi-archived-item-heading{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.pi-archived-item-heading strong{font-size:12px;line-height:1.3;overflow-wrap:anywhere}
+.pi-archived-item-preview{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere;line-height:1.35;color:var(--muted);font-size:11px;white-space:normal}
+.pi-archived-item.expanded .pi-archived-item-preview{display:none}
+.pi-archived-item .pi-history-body{display:none;overflow-wrap:anywhere;white-space:pre-wrap}
+.pi-archived-item.expanded .pi-history-body{display:block}
+.pi-archived-item .pi-history-body .pi-muted{display:block;margin-top:9px}
+.pi-archived-item .pi-history-text{white-space:pre-wrap;overflow-wrap:anywhere}

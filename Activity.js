@@ -4,6 +4,16 @@
 (() => {
   'use strict';
   const LOG = 'pi-activity-v1';
+  const NOTE_COLLECTIONS = new Set([
+    'pi-database-notes-v1', 'pi-aquarium-state-v3',
+    'pi-longform-state-v1', 'pi-archive-workspace-v1',
+    'pi-planner-week-notes-v1', 'pi-reflections-notes-v1',
+    'pi-almanac-state-v1', 'pi-strain-journal-v1'
+  ]);
+  const isNoteCollection = key => NOTE_COLLECTIONS.has(key) || /^pi-planner-month-\d{4}-\d{2}$/.test(key);
+  const actionFor = (key, editing) => isNoteCollection(key)
+    ? (editing ? 'edited a note' : 'added a note')
+    : (editing ? 'edited an item' : 'added an item');
   const nativeSet = Storage.prototype.setItem;
   let interactionAt = -Infinity;
   let writingLog = false;
@@ -80,7 +90,7 @@
     if (!old && !now) return [];
     const prior = new Map(flatten(old,area).map(x=>[x.id,x]));
     return flatten(now,area).filter(x=>!prior.has(x.id) || prior.get(x.id).content!==x.content)
-      .map(x=>({id:x.id, action:prior.has(x.id)?'edited an item':'added an item',text:x.label,area}));
+      .map(x=>({id:x.id, action:actionFor(key,prior.has(x.id)),text:x.label,area}));
   }
   function append(key, change) {
     const page=pageForKey(key);
