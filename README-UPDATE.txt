@@ -1,7 +1,17 @@
-Personal Intranet calendar refinement, October 9 2026
+PERSONAL INTRANET: CALENDAR REPAIR | October 2026
 
-Back up your live intranet JSON before uploading. Upload the contents of this ZIP to the ROOT of your existing GitHub Pages repository, replacing matching files. No Supabase configuration changes.
+Before installing: download your current Personal Intranet JSON backup.
+Extract this ZIP and upload the files to the ROOT of your existing GitHub Pages repository, replacing matching files. No Supabase changes are needed.
 
-Includes balanced equal-height week cards, 6 visible week items / 4 month items with overflow, checked items sorted last without changing storage order, minimal + quick entry, compact three-dot actions, new navigation icons, and outside-click/Escape closing of header menus. Shared canonical calendar keys are unchanged.
+FIXED
+- Both This Week and This Month: click/tap any day tile to open an independent day editor.
+- Each editable day has a small + on the desktop tile; the popup always contains a writing field and a + save button.
+- Item checkboxes and three-dot Edit / Up / Down / Delete controls are in the popup only. Tiles show plain entries, with completed entries struck through.
+- Month tiles show up to three entries and a +N more indicator. Day content does not scroll independently in month tiles.
+- Unchecked items display before checked items, including in the Notes panel, without modifying their saved order.
+- Week remains an eight-day, four-column/two-row equal-height desktop grid.
+- Distinct Week and Month navigation icons and click-away/Escape closing for top menus are retained.
+- Existing calendar storage keys, archive behavior, themes and cloud-sync integration remain unchanged.
 
-Note: browser-based authenticated Supabase synchronization was not tested in this offline build. Verify cross-device sync after deployment.
+VERIFICATION
+JavaScript syntax checked. Automated browser interaction testing could not be run in this environment. Please verify popup add/edit/check and cloud sync on your deployed site before relying on this build.

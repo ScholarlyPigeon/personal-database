@@ -105,3 +105,46 @@ body.planner-body.pi-shell-active{height:auto!important;overflow:auto!important}
 .planner-day-dialog .planner-item-actions {z-index:35}
 @media(hover:none){.planner-more{opacity:1}}
 @media(max-width:700px){.planner-grid:not(.is-month){grid-template-rows:repeat(4,minmax(250px,1fr))}.planner-grid.is-month .planner-add-toggle{display:none}.planner-day-dialog .planner-day-form{display:flex}.planner-day-dialog .planner-item-actions{position:static;max-width:100%}}
+
+/* Calendar repair: cards are previews; one independent full editor per day. */
+.planner-day {cursor:pointer}
+.planner-day-items {min-height:0;overflow:auto;flex:1}
+.planner-preview-item {display:block;padding:5px 0;min-width:0}
+.planner-preview-item .planner-item-text {display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.planner-grid.is-month .planner-day-items {overflow:hidden;min-height:0}
+.planner-grid.is-month .planner-preview-item {padding:3px 0;border-bottom:0}
+.planner-grid.is-month .planner-preview-item .planner-item-text {font-size:11px}
+.planner-overflow {display:block;font-size:11px;color:var(--teal-soft);padding:4px 0}
+.planner-add-toggle {display:grid;place-items:center;flex:none;margin-top:6px;margin-left:auto;font-size:23px;opacity:.85}
+.planner-add-toggle:hover {opacity:1;color:var(--text)}
+.planner-grid.is-month .planner-add-toggle {min-height:23px;height:23px;margin-top:0;font-size:19px}
+.planner-day-dialog {padding:20px;width:min(690px,95vw);max-height:min(85dvh,780px);overflow:visible;display:none;flex-direction:column;gap:12px}
+.planner-day-dialog[open] {display:flex}
+.planner-dialog-header {display:flex;align-items:center;justify-content:space-between;gap:10px}
+.planner-dialog-header h2 {margin:0;font-size:21px}
+.planner-dialog-close {font-size:22px;min-width:38px;min-height:38px}
+.planner-dialog-list {min-height:70px;overflow-y:auto;overflow-x:visible;padding:4px 8px 12px 2px;flex:1}
+.planner-dialog-list .planner-item {min-height:39px;overflow:visible}
+.planner-dialog-list .planner-more {opacity:1;flex:none;min-width:35px;min-height:35px}
+.planner-dialog-list .planner-item-actions {top:calc(100% - 3px);right:2px;z-index:60;gap:6px}
+.planner-dialog-list .planner-item.actions-open {z-index:70}
+.planner-dialog-form {display:flex!important;align-items:end;gap:10px;flex:none;border-top:1px solid var(--border);padding-top:14px;margin-top:0}
+.planner-dialog-form textarea {min-height:75px;max-height:160px;resize:vertical;font-size:16px;flex:1}
+.planner-dialog-form .planner-submit-add {font-size:23px;min-width:44px;min-height:44px;color:var(--teal-soft)}
+.planner-dialog-readonly {font-size:12px;color:var(--muted);margin:0}
+@media(max-width:700px){
+ .planner-grid.is-month .planner-day {cursor:pointer}
+ .planner-grid.is-month .planner-day h3 {display:flex;margin:0 0 4px;justify-content:center}
+ .planner-grid.is-month .planner-day h3>span:first-child {display:none}
+ .planner-grid.is-month .planner-day h3 strong {font-size:16px}
+ .planner-grid.is-month .planner-day-items {display:none}
+ .planner-grid.is-month .planner-add-toggle {display:none}
+ .planner-grid.is-month .planner-mobile-count {display:block}
+ .planner-grid:not(.is-month) .planner-day-items {overflow:auto}
+ .planner-day-dialog {max-height:88dvh;padding:14px}
+ .planner-dialog-list .planner-item-actions {position:absolute;right:0;top:100%;max-width:min(260px,80vw)}
+}
+/* Keep item actions visible inside the independently scrolling day editor. */
+.planner-dialog-list .planner-item.actions-open {flex-wrap:wrap}
+.planner-dialog-list .planner-item.actions-open .planner-item-actions {position:static;width:100%;max-width:100%;flex-basis:100%;box-shadow:none}
+.planner-dialog-list .planner-item.actions-open .planner-item-text {min-width:0}

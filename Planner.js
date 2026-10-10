@@ -72,46 +72,84 @@
  const noteKey=()=>kind==='week'?'pi-planner-week-notes-v1':'pi-planner-month-'+(historical||currentMonth);
  const draftKey=()=>noteKey()+'-draft';
  let drag=null;
+ const drafts=new Map();
  const dayDialog=el('dialog','planner-day-dialog');
  let selectedDate=null;
- dayDialog.addEventListener('close',()=>safe(renderDays));
  document.body.append(dayDialog);
- function fillDayDialog(){
-   if(!selectedDate)return;
-   const card=document.querySelector(`.planner-day[data-date="${selectedDate}"]`);
-   if(!card)return;
-   dayDialog.replaceChildren(button('Close','Close day',()=>dayDialog.close()),el('h2','',new Date(selectedDate+'T12:00:00').toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'})));
-   for(const child of [...card.children])if(child.matches('.planner-day-items,.planner-day-form'))dayDialog.append(child);
+ const sortedEntries = entries => entries.slice().sort((a,b)=>Number(!!a.item.done)-Number(!!b.item.done));
+ function getDayEntries(date){
+   if(historical)return (snapshot?.days.find(d=>d.date===date)?.items||[]).map(item=>({item,index:-1,readonly:true}));
+   const archived=readArchiveRecords().filter(r=>r.recordType==='day'&&r.originalDate===date).flatMap(r=>r.items||[]).map(item=>({item,index:-1,readonly:true}));
+   const past=date<today();
+   const active=read('pi-calendar-day-'+date).map((item,index)=>({item,index,readonly:past}));
+   return sortedEntries([...archived,...active]);
  }
- function openDay(date){selectedDate=date;fillDayDialog();dayDialog.showModal();}
-
- function updateList(key,index,fn) {const items=read(key);fn(items,index);write(key,items);renderNotes();renderDays();showSaved();}
- function row(item,index,key,readonly=false) {
+ function updateList(key,index,fn){
+   const items=read(key);if(index<0||index>=items.length)return;
+   fn(items,index);write(key,items);renderNotes();renderDays();if(dayDialog.open)fillDayDialog();showSaved();
+ }
+ function closeActionMenus(except=null){document.querySelectorAll('.planner-item.actions-open').forEach(node=>{if(node!==except)node.classList.remove('actions-open');});}
+ document.addEventListener('pointerdown',event=>{if(!event.target.closest('.planner-item-actions,.planner-more'))closeActionMenus();});
+ document.addEventListener('keydown',event=>{if(event.key==='Escape')closeActionMenus();});
+ function row(item,index,key,readonly=false,mode='full'){
    const r=el('div','planner-item'+(item.done?' is-done':''));
+   if(mode==='preview'){
+     r.classList.add('planner-preview-item');
+     r.append(el('span','planner-item-text',item.text));
+     return r;
+   }
    if(item.checkable!==false){const c=el('input');c.type='checkbox';c.checked=!!item.done;c.disabled=readonly;c.setAttribute('aria-label','Complete: '+item.text);c.onchange=()=>safe(()=>updateList(key,index,a=>{a[index].done=c.checked;}));r.append(c);}
-   const text=el('div','planner-item-text',item.text);r.append(text);
+   const content=el('div','planner-item-text',item.text);r.append(content);
    if(readonly)return r;
+   const more=button('⋮','Item options',()=>{const was=r.classList.contains('actions-open');closeActionMenus();r.classList.toggle('actions-open',!was);});more.classList.add('planner-more');more.setAttribute('aria-haspopup','true');r.append(more);
    const actions=el('div','planner-item-actions');
-   actions.append(button('✎','Edit item',()=>{
-     const field=el('textarea','planner-edit');field.value=item.text;text.replaceWith(field);actions.replaceChildren();
-     actions.append(button('Save','Save edit',()=>{if(!field.value.trim())return;updateList(key,index,a=>{a[index].text=field.value.trim();});}),button('Cancel','Cancel edit',()=>{renderNotes();renderDays();}));field.focus();
-   }));
-   for(const [label,delta] of [['↑',-1],['↓',1]])actions.append(button(label,delta<0?'Move item up':'Move item down',()=>updateList(key,index,a=>{const next=index+delta;if(next>=0&&next<a.length)[a[index],a[next]]=[a[next],a[index]];})));
-   actions.append(button('×','Delete item',()=>{if(confirm('Delete this item?'))updateList(key,index,a=>a.splice(index,1));}));
+   const addAction=(label,title,fn)=>{const b=button(label,title,()=>{closeActionMenus();fn();});actions.append(b);};
+   addAction('Edit','Edit item',()=>{
+     const field=el('textarea','planner-edit');field.value=item.text;content.replaceWith(field);more.hidden=true;actions.replaceChildren();r.classList.add('actions-open');
+     actions.append(button('Save','Save edit',()=>{if(!field.value.trim())return;updateList(key,index,a=>{a[index].text=field.value.trim();});}),button('Cancel','Cancel edit',()=>{renderNotes();renderDays();if(dayDialog.open)fillDayDialog();}));field.focus();
+   });
+   for(const [label,delta] of [['↑','-1'],['↓','1']])addAction(label,delta==='-1'?'Move item up':'Move item down',()=>{
+     const step=Number(delta);updateList(key,index,a=>{const group=a.map((v,i)=>({v,i})).filter(x=>!!x.v.done===!!a[index].done);const at=group.findIndex(x=>x.i===index),next=group[at+step];if(next)[a[index],a[next.i]]=[a[next.i],a[index]];});
+   });
+   addAction('Delete','Delete item',()=>{if(confirm('Delete this item?'))updateList(key,index,a=>a.splice(index,1));});
    r.append(actions);r.draggable=true;
-   r.ondragstart=e=>{if(e.target.closest('textarea,input,button')){e.preventDefault();return;}drag={key,index};e.dataTransfer.setData('text/plain','planner-item');};
+   r.ondragstart=e=>{if(e.target.closest('textarea,input,button')){e.preventDefault();return;}drag={key,index,done:!!item.done};e.dataTransfer.setData('text/plain','planner-item');};
    r.ondragend=()=>{drag=null;};
-   r.ondragover=e=>{if(drag?.key===key)e.preventDefault();};
-   r.ondrop=e=>{if(drag?.key!==key)return;e.preventDefault();const from=drag.index;drag=null;safe(()=>updateList(key,index,a=>{const [v]=a.splice(from,1);a.splice(index,0,v);}));};
+   r.ondragover=e=>{if(drag?.key===key&&drag.done===!!item.done)e.preventDefault();};
+   r.ondrop=e=>{if(drag?.key!==key||drag.done!==!!item.done)return;e.preventDefault();const from=drag.index;drag=null;safe(()=>updateList(key,index,a=>{const [v]=a.splice(from,1);a.splice(index,0,v);}));};
    return r;
  }
  function renderNotes(){
    const container=$('plannerNotes');container.replaceChildren();
    const items=historical?(snapshot?.notes||[]):read(noteKey());
    if(!items.length)container.append(el('p','planner-empty',historical?'No notes saved.':'A clear space for what matters.'));
-   items.forEach((item,i)=>container.append(row(item,i,noteKey(),!!historical)));
+   sortedEntries(items.map((item,index)=>({item,index}))).forEach(({item,index})=>container.append(row(item,index,noteKey(),!!historical)));
  }
- const drafts=new Map();
+ function makeDayForm(date){
+   const form=el('form','planner-day-form is-open');const input=el('textarea','planner-day-input');input.rows=2;input.dataset.date=date;input.setAttribute('aria-label','Add item for '+date);input.placeholder='Write an item…';input.value=drafts.get(date)??localStorage.getItem('pi-planner-day-draft-'+date)??'';
+   input.oninput=()=>safe(()=>{drafts.set(date,input.value);localStorage.setItem('pi-planner-day-draft-'+date,input.value);});
+   const add=el('button','planner-action planner-submit-add','+');add.type='submit';add.title='Save item';add.setAttribute('aria-label','Save item for '+date);form.append(input,add);
+   form.onsubmit=e=>{e.preventDefault();safe(()=>{if(!input.value.trim())return;const key='pi-calendar-day-'+date,a=read(key);a.push({id:archiveId('task'),text:input.value.trim(),done:false});write(key,a);input.value='';drafts.delete(date);localStorage.removeItem('pi-planner-day-draft-'+date);renderDays();if(dayDialog.open)fillDayDialog();showSaved();});};
+   return form;
+ }
+ function fillDayDialog(){
+   if(!selectedDate)return;
+   const date=selectedDate, readonly=!!historical||date<today();
+   const title=new Date(date+'T12:00:00').toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'});
+   const close=button('×','Close day',()=>dayDialog.close());close.classList.add('planner-dialog-close');
+   const header=el('div','planner-dialog-header');header.append(el('h2','',title),close);
+   const list=el('div','planner-dialog-list');const entries=getDayEntries(date);
+   if(!entries.length)list.append(el('p','planner-empty','Nothing planned for this day yet.'));
+   entries.forEach(({item,index,readonly:entryReadonly})=>list.append(row(item,index,'pi-calendar-day-'+date,readonly||entryReadonly)));
+   dayDialog.replaceChildren(header,list);
+   if(!readonly){const form=makeDayForm(date);form.classList.add('planner-dialog-form');dayDialog.append(form);}
+   else dayDialog.append(el('p','planner-dialog-readonly','Past days and archived entries are read only.'));
+ }
+ function openDay(date){
+   document.querySelectorAll('.planner-day-input').forEach(n=>drafts.set(n.dataset.date,n.value));
+   selectedDate=date;fillDayDialog();if(!dayDialog.open)dayDialog.showModal();
+ }
+ dayDialog.addEventListener('click',e=>{if(e.target===dayDialog)dayDialog.close();});
  function renderDays(){
    document.querySelectorAll('.planner-day-input').forEach(n=>drafts.set(n.dataset.date,n.value));
    const grid=$('plannerGrid');grid.replaceChildren();grid.classList.toggle('is-month',kind==='month');
@@ -121,7 +159,7 @@
      const fmt={month:'short',day:'numeric'};
      $('plannerRange').textContent=new Date(dates[0]+'T12:00:00').toLocaleDateString(undefined,fmt)+' – '+new Date(dates[7]+'T12:00:00').toLocaleDateString(undefined,fmt);
      $('plannerHint').textContent='Today + 7 days';
-   } else {
+   }else{
      dates=datesOfMonth(historical||currentMonth);$('plannerRange').textContent=labelMonth(historical||currentMonth);
      $('plannerHint').textContent=historical?'Archived month · read only':'Shared with Database';
      if(historical){const a=el('a','small-button','Current month');a.href='Month.html';$('plannerHint').append(' · ',a);}
@@ -130,28 +168,21 @@
      for(let i=0;i<offset;i++){const empty=el('div','planner-blank');empty.setAttribute('aria-hidden','true');grid.append(empty);}
    }
    dates.forEach(date=>{
-     const past=date<today(), readonly=!!historical||past;
-     const card=el('section','planner-day'+(date===today()?' is-today':'')+(past?' is-past':''));card.dataset.date=date;
+     const readonly=!!historical||date<today();
+     const card=el('section','planner-day'+(date===today()?' is-today':'')+(date<today()?' is-past':''));card.dataset.date=date;
      const d=new Date(date+'T12:00:00');const h=el('h3');h.append(el('span','',d.toLocaleDateString(undefined,{weekday:'short'})),el('strong','',String(d.getDate())));if(date===today())h.append(el('span','planner-today','Today'));card.append(h);
-     if(kind==='month'){const dateButton=button(String(d.getDate()),'View '+date,()=>openDay(date));dateButton.classList.add('planner-date-button');h.querySelector('strong').replaceWith(dateButton);}
-     if(kind==='month'){const open=button(String(d.getDate()),'Open '+date,()=>openDay(date));open.classList.add('planner-mobile-day');card.append(open);}
-     const list=el('div','planner-day-items');
-     const items=historical?(snapshot?.days.find(d=>d.date===date)?.items||[]):dayItems(date);
-     // Archived fragments remain read-only; active records retain their original indices.
-     const archivedCount=historical?items.length:items.length-read('pi-calendar-day-'+date).length;
-     items.forEach((item,i)=>list.append(row(item,i-archivedCount,'pi-calendar-day-'+date,readonly||i<archivedCount)));
+     const list=el('div','planner-day-items');const entries=getDayEntries(date);
+     const shown=kind==='month'?entries.slice(0,3):entries;
+     shown.forEach(({item})=>list.append(row(item,-1,'',true,'preview')));
+     if(kind==='month'&&entries.length>shown.length)list.append(el('span','planner-overflow',`+${entries.length-shown.length} more`));
      card.append(list);
-     if(kind==='month')card.append(el('span','planner-mobile-count',items.length?`${items.length} item${items.length===1?'':'s'}`:''));
-     if(!readonly){
-       const form=el('form','planner-day-form'),input=el('textarea','planner-day-input');input.rows=1;input.dataset.date=date;input.setAttribute('aria-label','Add item for '+date);input.placeholder='Add…';input.value=drafts.get(date)??localStorage.getItem('pi-planner-day-draft-'+date)??'';
-       input.oninput=()=>safe(()=>{drafts.set(date,input.value);localStorage.setItem('pi-planner-day-draft-'+date,input.value);});
-       const add=el('button','planner-action','+');add.type='submit';add.setAttribute('aria-label','Save item for '+date);form.append(input,add);
-       form.onsubmit=e=>{e.preventDefault();safe(()=>{if(!input.value.trim())return;const key='pi-calendar-day-'+date,a=read(key);a.push({id:archiveId('task'),text:input.value.trim(),done:false});write(key,a);input.value='';drafts.delete(date);localStorage.removeItem('pi-planner-day-draft-'+date);renderDays();showSaved();});};card.append(form);
-     }
+     if(kind==='month')card.append(el('span','planner-mobile-count',entries.length?`${entries.length} item${entries.length===1?'':'s'}`:''));
+     if(!readonly){const plus=button('+','Add item for '+date,()=>openDay(date));plus.classList.add('planner-add-toggle');card.append(plus);}
+     const activate=e=>{if(e.target.closest('button,input,textarea,a'))return;openDay(date);};
+     card.addEventListener('click',activate);card.setAttribute('tabindex','0');card.setAttribute('role','button');card.setAttribute('aria-label','Open '+date+' day details');card.addEventListener('keydown',e=>{if(e.target===card&&(e.key==='Enter'||e.key===' ')){e.preventDefault();openDay(date);}});
      grid.append(card);
    });
    if(kind==='month'){while((grid.children.length-7)%7)grid.append(el('div','planner-blank'));grid.style.setProperty('--month-weeks',(grid.children.length-7)/7);}
-   if(dayDialog.open)fillDayDialog();
  }
  function restoreDraft(){ $('plannerNoteInput').value=historical?(snapshot?.draft||''):localStorage.getItem(draftKey())||''; }
  $('plannerComposer').hidden=!!historical;
