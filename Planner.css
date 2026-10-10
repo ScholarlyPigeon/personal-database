@@ -81,3 +81,27 @@ body.planner-body.pi-shell-active{height:auto!important;overflow:auto!important}
 .planner-date-button{font-size:19px;color:var(--text);background:transparent;border:0;padding:0;text-align:left}.planner-date-button:hover{color:var(--teal-soft)}
 
 @media(max-width:700px){.planner-grid:not(.is-month){grid-template-rows:repeat(4,minmax(220px,1fr))}}
+
+/* Balanced cards and quiet controls, October refinement */
+.planner-grid:not(.is-month) {grid-template-rows:repeat(2,minmax(285px,1fr))}
+.planner-day {position:relative}
+.planner-item {flex-wrap:nowrap;align-items:center;position:relative;padding:5px 0;gap:6px}
+.planner-item>input {margin-top:0;flex-shrink:0}
+.planner-item-text {font-size:12px;line-height:1.4}
+.planner-more {background:transparent;border:0;color:var(--muted);cursor:pointer;min-width:25px;min-height:27px;opacity:0;font-size:18px}
+.planner-item:hover .planner-more,.planner-item:focus-within .planner-more,.planner-item.actions-open .planner-more {opacity:1}
+.planner-item-actions {display:none;position:absolute;right:0;top:100%;width:auto;z-index:25;background:var(--panel);border:1px solid var(--border);border-radius:9px;padding:5px;box-shadow:var(--shadow);max-width:min(270px,90vw);flex-wrap:wrap}
+.planner-item.actions-open {z-index:30}
+.planner-item.actions-open .planner-item-actions {display:flex}
+.planner-overflow-row {display:none}
+.planner-overflow {border:0;background:transparent;color:var(--teal-soft);text-align:left;font-size:12px;cursor:pointer;padding:5px 0}
+.planner-add-toggle {align-self:flex-end;margin-top:auto;border:0;background:transparent;color:var(--teal-soft);font-size:23px;line-height:1;cursor:pointer;min-width:32px;min-height:32px}
+.planner-day-form {display:none;margin-top:5px}
+.planner-day-form.is-open {display:flex}
+.planner-grid.is-month .planner-day-items {overflow:visible}
+.planner-day-dialog {width:min(680px,95vw)}
+.planner-day-dialog .planner-overflow-row {display:flex}
+.planner-day-dialog .planner-day-items {min-height:0}
+.planner-day-dialog .planner-item-actions {z-index:35}
+@media(hover:none){.planner-more{opacity:1}}
+@media(max-width:700px){.planner-grid:not(.is-month){grid-template-rows:repeat(4,minmax(250px,1fr))}.planner-grid.is-month .planner-add-toggle{display:none}.planner-day-dialog .planner-day-form{display:flex}.planner-day-dialog .planner-item-actions{position:static;max-width:100%}}

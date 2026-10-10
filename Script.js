@@ -333,6 +333,16 @@ document.querySelectorAll("[data-pi-ui]").forEach(bindPiUiLabel);
    cannot be stranded by a stale cached Script.js file.
    ========================================================= */
 
+/* Close open header menus when focus moves elsewhere. */
+document.addEventListener('pointerdown', event => {
+    document.querySelectorAll('header details[open], .ecosystem-menu[open]').forEach(menu => {
+        if (!menu.contains(event.target)) menu.open = false;
+    });
+});
+document.addEventListener('keydown', event => {
+    if (event.key === 'Escape') document.querySelectorAll('header details[open], .ecosystem-menu[open]').forEach(menu => { menu.open = false; });
+});
+
 /* =========================================================
    SHARED AUTO-GROW TEXT ENTRY HELPER
    Compact textareas start at one line and grow to four visible
