@@ -88,7 +88,14 @@
    const items=read(key);if(index<0||index>=items.length)return;
    fn(items,index);write(key,items);renderNotes();renderDays();if(dayDialog.open)fillDayDialog();showSaved();
  }
- function closeActionMenus(except=null){document.querySelectorAll('.planner-item.actions-open').forEach(node=>{if(node!==except)node.classList.remove('actions-open');});}
+ // Do not dismiss Save / Cancel while an item is being edited. The editor
+ // lives within the row, outside the options popup, and must remain usable
+ // when the user taps the textarea or clicks elsewhere to reposition focus.
+ function closeActionMenus(except=null){
+   document.querySelectorAll('.planner-item.actions-open').forEach(node=>{
+     if(node!==except && !node.classList.contains('is-editing')) node.classList.remove('actions-open');
+   });
+ }
  document.addEventListener('pointerdown',event=>{if(!event.target.closest('.planner-item-actions,.planner-more'))closeActionMenus();});
  document.addEventListener('keydown',event=>{if(event.key==='Escape')closeActionMenus();});
  function row(item,index,key,readonly=false,mode='full'){
@@ -105,7 +112,7 @@
    const actions=el('div','planner-item-actions');
    const addAction=(label,title,fn)=>{const b=button(label,title,()=>{closeActionMenus();fn();});actions.append(b);};
    addAction('Edit','Edit item',()=>{
-     const field=el('textarea','planner-edit');field.value=item.text;content.replaceWith(field);more.hidden=true;actions.replaceChildren();r.classList.add('actions-open');
+     const field=el('textarea','planner-edit');field.value=item.text;content.replaceWith(field);more.hidden=true;actions.replaceChildren();r.classList.add('actions-open','is-editing');
      actions.append(button('Save','Save edit',()=>{if(!field.value.trim())return;updateList(key,index,a=>{a[index].text=field.value.trim();});}),button('Cancel','Cancel edit',()=>{renderNotes();renderDays();if(dayDialog.open)fillDayDialog();}));field.focus();
    });
    for(const [label,delta] of [['↑','-1'],['↓','1']])addAction(label,delta==='-1'?'Move item up':'Move item down',()=>{

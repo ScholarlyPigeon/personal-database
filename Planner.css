@@ -148,3 +148,6 @@ body.planner-body.pi-shell-active{height:auto!important;overflow:auto!important}
 .planner-dialog-list .planner-item.actions-open {flex-wrap:wrap}
 .planner-dialog-list .planner-item.actions-open .planner-item-actions {position:static;width:100%;max-width:100%;flex-basis:100%;box-shadow:none}
 .planner-dialog-list .planner-item.actions-open .planner-item-text {min-width:0}
+
+/* Keep Save and Cancel available throughout an active calendar edit. */
+.planner-item.is-editing .planner-item-actions {display:flex;}
