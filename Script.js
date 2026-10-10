@@ -3404,7 +3404,66 @@ if (document.getElementById("aquariumApp")) {
         showSaved();
     }
 
-    function makeAquariumCategoryShell(category) {
+    /* A focused tile has its own live rendering surface. Moving the board's
+       actual tile into a dialog caused renderAquariumCategories() to replace
+       that tile on the board whenever a note was expanded or added. */
+    let activeAquariumTileFocus = null;
+
+    function refreshFocusedAquariumTile() {
+        const focus = activeAquariumTileFocus;
+        if (!focus) return;
+        const category = aquariumState.categories.find(item => item.id === focus.categoryId);
+        if (!category) {
+            if (focus.dialog.open) focus.dialog.close();
+            return;
+        }
+        const scrollTop = focus.holder.scrollTop;
+        focus.heading.textContent = category.name;
+        focus.holder.replaceChildren(makeAquariumCategoryShell(category, true));
+        focus.holder.scrollTop = scrollTop;
+    }
+
+    function openFocusedAquariumTile(categoryId) {
+        if (activeAquariumTileFocus) {
+            activeAquariumTileFocus.dialog.close();
+        }
+        const category = aquariumState.categories.find(item => item.id === categoryId);
+        if (!category) return;
+        const dialog = document.createElement("dialog");
+        dialog.className = "pi-aq-tile-dialog";
+        dialog.setAttribute("aria-label", "Focused Aquarium tile: " + category.name);
+        const top = document.createElement("div");
+        top.className = "pi-aq-tile-dialog-top";
+        const heading = document.createElement("strong");
+        const close = document.createElement("button");
+        close.type = "button";
+        close.textContent = "×";
+        close.className = "small-button";
+        close.setAttribute("aria-label", "Close focused tile");
+        close.addEventListener("click", () => dialog.close());
+        top.append(heading, close);
+        const holder = document.createElement("div");
+        holder.className = "pi-aq-tile-dialog-content";
+        dialog.append(top, holder);
+        document.body.appendChild(dialog);
+        const focus = { categoryId, dialog, holder, heading };
+        activeAquariumTileFocus = focus;
+        refreshFocusedAquariumTile();
+        dialog.addEventListener("close", () => {
+            if (activeAquariumTileFocus === focus) {
+                activeAquariumTileFocus = null;
+                // Synchronize edits to titles/body text made without a full render.
+                renderAquariumCategories();
+            }
+            dialog.remove();
+        }, { once: true });
+        dialog.addEventListener("click", event => {
+            if (event.target === dialog) dialog.close();
+        });
+        dialog.showModal();
+    }
+
+    function makeAquariumCategoryShell(category, inFocus = false) {
         const shell = document.createElement("section");
         shell.className = "aq-category";
         shell.dataset.categoryId = category.id;
@@ -3507,26 +3566,10 @@ if (document.getElementById("aquariumApp")) {
         focusTile.setAttribute("aria-label", "Focus tile " + category.name);
         focusTile.addEventListener("click", event => {
             event.stopPropagation();
-            const dialog = document.createElement("dialog");
-            dialog.className = "pi-aq-tile-dialog";
-            const top = document.createElement("div");
-            top.className = "pi-aq-tile-dialog-top";
-            const heading = document.createElement("strong"); heading.textContent = category.name;
-            const close = document.createElement("button"); close.type="button";close.textContent="×";close.className="small-button";close.setAttribute("aria-label","Close focused tile");
-            close.onclick = () => dialog.close();
-            top.append(heading,close);
-            const holder = document.createElement("div");holder.className="pi-aq-tile-dialog-content";
-            const parent = shell.parentNode, next = shell.nextSibling;
-            holder.appendChild(shell); dialog.append(top,holder);document.body.appendChild(dialog);
-            dialog.addEventListener("close",()=>{
-                if (next && next.parentNode === parent) parent.insertBefore(shell,next);
-                else if(parent) parent.appendChild(shell);
-                dialog.remove();
-            },{once:true});
-            dialog.addEventListener("click",e=>{if(e.target===dialog)dialog.close();});
-            dialog.showModal();
+            openFocusedAquariumTile(category.id);
         });
-        actions.append(focusTile, collapse, add, remove);
+        if (!inFocus) actions.appendChild(focusTile);
+        actions.append(collapse, add, remove);
         head.append(handle, name, actions);
 
         const zone = document.createElement("div");
@@ -3688,6 +3731,8 @@ if (document.getElementById("aquariumApp")) {
             band.append(divider, grid);
             board.appendChild(band);
         });
+        // Any note/collapse/add action must refresh the focused tile too.
+        refreshFocusedAquariumTile();
     }
 
     function renderAquarium() {
@@ -3696,6 +3741,11 @@ if (document.getElementById("aquariumApp")) {
     }
 
     function addBlankAquariumCard(zone, kind = "thought") {
+        // A new note should appear immediately, even if its tile was collapsed.
+        if (collapsedAquariumCategories.has(zone)) {
+            collapsedAquariumCategories.delete(zone);
+            saveCollapsedAquariumCategories();
+        }
         const id = piUuid();
         aquariumState.cards.push({
             id,
@@ -3711,7 +3761,9 @@ if (document.getElementById("aquariumApp")) {
         saveAquariumState();
         renderAquarium();
         requestAnimationFrame(() => {
-            const field = document.querySelector(`.aq-card[data-card-id="${id}"] .aq-card-title`);
+            const focusHolder = activeAquariumTileFocus?.categoryId === zone
+                ? activeAquariumTileFocus.holder : null;
+            const field = (focusHolder || document).querySelector(`.aq-card[data-card-id="${id}"] .aq-card-title`);
             if (!field) return;
             field.focus();
             const range = document.createRange();

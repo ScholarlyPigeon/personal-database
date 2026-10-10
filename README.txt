@@ -1,25 +1,22 @@
-PERSONAL INTRANET | AQUARIUM CLEAN HEADERS | OCTOBER 10, 2026
+PERSONAL INTRANET | AQUARIUM TILE POP-OUT FIX | OCTOBER 10, 2026
 
-Changed only Aquarium section header markup and styling: removed decorative divider lines, centered header titles across full section bars, kept collapse controls and delete ×. All other page logic and user-data keys unchanged. CloudSync.js copied byte-for-byte. HTML cache versions bumped to load the new CSS and Script.js.
-
-BACKUP: Download current JSON backup before uploading. Upload the ZIP contents to GitHub Pages repository root. Verify expand/collapse and tile interactions in your browser.
-
-PERSONAL INTRANET | PASS ONE REPAIR 3 | OCTOBER 10, 2026
-
-FIXED
-- All pages: visible header is Sync, Pages, Themes, Tools; Database also shows Backup last.
-- Aquarium: rebuilt section divider for its five elements (arrow / line / title / line / small x).
-- Aquarium: restored section collapse/expand by overriding the forced display:grid rule on hidden sections.
-- Preserved original Aquarium tiles, tile focus dialogs, per-thought collapse, Longform movement and previous mobile improvements.
-- CloudSync.js copied unchanged. No data key migrations or deletions.
+FIX
+- Aquarium tile focus view now renders a live, separate copy of the tile rather than moving its DOM element away from the board.
+- Expanding/collapsing existing notes, adding blank notes, checking off notes, and collapsing/expanding the tile refresh the focused view immediately.
+- A blank note added while its parent tile is collapsed automatically opens that tile, so the new note is visible and its title receives focus within the popup.
+- Closing a focused tile refreshes the underlying board, including changes made to editable text.
+- Clean, centered Aquarium section bars remain unchanged.
+- No user-data storage keys are changed or removed, and CloudSync.js and styling are carried forward unchanged.
+- All HTML Script.js references use a new cache version to avoid stale JS after publishing.
 
 INSTALL
-1. Download a JSON backup using Database first.
-2. Upload the files inside this folder to the ROOT of GitHub Pages.
-3. Refresh; try closing/reopening two Aquarium sections and opening one full tile.
+1. Download a current JSON backup via Database before deploying.
+2. Extract this ZIP and upload the files at its root to the ROOT of the GitHub Pages repository, replacing matching filenames.
+3. Refresh your Aquarium browser tab. Open a tile's focus view, expand a note, add a note, then close and confirm the main view matches.
 
 VERIFICATION
-Static markup and selectors inspected; JS syntax checked. No authenticated cloud/browser interaction test performed.
+- JavaScript syntax checked.
+- Local automated Chromium DOM interaction checks passed with mocked localStorage: existing note expand/collapse, whole-tile expand/collapse, add blank note inside popup with focus on its title, and closing/re-synchronizing the main board. This is not a live Supabase/cloud-sync test.
 
-RETIRED FEATURES (CAN BE RESTORED)
-- Aquarium Thought/Ask/Action type selector and filter UI; stored assignments retained.
+FEATURES TEMPORARILY RETIRED
+- Aquarium Thought/Ask/Action type controls remain hidden. Saved types remain intact for possible future restoration.
