@@ -15107,3 +15107,22 @@ header .pi-utility-menu{display:none!important}
 .pi-tools-popover .theme-select{display:block!important;width:100%!important;max-width:100%!important}
 .database-header .header-right>.theme-select{display:block!important;min-width:145px!important}
 @media(max-width:760px){html.aquarium-page .aq-category-grid:not(.aq-direct-section-zone){grid-template-columns:1fr!important}}
+
+/* October 10 repair 3: correct the five-part section bar and collapse visibility. */
+html.aquarium-page .aq-section-divider {
+ display:grid!important;
+ grid-template-columns:16px minmax(16px,1fr) auto minmax(16px,1fr) 18px!important;
+ align-items:center!important;
+ gap:7px!important;
+}
+html.aquarium-page .aq-section-toggle {grid-column:1;display:inline-flex;align-items:center;justify-content:center;width:16px;min-width:16px;min-height:22px;position:relative;z-index:1}
+html.aquarium-page .aq-section-divider .aq-section-line:first-of-type {min-width:0}
+html.aquarium-page .aq-section-label {min-width:0!important;max-width:min(40vw,260px);width:max-content;justify-self:center;white-space:nowrap}
+html.aquarium-page .aq-section-remove {grid-column:5;margin:0!important;justify-self:end;position:relative;z-index:2}
+html.aquarium-page .aq-category-grid[hidden],
+html.aquarium-page .aq-board-section.collapsed > .aq-category-grid {display:none!important}
+html.aquarium-page .aq-board-section.collapsed .aq-section-toggle{transform:none}
+/* Theme selector lives outside Tools on every page; keep the popover for utilities only. */
+header .theme-select {flex:0 1 auto;min-width:110px;max-width:min(185px,28vw)}
+header .pi-tools-popover .theme-select {display:none!important}
+@media(max-width:700px){header .theme-select{min-width:90px;max-width:125px;font-size:12px}html.aquarium-page .aq-section-divider{gap:4px!important;grid-template-columns:16px minmax(8px,1fr) auto minmax(8px,1fr) 18px!important}}

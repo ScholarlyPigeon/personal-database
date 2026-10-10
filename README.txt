@@ -1,12 +1,19 @@
-PERSONAL INTRANET | PASS ONE REPAIR | OCTOBER 10, 2026
+PERSONAL INTRANET | PASS ONE REPAIR 3 | OCTOBER 10, 2026
 
-Restored Aquarium category tiles as named, collapsible containers, with individual cards inside. Removed visible Thought/Ask/Action type selection from the Aquarium (saved type data is preserved). Focus button ⤢ now opens the entire tile while retaining its working controls. Compact section delete ×.
+FIXED
+- All pages: visible header is Sync, Pages, Themes, Tools; Database also shows Backup last.
+- Aquarium: rebuilt section divider for its five elements (arrow / line / title / line / small x).
+- Aquarium: restored section collapse/expand by overriding the forced display:grid rule on hidden sections.
+- Preserved original Aquarium tiles, tile focus dialogs, per-thought collapse, Longform movement and previous mobile improvements.
+- CloudSync.js copied unchanged. No data key migrations or deletions.
 
-Header order: Database = Sync, Pages, Themes, Tools, Backup. Other pages = Sync, Pages, Tools (theme selector and page utilities are in Tools). Removed the duplicate Tools menu injected by shared Script.js.
+INSTALL
+1. Download a JSON backup using Database first.
+2. Upload the files inside this folder to the ROOT of GitHub Pages.
+3. Refresh; try closing/reopening two Aquarium sections and opening one full tile.
 
-Previous Longform moves and Database mobile swipe changes carried forward. CloudSync.js unchanged. No existing pi-* user-data keys deleted.
+VERIFICATION
+Static markup and selectors inspected; JS syntax checked. No authenticated cloud/browser interaction test performed.
 
-IMPORTANT: Take a current JSON backup before deploying. Upload all package files to repository root. JavaScript syntax checked, but live authenticated syncing and browser interaction still require verification.
-
-FEATURES TEMPORARILY RETIRED
-- Aquarium Thought/Ask/Action TYPE selectors and filtering UI. Their saved values remain in pi-aquarium-state-v3 and can be restored in a future pass.
+RETIRED FEATURES (CAN BE RESTORED)
+- Aquarium Thought/Ask/Action type selector and filter UI; stored assignments retained.
