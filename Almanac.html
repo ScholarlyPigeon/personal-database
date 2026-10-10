@@ -1,128 +1,118 @@
 <!DOCTYPE html>
-<html lang="en" class="almanac-page-html">
+
+<html class="almanac-page-html" lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Personal Almanac</title>
-    <link rel="stylesheet" href="Style.css?v=20261009-calendar2">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-    <script src="CloudSync.js?v=20261009-calendar2" defer></script>
-    <script src="Script.js?v=20261009-calendar2" defer></script>
-    <link rel="stylesheet" href="Planner.css?v=20261009-calendar2">
-    <script src="Planner.js?v=20261009-calendar2" defer></script>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Personal Almanac</title>
+<link href="Style.css?v=20261009-calendar2" rel="stylesheet"/>
+<script defer="" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script defer="" src="CloudSync.js?v=20261009-calendar2"></script>
+<script defer="" src="Script.js?v=20261009-calendar2"></script>
+<link href="Planner.css?v=20261009-calendar2" rel="stylesheet"/>
+<script defer="" src="Planner.js?v=20261009-calendar2"></script>
 </head>
 <body data-default-theme="fall2">
 <div class="almanac-page" id="almanacApp">
-    <header class="almanac-header">
-        <div class="brand">
-            <div class="pi-mark" aria-hidden="true">📖</div>
-            <div>
-                <h1 data-pi-ui="almanac-page-title" data-pi-ui-fallback="Personal Almanac">Personal Almanac</h1>
-                
-            </div>
-        </div>
-        <div class="header-right almanac-header-actions">
-            <span id="saveStatus" class="sync-status" aria-live="polite">cloud ready</span>
-            <button id="cloudLoginButton" class="small-button cloud-login-button" type="button">cloud login</button>
-            <details class="ecosystem-menu">
-                <summary>pages</summary>
-                <nav class="ecosystem-menu-popover" aria-label="Open another page">
-                    
-                    <a href="index.html">⌂ Home</a>
+<header class="almanac-header">
+<div class="brand">
+<div aria-hidden="true" class="pi-mark">📖</div>
+<div>
+<h1 data-pi-ui="almanac-page-title" data-pi-ui-fallback="Personal Almanac">Personal Almanac</h1>
+</div>
+</div>
+<div class="header-right almanac-header-actions">
+<span aria-live="polite" class="sync-status" id="saveStatus">cloud ready</span>
+
+<details class="ecosystem-menu">
+<summary>pages</summary>
+<nav aria-label="Open another page" class="ecosystem-menu-popover">
+<a href="index.html">⌂ Home</a>
 <a href="Database.html">🗃 Database</a>
-                    <a href="Week.html">🗓️ This Week</a>
+<a href="Week.html">🗓️ This Week</a>
 <a href="Month.html">📅 This Month</a>
 <a href="Aquarium.html">🪼 Aquarium</a>
-                    <a href="Patterns.html">🧭 Archives</a>
-                    <a href="Almanac.html" class="current" aria-current="page">📖 Almanac</a>
-                    <a href="Longform.html">✎ Longform</a>
-                    <a href="neopets.html">✦ Neopets</a>
-                </nav>
-            </details>
-            <select id="themeSelect" class="theme-select" aria-label="Theme"></select>
-        </div>
-    </header>
-
-    <section class="almanac-intro panel">
-        <strong data-pi-ui="almanac-intro-title" data-pi-ui-fallback="A reference book for the version of life that repeats.">A reference book for the version of life that repeats.</strong>
-        <span data-pi-ui="almanac-intro-subtitle" data-pi-ui-fallback="Favorites, routines, supplies, wants, meals, and the things you learn by actually living with them.">Favorites, routines, supplies, wants, meals, and the things you learn by actually living with them.</span>
-    </section>
-
-    <main class="almanac-grid" id="almanacGrid">
-        <section class="panel almanac-panel meals-panel" data-collapsible-panel="almanac-meals" data-accent="orange">
-            <div class="almanac-panel-head">
-                <div class="panel-title"><span>🍲</span><span class="almanac-section-title" contenteditable="true" data-almanac-title="meals">Meals I Make</span></div>
-                <button id="addAlmanacMeal" class="almanac-add-button" type="button">+ meal</button>
-            </div>
-            <div id="almanacMeals" class="almanac-note-list almanac-meals-list" data-collapse-body></div>
-        </section>
-
-        <section class="panel almanac-panel dailies-panel" data-collapsible-panel="almanac-dailies" data-accent="teal">
-            <div class="almanac-panel-head">
-                <div class="panel-title"><span>✓</span><span class="almanac-section-title" contenteditable="true" data-almanac-title="dailies">Dailies</span></div>
-                <button class="almanac-reset-button" id="resetAlmanacDailies" type="button">reset checks</button>
-            </div>
-            <div class="almanac-checklist-body" data-collapse-body>
-                <div id="almanacDailies" class="almanac-checklist"></div>
-                <div class="almanac-entry-row"><input id="almanacDailiesInput" type="text" placeholder="Add a daily…"><button type="button" data-add-list="dailies">+</button></div>
-            </div>
-        </section>
-
-        <section class="panel almanac-panel rotation-panel" data-collapsible-panel="almanac-rotation" data-accent="plum">
-            <div class="almanac-panel-head">
-                <div class="panel-title"><span>✦</span><span class="almanac-section-title" contenteditable="true" data-almanac-title="rotation">Things I Like</span></div>
-            </div>
-            <div class="almanac-checklist-body" data-collapse-body>
-                <div id="almanacRotation" class="almanac-simple-list"></div>
-                <div class="almanac-entry-row"><input id="almanacRotationInput" type="text" placeholder="Something I keep reaching for…"><button type="button" data-add-list="rotation">+</button></div>
-            </div>
-        </section>
-
-        <section class="panel almanac-panel restock-panel" data-collapsible-panel="almanac-restock" data-accent="green">
-            <div class="almanac-panel-head">
-                <div class="panel-title"><span>↻</span><span class="almanac-section-title" contenteditable="true" data-almanac-title="restock">Restock</span></div>
-                <button class="almanac-reset-button" id="resetAlmanacRestock" type="button">reset checks</button>
-            </div>
-            <div class="almanac-checklist-body" data-collapse-body>
-                <div id="almanacRestock" class="almanac-checklist"></div>
-                <div class="almanac-entry-row"><input id="almanacRestockInput" type="text" placeholder="Something I replace often…"><button type="button" data-add-list="restock">+</button></div>
-            </div>
-        </section>
-
-        <section class="panel almanac-panel wishlist-panel" data-collapsible-panel="almanac-wishlist" data-accent="rose">
-            <div class="almanac-panel-head">
-                <div class="panel-title"><span>✧</span><span class="almanac-section-title" contenteditable="true" data-almanac-title="wishlist">Wish List</span></div>
-            </div>
-            <div class="almanac-checklist-body" data-collapse-body>
-                <div id="almanacWishlist" class="almanac-checklist"></div>
-                <div class="almanac-entry-row"><input id="almanacWishlistInput" type="text" placeholder="Something I want to remember…"><button type="button" data-add-list="wishlist">+</button></div>
-            </div>
-        </section>
-
-        <section class="panel almanac-panel strains-panel" data-collapsible-panel="almanac-strains" data-accent="blue">
-            <div class="almanac-panel-head">
-                <div class="panel-title"><span>🌿</span><span class="almanac-section-title" contenteditable="true" data-almanac-title="strains">Strain Journal</span></div>
-                <button id="addAlmanacStrain" class="almanac-add-button" type="button">+ strain</button>
-            </div>
-            <div class="almanac-strain-body" data-collapse-body>
-                <div id="almanacStrains" class="almanac-strain-list"></div>
-            </div>
-        </section>
-    </main>
+<a href="Patterns.html">🧭 Archives</a>
+<a aria-current="page" class="current" href="Almanac.html">📖 Almanac</a>
+<a href="Longform.html">✎ Longform</a>
+<a href="neopets.html">✦ Neopets</a>
+</nav>
+</details>
+<details class="ecosystem-menu pi-tools-menu"><summary>tools</summary><div class="pi-tools-popover"><button class="small-button cloud-login-button" id="cloudLoginButton" type="button">cloud login</button></div></details><select aria-label="Theme" class="theme-select" id="themeSelect"></select>
 </div>
-
-<div id="almanacMealLinkBackdrop" class="link-editor-backdrop" aria-hidden="true">
-    <div class="link-editor almanac-meal-link-editor" role="dialog" aria-modal="true" aria-labelledby="almanacMealLinkTitle">
-        <h2 id="almanacMealLinkTitle">Meal link</h2>
-        <label for="almanacMealLinkPopupInput">Recipe / reference URL</label>
-        <input id="almanacMealLinkPopupInput" type="url" placeholder="https://...">
-        <div class="link-editor-actions">
-            <button id="cancelAlmanacMealLink" type="button">Cancel</button>
-            <button id="saveAlmanacMealLink" type="button">Save link</button>
-        </div>
-    </div>
+</header>
+<section class="almanac-intro panel">
+<strong data-pi-ui="almanac-intro-title" data-pi-ui-fallback="A reference book for the version of life that repeats.">A reference book for the version of life that repeats.</strong>
+<span data-pi-ui="almanac-intro-subtitle" data-pi-ui-fallback="Favorites, routines, supplies, wants, meals, and the things you learn by actually living with them.">Favorites, routines, supplies, wants, meals, and the things you learn by actually living with them.</span>
+</section>
+<main class="almanac-grid" id="almanacGrid">
+<section class="panel almanac-panel meals-panel" data-accent="orange" data-collapsible-panel="almanac-meals">
+<div class="almanac-panel-head">
+<div class="panel-title"><span>🍲</span><span class="almanac-section-title" contenteditable="true" data-almanac-title="meals">Meals I Make</span></div>
+<button class="almanac-add-button" id="addAlmanacMeal" type="button">+ meal</button>
 </div>
-
+<div class="almanac-note-list almanac-meals-list" data-collapse-body="" id="almanacMeals"></div>
+</section>
+<section class="panel almanac-panel dailies-panel" data-accent="teal" data-collapsible-panel="almanac-dailies">
+<div class="almanac-panel-head">
+<div class="panel-title"><span>✓</span><span class="almanac-section-title" contenteditable="true" data-almanac-title="dailies">Dailies</span></div>
+<button class="almanac-reset-button" id="resetAlmanacDailies" type="button">reset checks</button>
+</div>
+<div class="almanac-checklist-body" data-collapse-body="">
+<div class="almanac-checklist" id="almanacDailies"></div>
+<div class="almanac-entry-row"><input id="almanacDailiesInput" placeholder="Add a daily…" type="text"/><button data-add-list="dailies" type="button">+</button></div>
+</div>
+</section>
+<section class="panel almanac-panel rotation-panel" data-accent="plum" data-collapsible-panel="almanac-rotation">
+<div class="almanac-panel-head">
+<div class="panel-title"><span>✦</span><span class="almanac-section-title" contenteditable="true" data-almanac-title="rotation">Things I Like</span></div>
+</div>
+<div class="almanac-checklist-body" data-collapse-body="">
+<div class="almanac-simple-list" id="almanacRotation"></div>
+<div class="almanac-entry-row"><input id="almanacRotationInput" placeholder="Something I keep reaching for…" type="text"/><button data-add-list="rotation" type="button">+</button></div>
+</div>
+</section>
+<section class="panel almanac-panel restock-panel" data-accent="green" data-collapsible-panel="almanac-restock">
+<div class="almanac-panel-head">
+<div class="panel-title"><span>↻</span><span class="almanac-section-title" contenteditable="true" data-almanac-title="restock">Restock</span></div>
+<button class="almanac-reset-button" id="resetAlmanacRestock" type="button">reset checks</button>
+</div>
+<div class="almanac-checklist-body" data-collapse-body="">
+<div class="almanac-checklist" id="almanacRestock"></div>
+<div class="almanac-entry-row"><input id="almanacRestockInput" placeholder="Something I replace often…" type="text"/><button data-add-list="restock" type="button">+</button></div>
+</div>
+</section>
+<section class="panel almanac-panel wishlist-panel" data-accent="rose" data-collapsible-panel="almanac-wishlist">
+<div class="almanac-panel-head">
+<div class="panel-title"><span>✧</span><span class="almanac-section-title" contenteditable="true" data-almanac-title="wishlist">Wish List</span></div>
+</div>
+<div class="almanac-checklist-body" data-collapse-body="">
+<div class="almanac-checklist" id="almanacWishlist"></div>
+<div class="almanac-entry-row"><input id="almanacWishlistInput" placeholder="Something I want to remember…" type="text"/><button data-add-list="wishlist" type="button">+</button></div>
+</div>
+</section>
+<section class="panel almanac-panel strains-panel" data-accent="blue" data-collapsible-panel="almanac-strains">
+<div class="almanac-panel-head">
+<div class="panel-title"><span>🌿</span><span class="almanac-section-title" contenteditable="true" data-almanac-title="strains">Strain Journal</span></div>
+<button class="almanac-add-button" id="addAlmanacStrain" type="button">+ strain</button>
+</div>
+<div class="almanac-strain-body" data-collapse-body="">
+<div class="almanac-strain-list" id="almanacStrains"></div>
+</div>
+</section>
+</main>
+</div>
+<div aria-hidden="true" class="link-editor-backdrop" id="almanacMealLinkBackdrop">
+<div aria-labelledby="almanacMealLinkTitle" aria-modal="true" class="link-editor almanac-meal-link-editor" role="dialog">
+<h2 id="almanacMealLinkTitle">Meal link</h2>
+<label for="almanacMealLinkPopupInput">Recipe / reference URL</label>
+<input id="almanacMealLinkPopupInput" placeholder="https://..." type="url"/>
+<div class="link-editor-actions">
+<button id="cancelAlmanacMealLink" type="button">Cancel</button>
+<button id="saveAlmanacMealLink" type="button">Save link</button>
+</div>
+</div>
+</div>
 <script>
 document.addEventListener("DOMContentLoaded", () => {
     const STATE_KEY = "pi-almanac-state-v1";

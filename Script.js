@@ -3225,7 +3225,42 @@ if (document.getElementById("aquariumApp")) {
         meta.append(kindSelect, created);
         const actions = document.createElement("div");
         actions.className = "aq-card-actions";
-        actions.append(selector, archive, remove, collapse);
+        const focus = document.createElement("button");
+        focus.type = "button";
+        focus.className = "aq-card-focus";
+        focus.textContent = "⤢";
+        focus.title = "Open a larger focused editor";
+        focus.setAttribute("aria-label", "Expand thought");
+        focus.addEventListener("click", event => {
+            event.stopPropagation();
+            const dialog = document.createElement("dialog");
+            dialog.className = "pi-aq-focus-dialog";
+            const shell = document.createElement("div");
+            shell.className = "pi-aq-focus-shell";
+            const top = document.createElement("div");
+            top.className = "pi-aq-focus-top";
+            const heading = document.createElement("strong"); heading.textContent = "Focused thought";
+            const close = document.createElement("button"); close.type = "button"; close.className = "small-button"; close.textContent = "×"; close.setAttribute("aria-label", "Close focused thought");
+            close.onclick = () => dialog.close();
+            top.append(heading, close);
+            const titleField = document.createElement("input"); titleField.className = "pi-aq-focus-title"; titleField.value = card.title || ""; titleField.placeholder = "Title";
+            const textField = document.createElement("div"); textField.className = "pi-aq-focus-editor"; textField.contentEditable = "true"; textField.innerHTML = card.html || ""; textField.dataset.placeholder = "Write here…";
+            const save = document.createElement("button"); save.type = "button"; save.className = "small-button"; save.textContent = "Save and close";
+            const persist = () => {
+                card.title = cleanAquariumTitle(titleField.value) || "Untitled note";
+                card.html = textField.innerHTML;
+                card.text = aquariumPlainTextFromHtml(card.html);
+                saveAquariumState();
+            };
+            titleField.addEventListener("input", persist);
+            textField.addEventListener("input", persist);
+            save.onclick = () => { persist(); dialog.close(); };
+            shell.append(top, titleField, textField, save); dialog.append(shell); document.body.append(dialog);
+            dialog.addEventListener("close", () => { persist(); dialog.remove(); renderAquarium(); }, {once:true});
+            dialog.addEventListener("click", e => {if(e.target === dialog) dialog.close();});
+            dialog.showModal(); titleField.focus();
+        });
+        actions.append(selector, focus, archive, remove, collapse);
         header.append(drag, title, actions);
 
         const body = document.createElement("div");
@@ -3585,8 +3620,9 @@ if (document.getElementById("aquariumApp")) {
             divider.append(toggle, lineLeft, label, lineRight);
             const removeSection = document.createElement("button");
             removeSection.type = "button";
-            removeSection.className = "small-button";
-            removeSection.textContent = "remove";
+            removeSection.className = "aq-section-remove";
+            removeSection.textContent = "×";
+            removeSection.setAttribute("aria-label", "Remove section");
             removeSection.disabled = aquariumState.sections.length === 1;
             removeSection.title = "Remove section; keep its categories in the first remaining section";
             removeSection.addEventListener("click", event => {
@@ -3600,7 +3636,7 @@ if (document.getElementById("aquariumApp")) {
                 saveCollapsedAquariumSections(); saveAquariumState(); renderAquarium();
             });
             removeSection.addEventListener("keydown", event => event.stopPropagation());
-            divider.append(removeSection);
+            divider.insertBefore(removeSection, lineRight);
 
             function toggleSection() {
                 if (collapsedAquariumSections.has(section.id)) collapsedAquariumSections.delete(section.id);
@@ -3610,12 +3646,12 @@ if (document.getElementById("aquariumApp")) {
             }
 
             divider.addEventListener("click", event => {
-                if (event.target.closest(".aq-section-label")) return;
+                if (event.target.closest(".aq-section-label, .aq-section-remove")) return;
                 toggleSection();
             });
             divider.addEventListener("keydown", event => {
                 if (event.key !== "Enter" && event.key !== " ") return;
-                if (event.target.closest(".aq-section-label")) return;
+                if (event.target.closest(".aq-section-label, .aq-section-remove")) return;
                 event.preventDefault();
                 toggleSection();
             });
@@ -3646,14 +3682,28 @@ if (document.getElementById("aquariumApp")) {
                 moveAquariumCategory(sourceId, section.id);
             });
 
-            const categories = aquariumState.categories.filter(category => category.section === section.id);
-            categories.forEach(category => grid.appendChild(makeAquariumCategoryShell(category)));
-
-            const addCategoryCard = document.createElement("section");
-            addCategoryCard.className = "aq-category aq-new-category";
-            addCategoryCard.textContent = "＋ New category";
-            addCategoryCard.addEventListener("click", () => addAquariumCategory(section.id));
-            grid.appendChild(addCategoryCard);
+            // The old categories remain in saved state for future reinstatement.
+            // All their cards now live directly in the containing section.
+            let categories = aquariumState.categories.filter(category => category.section === section.id);
+            if (!categories.length) {
+                const category = { id: `section-storage-${section.id}`, name: section.name, section: section.id, accent: "teal" };
+                aquariumState.categories.push(category);
+                saveAquariumState(false);
+                categories = [category];
+            }
+            const categoryIds = new Set(categories.map(category => category.id));
+            grid.classList.add("aq-direct-section-zone", "aq-dropzone");
+            grid.dataset.zone = categories[0].id;
+            const cards = aquariumState.cards.filter(card => categoryIds.has(card.zone) && cardMatchesFilter(card));
+            if (!cards.length) grid.appendChild(makeEmptyMessage("Drop a thought here, or add one below."));
+            else cards.forEach(card => grid.appendChild(makeAquariumCard(card)));
+            const addCard = document.createElement("button");
+            addCard.type = "button";
+            addCard.className = "small-button aq-section-add";
+            addCard.textContent = "+ thought";
+            addCard.addEventListener("click", () => addBlankAquariumCard(categories[0].id));
+            grid.appendChild(addCard);
+            bindAquariumDropzone(grid);
 
             band.append(divider, grid);
             board.appendChild(band);
@@ -5259,6 +5309,18 @@ if (document.getElementById("longformApp")) {
         
     }
 
+    function moveLongformEntry(entryId, targetSection, beforeId = null, after = false) {
+        const from = longformState.entries.findIndex(item => item.id === entryId);
+        if (from < 0) return;
+        const [entry] = longformState.entries.splice(from,1);
+        longformSections.assignments[entryId] = targetSection;
+        let at = beforeId ? longformState.entries.findIndex(item => item.id === beforeId) : -1;
+        if (at < 0) at = longformState.entries.length;
+        else if(after) at++;
+        longformState.entries.splice(at,0,entry);
+        saveLongformSections(false); saveLongformState(); renderLongformEntries();
+    }
+
     function makeLongformSectionShell(section, entries) {
         const shell = document.createElement("section");
         shell.className = `longform-saved-section${section.collapsed ? " collapsed" : ""}`;
@@ -5310,6 +5372,24 @@ if (document.getElementById("longformApp")) {
             showSaved();
         });
 
+        const moveSection = document.createElement("select");
+        moveSection.className = "pi-section-move-select";
+        moveSection.title = "Move section";
+        moveSection.setAttribute("aria-label", "Move section");
+        moveSection.innerHTML = '<option value="">↕ section</option><option value="up">↑ up</option><option value="down">↓ down</option>';
+        moveSection.addEventListener("change", () => {
+            const current = longformSections.sections.findIndex(item => item.id === section.id);
+            const target = current + (moveSection.value === "up" ? -1 : 1);
+            if (moveSection.value && target >= 0 && target < longformSections.sections.length) {
+                const [moved] = longformSections.sections.splice(current, 1);
+                longformSections.sections.splice(target, 0, moved);
+                saveLongformSections(false); renderLongformEntries(); showSaved();
+            } else moveSection.value = "";
+        });
+        head.draggable = true;
+        head.addEventListener("dragstart", event => {if(event.target.closest('button,select,[contenteditable]')) {event.preventDefault();return;} event.dataTransfer.setData('text/pi-longform-section',section.id);});
+        head.addEventListener("dragover", event => {if(event.dataTransfer.types.includes('text/pi-longform-section'))event.preventDefault();});
+        head.addEventListener("drop", event => {const fromId=event.dataTransfer.getData('text/pi-longform-section');if(!fromId||fromId===section.id)return;event.preventDefault();const from=longformSections.sections.findIndex(x=>x.id===fromId),to=longformSections.sections.findIndex(x=>x.id===section.id);if(from<0||to<0)return;const [moved]=longformSections.sections.splice(from,1);longformSections.sections.splice(to,0,moved);saveLongformSections(false);renderLongformEntries();showSaved();});
         const count = document.createElement("span");
         count.className = "longform-section-count";
         count.textContent = `${entries.length}`;
@@ -5336,7 +5416,7 @@ if (document.getElementById("longformApp")) {
 
         const headActions = document.createElement("div");
         headActions.className = "longform-section-head-actions";
-        headActions.append(count, removeSection);
+        headActions.append(count, moveSection, removeSection);
         head.append(toggle, name, headActions);
 
         const body = document.createElement("div");
@@ -5352,7 +5432,29 @@ if (document.getElementById("longformApp")) {
                 : "No notes in this section match the current category filter.";
             body.appendChild(empty);
         } else {
-            entries.forEach(entry => body.appendChild(makeLongformEntryCard(entry)));
+            entries.forEach(entry => {
+                const card = makeLongformEntryCard(entry);
+                card.draggable = true;
+                card.addEventListener("dragstart", event => {if(event.target.closest('button,input,select,textarea,[contenteditable]')){event.preventDefault();return;} event.dataTransfer.setData('text/pi-longform-entry',entry.id);});
+                card.addEventListener("dragover", event => {if(event.dataTransfer.types.includes('text/pi-longform-entry'))event.preventDefault();});
+                card.addEventListener("drop", event => {const id=event.dataTransfer.getData('text/pi-longform-entry');if(!id||id===entry.id)return;event.preventDefault();moveLongformEntry(id,section.id,entry.id);});
+                const mover = document.createElement("select");
+                mover.className = "pi-entry-move-select";
+                mover.setAttribute("aria-label", "Move thought");
+                mover.innerHTML = '<option value="">↕ move</option><option value="up">↑ up</option><option value="down">↓ down</option>';
+                longformSections.sections.forEach(group => {if(group.id!==section.id){const o=document.createElement('option');o.value=group.id;o.textContent='→ '+group.name;mover.append(o);}});
+                mover.addEventListener("change", () => {
+                    const value=mover.value;
+                    if(value==='up'||value==='down'){
+                        const siblings=longformState.entries.filter(item=>longformSectionForEntry(item.id)===section.id && item.id!==entry.id);
+                        const all=longformState.entries.filter(item=>longformSectionForEntry(item.id)===section.id);
+                        const at=all.findIndex(item=>item.id===entry.id); const other=all[at+(value==='up'?-1:1)];
+                        if(other)moveLongformEntry(entry.id,section.id,other.id,value==='down');
+                    }else if(value)moveLongformEntry(entry.id,value);
+                });
+                card.querySelector('.longform-entry-actions')?.append(mover);
+                body.appendChild(card);
+            });
         }
 
         shell.append(head, body);

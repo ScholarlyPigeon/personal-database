@@ -1,15 +1,15 @@
 <!DOCTYPE html>
-<html lang="en" class="longform-page-html">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Longform Notes</title>
-    <link rel="stylesheet" href="Style.css?v=20261009-calendar2">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-    <script src="CloudSync.js?v=20261009-calendar2" defer></script>
-    <script src="Script.js?v=20261009-calendar2" defer></script>
 
-    <style>
+<html class="longform-page-html" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Longform Notes</title>
+<link href="Style.css?v=20261009-calendar2" rel="stylesheet"/>
+<script defer="" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script defer="" src="CloudSync.js?v=20261009-calendar2"></script>
+<script defer="" src="Script.js?v=20261009-calendar2"></script>
+<style>
         /* =========================================================
            LONGFORM V7 — NOTE TITLES + MOBILE CONTAINMENT
            Page-local overrides so the shared ecosystem files do not
@@ -228,119 +228,100 @@
             }
         }
     </style>
-    <link rel="stylesheet" href="Planner.css?v=20261009-calendar2">
-    <script src="Planner.js?v=20261009-calendar2" defer></script>
+<link href="Planner.css?v=20261009-calendar2" rel="stylesheet"/>
+<script defer="" src="Planner.js?v=20261009-calendar2"></script>
 </head>
 <body data-default-theme="study">
 <div class="longform-page" id="longformApp">
-    <header class="longform-header">
-        <div class="brand longform-brand">
-            <div class="pi-mark" aria-hidden="true">✎</div>
-            <div>
-                <h1 class="editable-ui longform-ui-edit" contenteditable="true" data-longform-ui="page-title">Longform</h1>
-                
-            </div>
-        </div>
+<header class="longform-header">
+<div class="brand longform-brand">
+<div aria-hidden="true" class="pi-mark">✎</div>
+<div>
+<h1 class="editable-ui longform-ui-edit" contenteditable="true" data-longform-ui="page-title">Longform</h1>
+</div>
+</div>
+<div class="longform-header-actions">
+<span aria-live="polite" class="sync-status" id="saveStatus">cloud ready</span>
 
-        <div class="longform-header-actions">
-            <span id="saveStatus" class="sync-status" aria-live="polite">cloud ready</span>
-            <button id="cloudLoginButton" class="small-button cloud-login-button" type="button">cloud login</button>
-            <details class="ecosystem-menu">
-                <summary>pages</summary>
-                <nav class="ecosystem-menu-popover" aria-label="Open another page">
-                    
-                    <a href="index.html">⌂ Home</a>
+<details class="ecosystem-menu">
+<summary>pages</summary>
+<nav aria-label="Open another page" class="ecosystem-menu-popover">
+<a href="index.html">⌂ Home</a>
 <a href="Database.html">🗃 Database</a>
-                    <a href="Week.html">🗓️ This Week</a>
+<a href="Week.html">🗓️ This Week</a>
 <a href="Month.html">📅 This Month</a>
 <a href="Aquarium.html">🪼 Aquarium</a>
-                    <a href="Patterns.html">🧭 Archives</a>
-                    <a href="Almanac.html">📖 Almanac</a>
-                    <a href="Longform.html" class="current" aria-current="page">✎ Longform</a>
-                    <a href="neopets.html">✦ Neopets</a>
-                </nav>
-            </details>
-            <select id="themeSelect" class="theme-select" aria-label="Theme"></select>
-        </div>
-    </header>
-
-    <main class="longform-workspace">
-        <aside class="panel longform-library" data-collapsible-panel="longform-library">
-            <div class="longform-library-head">
-                <div>
-                    <div class="longform-section-title editable-ui longform-ui-edit" contenteditable="true" data-longform-ui="library-title">Saved thoughts</div>
-                    <div class="longform-section-note editable-ui longform-ui-edit" contenteditable="true" data-longform-ui="library-note">pin what matters now; titles stay visible while thoughts fold underneath</div>
-                </div>
-                <div class="longform-library-controls">
-                    <button id="addLongformSection" class="small-button longform-add-section" type="button">+ section</button>
-                    <label class="longform-filter-dropdown">
-                        <span>show</span>
-                        <select id="longformFilters" aria-label="Filter saved thoughts">
-                            <option value="all">All categories</option>
-                        </select>
-                    </label>
-                </div>
-            </div>
-            <div id="longformList" class="longform-list" data-collapse-body></div>
-        </aside>
-
-        <section class="panel longform-composer" data-collapsible-panel="longform-composer">
-            <div class="longform-composer-head">
-                <div>
-                    <div class="longform-section-title editable-ui longform-ui-edit" contenteditable="true" data-longform-ui="composer-title">Write it out</div>
-                    <div class="longform-section-note editable-ui longform-ui-edit" contenteditable="true" data-longform-ui="composer-note">give it a title, then let the text box hold the whole thought</div>
-                </div>
-                <div class="longform-compose-meta">
-                    <label>
-                        <span>category <button id="manageLongformCategories" class="longform-manage-categories" type="button">manage</button></span>
-                        <select id="longformCategory">
-                            <option value="important">Important</option>
-                            <option value="database" selected>Database</option>
-                            <option value="misc">Misc.</option>
-                        </select>
-                    </label>
-                    <label>
-                        <span>date</span>
-                        <input id="longformDate" type="date">
-                    </label>
-                </div>
-            </div>
-
-            <input
-                id="longformTitleInput"
-                class="longform-title-input"
-                data-collapse-body
-                type="text"
-                maxlength="180"
-                autocomplete="off"
-                placeholder="Title this note…"
-                aria-label="Longform note title"
-            >
-
-            <div id="longformInput" class="longform-input" data-collapse-body contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="Stay here as long as the thought needs. Enter always makes a new line."></div>
-
-            <details class="longform-attachment" data-collapse-body>
-                <summary>optional image / clickable link</summary>
-                <div class="longform-attachment-fields">
-                    <label>
-                        <span>image URL</span>
-                        <input id="longformImageUrl" type="url" placeholder="https://.../image.jpg">
-                    </label>
-                    <label>
-                        <span>click-through URL</span>
-                        <input id="longformLinkUrl" type="url" placeholder="https://...">
-                    </label>
-                </div>
-            </details>
-
-            <div class="longform-submit-row" data-collapse-body>
-                <div class="longform-submit-note">Ctrl/Cmd + Enter saves · plain Enter stays in the thought</div>
-                <button id="saveLongformEntry" class="longform-save-button" type="button">save thought</button>
-            </div>
-        </section>
-    </main>
+<a href="Patterns.html">🧭 Archives</a>
+<a href="Almanac.html">📖 Almanac</a>
+<a aria-current="page" class="current" href="Longform.html">✎ Longform</a>
+<a href="neopets.html">✦ Neopets</a>
+</nav>
+</details>
+<details class="ecosystem-menu pi-tools-menu"><summary>tools</summary><div class="pi-tools-popover"><button class="small-button cloud-login-button" id="cloudLoginButton" type="button">cloud login</button></div></details><select aria-label="Theme" class="theme-select" id="themeSelect"></select>
 </div>
-
+</header>
+<main class="longform-workspace">
+<aside class="panel longform-library" data-collapsible-panel="longform-library">
+<div class="longform-library-head">
+<div>
+<div class="longform-section-title editable-ui longform-ui-edit" contenteditable="true" data-longform-ui="library-title">Saved thoughts</div>
+<div class="longform-section-note editable-ui longform-ui-edit" contenteditable="true" data-longform-ui="library-note">pin what matters now; titles stay visible while thoughts fold underneath</div>
+</div>
+<div class="longform-library-controls">
+<button class="small-button longform-add-section" id="addLongformSection" type="button">+ section</button>
+<label class="longform-filter-dropdown">
+<span>show</span>
+<select aria-label="Filter saved thoughts" id="longformFilters">
+<option value="all">All categories</option>
+</select>
+</label>
+</div>
+</div>
+<div class="longform-list" data-collapse-body="" id="longformList"></div>
+</aside>
+<section class="panel longform-composer" data-collapsible-panel="longform-composer">
+<div class="longform-composer-head">
+<div>
+<div class="longform-section-title editable-ui longform-ui-edit" contenteditable="true" data-longform-ui="composer-title">Write it out</div>
+<div class="longform-section-note editable-ui longform-ui-edit" contenteditable="true" data-longform-ui="composer-note">give it a title, then let the text box hold the whole thought</div>
+</div>
+<div class="longform-compose-meta">
+<label>
+<span>category <button class="longform-manage-categories" id="manageLongformCategories" type="button">manage</button></span>
+<select id="longformCategory">
+<option value="important">Important</option>
+<option selected="" value="database">Database</option>
+<option value="misc">Misc.</option>
+</select>
+</label>
+<label>
+<span>date</span>
+<input id="longformDate" type="date"/>
+</label>
+</div>
+</div>
+<input aria-label="Longform note title" autocomplete="off" class="longform-title-input" data-collapse-body="" id="longformTitleInput" maxlength="180" placeholder="Title this note…" type="text"/>
+<div aria-multiline="true" class="longform-input" contenteditable="true" data-collapse-body="" data-placeholder="Stay here as long as the thought needs. Enter always makes a new line." id="longformInput" role="textbox"></div>
+<details class="longform-attachment" data-collapse-body="">
+<summary>optional image / clickable link</summary>
+<div class="longform-attachment-fields">
+<label>
+<span>image URL</span>
+<input id="longformImageUrl" placeholder="https://.../image.jpg" type="url"/>
+</label>
+<label>
+<span>click-through URL</span>
+<input id="longformLinkUrl" placeholder="https://..." type="url"/>
+</label>
+</div>
+</details>
+<div class="longform-submit-row" data-collapse-body="">
+<div class="longform-submit-note">Ctrl/Cmd + Enter saves · plain Enter stays in the thought</div>
+<button class="longform-save-button" id="saveLongformEntry" type="button">save thought</button>
+</div>
+</section>
+</main>
+</div>
 <script>
 document.addEventListener("DOMContentLoaded", () => {
     /*

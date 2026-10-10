@@ -1,118 +1,111 @@
 <!DOCTYPE html>
-<html lang="en" class="pi-home-html">
+
+<html class="pi-home-html" lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Personal Intranet · Home</title>
-    <link rel="stylesheet" href="Style.css?v=20261009-calendar2">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-    <script src="CloudSync.js?v=20261009-calendar2" defer></script>
-    <script src="Script.js?v=20261009-calendar2" defer></script>
-    <link rel="stylesheet" href="Planner.css?v=20261009-calendar2">
-    <script src="Planner.js?v=20261009-calendar2" defer></script>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Personal Intranet · Home</title>
+<link href="Style.css?v=20261009-calendar2" rel="stylesheet"/>
+<script defer="" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script defer="" src="CloudSync.js?v=20261009-calendar2"></script>
+<script defer="" src="Script.js?v=20261009-calendar2"></script>
+<link href="Planner.css?v=20261009-calendar2" rel="stylesheet"/>
+<script defer="" src="Planner.js?v=20261009-calendar2"></script>
 </head>
 <body class="pi-home-body" data-default-theme="observatory">
 <div class="pi-home-page" id="piHomeApp">
-    <header class="pi-home-header">
-        <div class="pi-home-brand">
-            <div class="pi-mark" aria-hidden="true">⌂</div>
-            <div>
-                <div class="pi-home-title-row"><h1>Personal Intranet</h1><span class="pi-role-badge">ORIENT</span></div>
-                
-            </div>
-        </div>
-        <div class="pi-home-header-actions">
-            <span id="saveStatus" class="sync-status" aria-live="polite">cloud ready</span>
-            <button id="cloudLoginButton" class="small-button cloud-login-button" type="button">cloud login</button>
-            <details class="ecosystem-menu pi-home-pages-menu">
-                <summary>pages</summary>
-                <nav class="ecosystem-menu-popover" aria-label="Open another page">
-                    <a href="index.html" class="current" aria-current="page">⌂ Home</a>
-                    <a href="Database.html">🗃 Database</a>
-                    <a href="Week.html">🗓️ This Week</a>
+<header class="pi-home-header">
+<div class="pi-home-brand">
+<div aria-hidden="true" class="pi-mark">⌂</div>
+<div>
+<div class="pi-home-title-row"><h1>Personal Intranet</h1><span class="pi-role-badge">ORIENT</span></div>
+</div>
+</div>
+<div class="pi-home-header-actions">
+<span aria-live="polite" class="sync-status" id="saveStatus">cloud ready</span>
+
+<details class="ecosystem-menu pi-home-pages-menu">
+<summary>pages</summary>
+<nav aria-label="Open another page" class="ecosystem-menu-popover">
+<a aria-current="page" class="current" href="index.html">⌂ Home</a>
+<a href="Database.html">🗃 Database</a>
+<a href="Week.html">🗓️ This Week</a>
 <a href="Month.html">📅 This Month</a>
 <a href="Aquarium.html">🪼 Aquarium</a>
-                    <a href="Patterns.html">🧭 Archives</a>
-                    <a href="Almanac.html">📖 Almanac</a>
-                    <a href="Longform.html">✎ Longform</a>
-                    <a href="neopets.html">✦ Neopets</a>
-                </nav>
-            </details>
-            <select id="themeSelect" class="theme-select" aria-label="Theme"></select>
-        </div>
-    </header>
-
-
-    <nav class="pi-home-room-strip" aria-label="Personal Intranet rooms">
-        <a href="Database.html" data-pi-route-destination="database">
-            <span>🗃</span><strong>Database</strong>
-            <span class="pi-door-count" data-pi-door-count="database" hidden></span>
-        </a>
-        <a href="Week.html"><span>◷</span><strong>This Week</strong></a>
-        <a href="Month.html"><span>▦</span><strong>This Month</strong></a>
-        <a href="Aquarium.html" data-pi-route-destination="aquarium">
-            <span>🪼</span><strong>Aquarium</strong>
-            <span class="pi-door-count" data-pi-door-count="aquarium" hidden></span>
-        </a>
-        <a href="Longform.html" data-pi-route-destination="longform">
-            <span>✎</span><strong>Longform</strong>
-            <span class="pi-door-count" data-pi-door-count="longform" hidden></span>
-        </a>
-        <a href="Patterns.html" data-pi-route-destination="archive">
-            <span>🧭</span><strong>Archive</strong>
-            <span class="pi-door-count" data-pi-door-count="archive" hidden></span>
-        </a>
-        <a href="Almanac.html">
-            <span>📖</span><strong>Almanac</strong>
-        </a>
-    </nav>
-
-    <main class="pi-home-dashboard">
-        <div class="pi-home-left-stack">
-            <section class="pi-home-card pi-home-focus">
-                <div class="pi-home-card-head">
-                    <strong>✦ Focus Now</strong>
-                    <div><span id="piHomeFocusCount"></span> <span id="piHomeFocusWarning" class="pi-focus-warning" hidden></span></div>
-                </div>
-                <div class="pi-home-focus-body">
-                    <div id="piHomeFocusList" class="pi-focus-list"></div>
-                    <div class="pi-focus-entry"><input id="piHomeFocusInput" type="text" placeholder="What genuinely deserves the front row?"><button id="piHomeFocusAdd" type="button">add</button></div>
-                </div>
-            </section>
-
-            <section class="pi-home-card pi-home-recent-card">
-                <div class="pi-home-card-head"><strong>↺ Recent</strong><button class="small-button" data-pi-open-recent type="button">full trail</button></div>
-                <div id="piHomeRecentList" class="pi-home-recent-wrap pi-recent-list"></div>
-            </section>
-        </div>
-
-        <section class="pi-home-capture pi-home-capture-center">
-            <div class="pi-home-capture-title">
-                <div><strong>Catch it first.</strong> <span>No classification required.</span></div>
-                <span>Everything caught here is immediately safe in the Personal Intranet Inbox.</span>
-            </div>
-            <div class="pi-home-capture-row">
-                <textarea id="piHomeCapture" rows="2" placeholder="What just entered your head?"></textarea>
-                <button id="piHomeCatch" type="button">catch</button>
-                <button id="piHomeFind" data-pi-open-search type="button">find anything</button>
-                <button id="piHomeRecent" data-pi-open-recent type="button">recent</button>
-            </div>
-            <div id="piHomeRoutes" class="pi-route-bar" hidden></div>
-            <div class="pi-home-inbox">
-                <div class="pi-home-inbox-head">
-                    <strong>Inbox</strong>
-                    <span><span id="piHomeInboxCount">0</span> waiting to be sorted</span>
-                </div>
-                <div id="piHomeInboxList" class="pi-home-inbox-list"></div>
-            </div>
-        </section>
-
-        <section class="pi-home-card pi-home-today-card">
-            <div class="pi-home-card-head"><strong>🗓 Today</strong><a href="Database.html">open calendar →</a></div>
-            <div id="piHomeTodayList" class="pi-home-today-list"></div>
-        </section>
-    </main>
-
+<a href="Patterns.html">🧭 Archives</a>
+<a href="Almanac.html">📖 Almanac</a>
+<a href="Longform.html">✎ Longform</a>
+<a href="neopets.html">✦ Neopets</a>
+</nav>
+</details>
+<details class="ecosystem-menu pi-tools-menu"><summary>tools</summary><div class="pi-tools-popover"><button class="small-button cloud-login-button" id="cloudLoginButton" type="button">cloud login</button></div></details><select aria-label="Theme" class="theme-select" id="themeSelect"></select>
+</div>
+</header>
+<nav aria-label="Personal Intranet rooms" class="pi-home-room-strip">
+<a data-pi-route-destination="database" href="Database.html">
+<span>🗃</span><strong>Database</strong>
+<span class="pi-door-count" data-pi-door-count="database" hidden=""></span>
+</a>
+<a href="Week.html"><span>◷</span><strong>This Week</strong></a>
+<a href="Month.html"><span>▦</span><strong>This Month</strong></a>
+<a data-pi-route-destination="aquarium" href="Aquarium.html">
+<span>🪼</span><strong>Aquarium</strong>
+<span class="pi-door-count" data-pi-door-count="aquarium" hidden=""></span>
+</a>
+<a data-pi-route-destination="longform" href="Longform.html">
+<span>✎</span><strong>Longform</strong>
+<span class="pi-door-count" data-pi-door-count="longform" hidden=""></span>
+</a>
+<a data-pi-route-destination="archive" href="Patterns.html">
+<span>🧭</span><strong>Archive</strong>
+<span class="pi-door-count" data-pi-door-count="archive" hidden=""></span>
+</a>
+<a href="Almanac.html">
+<span>📖</span><strong>Almanac</strong>
+</a>
+</nav>
+<main class="pi-home-dashboard">
+<div class="pi-home-left-stack">
+<section class="pi-home-card pi-home-focus">
+<div class="pi-home-card-head">
+<strong>✦ Focus Now</strong>
+<div><span id="piHomeFocusCount"></span> <span class="pi-focus-warning" hidden="" id="piHomeFocusWarning"></span></div>
+</div>
+<div class="pi-home-focus-body">
+<div class="pi-focus-list" id="piHomeFocusList"></div>
+<div class="pi-focus-entry"><input id="piHomeFocusInput" placeholder="What genuinely deserves the front row?" type="text"/><button id="piHomeFocusAdd" type="button">add</button></div>
+</div>
+</section>
+<section class="pi-home-card pi-home-recent-card">
+<div class="pi-home-card-head"><strong>↺ Recent</strong><button class="small-button" data-pi-open-recent="" type="button">full trail</button></div>
+<div class="pi-home-recent-wrap pi-recent-list" id="piHomeRecentList"></div>
+</section>
+</div>
+<section class="pi-home-capture pi-home-capture-center">
+<div class="pi-home-capture-title">
+<div><strong>Catch it first.</strong> <span>No classification required.</span></div>
+<span>Everything caught here is immediately safe in the Personal Intranet Inbox.</span>
+</div>
+<div class="pi-home-capture-row">
+<textarea id="piHomeCapture" placeholder="What just entered your head?" rows="2"></textarea>
+<button id="piHomeCatch" type="button">catch</button>
+<button data-pi-open-search="" id="piHomeFind" type="button">find anything</button>
+<button data-pi-open-recent="" id="piHomeRecent" type="button">recent</button>
+</div>
+<div class="pi-route-bar" hidden="" id="piHomeRoutes"></div>
+<div class="pi-home-inbox">
+<div class="pi-home-inbox-head">
+<strong>Inbox</strong>
+<span><span id="piHomeInboxCount">0</span> waiting to be sorted</span>
+</div>
+<div class="pi-home-inbox-list" id="piHomeInboxList"></div>
+</div>
+</section>
+<section class="pi-home-card pi-home-today-card">
+<div class="pi-home-card-head"><strong>🗓 Today</strong><a href="Database.html">open calendar →</a></div>
+<div class="pi-home-today-list" id="piHomeTodayList"></div>
+</section>
+</main>
 </div>
 </body>
 </html>

@@ -15053,3 +15053,35 @@ body:is([data-theme="clarity-dark"],[data-theme="clarity-light"]) :is(.pi-home-i
     .almanac-grid[class] > .almanac-panel.is-collapsed { height:auto !important; align-self:flex-start; }
     .almanac-grid[class] > .almanac-panel.is-collapsed .almanac-panel-head { min-height:44px; }
 }
+
+/* October 10: Personal Intranet Pass One */
+.pi-tools-menu{position:relative;flex:0 0 auto}
+.pi-tools-popover{position:absolute;z-index:9999;right:0;top:calc(100% + 6px);width:max-content;min-width:160px;max-width:min(92vw,320px);padding:9px;display:flex;flex-direction:column;gap:7px;background:var(--panel);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow)}
+.pi-tools-menu:not([open]) .pi-tools-popover{display:none}
+.pi-tools-popover button{width:100%;text-align:left}
+.pi-tools-popover .selection-action-button[hidden]{display:none}
+.aq-section-remove{font-size:16px;line-height:1;min-width:24px;min-height:24px;border:1px solid var(--border);border-radius:6px;color:var(--muted);background:transparent;cursor:pointer}
+.aq-section-remove:hover{color:var(--rose-soft)}
+.aq-direct-section-zone{display:flex!important;flex-wrap:wrap;align-content:start;gap:10px;min-height:110px;padding:10px}
+.aq-direct-section-zone>.aq-card{flex:1 1 245px;max-width:100%}
+.aq-section-add{align-self:start}
+.aq-card-focus{background:transparent;border:0;color:var(--muted);cursor:pointer;font-size:17px;min-width:25px}
+.pi-aq-focus-dialog{color:var(--text);background:var(--panel);border:1px solid var(--border);border-radius:14px;width:min(760px,95vw);height:min(75dvh,780px);max-height:95dvh;padding:0;overflow:hidden}
+.pi-aq-focus-dialog::backdrop{background:rgba(0,0,0,.73)}
+.pi-aq-focus-shell{display:flex;flex-direction:column;gap:12px;height:100%;padding:18px}
+.pi-aq-focus-top{display:flex;justify-content:space-between;align-items:center;font-size:17px}
+.pi-aq-focus-title,.pi-aq-focus-editor{font:inherit;color:var(--text);background:var(--bg-soft);border:1px solid var(--border);border-radius:8px;padding:12px;width:100%;min-width:0}
+.pi-aq-focus-title{font-size:18px;font-weight:bold}
+.pi-aq-focus-editor{flex:1;min-height:120px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;font-size:16px;outline:none}
+.pi-aq-focus-editor:empty:before{content:attr(data-placeholder);color:var(--muted)}
+.pi-aq-focus-shell>.small-button{align-self:end}
+.pi-section-move-select,.pi-entry-move-select{border:1px solid var(--border);border-radius:6px;background:var(--panel-light);color:var(--text);padding:3px;max-width:125px;font-size:11px}
+.longform-saved-section-head{cursor:grab}
+@media(max-width:900px),(pointer:coarse){
+  /* Restore horizontal day swipe, overridden previously by mobile single-scroll selectors. */
+  .database-page #dayRail.day-rail{display:grid!important;grid-auto-flow:column!important;grid-auto-columns:minmax(78vw,320px)!important;grid-template-columns:none!important;overflow-x:auto!important;overflow-y:hidden!important;max-width:100%!important;width:100%!important;max-height:none!important;touch-action:pan-x pan-y!important;scroll-snap-type:x mandatory!important;overscroll-behavior-x:contain!important;-webkit-overflow-scrolling:touch!important}
+  .database-page #dayRail.day-rail>.day-card{width:100%!important;min-width:0!important;max-width:none!important;scroll-snap-align:start!important}
+  .pi-tools-popover{position:absolute;right:0;top:100%;z-index:99999}
+  .aq-direct-section-zone{display:flex!important;flex-direction:column}
+  .aq-direct-section-zone>.aq-card{flex:initial;width:100%}
+}

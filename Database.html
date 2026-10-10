@@ -1,137 +1,120 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Database</title>
-    <link rel="stylesheet" href="Style.css?v=20261009-calendar2">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-    <script src="CloudSync.js?v=20261009-calendar2" defer></script>
-    <script src="Script.js?v=20261009-calendar2" defer></script>
-    <link rel="stylesheet" href="Planner.css?v=20261009-calendar2">
-    <script src="Planner.js?v=20261009-calendar2" defer></script>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Database</title>
+<link href="Style.css?v=20261009-calendar2" rel="stylesheet"/>
+<script defer="" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script defer="" src="CloudSync.js?v=20261009-calendar2"></script>
+<script defer="" src="Script.js?v=20261009-calendar2"></script>
+<link href="Planner.css?v=20261009-calendar2" rel="stylesheet"/>
+<script defer="" src="Planner.js?v=20261009-calendar2"></script>
 </head>
 <body class="database-body" data-theme="dark">
 <div class="page database-page">
+<header class="database-header">
+<div class="brand">
+<div aria-hidden="true" class="pi-mark">🗃️</div>
+<div>
+<h1 class="editable-ui" contenteditable="true" data-ui-save="page-title">database</h1>
+</div>
+</div>
+<div class="header-right">
+<div class="sync-tools">
+<span aria-live="polite" class="sync-status" id="saveStatus">cloud ready</span>
 
-    <header class="database-header">
-        <div class="brand">
-            <div class="pi-mark" aria-hidden="true">🗃️</div>
-            <div>
-                <h1 class="editable-ui" contenteditable="true" data-ui-save="page-title">database</h1>
-                
-            </div>
-        </div>
-
-        <div class="header-right">
-            <div class="sync-tools">
-                <span id="saveStatus" class="sync-status" aria-live="polite">cloud ready</span>
-                <button id="cloudLoginButton" class="small-button cloud-login-button" type="button">cloud login</button>
-                <button id="localBackupButton" class="small-button backup-button" type="button" title="Download a JSON snapshot of your current Personal Intranet data">backup</button>
-            </div>
-
-            <nav class="page-nav" aria-label="Database pages">
-                <details class="ecosystem-menu">
-                <summary>pages</summary>
-                <nav class="ecosystem-menu-popover" aria-label="Open another page">
-                    
-                    <a href="index.html">⌂ Home</a>
-<a href="Database.html" class="current" aria-current="page">🗃 Database</a>
-                    <a href="Week.html">🗓️ This Week</a>
+<button class="small-button backup-button" id="localBackupButton" title="Download a JSON snapshot of your current Personal Intranet data" type="button">backup</button>
+</div>
+<nav aria-label="Database pages" class="page-nav">
+<details class="ecosystem-menu">
+<summary>pages</summary>
+<nav aria-label="Open another page" class="ecosystem-menu-popover">
+<a href="index.html">⌂ Home</a>
+<a aria-current="page" class="current" href="Database.html">🗃 Database</a>
+<a href="Week.html">🗓️ This Week</a>
 <a href="Month.html">📅 This Month</a>
 <a href="Aquarium.html">🪼 Aquarium</a>
-                    <a href="Patterns.html">🧭 Archives</a>
-                    <a href="Almanac.html">📖 Almanac</a>
-                    <a href="Longform.html">✎ Longform</a>
-                    <a href="neopets.html">✦ Neopets</a>
-                </nav>
-            </details>
-            </nav>
+<a href="Patterns.html">🧭 Archives</a>
+<a href="Almanac.html">📖 Almanac</a>
+<a href="Longform.html">✎ Longform</a>
+<a href="neopets.html">✦ Neopets</a>
+</nav>
+</details>
+</nav>
 
-            <button class="small-button selection-mode-button" id="selectModeButton" type="button">select</button>
-            <button class="small-button selection-action-button" id="selectionActionButton" type="button" hidden>archive selected</button>
 
-            <select id="themeSelect" class="theme-select" aria-label="Database theme" title="Choose a Database theme">
-                <optgroup label="Dark themes">
-                    <option value="dark">🌙 Dark Original</option>
-                    <option value="aquarium">🐠 Dark Teal Celestial Aquarium</option>
-                    <option value="observatory">🔭 Midnight Observatory</option>
-                    <option value="nightgarden">🪻 Night Garden</option>
-                    <option value="fieldnotes">📓 Universal Field Notes</option>
-                    <option value="fall2">🍁 Fall 2</option>
-                </optgroup>
-                <optgroup label="Retro themes">
-                    <option value="y2k">🖥️ Y2K Web Portal</option>
-                </optgroup>
-                <optgroup label="Light themes">
-                    <option value="cozy">💿 Cozy 2000s</option>
-                    <option value="green">🌿 Full Green</option>
-                    <option value="fall">🍂 Fall</option>
-                    <option value="study">📜 Study</option>
-                </optgroup>
-            </select>
-
-        </div>
-    </header>
-
-    <div class="content-shell database-grid">
-        <aside class="left-rail">
-            <section class="panel checklist-panel" data-collapsible-panel="database-radar">
-                <div class="panel-header">
-                    <div class="panel-title"><span>📡</span><span class="editable-ui" contenteditable="true" data-ui-save="radar-title">On My Radar</span></div>
-                    
-                </div>
-
-                <div class="checklist-body" data-collapse-body>
-                    <div id="radarList" class="checklist-list scroll-teal"></div>
-                    <div class="checklist-entry radar-entry">
-                        <textarea id="radarInput" class="checklist-input radar-input auto-grow-textarea" rows="2" data-autogrow="true" data-autogrow-min-lines="2" placeholder="Add to radar..."></textarea>
-                        <button id="addRadar" class="checklist-add radar-add" type="button">Add</button>
-                    </div>
-                </div>
-            </section>
-
-            <section class="panel checklist-panel near-radar-panel" data-collapsible-panel="database-near-radar">
-                <div class="panel-header">
-                    <div class="panel-title"><span>◌</span><span class="editable-ui" contenteditable="true" data-ui-save="near-radar-title">Near My Radar</span></div>
-                    
-                </div>
-
-                <div class="checklist-body" data-collapse-body>
-                    <div id="nearRadarList" class="checklist-list scroll-plum"></div>
-                    <div class="checklist-entry radar-entry">
-                        <textarea id="nearRadarInput" class="checklist-input radar-input auto-grow-textarea" rows="2" data-autogrow="true" data-autogrow-min-lines="2" placeholder="Keep nearby..."></textarea>
-                        <button id="addNearRadar" class="checklist-add radar-add" type="button">Add</button>
-                    </div>
-                </div>
-            </section>
-        </aside>
-
-        <main class="center-workspace">
-            <section class="panel database-notes-panel" data-collapsible-panel="database-notes">
-                <div class="panel-header">
-                    <div class="panel-title"><span>✎</span><span class="editable-ui" contenteditable="true" data-ui-save="database-notes-title">Notes</span></div>
-                </div>
-                <div class="database-notes-body" data-collapse-body>
-                    <div id="databaseNotesList" class="checklist-list database-notes-list scroll-teal"></div>
-                    <div class="checklist-entry database-notes-entry">
-                        <textarea id="databaseNotesInput" class="checklist-input database-notes-input auto-grow-textarea" rows="2" data-autogrow="true" data-autogrow-min-lines="2" placeholder="Drop a note here, then move it where it belongs when you're ready..."></textarea>
-                        <button id="addDatabaseNote" class="checklist-add" type="button">Add</button>
-                    </div>
-                </div>
-            </section>
-            <div id="tileGrid" class="legacy-board-storage" data-tile-zone="board" hidden aria-hidden="true"></div>
-        </main>
-
-        <aside class="right-date-rail panel">
-            <div class="panel-header date-rail-header">
-                <div class="panel-title"><span>🗓️</span><span class="editable-ui" contenteditable="true" data-ui-save="days-title">Next 4 Weeks</span></div>
-                
-            </div>
-            <div id="dayRail" class="day-rail scroll-blue"></div>
-        </aside>
-    </div>
+<details class="ecosystem-menu pi-tools-menu"><summary>tools</summary><div class="pi-tools-popover"><button class="small-button cloud-login-button" id="cloudLoginButton" type="button">cloud login</button><button class="small-button selection-mode-button" id="selectModeButton" type="button">select</button><button class="small-button selection-action-button" hidden="" id="selectionActionButton" type="button">archive selected</button></div></details><select aria-label="Database theme" class="theme-select" id="themeSelect" title="Choose a Database theme">
+<optgroup label="Dark themes">
+<option value="dark">🌙 Dark Original</option>
+<option value="aquarium">🐠 Dark Teal Celestial Aquarium</option>
+<option value="observatory">🔭 Midnight Observatory</option>
+<option value="nightgarden">🪻 Night Garden</option>
+<option value="fieldnotes">📓 Universal Field Notes</option>
+<option value="fall2">🍁 Fall 2</option>
+</optgroup>
+<optgroup label="Retro themes">
+<option value="y2k">🖥️ Y2K Web Portal</option>
+</optgroup>
+<optgroup label="Light themes">
+<option value="cozy">💿 Cozy 2000s</option>
+<option value="green">🌿 Full Green</option>
+<option value="fall">🍂 Fall</option>
+<option value="study">📜 Study</option>
+</optgroup>
+</select>
 </div>
-
+</header>
+<div class="content-shell database-grid">
+<aside class="left-rail">
+<section class="panel checklist-panel" data-collapsible-panel="database-radar">
+<div class="panel-header">
+<div class="panel-title"><span>📡</span><span class="editable-ui" contenteditable="true" data-ui-save="radar-title">On My Radar</span></div>
+</div>
+<div class="checklist-body" data-collapse-body="">
+<div class="checklist-list scroll-teal" id="radarList"></div>
+<div class="checklist-entry radar-entry">
+<textarea class="checklist-input radar-input auto-grow-textarea" data-autogrow="true" data-autogrow-min-lines="2" id="radarInput" placeholder="Add to radar..." rows="2"></textarea>
+<button class="checklist-add radar-add" id="addRadar" type="button">Add</button>
+</div>
+</div>
+</section>
+<section class="panel checklist-panel near-radar-panel" data-collapsible-panel="database-near-radar">
+<div class="panel-header">
+<div class="panel-title"><span>◌</span><span class="editable-ui" contenteditable="true" data-ui-save="near-radar-title">Near My Radar</span></div>
+</div>
+<div class="checklist-body" data-collapse-body="">
+<div class="checklist-list scroll-plum" id="nearRadarList"></div>
+<div class="checklist-entry radar-entry">
+<textarea class="checklist-input radar-input auto-grow-textarea" data-autogrow="true" data-autogrow-min-lines="2" id="nearRadarInput" placeholder="Keep nearby..." rows="2"></textarea>
+<button class="checklist-add radar-add" id="addNearRadar" type="button">Add</button>
+</div>
+</div>
+</section>
+</aside>
+<main class="center-workspace">
+<section class="panel database-notes-panel" data-collapsible-panel="database-notes">
+<div class="panel-header">
+<div class="panel-title"><span>✎</span><span class="editable-ui" contenteditable="true" data-ui-save="database-notes-title">Notes</span></div>
+</div>
+<div class="database-notes-body" data-collapse-body="">
+<div class="checklist-list database-notes-list scroll-teal" id="databaseNotesList"></div>
+<div class="checklist-entry database-notes-entry">
+<textarea class="checklist-input database-notes-input auto-grow-textarea" data-autogrow="true" data-autogrow-min-lines="2" id="databaseNotesInput" placeholder="Drop a note here, then move it where it belongs when you're ready..." rows="2"></textarea>
+<button class="checklist-add" id="addDatabaseNote" type="button">Add</button>
+</div>
+</div>
+</section>
+<div aria-hidden="true" class="legacy-board-storage" data-tile-zone="board" hidden="" id="tileGrid"></div>
+</main>
+<aside class="right-date-rail panel">
+<div class="panel-header date-rail-header">
+<div class="panel-title"><span>🗓️</span><span class="editable-ui" contenteditable="true" data-ui-save="days-title">Next 4 Weeks</span></div>
+</div>
+<div class="day-rail scroll-blue" id="dayRail"></div>
+</aside>
+</div>
+</div>
 </body>
 </html>

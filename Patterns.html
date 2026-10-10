@@ -1,128 +1,114 @@
 <!DOCTYPE html>
-<html lang="en" class="patterns-page-html">
+
+<html class="patterns-page-html" lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Archive & Patterns</title>
-    <link rel="stylesheet" href="Style.css?v=20261009-calendar2">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-    <script src="CloudSync.js?v=20261009-calendar2" defer></script>
-    <script src="Script.js?v=20261009-calendar2" defer></script>
-    <link rel="stylesheet" href="Planner.css?v=20261009-calendar2">
-    <script src="Planner.js?v=20261009-calendar2" defer></script>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Archive &amp; Patterns</title>
+<link href="Style.css?v=20261009-calendar2" rel="stylesheet"/>
+<script defer="" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script defer="" src="CloudSync.js?v=20261009-calendar2"></script>
+<script defer="" src="Script.js?v=20261009-calendar2"></script>
+<link href="Planner.css?v=20261009-calendar2" rel="stylesheet"/>
+<script defer="" src="Planner.js?v=20261009-calendar2"></script>
 </head>
 <body data-default-theme="study">
 <div class="patterns-page archive-v2-page" id="archiveApp">
-    <header class="patterns-header">
-        <div class="brand">
-            <div class="pi-mark" aria-hidden="true">🧭</div>
-            <div>
-                <h1 data-pi-ui="archive-page-title" data-pi-ui-fallback="Archive & Patterns">Archive & Patterns</h1>
-                
-            </div>
-        </div>
+<header class="patterns-header">
+<div class="brand">
+<div aria-hidden="true" class="pi-mark">🧭</div>
+<div>
+<h1 data-pi-ui="archive-page-title" data-pi-ui-fallback="Archive &amp; Patterns">Archive &amp; Patterns</h1>
+</div>
+</div>
+<div class="header-right patterns-header-actions">
+<span aria-live="polite" class="sync-status" id="saveStatus">cloud ready</span>
 
-        <div class="header-right patterns-header-actions">
-            <span id="saveStatus" class="sync-status" aria-live="polite">cloud ready</span>
-            <button id="cloudLoginButton" class="small-button cloud-login-button" type="button">cloud login</button>
-            <details class="ecosystem-menu">
-                <summary>pages</summary>
-                <nav class="ecosystem-menu-popover" aria-label="Open another page">
-                    
-                    <a href="index.html">⌂ Home</a>
+<details class="ecosystem-menu">
+<summary>pages</summary>
+<nav aria-label="Open another page" class="ecosystem-menu-popover">
+<a href="index.html">⌂ Home</a>
 <a href="Database.html">🗃 Database</a>
-                    <a href="Week.html">🗓️ This Week</a>
+<a href="Week.html">🗓️ This Week</a>
 <a href="Month.html">📅 This Month</a>
 <a href="Aquarium.html">🪼 Aquarium</a>
-                    <a href="Patterns.html" class="current" aria-current="page">🧭 Archives</a>
-                    <a href="Almanac.html">📖 Almanac</a>
-                    <a href="Longform.html">✎ Longform</a>
-                    <a href="neopets.html">✦ Neopets</a>
-                </nav>
-            </details>
-            <button class="small-button selection-mode-button" id="selectModeButton" type="button">select</button>
-            <button class="small-button selection-action-button" id="selectionActionButton" type="button" hidden>delete selected</button>
-            <select id="themeSelect" class="theme-select" aria-label="Theme"></select>
-        </div>
-    </header>
+<a aria-current="page" class="current" href="Patterns.html">🧭 Archives</a>
+<a href="Almanac.html">📖 Almanac</a>
+<a href="Longform.html">✎ Longform</a>
+<a href="neopets.html">✦ Neopets</a>
+</nav>
+</details>
 
-    <section class="patterns-intro panel">
-        <div>
-            <strong data-pi-ui="archive-intro-title" data-pi-ui-fallback="Archive = evidence, not obligation.">Archive = evidence, not obligation.</strong>
-            <span data-pi-ui="archive-intro-subtitle" data-pi-ui-fallback="Write once, then let an idea move between Notes, Patterns, and Timeline as its meaning changes.">Write once, then let an idea move between Notes, Patterns, and Timeline as its meaning changes.</span>
-        </div>
-        <div id="archiveSummary" class="archive-summary"></div>
-    </section>
 
-    <main class="patterns-grid archive-v2-grid">
-        <div class="patterns-stack archive-stack archive-v2-stack">
-            <section class="panel archive-column day-archive-column" data-collapsible-panel="archive-days">
-                <div class="panel-header">
-                    <div class="panel-title"><span>🗓️</span><span data-pi-ui="archive-days-title" data-pi-ui-fallback="Day Archive">Day Archive</span></div>
-                    
-                </div>
-                <div id="dayArchiveList" class="archive-list scroll-blue" data-collapse-body></div>
-            </section>
-
-            <section class="panel archive-column item-archive-column" data-collapsible-panel="archive-items">
-                <div class="panel-header">
-                    <div class="panel-title"><span>📦</span><span data-pi-ui="archive-items-title" data-pi-ui-fallback="Archive">Archive</span></div>
-                    
-                </div>
-                <div id="itemArchiveList" class="archive-list scroll-teal" data-collapse-body></div>
-            </section>
-        </div>
-
-        <section class="panel archive-notes-column" data-collapsible-panel="archive-notes-desk">
-            <div class="panel-header archive-v2-panel-head">
-                <div class="panel-title"><span>✎</span><span data-pi-ui="archive-notes-title" data-pi-ui-fallback="Notes">Notes</span></div>
-                
-            </div>
-            <div class="archive-notes-body" data-collapse-body>
-                <div class="archive-note-composer">
-                    <div class="archive-note-compose-row">
-                        <input id="archiveWorkspaceTitle" type="text" maxlength="180" placeholder="Title this thought…" aria-label="Note title">
-                        <select id="archiveWorkspaceZone" aria-label="Save to">
-                            <option value="notes">Notes</option>
-                            <option value="patterns">Patterns</option>
-                            <option value="timeline">Timeline</option>
-                        </select>
-                        <input id="archiveWorkspaceDate" type="date" aria-label="Date">
-                    </div>
-                    <div id="archiveWorkspaceBody" class="archive-rich-input" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="Write the body here. Ctrl/Cmd + B, I, U work here too."></div>
-                    <div class="archive-note-submit-row">
-                        <span>Ctrl/Cmd + Enter saves · destination can change later</span>
-                        <button id="saveArchiveWorkspaceItem" class="checklist-add" type="button">save note</button>
-                    </div>
-                </div>
-                <div id="archiveNotesList" class="archive-workspace-list scroll-plum"></div>
-            </div>
-        </section>
-
-        <div class="patterns-stack insight-stack archive-v2-stack">
-            <section class="panel archive-insight-panel patterns-insight-panel" data-collapsible-panel="archive-patterns">
-                <div class="panel-header">
-                    <div class="panel-title"><span>🧩</span><span data-pi-ui="archive-patterns-title" data-pi-ui-fallback="Patterns">Patterns</span></div>
-                    
-                </div>
-                <div id="archivePatternsList" class="archive-workspace-list scroll-plum" data-collapse-body></div>
-            </section>
-
-            <section class="panel archive-insight-panel timeline-insight-panel" data-collapsible-panel="archive-timeline">
-                <div class="panel-header">
-                    <div class="panel-title"><span>📍</span><span data-pi-ui="archive-timeline-title" data-pi-ui-fallback="Timeline">Timeline</span></div>
-                    <div class="archive-timeline-head-actions">
-                        
-                        <button id="recoverTimelineBackup" class="small-button archive-recover-button" type="button">recover backup</button>
-                    </div>
-                </div>
-                <div id="archiveTimelineList" class="archive-workspace-list scroll-blue" data-collapse-body></div>
-            </section>
-        </div>
-    </main>
+<details class="ecosystem-menu pi-tools-menu"><summary>tools</summary><div class="pi-tools-popover"><button class="small-button cloud-login-button" id="cloudLoginButton" type="button">cloud login</button><button class="small-button selection-mode-button" id="selectModeButton" type="button">select</button><button class="small-button selection-action-button" hidden="" id="selectionActionButton" type="button">delete selected</button></div></details><select aria-label="Theme" class="theme-select" id="themeSelect"></select>
 </div>
-
-<input id="archiveTimelineRecoveryInput" type="file" accept=".json,application/json" hidden>
+</header>
+<section class="patterns-intro panel">
+<div>
+<strong data-pi-ui="archive-intro-title" data-pi-ui-fallback="Archive = evidence, not obligation.">Archive = evidence, not obligation.</strong>
+<span data-pi-ui="archive-intro-subtitle" data-pi-ui-fallback="Write once, then let an idea move between Notes, Patterns, and Timeline as its meaning changes.">Write once, then let an idea move between Notes, Patterns, and Timeline as its meaning changes.</span>
+</div>
+<div class="archive-summary" id="archiveSummary"></div>
+</section>
+<main class="patterns-grid archive-v2-grid">
+<div class="patterns-stack archive-stack archive-v2-stack">
+<section class="panel archive-column day-archive-column" data-collapsible-panel="archive-days">
+<div class="panel-header">
+<div class="panel-title"><span>🗓️</span><span data-pi-ui="archive-days-title" data-pi-ui-fallback="Day Archive">Day Archive</span></div>
+</div>
+<div class="archive-list scroll-blue" data-collapse-body="" id="dayArchiveList"></div>
+</section>
+<section class="panel archive-column item-archive-column" data-collapsible-panel="archive-items">
+<div class="panel-header">
+<div class="panel-title"><span>📦</span><span data-pi-ui="archive-items-title" data-pi-ui-fallback="Archive">Archive</span></div>
+</div>
+<div class="archive-list scroll-teal" data-collapse-body="" id="itemArchiveList"></div>
+</section>
+</div>
+<section class="panel archive-notes-column" data-collapsible-panel="archive-notes-desk">
+<div class="panel-header archive-v2-panel-head">
+<div class="panel-title"><span>✎</span><span data-pi-ui="archive-notes-title" data-pi-ui-fallback="Notes">Notes</span></div>
+</div>
+<div class="archive-notes-body" data-collapse-body="">
+<div class="archive-note-composer">
+<div class="archive-note-compose-row">
+<input aria-label="Note title" id="archiveWorkspaceTitle" maxlength="180" placeholder="Title this thought…" type="text"/>
+<select aria-label="Save to" id="archiveWorkspaceZone">
+<option value="notes">Notes</option>
+<option value="patterns">Patterns</option>
+<option value="timeline">Timeline</option>
+</select>
+<input aria-label="Date" id="archiveWorkspaceDate" type="date"/>
+</div>
+<div aria-multiline="true" class="archive-rich-input" contenteditable="true" data-placeholder="Write the body here. Ctrl/Cmd + B, I, U work here too." id="archiveWorkspaceBody" role="textbox"></div>
+<div class="archive-note-submit-row">
+<span>Ctrl/Cmd + Enter saves · destination can change later</span>
+<button class="checklist-add" id="saveArchiveWorkspaceItem" type="button">save note</button>
+</div>
+</div>
+<div class="archive-workspace-list scroll-plum" id="archiveNotesList"></div>
+</div>
+</section>
+<div class="patterns-stack insight-stack archive-v2-stack">
+<section class="panel archive-insight-panel patterns-insight-panel" data-collapsible-panel="archive-patterns">
+<div class="panel-header">
+<div class="panel-title"><span>🧩</span><span data-pi-ui="archive-patterns-title" data-pi-ui-fallback="Patterns">Patterns</span></div>
+</div>
+<div class="archive-workspace-list scroll-plum" data-collapse-body="" id="archivePatternsList"></div>
+</section>
+<section class="panel archive-insight-panel timeline-insight-panel" data-collapsible-panel="archive-timeline">
+<div class="panel-header">
+<div class="panel-title"><span>📍</span><span data-pi-ui="archive-timeline-title" data-pi-ui-fallback="Timeline">Timeline</span></div>
+<div class="archive-timeline-head-actions">
+<button class="small-button archive-recover-button" id="recoverTimelineBackup" type="button">recover backup</button>
+</div>
+</div>
+<div class="archive-workspace-list scroll-blue" data-collapse-body="" id="archiveTimelineList"></div>
+</section>
+</div>
+</main>
+</div>
+<input accept=".json,application/json" hidden="" id="archiveTimelineRecoveryInput" type="file"/>
 <script>
 document.addEventListener("DOMContentLoaded", () => {
     const WORKSPACE_KEY = "pi-archive-workspace-v1";
