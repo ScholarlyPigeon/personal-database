@@ -179,8 +179,8 @@
      const card=el('section','planner-day'+(date===today()?' is-today':'')+(date<today()?' is-past':''));card.dataset.date=date;
      const d=new Date(date+'T12:00:00');const h=el('h3');h.append(el('span','',d.toLocaleDateString(undefined,{weekday:'short'})),el('strong','',String(d.getDate())));if(date===today())h.append(el('span','planner-today','Today'));card.append(h);
     const list=el('div','planner-day-items');const entries=getDayEntries(date);
-    // Month tiles are compact previews, not scrolling lists. Two lines always
-    // fit above the reserved footer; the pop-out shows every item in full.
+    // Month tiles are compact previews, not scrolling lists. The heading shows
+    // the total item count; the pop-out shows every item in full.
     const previewLimit=kind==='month'?2:entries.length;
     const shown=entries.slice(0,previewLimit);
     shown.forEach(({item})=>list.append(row(item,-1,'',true,'preview')));
@@ -191,14 +191,6 @@
     }
     card.append(list);
     if(kind==='month'){
-      const remaining=entries.length-shown.length;
-      const footer=el('div','planner-month-footer');
-      if(remaining>0){
-        const extra=el('span','planner-month-extra',`+${remaining} more`);
-        extra.title=`${remaining} additional items. ${entries.length} total. Click to open this day.`;
-        footer.append(extra);
-      }
-      card.append(footer);
       card.append(el('span','planner-mobile-count',entries.length?`${entries.length} item${entries.length===1?'':'s'}`:''));
     }
      if(!readonly){const plus=button('+','Add item for '+date,()=>openDay(date));plus.classList.add('planner-add-toggle');card.append(plus);}

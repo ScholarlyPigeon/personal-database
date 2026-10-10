@@ -152,8 +152,8 @@ body.planner-body.pi-shell-active{height:auto!important;overflow:auto!important}
 /* Keep Save and Cancel available throughout an active calendar edit. */
 .planner-item.is-editing .planner-item-actions {display:flex;}
 
-/* Monthly overview: always show the total count; reserve a stable, quiet
-   +N more footer instead of clipping the indicator inside the preview list. */
+/* Monthly overview: a compact total count lives in the day heading.
+   Click the day to see the complete list; no redundant footer needed. */
 .planner-grid.is-month .planner-day h3 {min-width:0;gap:4px}
 .planner-grid.is-month .planner-month-total {
   margin-left:auto;flex:none;white-space:nowrap;color:var(--muted);
@@ -161,18 +161,7 @@ body.planner-body.pi-shell-active{height:auto!important;overflow:auto!important}
 }
 .planner-grid.is-month .planner-day h3 .planner-today {margin-left:0}
 .planner-grid.is-month .planner-day-items {min-height:0;overflow:hidden;flex:1}
-.planner-grid.is-month .planner-month-footer {
-  min-height:14px;flex:none;display:flex;align-items:center;
-  margin:0;padding:0;
-}
-.planner-grid.is-month .planner-month-extra {
-  display:inline-block;color:var(--teal-soft);font-size:10px;
-  line-height:1.1;white-space:nowrap;opacity:.9;
-}
-/* Keep the bottom-right plus unobstructed by the count. */
-.planner-grid.is-month .planner-day:not(.is-past) .planner-month-footer {padding-right:25px}
 @media (max-width:700px) {
   /* Phones already use the compact item-count layout rather than previews. */
-  .planner-grid.is-month .planner-month-total,
-  .planner-grid.is-month .planner-month-footer {display:none}
+  .planner-grid.is-month .planner-month-total {display:none}
 }
