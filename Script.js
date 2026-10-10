@@ -3180,7 +3180,7 @@ if (document.getElementById("aquariumApp")) {
             event.stopPropagation();
             const archived = archiveManualItem({
                 text: [card.title, card.text].filter(Boolean).join("\n\n"),
-                source: "Brain Aquarium",
+                source: "Aquarium",
                 context: aquariumZoneLabel(card.zone),
                 kind: card.kind,
                 createdAt: card.createdAt,
@@ -4050,7 +4050,7 @@ if (document.getElementById("aquariumApp")) {
                 id: archiveId("item"),
                 recordType: "item",
                 text: cleaned,
-                source: "Brain Aquarium",
+                source: "Aquarium",
                 context: aquariumZoneLabel(card.zone),
                 kind: card.kind,
                 originalDate: null,
@@ -4084,7 +4084,7 @@ if (document.getElementById("aquariumApp")) {
                 id: archiveId("item"),
                 recordType: "item",
                 text: cleaned,
-                source: "Brain Aquarium",
+                source: "Aquarium",
                 context: aquariumZoneLabel(card.zone),
                 kind: card.kind,
                 originalDate: null,
@@ -4749,7 +4749,7 @@ if (document.getElementById("longformApp")) {
     const LONGFORM_SECTIONS_KEY = "pi-longform-sections-v1";
     const LONGFORM_CATEGORY_DEFAULTS = [
         { id: "important", label: "Important", accent: "rose" },
-        { id: "database", label: "Database", accent: "teal" },
+        { id: "database", label: "Home", accent: "teal" },
         { id: "misc", label: "Misc.", accent: "plum" }
     ];
     const LONGFORM_CATEGORY_ACCENTS = ["rose", "teal", "plum", "blue", "green", "orange"];
@@ -4762,7 +4762,7 @@ if (document.getElementById("longformApp")) {
                 .filter(item => item && typeof item.id === "string" && typeof item.label === "string")
                 .map((item, index) => ({
                     id: item.id,
-                    label: item.label.trim() || "Category",
+                    label: item.id === "database" && item.label.trim() === "Database" ? "Home" : (item.label.trim() || "Category"),
                     accent: LONGFORM_CATEGORY_ACCENTS.includes(item.accent)
                         ? item.accent
                         : LONGFORM_CATEGORY_ACCENTS[index % LONGFORM_CATEGORY_ACCENTS.length]
@@ -6498,12 +6498,12 @@ if (document.getElementById("neopetsApp")) {
     const PAGES = {
         week: { role: "PLAN", note: "", href: "Week.html", label: "This Week", icon: "◷" },
         month: { role: "PLAN", note: "", href: "Month.html", label: "This Month", icon: "▦" },
-        home: { role: "ORIENT", note: "See what matters, catch what appeared, then choose a room.", href: "index.html", label: "Home", icon: "⌂" },
-        database: { role: "FOCUS", note: "See what needs attention and where things currently stand.", href: "Database.html", label: "Database", icon: "🗃" },
+        home: { role: "FOCUS", note: "Go directly to your most useful page.", href: "Database.html", label: "Home", icon: "⌂" },
+        database: { role: "FOCUS", note: "See what needs attention and where things currently stand.", href: "Database.html", label: "Home", icon: "⌂" },
         aquarium: { role: "CAPTURE", note: "Catch something before deciding what it needs to become.", href: "Aquarium.html", label: "Aquarium", icon: "🪼" },
         longform: { role: "THINK", note: "Give a thought enough room to become coherent.", href: "Longform.html", label: "Longform", icon: "✎" },
-        archive: { role: "REVIEW", note: "Look backward for evidence, patterns, and turning points.", href: "Patterns.html", label: "Archives", icon: "🧭" },
-        almanac: { role: "REFERENCE", note: "Keep repeatable life knowledge close and reusable.", href: "Almanac.html", label: "Almanac", icon: "📖" },
+        archive: { role: "REVIEW", note: "Day archive, stored items, and a history of changes.", href: "Patterns.html", label: "Archive", icon: "🧭" },
+        almanac: { role: "REFLECT", note: "Timeline, thoughtful writing, and organized notes.", href: "Almanac.html", label: "Timeline & Notes", icon: "◷" },
         neopets: { role: "PLAY", note: "Run the routine, then wander wherever Neopia calls.", href: "neopets.html", label: "Neopets", icon: "✦" }
     };
 
@@ -6578,8 +6578,9 @@ if (document.getElementById("neopetsApp")) {
             action: cleanText(action) || "updated",
             text: cleaned
         });
-        localStorage.setItem(PI_KEYS.activityKey, JSON.stringify(activities.slice(0, 50)));
+        localStorage.setItem(PI_KEYS.activityKey, JSON.stringify(activities.slice(0, 250)));
         refreshRecentViews();
+        window.dispatchEvent(new Event('pi-activity-updated'));
     }
     window.PIRecordActivity = recordActivity;
 
@@ -6902,13 +6903,13 @@ if (document.getElementById("neopetsApp")) {
             action = destination === "aquarium" ? "sent Inbox item to Aquarium" : `sent Inbox item to Aquarium as ${destination}`;
         } else if (destination === "database") {
             success = pushChecklist(PI_KEYS.databaseNotesKey, item.text);
-            targetPage = "database"; action = "sent Inbox item to Database Notes";
+            targetPage = "database"; action = "sent Inbox item to Home Notes";
         } else if (destination === "longform") {
             success = addPayloadToLongform(item);
             targetPage = "longform"; action = "sent Inbox item to Longform";
         } else if (destination === "archive") {
             success = addPayloadToArchive(item);
-            targetPage = "archive"; action = "sent Inbox item to Archive Notes";
+            targetPage = "almanac"; action = "sent Inbox item to Timeline Notes";
         } else if (destination === "focus") {
             addFocus(item.text); success = true;
             targetPage = "database"; action = "sent Inbox item to Focus Now";
@@ -6937,8 +6938,8 @@ if (document.getElementById("neopetsApp")) {
         label.textContent = "safe in Inbox · send now:";
         container.appendChild(label);
         [
-            ["database", "Database"], ["aquarium", "Aquarium"], ["longform", "Longform"],
-            ["archive", "Archive"], ["focus", "Focus"], ["radar", "Radar"], ["today", "Today"]
+            ["database", "Home"], ["aquarium", "Aquarium"], ["longform", "Longform"],
+            ["archive", "Timeline Notes"], ["focus", "Focus"], ["radar", "Radar"], ["today", "Today"]
         ].forEach(([id, text]) => {
             const button = document.createElement("button");
             button.type = "button";
@@ -6994,9 +6995,9 @@ if (document.getElementById("neopetsApp")) {
         select.setAttribute("aria-label", "Send capture to");
         [
             ["aquarium","Aquarium Inbox"],
-            ["database","Database Notes"],
+            ["database","Home Notes"],
             ["longform","Longform"],
-            ["archive","Archive Notes"],
+            ["archive","Timeline Notes"],
             ["focus","Focus Now"],
             ["radar","Radar"],
             ["today","Today"]
@@ -7031,6 +7032,32 @@ if (document.getElementById("neopetsApp")) {
         row.append(drag, text, select, send, remove);
         return row;
     }
+
+    function openCaptureInbox() {
+        let overlay = document.getElementById("piCaptureInboxOverlay");
+        if (!overlay) {
+            overlay = document.createElement("div");
+            overlay.id = "piCaptureInboxOverlay";
+            overlay.className = "pi-overlay";
+            overlay.setAttribute("aria-hidden", "true");
+            overlay.innerHTML = `<div class="pi-overlay-card" role="dialog" aria-modal="true" aria-labelledby="piCaptureInboxTitle">
+                <div class="pi-overlay-head"><div><span class="pi-overlay-kicker">CAPTURE</span><h2 id="piCaptureInboxTitle">Your Inbox <small id="piHomeInboxCount"></small></h2></div><button class="pi-overlay-close" type="button" aria-label="Close Inbox">×</button></div>
+                <div class="pi-home-inbox-list" id="piHomeInboxList" style="max-height:60dvh;overflow:auto"></div>
+                <p class="pi-muted">Send captured thoughts where they belong, or leave them here for later.</p>
+                </div>`;
+            document.body.appendChild(overlay);
+            const close = () => { overlay.classList.remove("open"); overlay.setAttribute("aria-hidden", "true"); };
+            overlay.querySelector(".pi-overlay-close").addEventListener("click", close);
+            overlay.addEventListener("click", event => { if (event.target === overlay) close(); });
+            document.addEventListener("keydown", event => { if (event.key === "Escape" && overlay.classList.contains("open")) close(); });
+        }
+        refreshCaptureInboxViews();
+        overlay.classList.add("open");
+        overlay.setAttribute("aria-hidden", "false");
+    }
+    document.addEventListener("click", event => {
+        if (event.target.closest("[data-pi-open-inbox]")) openCaptureInbox();
+    });
 
     function refreshCaptureInboxViews() {
         const list = document.getElementById("piHomeInboxList");
@@ -7108,11 +7135,10 @@ if (document.getElementById("neopetsApp")) {
         dock.id = "piUniversalDock";
         dock.className = "pi-universal-dock";
         dock.innerHTML = `
-            <a class="pi-dock-home" href="${PAGES.home.href}" title="Personal Intranet home">⌂</a>
+            <a class="pi-dock-home" href="${PAGES.home.href}" title="Home">⌂</a>
             <textarea id="piDockCapture" rows="1" placeholder="Catch it before it disappears…" aria-label="Universal capture"></textarea>
             <button id="piDockCatch" class="pi-dock-primary" type="button">catch</button>
             <button class="pi-dock-tool" data-pi-open-search type="button">find</button>
-            <button class="pi-dock-tool" data-pi-open-recent type="button">recent</button>
             <div id="piDockRoutes" class="pi-route-bar" hidden></div>`;
         document.body.appendChild(dock);
         bindCapture(document.getElementById("piDockCapture"), document.getElementById("piDockCatch"), document.getElementById("piDockRoutes"));
@@ -7178,7 +7204,8 @@ if (document.getElementById("neopetsApp")) {
         const titles = jsonRead(PI_KEYS.longformTitlesKey, {});
         (Array.isArray(longform?.entries) ? longform.entries : []).forEach(entry => addDoc(docs, "longform", "Saved thought", [titles?.[entry.id], entry.text].filter(Boolean).join(" · ")));
 
-        humanArray(PI_KEYS.archiveWorkspaceKey).forEach(item => addDoc(docs, "archive", item.zone || "Working note", [item.title, item.text].filter(Boolean).join(" · ")));
+        humanArray(PI_KEYS.archiveWorkspaceKey).forEach(item => addDoc(docs, "almanac", item.zone || "Working note", [item.title, item.text].filter(Boolean).join(" · ")));
+        (jsonRead("pi-reflections-notes-v1", {entries:[]})?.entries || []).forEach(item => addDoc(docs, "almanac", "Saved note", [item.title,item.text].filter(Boolean).join(" · ")));
         humanArray(PI_KEYS.archiveKey).forEach(record => {
             if (record.recordType === "day") {
                 (Array.isArray(record.items) ? record.items : []).forEach(item => addDoc(docs, "archive", record.displayLabel || record.originalDate || "Day Archive", item.text));
@@ -7233,7 +7260,7 @@ if (document.getElementById("neopetsApp")) {
         const q = cleanText(query).toLowerCase();
         results.innerHTML = "";
         if (q.length < 2) {
-            results.innerHTML = `<div class="pi-search-empty">Type at least two letters. This searches active notes, calendar items, Aquarium cards, Longform, Archives, Almanac, and Neopets.</div>`;
+            results.innerHTML = `<div class="pi-search-empty">Type at least two letters. This searches active notes, calendar items, Aquarium cards, Longform, Archive, Timeline & Notes, and Neopets.</div>`;
             return;
         }
         const matches = collectSearchDocs().filter(doc => doc.text.toLowerCase().includes(q)).slice(0, 40);
@@ -7504,7 +7531,8 @@ if (document.getElementById("neopetsApp")) {
         else if (button.dataset.addList) { const kind = button.dataset.addList; action = `added Almanac ${kind}`; text = document.getElementById(`almanac${kind.charAt(0).toUpperCase()}${kind.slice(1)}Input`)?.value; page = "almanac"; }
         if (action && cleanText(text)) setTimeout(() => recordActivity(page, action, text), 0);
     }
-    document.addEventListener("click", captureActivityFromExistingUi, true);
+    // Content change events are recorded by Activity.js after successful writes.
+    // Legacy button click capture is intentionally disabled to avoid duplicates.
 
     injectRoleContract();
     tuckUtilities();
@@ -7512,7 +7540,7 @@ if (document.getElementById("neopetsApp")) {
     if (currentPageId === "database") injectDatabaseFocus();
     bindLongformDraft();
     reorderNeopets();
-    initArchiveModes();
+    // Archive is now three fixed columns; old filter modes are retired.
     initHome();
     refreshRecentViews();
 

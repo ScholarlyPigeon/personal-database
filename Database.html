@@ -4,13 +4,16 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Database</title>
-<link href="Style.css?v=20261010-cleanheaders4" rel="stylesheet"/>
+<title>Home · Personal Intranet</title>
+<link href="Style.css?v=20261010-workspace7" rel="stylesheet"/>
 <script defer="" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script defer="" src="CloudSync.js?v=20261010-cleanheaders4"></script>
-<script defer="" src="Script.js?v=20261010-tilefocus5"></script>
-<link href="Planner.css?v=20261010-cleanheaders4" rel="stylesheet"/>
-<script defer="" src="Planner.js?v=20261010-cleanheaders4"></script>
+<script defer="" src="CloudSync.js?v=20261010-workspace7"></script>
+<script defer src="Activity.js?v=20261010-workspace7"></script>
+<script defer="" src="Script.js?v=20261010-workspace7"></script>
+<link href="Planner.css?v=20261010-workspace7" rel="stylesheet"/>
+<script defer="" src="Planner.js?v=20261010-workspace7"></script>
+<link rel="stylesheet" href="Workspace.css?v=20261010-workspace7">
+<script defer src="Workspace.js?v=20261010-workspace7"></script>
 </head>
 <body class="database-body" data-theme="dark">
 <div class="page database-page">
@@ -18,7 +21,7 @@
 <div class="brand">
 <div aria-hidden="true" class="pi-mark">🗃️</div>
 <div>
-<h1 class="editable-ui" contenteditable="true" data-ui-save="page-title">database</h1>
+<h1 class="editable-ui" contenteditable="true" data-ui-save="page-home-title">Home</h1>
 </div>
 </div>
 <div class="header-right">
@@ -27,17 +30,16 @@
 <span aria-live="polite" class="sync-status" id="saveStatus">cloud ready</span><details class="ecosystem-menu">
 <summary>pages</summary>
 <nav aria-label="Open another page" class="ecosystem-menu-popover">
-<a href="index.html">⌂ Home</a>
-<a aria-current="page" class="current" href="Database.html">🗃 Database</a>
+<a aria-current="page" class="current" href="Database.html">⌂ Home</a>
 <a href="Week.html">🗓️ This Week</a>
 <a href="Month.html">📅 This Month</a>
 <a href="Aquarium.html">🪼 Aquarium</a>
-<a href="Patterns.html">🧭 Archives</a>
-<a href="Almanac.html">📖 Almanac</a>
+<a href="Patterns.html">🧭 Archive</a>
+<a href="Almanac.html">◷ Timeline &amp; Notes</a>
 <a href="Longform.html">✎ Longform</a>
 <a href="neopets.html">✦ Neopets</a>
 </nav>
-</details><select aria-label="Database theme" class="theme-select" id="themeSelect" title="Choose a Database theme">
+</details><select aria-label="Theme" class="theme-select" id="themeSelect" title="Choose a theme">
 <optgroup label="Dark themes">
 <option value="dark">🌙 Dark Original</option>
 <option value="aquarium">🐠 Dark Teal Celestial Aquarium</option>
@@ -55,7 +57,7 @@
 <option value="fall">🍂 Fall</option>
 <option value="study">📜 Study</option>
 </optgroup>
-</select><details class="ecosystem-menu pi-tools-menu"><summary>tools</summary><div class="pi-tools-popover"><button class="small-button cloud-login-button" id="cloudLoginButton" type="button">cloud login</button><button class="small-button selection-mode-button" id="selectModeButton" type="button">select</button><button class="small-button selection-action-button" hidden="" id="selectionActionButton" type="button">archive selected</button></div></details><button class="small-button backup-button" id="localBackupButton" title="Download a JSON snapshot of your current Personal Intranet data" type="button">backup</button></div>
+</select><details class="ecosystem-menu pi-tools-menu"><summary>tools</summary><div class="pi-tools-popover"><button type="button" class="small-button" data-pi-open-inbox>inbox</button><button class="small-button cloud-login-button" id="cloudLoginButton" type="button">cloud login</button><button class="small-button selection-mode-button" id="selectModeButton" type="button">select</button><button class="small-button selection-action-button" hidden="" id="selectionActionButton" type="button">archive selected</button></div></details><button class="small-button backup-button" id="localBackupButton" title="Download a JSON snapshot of your current Personal Intranet data" type="button">backup</button></div>
 </header>
 <div class="content-shell database-grid">
 <aside class="left-rail">

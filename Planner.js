@@ -181,7 +181,7 @@
      const list=el('div','planner-day-items');const entries=getDayEntries(date);
      const shown=kind==='month'?entries.slice(0,3):entries;
      shown.forEach(({item})=>list.append(row(item,-1,'',true,'preview')));
-     if(kind==='month'&&entries.length>shown.length)list.append(el('span','planner-overflow',`+${entries.length-shown.length} more`));
+     if(kind==='month'&&entries.length>shown.length){card.classList.add('has-extra-items');const extra=el('span','planner-extra-count',`+${entries.length-shown.length} more`);extra.title=`${entries.length-shown.length} additional items`;card.append(extra);}
      card.append(list);
      if(kind==='month')card.append(el('span','planner-mobile-count',entries.length?`${entries.length} item${entries.length===1?'':'s'}`:''));
      if(!readonly){const plus=button('+','Add item for '+date,()=>openDay(date));plus.classList.add('planner-add-toggle');card.append(plus);}

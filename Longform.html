@@ -5,10 +5,11 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Longform Notes</title>
-<link href="Style.css?v=20261010-cleanheaders4" rel="stylesheet"/>
+<link href="Style.css?v=20261010-workspace7" rel="stylesheet"/>
 <script defer="" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script defer="" src="CloudSync.js?v=20261010-cleanheaders4"></script>
-<script defer="" src="Script.js?v=20261010-tilefocus5"></script>
+<script defer="" src="CloudSync.js?v=20261010-workspace7"></script>
+<script defer src="Activity.js?v=20261010-workspace7"></script>
+<script defer="" src="Script.js?v=20261010-workspace7"></script>
 <style>
         /* =========================================================
            LONGFORM V7 — NOTE TITLES + MOBILE CONTAINMENT
@@ -228,8 +229,10 @@
             }
         }
     </style>
-<link href="Planner.css?v=20261010-cleanheaders4" rel="stylesheet"/>
-<script defer="" src="Planner.js?v=20261010-cleanheaders4"></script>
+<link href="Planner.css?v=20261010-workspace7" rel="stylesheet"/>
+<script defer="" src="Planner.js?v=20261010-workspace7"></script>
+<link rel="stylesheet" href="Workspace.css?v=20261010-workspace7">
+<script defer src="Workspace.js?v=20261010-workspace7"></script>
 </head>
 <body data-default-theme="study">
 <div class="longform-page" id="longformApp">
@@ -244,17 +247,16 @@
 <span aria-live="polite" class="sync-status" id="saveStatus">cloud ready</span><details class="ecosystem-menu">
 <summary>pages</summary>
 <nav aria-label="Open another page" class="ecosystem-menu-popover">
-<a href="index.html">⌂ Home</a>
-<a href="Database.html">🗃 Database</a>
+<a href="Database.html">⌂ Home</a>
 <a href="Week.html">🗓️ This Week</a>
 <a href="Month.html">📅 This Month</a>
 <a href="Aquarium.html">🪼 Aquarium</a>
-<a href="Patterns.html">🧭 Archives</a>
-<a href="Almanac.html">📖 Almanac</a>
+<a href="Patterns.html">🧭 Archive</a>
+<a href="Almanac.html">◷ Timeline &amp; Notes</a>
 <a aria-current="page" class="current" href="Longform.html">✎ Longform</a>
 <a href="neopets.html">✦ Neopets</a>
 </nav>
-</details><select aria-label="Theme" class="theme-select" id="themeSelect"></select><details class="ecosystem-menu pi-tools-menu"><summary>tools</summary><div class="pi-tools-popover"><button class="small-button cloud-login-button" id="cloudLoginButton" type="button">cloud login</button></div></details></div>
+</details><select aria-label="Theme" class="theme-select" id="themeSelect"></select><details class="ecosystem-menu pi-tools-menu"><summary>tools</summary><div class="pi-tools-popover"><button type="button" class="small-button" data-pi-open-inbox>inbox</button><button class="small-button cloud-login-button" id="cloudLoginButton" type="button">cloud login</button></div></details></div>
 </header>
 <main class="longform-workspace">
 <aside class="panel longform-library" data-collapsible-panel="longform-library">
@@ -286,7 +288,7 @@
 <span>category <button class="longform-manage-categories" id="manageLongformCategories" type="button">manage</button></span>
 <select id="longformCategory">
 <option value="important">Important</option>
-<option selected="" value="database">Database</option>
+<option selected="" value="database">Home</option>
 <option value="misc">Misc.</option>
 </select>
 </label>

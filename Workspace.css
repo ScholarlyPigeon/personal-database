@@ -1,0 +1,126 @@
+/* October 2026 workspace pass: clean Archive and Timeline + Notes.
+   Scoped overrides deliberately come after the existing large theme sheet. */
+.pi-archive-clean,.pi-reflections-page{width:min(1580px,calc(100% - 22px));margin:0 auto;padding:12px 0 calc(var(--pi-dock-space,80px) + 12px);box-sizing:border-box;color:var(--text);min-width:0}
+.pi-archive-clean .patterns-header,.pi-reflections-page .almanac-header{min-height:48px;margin-bottom:10px}
+.pi-archive-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 12px;margin-bottom:10px;background:var(--panel);border:1px solid var(--border);border-radius:10px;min-height:36px}
+.pi-archive-toolbar .pi-archive-total{color:var(--muted);font-size:11px}
+.pi-archive-month-slot{margin-left:auto;display:flex;align-items:center;justify-content:flex-end}
+.pi-archive-month-slot .planner-action{font-size:11px;min-height:26px;padding:4px 9px;white-space:nowrap;color:var(--teal-soft);border:1px solid var(--border);background:var(--panel-light);border-radius:7px}
+.pi-archive-board{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:10px!important;min-height:0;height:calc(100dvh - var(--pi-dock-space,80px) - 142px)!important;align-items:stretch!important;overflow:hidden!important}
+.pi-archive-board .pi-archive-column{display:grid!important;grid-template-rows:42px minmax(0,1fr)!important;min-width:0;min-height:0;height:100%!important;max-height:none!important;overflow:hidden!important;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}
+.pi-archive-column .panel-header{height:42px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);padding:8px 12px;background:var(--panel-light)}
+.pi-archive-column .panel-header h2{margin:0;font-size:14px;line-height:1.3;font-family:'Trebuchet MS','Segoe UI',sans-serif;color:var(--text)}
+.pi-archive-count{font-size:11px;color:var(--muted);border:1px solid var(--border);border-radius:999px;padding:2px 7px}
+.pi-archive-scroll{min-width:0;min-height:0;height:100%;overflow-x:hidden;overflow-y:auto;padding:10px;scrollbar-width:thin;scrollbar-color:var(--teal) transparent}
+.pi-history-record{padding:11px 12px;margin-bottom:8px;background:var(--panel-light);border:1px solid var(--border);border-radius:10px;min-width:0}
+.pi-history-head{display:flex;align-items:center;gap:7px;min-width:0}
+.pi-history-head strong{font-size:12px;line-height:1.4;flex:1;min-width:0;overflow-wrap:anywhere}
+.pi-history-head small{color:var(--muted);font-size:10px}
+.pi-mini-icon{color:var(--muted);background:transparent;border:1px solid var(--border);border-radius:6px;min-width:25px;min-height:25px;display:grid;place-items:center;cursor:pointer;padding:2px 5px;flex-shrink:0}
+.pi-mini-icon:hover{border-color:var(--teal);color:var(--text)}
+.pi-history-body{display:none;padding:10px 0 0 2px;max-height:330px;overflow-y:auto}
+.pi-history-record.expanded .pi-history-body{display:block}
+.pi-history-entry{display:flex;align-items:flex-start;gap:6px;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px;overflow-wrap:anywhere}
+.pi-history-entry.done span{text-decoration:line-through;color:var(--muted)}
+.pi-history-entry input{accent-color:var(--teal);flex-shrink:0;margin-top:3px}
+.pi-history-text{font-size:12px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere;margin:8px 0}
+.pi-muted{font-size:11px;color:var(--muted);line-height:1.5}
+.pi-activity-entry{display:flex;flex-direction:column;gap:3px;text-decoration:none;background:var(--panel-light);border:1px solid var(--border);border-radius:9px;padding:9px 11px;margin-bottom:6px;color:var(--text);overflow-wrap:anywhere}
+.pi-activity-entry:hover{border-color:var(--teal);background:color-mix(in srgb,var(--panel-light) 92%,var(--teal))}
+.pi-activity-action{font-size:12px;font-weight:700}
+.pi-activity-text{font-size:12px;opacity:.95}
+.pi-activity-entry .pi-muted{text-transform:capitalize}
+/* Timeline + Notes: three areas, writing space intentionally widest. */
+.pi-reflections-grid{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr) minmax(0,1.12fr)!important;gap:10px!important;align-items:stretch!important;height:calc(100dvh - var(--pi-dock-space,80px) - 92px)!important;min-height:480px;overflow:hidden!important}
+.pi-reflections-grid > .pi-workspace-panel{display:flex!important;flex-direction:column!important;min-width:0!important;min-height:0!important;max-height:none!important;height:100%!important;overflow:hidden!important;background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}
+.pi-workspace-panel .pi-workspace-head{display:flex;align-items:center;justify-content:space-between;gap:9px;min-height:43px;padding:8px 10px;background:var(--panel-light);border-bottom:1px solid var(--border)}
+.pi-workspace-head h2{margin:0;color:var(--text);font-size:15px;font-family:'Trebuchet MS','Segoe UI',sans-serif;min-width:0}
+.pi-workspace-actions{display:flex;align-items:center;gap:5px;flex-wrap:wrap;justify-content:flex-end}
+.pi-workspace-scroll{flex:1;min-height:0;min-width:0;overflow:auto;padding:10px;scrollbar-width:thin}
+.pi-workspace-form{display:flex;flex-direction:column;min-height:0;flex:1;padding:13px;gap:9px;overflow:auto}
+.pi-workspace-form label{font-size:11px;color:var(--muted)}
+.pi-workspace-form input,.pi-workspace-form select,.pi-workspace-form textarea{display:block;width:100%;box-sizing:border-box;min-width:0;border:1px solid var(--border);border-radius:8px;background:var(--bg-soft);color:var(--text);font:inherit;padding:9px}
+.pi-workspace-form input{font-size:13px}
+.pi-workspace-form-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
+.pi-workspace-form-row > label{min-width:0}
+.pi-note-editor{flex:1;min-height:190px;border:1px solid var(--border);border-radius:10px;padding:12px;background:var(--bg-soft);color:var(--text);font-size:14px;line-height:1.6;overflow:auto;outline:none;overflow-wrap:anywhere}
+.pi-note-editor:focus,.pi-workspace-form input:focus{border-color:var(--teal)}
+.pi-note-editor:empty:before,[contenteditable][data-placeholder]:empty:before{content:attr(data-placeholder);color:var(--faint);pointer-events:none}
+.pi-form-foot{display:flex;align-items:center;justify-content:space-between;gap:9px}
+.pi-primary{border:1px solid color-mix(in srgb,var(--teal) 65%,var(--border));border-radius:8px;background:var(--teal);color:#11191b;font-weight:700;padding:8px 13px;cursor:pointer}
+.pi-workspace-quiet{background:var(--panel-light);border:1px solid var(--border);border-radius:7px;color:var(--text);padding:5px 8px;cursor:pointer;font-size:11px;white-space:nowrap}
+.pi-workspace-quiet:hover{border-color:var(--teal)}
+.pi-note-attach{font-size:11px;color:var(--muted)}
+.pi-note-attach > summary{cursor:pointer;margin:4px 0}
+.pi-note-attach > div{display:grid;gap:7px;padding:7px 0}
+.pi-note-card,.pi-notes-section{border:1px solid var(--border);background:var(--panel-light);border-radius:10px;margin-bottom:8px;min-width:0;overflow:hidden}
+.pi-note-card-head{display:flex;align-items:center;gap:5px;padding:8px 7px;min-width:0}
+.pi-card-title,.pi-section-name{min-width:0;flex:1;outline:none;word-break:break-word;font-weight:700;line-height:1.4;color:var(--text);font-size:12px}
+.pi-card-title:focus,.pi-section-name:focus{background:rgba(255,255,255,.07);border-radius:3px}
+.pi-note-card-body{padding:11px 12px;min-height:54px;font-size:12px;line-height:1.65;outline:none;border-top:1px solid var(--border);overflow-wrap:anywhere;white-space:normal}
+.pi-note-card-body:focus{background:rgba(255,255,255,.04)}
+.pi-note-subrow{display:flex;gap:5px;align-items:center;justify-content:space-between;padding:0 8px 8px}
+.pi-card-date,.pi-card-section-select{font-size:10px!important;min-width:0;max-width:48%;padding:3px 5px!important;border:1px solid var(--border)!important;border-radius:5px!important;background:var(--bg-soft)!important;color:var(--text)!important}
+.pi-timeline-card .pi-card-date{max-width:115px}
+.pi-card-section-select{max-width:56%}
+.pi-notes-section-head{display:flex;align-items:center;gap:4px;padding:7px;cursor:default;min-width:0}
+.pi-notes-section-body{border-top:1px solid var(--border);padding:9px 8px 2px;min-height:32px}
+.pi-notes-section-body > .pi-muted{padding:5px 3px}
+.pi-move-handle{cursor:grab}
+.pi-move-selected{outline:2px dashed var(--teal);outline-offset:-2px}
+.pi-drop-ready{outline:2px dashed var(--plum-soft);outline-offset:-2px;background:color-mix(in srgb,var(--panel-light) 85%,var(--plum))}
+.pi-note-image{max-width:100%;max-height:250px;object-fit:contain;display:block;margin:4px auto 10px}
+.pi-note-link{display:inline-block;padding:6px 9px;color:var(--teal-soft)}
+.pi-timeline-add{border-top:1px solid var(--border);padding:9px 10px;display:flex;flex-direction:column;gap:5px}
+.pi-timeline-add input,.pi-timeline-add textarea{width:100%;min-width:0;border:1px solid var(--border);border-radius:7px;background:var(--bg-soft);padding:7px;color:var(--text);font:inherit}
+.pi-timeline-add textarea{min-height:44px;resize:vertical}
+.pi-timeline-add-row{display:flex;gap:6px;align-items:center;justify-content:space-between}
+.pi-timeline-add-row input{width:145px;max-width:55%}
+.pi-timeline-add-row .pi-workspace-quiet{font-weight:700}
+@media(max-width:1020px){
+ .pi-reflections-grid{grid-template-columns:minmax(0,.9fr) minmax(0,1.15fr)!important;height:auto!important;overflow:visible!important;min-height:0}
+ .pi-reflections-grid > .pi-workspace-panel{height:560px!important}
+ .pi-reflections-grid > .pi-saved-notes-panel{grid-column:1/-1;height:460px!important}
+}
+@media(max-width:760px){
+ html:has(.pi-archive-clean),html:has(.pi-reflections-page){height:auto!important;overflow-y:auto!important}
+ body:has(.pi-archive-clean),body:has(.pi-reflections-page){height:auto!important;min-height:100dvh!important;overflow-y:auto!important;overflow-x:hidden!important}
+ .pi-archive-clean,.pi-reflections-page{width:calc(100% - 12px);padding-bottom:calc(var(--pi-dock-space,80px) + 25px)!important;height:auto!important;overflow:visible!important}
+ .pi-archive-board,.pi-reflections-grid{display:grid!important;grid-template-columns:minmax(0,1fr)!important;height:auto!important;min-height:0!important;overflow:visible!important;gap:8px!important}
+ .pi-archive-board .pi-archive-column,.pi-reflections-grid > .pi-workspace-panel{height:auto!important;max-height:none!important;min-height:280px!important;overflow:visible!important;display:flex!important;flex-direction:column!important}
+ .pi-archive-board .pi-archive-column{display:grid!important;grid-template-rows:auto minmax(220px,auto)!important}
+ .pi-archive-scroll,.pi-workspace-scroll{height:auto!important;max-height:460px;overflow:auto!important;flex:none!important}
+ .pi-reflections-grid > .pi-saved-notes-panel{grid-column:auto;height:auto!important}
+ .pi-reflections-grid .pi-workspace-form{min-height:420px}
+ .pi-note-editor{min-height:225px}
+ .pi-reflections-grid > .pi-workspace-panel:nth-child(2){order:2}
+ .pi-reflections-grid > .pi-workspace-panel:nth-child(1){order:1}
+ .pi-reflections-grid > .pi-workspace-panel:nth-child(3){order:3}
+ .pi-archive-month-slot .planner-action{padding:5px 7px}
+ .pi-archive-toolbar{flex-wrap:wrap}
+}
+/* The month day tile always reveals how many additional items are tucked away. */
+.planner-grid.is-month .planner-day.has-extra-items{padding-bottom:23px!important}
+.planner-grid.is-month .planner-day .planner-extra-count{position:absolute;left:7px;bottom:4px;z-index:3;display:inline-flex!important;align-items:center;padding:1px 4px;border-radius:5px;background:color-mix(in srgb,var(--panel-light) 92%,var(--teal));border:1px solid color-mix(in srgb,var(--border) 70%,transparent);color:var(--teal-soft);font-size:10px;line-height:1.25;white-space:nowrap;max-width:calc(100% - 11px);overflow:hidden;text-overflow:ellipsis;pointer-events:none}
+@media(max-width:700px){.planner-grid.is-month .planner-day.has-extra-items{padding-bottom:15px!important}.planner-grid.is-month .planner-day .planner-extra-count{font-size:9px;bottom:2px;left:3px;padding:0 2px}}
+/* Archive header inherits an older mobile grid that assigned both Pages and
+   Tools to the same cell. Restore four independent, visible controls. */
+@media(max-width:900px){
+ html.patterns-page-html .pi-archive-clean .patterns-header-actions{
+  display:flex!important;flex-wrap:wrap!important;align-items:center!important;
+  justify-content:flex-start!important;gap:6px!important;width:100%!important;
+  grid-template-areas:none!important;grid-template-columns:none!important;
+ }
+ html.patterns-page-html .pi-archive-clean .patterns-header-actions > .sync-status{
+  grid-area:auto!important;flex:0 0 auto!important;order:0!important;
+ }
+ html.patterns-page-html .pi-archive-clean .patterns-header-actions > .ecosystem-menu{
+  grid-area:auto!important;display:block!important;flex:0 0 auto!important;
+  width:auto!important;min-width:64px!important;order:1!important;
+ }
+ html.patterns-page-html .pi-archive-clean .patterns-header-actions > .theme-select{
+  grid-area:auto!important;flex:1 1 120px!important;width:auto!important;
+  max-width:220px!important;min-width:120px!important;order:2!important;
+ }
+ html.patterns-page-html .pi-archive-clean .patterns-header-actions > .pi-tools-menu{order:3!important;}
+}
