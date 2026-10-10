@@ -15126,3 +15126,33 @@ html.aquarium-page .aq-board-section.collapsed .aq-section-toggle{transform:none
 header .theme-select {flex:0 1 auto;min-width:110px;max-width:min(185px,28vw)}
 header .pi-tools-popover .theme-select {display:none!important}
 @media(max-width:700px){header .theme-select{min-width:90px;max-width:125px;font-size:12px}html.aquarium-page .aq-section-divider{gap:4px!important;grid-template-columns:16px minmax(8px,1fr) auto minmax(8px,1fr) 18px!important}}
+
+/* Aquarium headers: clean, full-width section bars without divider lines. */
+html.aquarium-page .aq-section-divider {
+    display:grid!important;
+    grid-template-columns: 18px minmax(0,1fr) 18px!important;
+    align-items:center!important;
+    gap:6px!important;
+    width:calc(100% - 6px);
+}
+html.aquarium-page .aq-section-line { display:none!important; }
+html.aquarium-page .aq-section-toggle {grid-column:1!important;}
+html.aquarium-page .aq-section-label {
+    grid-column:2!important;
+    justify-self:center!important;
+    text-align:center!important;
+    min-width:0!important;
+    max-width:100%!important;
+    width:auto!important;
+}
+html.aquarium-page .aq-section-remove {
+    grid-column:3!important;
+    justify-self:end!important;
+    margin:0!important;
+}
+@media(max-width:700px){
+ html.aquarium-page .aq-section-divider {
+   grid-template-columns:18px minmax(0,1fr) 18px!important;
+   gap:5px!important;
+ }
+}

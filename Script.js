@@ -3591,9 +3591,6 @@ if (document.getElementById("aquariumApp")) {
             toggle.textContent = collapsed ? "▸" : "▾";
             toggle.setAttribute("aria-hidden", "true");
 
-            const lineLeft = document.createElement("span");
-            lineLeft.className = "aq-section-line";
-
             const label = document.createElement("div");
             label.className = "aq-section-label";
             label.contentEditable = "true";
@@ -3607,9 +3604,7 @@ if (document.getElementById("aquariumApp")) {
                 saveAquariumState();
             });
 
-            const lineRight = document.createElement("span");
-            lineRight.className = "aq-section-line";
-            divider.append(toggle, lineLeft, label, lineRight);
+            divider.append(toggle, label);
             const removeSection = document.createElement("button");
             removeSection.type = "button";
             removeSection.className = "aq-section-remove";
@@ -3628,7 +3623,7 @@ if (document.getElementById("aquariumApp")) {
                 saveCollapsedAquariumSections(); saveAquariumState(); renderAquarium();
             });
             removeSection.addEventListener("keydown", event => event.stopPropagation());
-            divider.insertBefore(removeSection, lineRight);
+            divider.appendChild(removeSection);
 
             function toggleSection() {
                 if (collapsedAquariumSections.has(section.id)) collapsedAquariumSections.delete(section.id);

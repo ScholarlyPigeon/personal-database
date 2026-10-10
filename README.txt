@@ -1,3 +1,9 @@
+PERSONAL INTRANET | AQUARIUM CLEAN HEADERS | OCTOBER 10, 2026
+
+Changed only Aquarium section header markup and styling: removed decorative divider lines, centered header titles across full section bars, kept collapse controls and delete ×. All other page logic and user-data keys unchanged. CloudSync.js copied byte-for-byte. HTML cache versions bumped to load the new CSS and Script.js.
+
+BACKUP: Download current JSON backup before uploading. Upload the ZIP contents to GitHub Pages repository root. Verify expand/collapse and tile interactions in your browser.
+
 PERSONAL INTRANET | PASS ONE REPAIR 3 | OCTOBER 10, 2026
 
 FIXED
