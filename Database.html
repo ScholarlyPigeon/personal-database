@@ -5,12 +5,12 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Database</title>
-<link href="Style.css?v=20261009-calendar2" rel="stylesheet"/>
+<link href="Style.css?v=20261010-repair2" rel="stylesheet"/>
 <script defer="" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script defer="" src="CloudSync.js?v=20261009-calendar2"></script>
-<script defer="" src="Script.js?v=20261009-calendar2"></script>
-<link href="Planner.css?v=20261009-calendar2" rel="stylesheet"/>
-<script defer="" src="Planner.js?v=20261009-calendar2"></script>
+<script defer="" src="CloudSync.js?v=20261010-repair2"></script>
+<script defer="" src="Script.js?v=20261010-repair2"></script>
+<link href="Planner.css?v=20261010-repair2" rel="stylesheet"/>
+<script defer="" src="Planner.js?v=20261010-repair2"></script>
 </head>
 <body class="database-body" data-theme="dark">
 <div class="page database-page">
@@ -23,12 +23,12 @@
 </div>
 <div class="header-right">
 <div class="sync-tools">
-<span aria-live="polite" class="sync-status" id="saveStatus">cloud ready</span>
 
-<button class="small-button backup-button" id="localBackupButton" title="Download a JSON snapshot of your current Personal Intranet data" type="button">backup</button>
+
 </div>
-<nav aria-label="Database pages" class="page-nav">
-<details class="ecosystem-menu">
+
+
+<span aria-live="polite" class="sync-status" id="saveStatus">cloud ready</span><details class="ecosystem-menu">
 <summary>pages</summary>
 <nav aria-label="Open another page" class="ecosystem-menu-popover">
 <a href="index.html">⌂ Home</a>
@@ -41,11 +41,7 @@
 <a href="Longform.html">✎ Longform</a>
 <a href="neopets.html">✦ Neopets</a>
 </nav>
-</details>
-</nav>
-
-
-<details class="ecosystem-menu pi-tools-menu"><summary>tools</summary><div class="pi-tools-popover"><button class="small-button cloud-login-button" id="cloudLoginButton" type="button">cloud login</button><button class="small-button selection-mode-button" id="selectModeButton" type="button">select</button><button class="small-button selection-action-button" hidden="" id="selectionActionButton" type="button">archive selected</button></div></details><select aria-label="Database theme" class="theme-select" id="themeSelect" title="Choose a Database theme">
+</details><select aria-label="Database theme" class="theme-select" id="themeSelect" title="Choose a Database theme">
 <optgroup label="Dark themes">
 <option value="dark">🌙 Dark Original</option>
 <option value="aquarium">🐠 Dark Teal Celestial Aquarium</option>
@@ -63,8 +59,7 @@
 <option value="fall">🍂 Fall</option>
 <option value="study">📜 Study</option>
 </optgroup>
-</select>
-</div>
+</select><details class="ecosystem-menu pi-tools-menu"><summary>tools</summary><div class="pi-tools-popover"><button class="small-button cloud-login-button" id="cloudLoginButton" type="button">cloud login</button><button class="small-button selection-mode-button" id="selectModeButton" type="button">select</button><button class="small-button selection-action-button" hidden="" id="selectionActionButton" type="button">archive selected</button></div></details><button class="small-button backup-button" id="localBackupButton" title="Download a JSON snapshot of your current Personal Intranet data" type="button">backup</button></div>
 </header>
 <div class="content-shell database-grid">
 <aside class="left-rail">

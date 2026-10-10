@@ -5,12 +5,12 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Paige's Neopets Corner</title>
-<link href="Style.css?v=20261009-calendar2" rel="stylesheet"/>
+<link href="Style.css?v=20261010-repair2" rel="stylesheet"/>
 <script defer="" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script defer="" src="CloudSync.js?v=20261009-calendar2"></script>
-<script defer="" src="Script.js?v=20261009-calendar2"></script>
-<link href="Planner.css?v=20261009-calendar2" rel="stylesheet"/>
-<script defer="" src="Planner.js?v=20261009-calendar2"></script>
+<script defer="" src="CloudSync.js?v=20261010-repair2"></script>
+<script defer="" src="Script.js?v=20261010-repair2"></script>
+<link href="Planner.css?v=20261010-repair2" rel="stylesheet"/>
+<script defer="" src="Planner.js?v=20261010-repair2"></script>
 </head>
 <body class="neopets-page" data-default-theme="fieldnotes">
 <div class="neo-page neo-field-page" id="neopetsApp">
@@ -20,7 +20,10 @@
 <p class="neo-ui-edit" contenteditable="true" data-neo-ui="subtitle">dreamies • treasures • daily wandering</p>
 </div>
 <div class="neo-header-tools">
-<details class="ecosystem-menu">
+
+
+
+<span aria-live="polite" class="sync-status" id="saveStatus">cloud ready</span><details class="ecosystem-menu">
 <summary>pages</summary>
 <nav aria-label="Open another page" class="ecosystem-menu-popover">
 <a href="index.html">⌂ Home</a>
@@ -33,15 +36,10 @@
 <a href="Longform.html">✎ Longform</a>
 <a aria-current="page" class="current" href="neopets.html">✦ Neopets</a>
 </nav>
-</details>
-<span aria-live="polite" class="sync-status" id="saveStatus">cloud ready</span>
-
-<details class="ecosystem-menu pi-tools-menu"><summary>tools</summary><div class="pi-tools-popover"><button class="small-button cloud-login-button" id="cloudLoginButton" type="button">cloud login</button><div class="neo-status">
+</details><details class="ecosystem-menu pi-tools-menu"><summary>tools</summary><div class="pi-tools-popover"><select aria-label="Theme" class="theme-select" id="themeSelect"></select><button class="small-button cloud-login-button" id="cloudLoginButton" type="button">cloud login</button><div class="neo-status">
 <span class="neo-ui-edit" contenteditable="true" data-neo-ui="status-label">currently:</span>
 <strong class="neo-ui-edit" contenteditable="true" data-neo-ui="status">wandering neopia</strong>
-</div></div></details><select aria-label="Theme" class="theme-select" id="themeSelect"></select>
-
-</div>
+</div></div></details></div>
 </header>
 <section class="neo-card neo-dream-card" data-collapsible-panel="neo-dreamies">
 <div class="neo-panel-heading">

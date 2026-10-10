@@ -15085,3 +15085,25 @@ body:is([data-theme="clarity-dark"],[data-theme="clarity-light"]) :is(.pi-home-i
   .aq-direct-section-zone{display:flex!important;flex-direction:column}
   .aq-direct-section-zone>.aq-card{flex:initial;width:100%}
 }
+
+/* Pass One repair: restore grouped, collapsible Aquarium tiles. */
+html.aquarium-page .aq-category-grid:not(.aq-direct-section-zone){display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px}
+html.aquarium-page .aq-category{min-width:0}
+html.aquarium-page .aq-card-meta .aq-kind-select{display:none!important}
+html.aquarium-page .aq-kind-select-row{display:none!important}
+html.aquarium-page .aq-filter-dropdown{display:none!important}
+html.aquarium-page .aq-tile-focus{font-size:15px;min-width:24px;min-height:24px}
+html.aquarium-page .aq-section-remove{font-size:12px!important;min-width:17px!important;width:17px!important;min-height:17px!important;height:17px!important;padding:0!important;margin-left:auto}
+.pi-aq-tile-dialog{background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:14px;padding:16px;width:min(900px,94vw);height:min(85dvh,850px);max-height:90dvh;overflow:hidden}
+.pi-aq-tile-dialog::backdrop{background:#000b}
+.pi-aq-tile-dialog[open]{display:flex;flex-direction:column;gap:12px}
+.pi-aq-tile-dialog-top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.pi-aq-tile-dialog-content{flex:1;min-height:0;overflow:auto}
+.pi-aq-tile-dialog-content>.aq-category{height:auto;min-height:100%;width:100%;max-width:none}
+.pi-aq-tile-dialog-content .aq-category-zone{max-height:none!important;overflow:visible!important}
+.pi-aq-tile-dialog-content .aq-card{max-width:none!important}
+/* Only one Tools dropdown. Themes remain visible on Database. */
+header .pi-utility-menu{display:none!important}
+.pi-tools-popover .theme-select{display:block!important;width:100%!important;max-width:100%!important}
+.database-header .header-right>.theme-select{display:block!important;min-width:145px!important}
+@media(max-width:760px){html.aquarium-page .aq-category-grid:not(.aq-direct-section-zone){grid-template-columns:1fr!important}}

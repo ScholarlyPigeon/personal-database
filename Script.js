@@ -3225,42 +3225,7 @@ if (document.getElementById("aquariumApp")) {
         meta.append(kindSelect, created);
         const actions = document.createElement("div");
         actions.className = "aq-card-actions";
-        const focus = document.createElement("button");
-        focus.type = "button";
-        focus.className = "aq-card-focus";
-        focus.textContent = "⤢";
-        focus.title = "Open a larger focused editor";
-        focus.setAttribute("aria-label", "Expand thought");
-        focus.addEventListener("click", event => {
-            event.stopPropagation();
-            const dialog = document.createElement("dialog");
-            dialog.className = "pi-aq-focus-dialog";
-            const shell = document.createElement("div");
-            shell.className = "pi-aq-focus-shell";
-            const top = document.createElement("div");
-            top.className = "pi-aq-focus-top";
-            const heading = document.createElement("strong"); heading.textContent = "Focused thought";
-            const close = document.createElement("button"); close.type = "button"; close.className = "small-button"; close.textContent = "×"; close.setAttribute("aria-label", "Close focused thought");
-            close.onclick = () => dialog.close();
-            top.append(heading, close);
-            const titleField = document.createElement("input"); titleField.className = "pi-aq-focus-title"; titleField.value = card.title || ""; titleField.placeholder = "Title";
-            const textField = document.createElement("div"); textField.className = "pi-aq-focus-editor"; textField.contentEditable = "true"; textField.innerHTML = card.html || ""; textField.dataset.placeholder = "Write here…";
-            const save = document.createElement("button"); save.type = "button"; save.className = "small-button"; save.textContent = "Save and close";
-            const persist = () => {
-                card.title = cleanAquariumTitle(titleField.value) || "Untitled note";
-                card.html = textField.innerHTML;
-                card.text = aquariumPlainTextFromHtml(card.html);
-                saveAquariumState();
-            };
-            titleField.addEventListener("input", persist);
-            textField.addEventListener("input", persist);
-            save.onclick = () => { persist(); dialog.close(); };
-            shell.append(top, titleField, textField, save); dialog.append(shell); document.body.append(dialog);
-            dialog.addEventListener("close", () => { persist(); dialog.remove(); renderAquarium(); }, {once:true});
-            dialog.addEventListener("click", e => {if(e.target === dialog) dialog.close();});
-            dialog.showModal(); titleField.focus();
-        });
-        actions.append(selector, focus, archive, remove, collapse);
+        actions.append(selector, archive, remove, collapse);
         header.append(drag, title, actions);
 
         const body = document.createElement("div");
@@ -3534,7 +3499,34 @@ if (document.getElementById("aquariumApp")) {
             renderAquarium();
         });
 
-        actions.append(collapse, add, remove);
+        const focusTile = document.createElement("button");
+        focusTile.type = "button";
+        focusTile.className = "aq-mini-button aq-tile-focus";
+        focusTile.textContent = "⤢";
+        focusTile.title = "Open the entire tile in focus view";
+        focusTile.setAttribute("aria-label", "Focus tile " + category.name);
+        focusTile.addEventListener("click", event => {
+            event.stopPropagation();
+            const dialog = document.createElement("dialog");
+            dialog.className = "pi-aq-tile-dialog";
+            const top = document.createElement("div");
+            top.className = "pi-aq-tile-dialog-top";
+            const heading = document.createElement("strong"); heading.textContent = category.name;
+            const close = document.createElement("button"); close.type="button";close.textContent="×";close.className="small-button";close.setAttribute("aria-label","Close focused tile");
+            close.onclick = () => dialog.close();
+            top.append(heading,close);
+            const holder = document.createElement("div");holder.className="pi-aq-tile-dialog-content";
+            const parent = shell.parentNode, next = shell.nextSibling;
+            holder.appendChild(shell); dialog.append(top,holder);document.body.appendChild(dialog);
+            dialog.addEventListener("close",()=>{
+                if (next && next.parentNode === parent) parent.insertBefore(shell,next);
+                else if(parent) parent.appendChild(shell);
+                dialog.remove();
+            },{once:true});
+            dialog.addEventListener("click",e=>{if(e.target===dialog)dialog.close();});
+            dialog.showModal();
+        });
+        actions.append(focusTile, collapse, add, remove);
         head.append(handle, name, actions);
 
         const zone = document.createElement("div");
@@ -3682,29 +3674,22 @@ if (document.getElementById("aquariumApp")) {
                 moveAquariumCategory(sourceId, section.id);
             });
 
-            // The old categories remain in saved state for future reinstatement.
-            // All their cards now live directly in the containing section.
-            let categories = aquariumState.categories.filter(category => category.section === section.id);
-            if (!categories.length) {
-                const category = { id: `section-storage-${section.id}`, name: section.name, section: section.id, accent: "teal" };
+            const categories = aquariumState.categories.filter(category => category.section === section.id);
+            categories.forEach(category => grid.appendChild(makeAquariumCategoryShell(category)));
+            // Preserve the original category tiles and internal collapse/expand behavior.
+            // New tiles can still be added through the original + category control.
+            if (!categories.length) grid.appendChild(makeEmptyMessage("Add a tile to this section."));
+            const addTile = document.createElement("button");
+            addTile.type = "button";
+            addTile.className = "small-button aq-new-category";
+            addTile.textContent = "+ tile";
+            addTile.addEventListener("click", () => {
+                const category = { id: piUuid("category"), name: "New tile", section: section.id, accent: "teal" };
                 aquariumState.categories.push(category);
-                saveAquariumState(false);
-                categories = [category];
-            }
-            const categoryIds = new Set(categories.map(category => category.id));
-            grid.classList.add("aq-direct-section-zone", "aq-dropzone");
-            grid.dataset.zone = categories[0].id;
-            const cards = aquariumState.cards.filter(card => categoryIds.has(card.zone) && cardMatchesFilter(card));
-            if (!cards.length) grid.appendChild(makeEmptyMessage("Drop a thought here, or add one below."));
-            else cards.forEach(card => grid.appendChild(makeAquariumCard(card)));
-            const addCard = document.createElement("button");
-            addCard.type = "button";
-            addCard.className = "small-button aq-section-add";
-            addCard.textContent = "+ thought";
-            addCard.addEventListener("click", () => addBlankAquariumCard(categories[0].id));
-            grid.appendChild(addCard);
-            bindAquariumDropzone(grid);
-
+                saveAquariumState();
+                renderAquarium();
+            });
+            grid.appendChild(addTile);
             band.append(divider, grid);
             board.appendChild(band);
         });
@@ -7051,6 +7036,7 @@ if (document.getElementById("neopetsApp")) {
     }
 
     function tuckUtilities() {
+        return; // Headers own one Tools dropdown; never relocate Themes or Backup.
         if (currentPageId === "home") return;
         const holder = document.querySelector(
             ".database-header .header-right, .aq-header-actions, .patterns-header-actions, .almanac-header-actions, .longform-header-actions, .neo-header-tools"
