@@ -7,7 +7,7 @@
   const NOTE_COLLECTIONS = new Set([
     'pi-database-notes-v1', 'pi-aquarium-state-v3',
     'pi-longform-state-v1', 'pi-archive-workspace-v1',
-    'pi-planner-week-notes-v1', 'pi-reflections-notes-v1',
+    'pi-planner-week-notes-v1', 'pi-reflections-notes-v1', 'pi-compass-v1',
     'pi-almanac-state-v1', 'pi-strain-journal-v1'
   ]);
   const isNoteCollection = key => NOTE_COLLECTIONS.has(key) || /^pi-planner-month-\d{4}-\d{2}$/.test(key);
@@ -29,7 +29,7 @@
       'pi-aquarium-state-v3','pi-longform-state-v1','pi-longform-titles-v1',
       'pi-archive-v1','pi-archive-workspace-v1','pi-planner-week-notes-v1',
       'pi-neopets-state-v3','pi-almanac-state-v1','pi-strain-journal-v1',
-      'pi-reflections-notes-v1'
+      'pi-reflections-notes-v1','pi-compass-v1'
     ].includes(key);
   };
   const pageForKey = key => {
@@ -39,6 +39,7 @@
     if (key.includes('aquarium')) return 'aquarium';
     if (key.includes('longform')) return 'longform';
     if (key === 'pi-archive-workspace-v1' || key === 'pi-reflections-notes-v1') return 'almanac';
+    if (key === 'pi-compass-v1') return 'compass';
     if (key === 'pi-archive-v1') return 'archive';
     if (key.includes('neopets')) return 'neopets';
     return 'almanac';
@@ -54,6 +55,7 @@
     if (key.includes('longform')) return 'Longform';
     if (key.includes('archive-workspace')) return 'Timeline & Notes';
     if (key.includes('reflections')) return 'Timeline & Notes';
+    if (key.includes('compass')) return 'Compass';
     if (key.includes('archive')) return 'Archive';
     if (key.includes('neopets')) return 'Neopets';
     return 'Reference';

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+
+<html class="compass-page-html" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Compass</title>
+<link href="Style.css?v=20261011-compass1" rel="stylesheet"/>
+<script defer="" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script defer="" src="CloudSync.js?v=20261011-compass1"></script>
+<script defer="" src="Activity.js?v=20261011-compass1"></script>
+<script defer="" src="Script.js?v=20261011-compass1"></script>
+<link href="Planner.css?v=20261011-compass1" rel="stylesheet"/>
+<script defer="" src="Planner.js?v=20261011-compass1"></script>
+<link href="Workspace.css?v=20261011-compass1" rel="stylesheet"/>
+<script defer="" src="Workspace.js?v=20261011-compass1"></script>
+<link href="MobilePolish.css?v=20261011-compass1" rel="stylesheet">
+<script defer="" src="MobilePolish.js?v=20261011-compass1"></script>
+</head>
+<body class="pi-compass-body" data-default-theme="nightledger">
+<div class="pi-reflections-page pi-compass-page" id="compassApp">
+<header class="almanac-header">
+<div class="brand">
+<div aria-hidden="true" class="pi-mark">🧭</div>
+<div><h1>Compass</h1></div>
+</div>
+<div class="header-right almanac-header-actions"><span aria-live="polite" class="sync-status" id="saveStatus">cloud ready</span><select aria-label="Theme" class="theme-select" id="themeSelect"></select><details class="ecosystem-menu"><summary>pages</summary><nav aria-label="Open another page" class="ecosystem-menu-popover"><a href="Database.html">⌂ Home</a><a href="Aquarium.html">🪼 Aquarium</a><a href="Longform.html">✎ Longform</a><a aria-current="page" class="current" href="Compass.html">🧭 Compass</a><a href="Week.html">🗓️ This Week</a><a href="Month.html">📅 This Month</a><a href="Almanac.html">◷ Timeline</a><a href="Patterns.html">🗂 Archive</a><a href="neopets.html">✦ Neopets</a></nav></details><details class="ecosystem-menu pi-tools-menu"><summary>tools</summary><div class="pi-tools-popover"><button class="small-button" data-pi-open-inbox="" type="button">inbox</button><button class="small-button cloud-login-button" id="cloudLoginButton" type="button">cloud login</button></div></details></div>
+</header>
+<main aria-label="Goals and grounding workspace" class="pi-compass-grid" id="piCompass">
+<section class="pi-workspace-panel pi-compass-column-panel"><div class="pi-workspace-head"><h2>↖ Goals</h2><div class="pi-workspace-actions"><span class="pi-archive-count" id="piCompassGoalsCount">0</span><button class="pi-workspace-quiet" id="piCompassAddGoalSection" type="button">+ section</button></div></div><div class="pi-workspace-scroll" id="piCompassGoalsList"></div></section>
+<section class="pi-workspace-panel pi-compass-capture-panel"><div class="pi-workspace-head"><h2>✎ Compass Capture</h2><span class="pi-muted">direction + grounding</span></div><div class="pi-workspace-form">
+<label>Title<input id="piCompassTitle" maxlength="180" placeholder="Title this note…" type="text"/></label>
+<div class="pi-workspace-form-row"><label>Section<select id="piCompassSection"></select></label><label>Date<input id="piCompassDate" type="date"/></label></div>
+<label for="piCompassEditor">Your note</label><div aria-multiline="true" class="pi-note-editor" contenteditable="true" data-placeholder="What direction are you naming, or what helps life feel good?" id="piCompassEditor" role="textbox"></div>
+<details class="pi-note-attach"><summary>optional image / link</summary><div><label>Image URL<input id="piCompassImageUrl" placeholder="https://…" type="url"/></label><label>Clickable link<input id="piCompassLinkUrl" placeholder="https://…" type="url"/></label></div></details>
+<div class="pi-form-foot"><span class="pi-muted">Ctrl/Cmd + Enter saves</span><button class="pi-primary" id="piCompassSave" type="button">Save note ↑</button></div></div></section>
+<section class="pi-workspace-panel pi-compass-column-panel"><div class="pi-workspace-head"><h2>↘ Grounding</h2><div class="pi-workspace-actions"><span class="pi-archive-count" id="piCompassGroundingCount">0</span><button class="pi-workspace-quiet" id="piCompassAddGroundingSection" type="button">+ section</button></div></div><div class="pi-workspace-scroll" id="piCompassGroundingList"></div></section>
+</main>
+</div>
+</body>
+</html>

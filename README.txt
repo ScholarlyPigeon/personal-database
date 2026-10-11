@@ -1,3 +1,18 @@
+PERSONAL INTRANET UPDATE — 2026-10-11
+
+This pass adds and updates:
+- New Compass page (Goals / Capture / Grounding layout)
+- Top-nav order swap: Theme now appears before Pages
+- Theme dropdown simplified to Dark themes / Light themes only
+- Theme usage tracking so your most-used themes float to the top within each group
+- Refreshed Y2K theme with deeper background + softer, cooler color treatment
+- New dark theme: Night Ledger
+- Compass added to shared activity routing and page menus
+
+Files added:
+- Compass.html
+
+
 PERSONAL INTRANET | MOBILE POLISH PASS | OCTOBER 10, 2026
 
 BASELINE

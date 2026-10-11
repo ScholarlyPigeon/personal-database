@@ -206,50 +206,74 @@ function showSaved() {
    ========================================================= */
 const themeSelect = document.getElementById("themeSelect");
 const THEME_STORAGE_KEY = "pi-theme";
+const THEME_USAGE_KEY = "pi-theme-usage-v1";
 
 /* One shared catalog keeps every page's theme menu identical. */
 const THEME_OPTIONS = [
-    { value: "clarity-dark", label: "Clarity · Dark", group: "Readable themes" },
-    { value: "clarity-light", label: "Clarity · Light", group: "Readable themes" },
-    { value: "dark", label: "🌙 Dark Original", group: "Dark themes" },
-    { value: "aquarium", label: "🐠 Dark Teal Celestial Aquarium", group: "Dark themes" },
-    { value: "observatory", label: "🔭 Midnight Observatory", group: "Dark themes" },
-    { value: "nightgarden", label: "🪻 Night Garden", group: "Dark themes" },
-    { value: "fieldnotes", label: "📓 Universal Field Notes", group: "Dark themes" },
-    { value: "y2k", label: "🖥️ Y2K Web Portal", group: "Retro themes" },
-    { value: "cozy", label: "💿 Cozy 2000s", group: "Light themes" },
-    { value: "green", label: "🌿 Full Green", group: "Light themes" },
-    { value: "fall", label: "🍂 Fall", group: "Light themes" },
-    { value: "fall2", label: "🍁 Fall 2", group: "Dark themes" },
-    { value: "study", label: "📜 Study", group: "Light themes" }
+    { value: "dark", label: "🌙 Dark Original", mode: "dark" },
+    { value: "aquarium", label: "🐠 Dark Teal Celestial Aquarium", mode: "dark" },
+    { value: "observatory", label: "🔭 Midnight Observatory", mode: "dark" },
+    { value: "nightgarden", label: "🪻 Night Garden", mode: "dark" },
+    { value: "fieldnotes", label: "📓 Universal Field Notes", mode: "dark" },
+    { value: "nightledger", label: "📘 Night Ledger", mode: "dark" },
+    { value: "y2k", label: "🖥️ Y2K Web Portal", mode: "dark" },
+    { value: "fall2", label: "🍁 Fall 2", mode: "dark" },
+    { value: "clarity-dark", label: "🧾 Clarity Dark", mode: "dark" },
+    { value: "cozy", label: "💿 Cozy 2000s", mode: "light" },
+    { value: "green", label: "🌿 Full Green", mode: "light" },
+    { value: "fall", label: "🍂 Fall", mode: "light" },
+    { value: "study", label: "📜 Study", mode: "light" },
+    { value: "clarity-light", label: "🧾 Clarity Light", mode: "light" }
 ];
 
 const validThemes = new Set(THEME_OPTIONS.map(theme => theme.value));
+
+function readThemeUsage() {
+    try {
+        const value = JSON.parse(localStorage.getItem(THEME_USAGE_KEY) || "{}");
+        return value && typeof value === "object" ? value : {};
+    } catch {
+        return {};
+    }
+}
+
+function bumpThemeUsage(theme) {
+    if (!validThemes.has(theme)) return;
+    const usage = readThemeUsage();
+    usage[theme] = Number(usage[theme] || 0) + 1;
+    localStorage.setItem(THEME_USAGE_KEY, JSON.stringify(usage));
+}
+
+function sortThemesForMenu() {
+    const usage = readThemeUsage();
+    const order = new Map(THEME_OPTIONS.map((theme, index) => [theme.value, index]));
+    return [...THEME_OPTIONS].sort((a, b) => {
+        if (a.mode !== b.mode) return a.mode === "dark" ? -1 : 1;
+        const usageA = Number(usage[a.value] || 0);
+        const usageB = Number(usage[b.value] || 0);
+        if (usageA !== usageB) return usageB - usageA;
+        return order.get(a.value) - order.get(b.value);
+    });
+}
 
 function populateThemeSelect() {
     if (!themeSelect) return;
     const currentValue = themeSelect.value;
     themeSelect.innerHTML = "";
 
-    const groups = new Map();
+    const groups = {
+        dark: document.createElement("optgroup"),
+        light: document.createElement("optgroup")
+    };
+    groups.dark.label = "Dark themes";
+    groups.light.label = "Light themes";
+    themeSelect.append(groups.dark, groups.light);
 
-    THEME_OPTIONS.forEach(theme => {
-        let parent = themeSelect;
-
-        if (theme.group) {
-            if (!groups.has(theme.group)) {
-                const optgroup = document.createElement("optgroup");
-                optgroup.label = theme.group;
-                groups.set(theme.group, optgroup);
-                themeSelect.appendChild(optgroup);
-            }
-            parent = groups.get(theme.group);
-        }
-
+    sortThemesForMenu().forEach(theme => {
         const option = document.createElement("option");
         option.value = theme.value;
         option.textContent = theme.label;
-        parent.appendChild(option);
+        groups[theme.mode].appendChild(option);
     });
 
     if (validThemes.has(currentValue)) themeSelect.value = currentValue;
@@ -267,6 +291,9 @@ function applyTheme(theme, save = false) {
 
     if (save) {
         localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
+        bumpThemeUsage(nextTheme);
+        populateThemeSelect();
+        if (themeSelect) themeSelect.value = nextTheme;
         showSaved();
     }
 }
@@ -283,6 +310,11 @@ if (themeSelect) {
 window.addEventListener("storage", event => {
     if (event.key === THEME_STORAGE_KEY && event.newValue) {
         applyTheme(event.newValue, false);
+    }
+    if (event.key === THEME_USAGE_KEY) {
+        const currentTheme = document.body.dataset.theme;
+        populateThemeSelect();
+        if (validThemes.has(currentTheme) && themeSelect) themeSelect.value = currentTheme;
     }
 });
 

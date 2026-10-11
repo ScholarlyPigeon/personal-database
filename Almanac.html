@@ -5,19 +5,19 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Timeline &amp; Notes</title>
-<link href="Style.css?v=20261010-workspace7" rel="stylesheet"/>
+<link href="Style.css?v=20261011-compass1" rel="stylesheet"/>
 <script defer="" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script defer="" src="CloudSync.js?v=20261010-workspace7"></script>
-<script defer src="Activity.js?v=20261010-recent9"></script>
-<script defer="" src="Script.js?v=20261010-workspace7"></script>
-<link href="Planner.css?v=20261010-month9" rel="stylesheet"/>
-<script defer="" src="Planner.js?v=20261010-month9"></script>
-<link rel="stylesheet" href="Workspace.css?v=20261010-archive9">
-<script defer src="Workspace.js?v=20261010-archive9"></script>
-<link rel="stylesheet" href="MobilePolish.css?v=20261010-mobile10"/>
-<script defer src="MobilePolish.js?v=20261010-mobile10"></script>
+<script defer="" src="CloudSync.js?v=20261011-compass1"></script>
+<script defer="" src="Activity.js?v=20261011-compass1"></script>
+<script defer="" src="Script.js?v=20261011-compass1"></script>
+<link href="Planner.css?v=20261011-compass1" rel="stylesheet"/>
+<script defer="" src="Planner.js?v=20261011-compass1"></script>
+<link href="Workspace.css?v=20261011-compass1" rel="stylesheet"/>
+<script defer="" src="Workspace.js?v=20261011-compass1"></script>
+<link href="MobilePolish.css?v=20261011-compass1" rel="stylesheet">
+<script defer="" src="MobilePolish.js?v=20261011-compass1"></script>
 </head>
-<body data-default-theme="study" class="pi-reflections-body">
+<body class="pi-reflections-body" data-default-theme="study">
 <div class="pi-reflections-page" id="almanacApp"><header class="almanac-header">
 <div class="brand">
 <div aria-hidden="true" class="pi-mark">📖</div>
@@ -25,32 +25,22 @@
 <h1>Timeline &amp; Notes</h1>
 </div>
 </div>
-<div class="header-right almanac-header-actions">
-<span aria-live="polite" class="sync-status" id="saveStatus">cloud ready</span><details class="ecosystem-menu">
+<div class="header-right almanac-header-actions"><span aria-live="polite" class="sync-status" id="saveStatus">cloud ready</span><select aria-label="Theme" class="theme-select" id="themeSelect"></select><details class="ecosystem-menu">
 <summary>pages</summary>
-<nav aria-label="Open another page" class="ecosystem-menu-popover">
-<a href="Database.html">⌂ Home</a>
-<a href="Aquarium.html">🪼 Aquarium</a>
-<a href="Longform.html">✎ Longform</a>
-<a href="Week.html">🗓️ This Week</a>
-<a href="Month.html">📅 This Month</a>
-<a aria-current="page" class="current" href="Almanac.html">◷ Timeline</a>
-<a href="Patterns.html">🧭 Archive</a>
-<a href="neopets.html">✦ Neopets</a>
-</nav>
-</details><select aria-label="Theme" class="theme-select" id="themeSelect"></select><details class="ecosystem-menu pi-tools-menu"><summary>tools</summary><div class="pi-tools-popover"><button type="button" class="small-button" data-pi-open-inbox>inbox</button><button class="small-button cloud-login-button" id="cloudLoginButton" type="button">cloud login</button></div></details></div>
+<nav aria-label="Open another page" class="ecosystem-menu-popover"><a href="Database.html">⌂ Home</a><a href="Aquarium.html">🪼 Aquarium</a><a href="Longform.html">✎ Longform</a><a href="Compass.html">🧭 Compass</a><a href="Week.html">🗓️ This Week</a><a href="Month.html">📅 This Month</a><a aria-current="page" class="current" href="Almanac.html">◷ Timeline</a><a href="Patterns.html">🗂 Archive</a><a href="neopets.html">✦ Neopets</a></nav>
+</details><details class="ecosystem-menu pi-tools-menu"><summary>tools</summary><div class="pi-tools-popover"><button class="small-button" data-pi-open-inbox="" type="button">inbox</button><button class="small-button cloud-login-button" id="cloudLoginButton" type="button">cloud login</button></div></details></div>
 </header>
-<main id="piReflections" class="pi-reflections-grid" aria-label="Timeline and writing workspace">
-<section class="pi-workspace-panel"><div class="pi-workspace-head"><h2>📍 Timeline</h2><div class="pi-workspace-actions"><span class="pi-archive-count" id="piTimelineCount">0</span><button type="button" class="pi-workspace-quiet" id="piRecoverTimeline" title="Merge Timeline items from an older backup">recover</button></div></div><div id="piTimelineList" class="pi-workspace-scroll"></div>
-<div class="pi-timeline-add"><input id="piTimelineTitle" maxlength="180" placeholder="New milestone title…" aria-label="New timeline title"><textarea id="piTimelineBody" rows="2" placeholder="Optional details…" aria-label="New timeline details"></textarea><div class="pi-timeline-add-row"><input type="date" id="piTimelineDate" aria-label="Milestone date"><button type="button" class="pi-workspace-quiet" id="piAddTimeline">+ milestone</button></div></div>
-<input id="piTimelineBackupInput" type="file" accept=".json,application/json" hidden>
+<main aria-label="Timeline and writing workspace" class="pi-reflections-grid" id="piReflections">
+<section class="pi-workspace-panel"><div class="pi-workspace-head"><h2>📍 Timeline</h2><div class="pi-workspace-actions"><span class="pi-archive-count" id="piTimelineCount">0</span><button class="pi-workspace-quiet" id="piRecoverTimeline" title="Merge Timeline items from an older backup" type="button">recover</button></div></div><div class="pi-workspace-scroll" id="piTimelineList"></div>
+<div class="pi-timeline-add"><input aria-label="New timeline title" id="piTimelineTitle" maxlength="180" placeholder="New milestone title…"/><textarea aria-label="New timeline details" id="piTimelineBody" placeholder="Optional details…" rows="2"></textarea><div class="pi-timeline-add-row"><input aria-label="Milestone date" id="piTimelineDate" type="date"/><button class="pi-workspace-quiet" id="piAddTimeline" type="button">+ milestone</button></div></div>
+<input accept=".json,application/json" hidden="" id="piTimelineBackupInput" type="file"/>
 </section>
 <section class="pi-workspace-panel"><div class="pi-workspace-head"><h2>✎ Write it Out</h2><span class="pi-muted">rich-text notes</span></div><div class="pi-workspace-form">
-<label>Title<input id="piNoteTitle" type="text" maxlength="180" placeholder="Title this note…"></label>
-<div class="pi-workspace-form-row"><label>Section<select id="piNoteSection"></select></label><label>Date<input type="date" id="piNoteDate"></label></div>
-<label for="piNoteEditor">Your note</label><div id="piNoteEditor" class="pi-note-editor" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="Let the thought take up the space it needs. Ctrl/Cmd + B, I and U work here."></div>
-<details class="pi-note-attach"><summary>optional image / link</summary><div><label>Image URL<input id="piNoteImageUrl" type="url" placeholder="https://…"></label><label>Clickable link<input id="piNoteLinkUrl" type="url" placeholder="https://…"></label></div></details>
-<div class="pi-form-foot"><span class="pi-muted">Ctrl/Cmd + Enter saves</span><button class="pi-primary" type="button" id="piSaveNote">Save note ↑</button></div></div></section>
-<section class="pi-workspace-panel pi-saved-notes-panel"><div class="pi-workspace-head"><h2>▤ Saved Notes</h2><div class="pi-workspace-actions"><span class="pi-archive-count" id="piNoteCount">0</span><button type="button" class="pi-workspace-quiet" id="piAddNoteSection">+ section</button></div></div><div id="piSavedNoteList" class="pi-workspace-scroll"></div></section>
+<label>Title<input id="piNoteTitle" maxlength="180" placeholder="Title this note…" type="text"/></label>
+<div class="pi-workspace-form-row"><label>Section<select id="piNoteSection"></select></label><label>Date<input id="piNoteDate" type="date"/></label></div>
+<label for="piNoteEditor">Your note</label><div aria-multiline="true" class="pi-note-editor" contenteditable="true" data-placeholder="Let the thought take up the space it needs. Ctrl/Cmd + B, I and U work here." id="piNoteEditor" role="textbox"></div>
+<details class="pi-note-attach"><summary>optional image / link</summary><div><label>Image URL<input id="piNoteImageUrl" placeholder="https://…" type="url"/></label><label>Clickable link<input id="piNoteLinkUrl" placeholder="https://…" type="url"/></label></div></details>
+<div class="pi-form-foot"><span class="pi-muted">Ctrl/Cmd + Enter saves</span><button class="pi-primary" id="piSaveNote" type="button">Save note ↑</button></div></div></section>
+<section class="pi-workspace-panel pi-saved-notes-panel"><div class="pi-workspace-head"><h2>▤ Saved Notes</h2><div class="pi-workspace-actions"><span class="pi-archive-count" id="piNoteCount">0</span><button class="pi-workspace-quiet" id="piAddNoteSection" type="button">+ section</button></div></div><div class="pi-workspace-scroll" id="piSavedNoteList"></div></section>
 </main>
 </div></body></html>
