@@ -165,6 +165,55 @@ function migrateLegacyLocalStorage() {
 
 migrateLegacyLocalStorage();
 
+/* Home Notes: device-local, unsynced recovery snapshots. Only the live
+   pi-database-notes-v1 collection syncs. Snapshots remain outside pi-*,
+   so an incomplete collection cannot erase its own recovery copies. */
+const PI_HOME_NOTES_KEY = "pi-database-notes-v1";
+const PI_HOME_NOTES_HISTORY_KEY = "personal-intranet-home-notes-history-v1";
+window.PIHomeNotesSafety = (() => {
+    let staleNoticeShown = false;
+    function history() {
+        try {
+            const entries = JSON.parse(localStorage.getItem(PI_HOME_NOTES_HISTORY_KEY) || "[]");
+            return Array.isArray(entries) ? entries : [];
+        } catch { return []; }
+    }
+    function remember(raw, reason = "before-change") {
+        if (raw === null || typeof raw !== "string") return true;
+        const entries = history();
+        const now = Date.now();
+        if (entries[0]?.value === raw) return true;
+        // Text entry fires per keystroke. Preserve the beginning of the edit
+        // session rather than rotating every useful snapshot off the list.
+        if (reason === "before-edit" && entries[0]?.reason === reason &&
+            now - Date.parse(entries[0].at) < 5 * 60 * 1000) return true;
+        entries.unshift({ at: new Date(now).toISOString(), reason, value: raw });
+        // Keep recovery history bounded so it cannot quietly fill the
+        // browser's small localStorage allocation over months of use.
+        entries.length = Math.min(entries.length, 12);
+        while (entries.length > 1 && JSON.stringify(entries).length > 600000) entries.pop();
+        try {
+            localStorage.setItem(PI_HOME_NOTES_HISTORY_KEY, JSON.stringify(entries));
+            return true;
+        } catch (error) {
+            console.error("Could not preserve a Home Notes recovery snapshot:", error);
+            alert("Home Notes could not save its local recovery snapshot (browser storage may be full). No change was made. Please download a backup before continuing.");
+            return false;
+        }
+    }
+    function notifyStale() {
+        const status = document.getElementById("saveStatus");
+        if (status) {
+            status.textContent = "⚠ Home changed; refresh safely";
+            status.dataset.syncState = "error";
+        }
+        if (staleNoticeShown) return;
+        staleNoticeShown = true;
+        alert("Home Notes changed while this tab was open. To protect your other notes, this edit was NOT saved. Copy any text you just typed, then refresh Home to see the latest notes.");
+    }
+    return { remember, history, notifyStale };
+})();
+
 
 function piUuid(prefix = "id") {
     if (globalThis.crypto && typeof globalThis.crypto.randomUUID === "function") {
@@ -1271,6 +1320,7 @@ if (document.getElementById("tileGrid")) {
     function moveChecklistItemToPriority(sourceKey, sourceItemId, targetIndex = null) {
         const source = checklistManagers.get(sourceKey);
         if (!source) return;
+        if (source.isFresh && !source.isFresh()) return;
         const sourceIndex = source.items.findIndex(item => item.id === sourceItemId);
         if (sourceIndex < 0) return;
 
@@ -1315,6 +1365,7 @@ if (document.getElementById("tileGrid")) {
         const target = checklistManagers.get(targetKey);
         if (priorityIndex < 0 || !target) return;
 
+        if (target.isFresh && !target.isFresh()) return;
         const [moved] = priorityItems.splice(priorityIndex, 1);
         const checklistItem = {
             id: moved.id || archiveId("task"),
@@ -1984,6 +2035,7 @@ if (document.getElementById("tileGrid")) {
         const source = checklistManagers.get(sourceKey);
         const targetTile = tileById(targetTileId);
         if (!source || !targetTile) return;
+        if (source.isFresh && !source.isFresh()) return;
 
         const sourceIndex = source.items.findIndex(item => item.id === sourceItemId);
         if (sourceIndex < 0) return;
@@ -2012,6 +2064,7 @@ if (document.getElementById("tileGrid")) {
         if (!sourceTile || !target) return;
 
         const sourceItems = loadTileItems(sourceTile);
+        if (target.isFresh && !target.isFresh()) return;
         const sourceIndex = sourceItems.findIndex(item => item.id === sourceItemId);
         if (sourceIndex < 0) return;
 
@@ -2037,6 +2090,7 @@ if (document.getElementById("tileGrid")) {
         const source = checklistManagers.get(sourceKey);
         const target = checklistManagers.get(targetKey);
         if (!source || !target) return;
+        if ((source.isFresh && !source.isFresh()) || (target.isFresh && !target.isFresh())) return;
         if (!Number.isInteger(sourceIndex) || sourceIndex < 0 || sourceIndex >= source.items.length) return;
 
         const [moved] = source.items.splice(sourceIndex, 1);
@@ -2094,6 +2148,13 @@ if (document.getElementById("tileGrid")) {
             return { ...item, id: archiveId("task") };
         });
         if (addedStableIds) localStorage.setItem(storageKey, JSON.stringify(items));
+        const protectHome = storageKey === PI_HOME_NOTES_KEY;
+        let lastStoredValue = localStorage.getItem(storageKey);
+        function isFresh() {
+            if (!protectHome || localStorage.getItem(storageKey) === lastStoredValue) return true;
+            window.PIHomeNotesSafety.notifyStale();
+            return false;
+        }
 
         const manager = {
             storageKey,
@@ -2104,15 +2165,26 @@ if (document.getElementById("tileGrid")) {
             accent: String(accentClass || "").replace(/^scroll-/, "") || "teal",
             checkable: Boolean(checkable),
             get items() { return items; },
-            save(show = true) {
-                localStorage.setItem(storageKey, JSON.stringify(items));
+            isFresh,
+            save(show = true, reason = "before-change") {
+                if (!isFresh()) return false;
+                const nextValue = JSON.stringify(items);
+                if (protectHome && lastStoredValue !== nextValue &&
+                    !window.PIHomeNotesSafety.remember(lastStoredValue, reason)) return false;
+                localStorage.setItem(storageKey, nextValue);
+                lastStoredValue = nextValue;
                 if (show) showSaved();
+                return true;
             },
             clear(show = true) {
+                if (!isFresh()) return false;
+                if (protectHome && !window.PIHomeNotesSafety.remember(lastStoredValue, "before-clear")) return false;
                 items = [];
                 localStorage.setItem(storageKey, JSON.stringify(items));
+                lastStoredValue = localStorage.getItem(storageKey);
                 if (manager.render) manager.render();
                 if (show) showSaved();
+                return true;
             },
             render: null
         };
@@ -2145,6 +2217,7 @@ if (document.getElementById("tileGrid")) {
                     check.type = "checkbox";
                     check.checked = item.done;
                     check.addEventListener("change", () => {
+                        if (!isFresh()) return;
                         const [changedItem] = items.splice(index, 1);
                         changedItem.done = check.checked;
 
@@ -2171,8 +2244,9 @@ if (document.getElementById("tileGrid")) {
                 taskText.spellcheck = true;
                 taskText.textContent = item.text;
                 taskText.addEventListener("input", () => {
+                    if (!isFresh()) return;
                     items[index].text = taskText.textContent;
-                    manager.save();
+                    manager.save(true, "before-edit");
                 });
 
                 const archive = document.createElement("button");
@@ -2181,6 +2255,8 @@ if (document.getElementById("tileGrid")) {
                 archive.textContent = "↘";
                 archive.title = "Archive item";
                 archive.addEventListener("click", () => {
+                    if (!isFresh()) return;
+                    if (protectHome && !window.PIHomeNotesSafety.remember(lastStoredValue, "before-archive")) return;
                     const archived = archiveManualItem({
                         text: item.text,
                         source: archiveSource,
@@ -2200,6 +2276,8 @@ if (document.getElementById("tileGrid")) {
                 del.textContent = "×";
                 del.title = "Delete item";
                 del.addEventListener("click", () => {
+                    if (!isFresh()) return;
+                    if (protectHome && !confirm("Delete this Home Note permanently?")) return;
                     items.splice(index, 1);
                     manager.save();
                     renderItems();
@@ -2333,6 +2411,7 @@ if (document.getElementById("tileGrid")) {
         });
 
         function addItem() {
+            if (!isFresh()) return;
             const value = inputElement.value.trim();
             if (!value) return;
             const nextItem = { id: archiveId("task"), text: value, done: false };
@@ -2462,7 +2541,7 @@ if (document.getElementById("tileGrid")) {
         });
 
         if (recoveredCount) {
-            databaseNotesManager.save(false);
+            databaseNotesManager.save(false, "before-migration");
             databaseNotesManager.render();
             showSaved();
         }
@@ -2545,6 +2624,7 @@ if (document.getElementById("tileGrid")) {
 
         /* Radar + calendar checklist items */
         checklistManagers.forEach(manager => {
+            if (manager.isFresh && !manager.isFresh()) return;
             const kept = [];
             manager.items.forEach(item => {
                 if (!selected.has(selectionKey("db-check", manager.storageKey, item.id))) {

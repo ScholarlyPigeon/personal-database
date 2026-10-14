@@ -126,6 +126,55 @@ const LEGACY_SYNC_CONFLICT_KEY = "personal-database-sync-conflicts-v2";
 const LEGACY_RECOVERY_KEY = "personal-intranet-legacy-recovery-v1";
 const ABSENT_HASH = "__PI_ABSENT__";
 const STORAGE_MIGRATION_REPORT_KEY = "personal-intranet-storage-migration-v1";
+const HOME_NOTES_KEY = "pi-database-notes-v1";
+const HOME_HISTORY_KEY = "personal-intranet-home-notes-history-v1";
+
+/* Conservative three-way merge for Home Notes only. A change to one note
+   must not discard a different note created on another device. Deletions
+   (including archives) are respected when the other device did not alter
+   that same note. Same-note edit/delete conflicts are deliberately NOT
+   auto-merged: existing conflict backups preserve both versions. */
+function mergeHomeNotes(baseText, localText, remoteText) {
+    if (typeof baseText !== "string" || typeof localText !== "string" || typeof remoteText !== "string") return null;
+    function parse(text) {
+        try {
+            const entries = JSON.parse(text);
+            if (!Array.isArray(entries)) return null;
+            const ids = new Set();
+            for (const item of entries) {
+                if (!item || typeof item.id !== "string" || !item.id || ids.has(item.id)) return null;
+                ids.add(item.id);
+            }
+            return entries;
+        } catch { return null; }
+    }
+    const base = parse(baseText), local = parse(localText), remote = parse(remoteText);
+    if (!base || !local || !remote) return null;
+    const b = new Map(base.map(item => [item.id, item]));
+    const l = new Map(local.map(item => [item.id, item]));
+    const r = new Map(remote.map(item => [item.id, item]));
+    const same = (a, z) => JSON.stringify(a ?? null) === JSON.stringify(z ?? null);
+    const result = new Map();
+    for (const id of new Set([...b.keys(), ...l.keys(), ...r.keys()])) {
+        const original = b.get(id), lhs = l.get(id), rhs = r.get(id);
+        const leftChanged = !same(lhs, original);
+        const rightChanged = !same(rhs, original);
+        if (leftChanged && rightChanged && !same(lhs, rhs)) return null;
+        const selected = leftChanged ? lhs : rhs;
+        if (selected !== undefined) result.set(id, selected);
+    }
+    // Keep the cloud order for existing entries, then append local-only notes
+    // in their familiar relative order. No deleted/archived item is revived.
+    const ordered = [];
+    for (const item of remote) if (result.has(item.id)) {
+        ordered.push(result.get(item.id)); result.delete(item.id);
+    }
+    for (const item of local) if (result.has(item.id)) {
+        ordered.push(result.get(item.id)); result.delete(item.id);
+    }
+    return JSON.stringify(ordered);
+}
+
 
 function readMigrationPreferredLocalKeys() {
     try {
@@ -248,6 +297,9 @@ function writeSyncMeta(cloudData, cloudUpdatedAt) {
         initialized: true,
         hashes: stateHashes(cloudData),
         cloudUpdatedAt: cloudUpdatedAt || null,
+        // A baseline value is needed to distinguish a deleted note from a
+        // newly added one; hashes alone cannot safely merge different notes.
+        homeNotesBaseline: hasOwn(cloudData, HOME_NOTES_KEY) ? cloudData[HOME_NOTES_KEY] : null,
         savedAt: new Date().toISOString()
     };
 
@@ -334,6 +386,11 @@ function downloadLocalBackup() {
 
     backup.__sync_conflicts_v3 =
         conflicts;
+    // Device-local snapshots are not part of the cloud state but belong in
+    // manual backups, so recovery never depends on a particular device.
+    try {
+        backup.__home_notes_history = JSON.parse(localStorage.getItem(HOME_HISTORY_KEY) || "[]");
+    } catch { backup.__home_notes_history = []; }
 
     const legacyRecovery = localStorage.getItem(LEGACY_RECOVERY_KEY);
     if (legacyRecovery) {
@@ -556,6 +613,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     function replaceLocalState(cloudData) {
+        const currentHome = localStorage.getItem(HOME_NOTES_KEY);
+        const nextHome = hasOwn(cloudData, HOME_NOTES_KEY) ? cloudData[HOME_NOTES_KEY] : null;
+        if (currentHome !== nextHome && currentHome !== null &&
+            !window.PIHomeNotesSafety?.remember(currentHome, "before-cloud-initialization")) {
+            setStatus("⚠ Home recovery backup failed", "error");
+            return false;
+        }
         const keysToRemove = [];
 
         for (
@@ -579,6 +643,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 localStorage.setItem(key, value);
             }
         });
+        return true;
     }
 
     function applyRemoteValue(
@@ -626,6 +691,11 @@ document.addEventListener("DOMContentLoaded", async () => {
             return false;
         }
 
+        if (key === HOME_NOTES_KEY && currentHash !== valueHash(remotePresent, remoteValue) &&
+            !window.PIHomeNotesSafety?.remember(currentValue, "before-cloud-update")) {
+            setStatus("⚠ Home recovery backup failed", "error");
+            return false;
+        }
         if (remotePresent) {
             localStorage.setItem(
                 key,
@@ -852,7 +922,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             makeStateSnapshot(localBefore) !==
             makeStateSnapshot(cloudData);
 
-        replaceLocalState(cloudData);
+        if (!replaceLocalState(cloudData)) return false;
         writeSyncMeta(cloudData, cloudUpdatedAt);
         markMigrationCloudReconciled();
 
@@ -994,6 +1064,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 };
 
                 const remoteActions = [];
+                const mergedHomeActions = [];
                 const conflicts = [];
                 let cloudWriteNeeded = false;
 
@@ -1119,6 +1190,20 @@ document.addEventListener("DOMContentLoaded", async () => {
                             continue;
                         }
 
+                        if (key === HOME_NOTES_KEY && localPresent && remotePresent) {
+                            const reconciled = mergeHomeNotes(meta.homeNotesBaseline, localValue, remoteValue);
+                            if (reconciled !== null) {
+                                if (reconciled !== remoteValue) {
+                                    cloudWriteNeeded = true;
+                                    mergedData[key] = reconciled;
+                                }
+                                if (reconciled !== localValue) {
+                                    mergedHomeActions.push({ key, capturedLocalPresent: localPresent,
+                                        capturedLocalValue: localValue });
+                                }
+                                continue;
+                            }
+                        }
                         conflicts.push({
                             key,
                             localPresent,
@@ -1189,6 +1274,13 @@ document.addEventListener("DOMContentLoaded", async () => {
                         writeResult.data.updated_at;
                 }
 
+                // Apply the successful merge to this browser as well as to
+                // Supabase, but only if the user didn't edit during the fetch.
+                mergedHomeActions.forEach(action => {
+                    remoteActions.push({ ...action, remotePresent: hasOwn(finalCloudData, action.key),
+                        remoteValue: finalCloudData[action.key] ?? null });
+                });
+
                 if (conflicts.length) {
                     conflicts.forEach(
                         conflict => {
@@ -1206,6 +1298,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 }
 
                 let localUiChanged = false;
+                let remoteApplyBlocked = false;
 
                 remoteActions.forEach(
                     action => {
@@ -1221,9 +1314,19 @@ document.addEventListener("DOMContentLoaded", async () => {
                         if (applied) {
                             localUiChanged =
                                 true;
+                        } else {
+                            remoteApplyBlocked = true;
                         }
                     }
                 );
+
+                if (remoteApplyBlocked) {
+                    // Do not declare the remote version a synchronized baseline
+                    // while an in-flight local edit is still unresolved. Doing
+                    // so could upload that stale local value on the next tick.
+                    setStatus("⚠ sync needs another safe check", "error");
+                    return;
+                }
 
                 writeSyncMeta(
                     finalCloudData,
