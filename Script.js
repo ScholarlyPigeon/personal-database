@@ -773,7 +773,7 @@ function archiveDaySnapshot(dateKey, items, displayLabel = "") {
 
     const normalizedItems = items
         .filter(item => item && String(item.text || "").trim())
-        .map(item => ({ text: String(item.text).trim(), done: Boolean(item.done) }));
+        .map(item => ({ ...item, text: [String(item.text).trim(), String(item.details || "").trim()].filter(Boolean).join("\n\n"), done: Boolean(item.done) }));
 
     if (!normalizedItems.length) return false;
 
@@ -2043,7 +2043,7 @@ if (document.getElementById("tileGrid")) {
         const [moved] = source.items.splice(sourceIndex, 1);
         const targetItems = loadTileItems(targetTile);
         const tileItem = {
-            id: moved.id || archiveId("line"),
+            ...moved, id: moved.id || archiveId("line"),
             text: String(moved.text || "")
         };
 
@@ -2070,7 +2070,7 @@ if (document.getElementById("tileGrid")) {
 
         const [moved] = sourceItems.splice(sourceIndex, 1);
         const checklistItem = {
-            id: moved.id || archiveId("task"),
+            ...moved, id: moved.id || archiveId("task"),
             text: String(moved.text || ""),
             done: false
         };
@@ -2120,7 +2120,8 @@ if (document.getElementById("tileGrid")) {
         archiveOriginalDate = null,
         doneToBottom = false,
         checkable = true,
-        newItemsToTop = false
+        newItemsToTop = false,
+        noteMode = false
     }) {
         const listElement = document.getElementById(listId);
         const inputElement = document.getElementById(inputId);
@@ -2197,7 +2198,8 @@ if (document.getElementById("tileGrid")) {
 
             items.forEach((item, index) => {
                 const row = document.createElement("div");
-                row.className = "checklist-item" + (checkable && item.done ? " done" : "") + (!checkable ? " checklist-item-no-check" : "");
+                const isCategoryNote = noteMode && item.kind === "note";
+                row.className = "checklist-item pi-compact-item" + (checkable && item.done ? " done" : "") + (!checkable ? " checklist-item-no-check" : "") + (isCategoryNote ? " pi-category-note" : "");
                 row.dataset.itemId = item.id;
                 if (accentClass) row.classList.add(accentClass);
 
@@ -2208,7 +2210,7 @@ if (document.getElementById("tileGrid")) {
                 drag.title = "Drag between Notes, Radar, Near My Radar, or calendar days";
 
                 let wrap = null;
-                if (checkable) {
+                if (checkable && !isCategoryNote) {
                     wrap = document.createElement("label");
                     wrap.className = "check-wrap";
                     if (accentClass) wrap.classList.add(accentClass);
@@ -2243,6 +2245,8 @@ if (document.getElementById("tileGrid")) {
                 taskText.contentEditable = "true";
                 taskText.spellcheck = true;
                 taskText.textContent = item.text;
+                taskText.setAttribute("role", "textbox");
+                taskText.setAttribute("aria-label", isCategoryNote ? "Note heading" : "Item text");
                 taskText.addEventListener("input", () => {
                     if (!isFresh()) return;
                     items[index].text = taskText.textContent;
@@ -2258,11 +2262,11 @@ if (document.getElementById("tileGrid")) {
                     if (!isFresh()) return;
                     if (protectHome && !window.PIHomeNotesSafety.remember(lastStoredValue, "before-archive")) return;
                     const archived = archiveManualItem({
-                        text: item.text,
+                        text: [item.text, item.details].filter(Boolean).join("\n\n"),
                         source: archiveSource,
                         context: archiveContext,
                         originalDate: archiveOriginalDate,
-                        metadata: { done: Boolean(item.done), storageKey }
+                        metadata: { ...item, done: Boolean(item.done), storageKey }
                     });
                     if (!archived) return;
                     items.splice(index, 1);
@@ -2281,6 +2285,137 @@ if (document.getElementById("tileGrid")) {
                     items.splice(index, 1);
                     manager.save();
                     renderItems();
+                });
+
+                // Dates never invent a creation date for older records. Newly added
+                // records get their actual local date; existing undated ones can be dated.
+                const rowDate = document.createElement("input");
+                rowDate.type = "date";
+                rowDate.className = "pi-item-date";
+                rowDate.value = item.date || item.createdAt?.slice(0, 10) || archiveOriginalDate || "";
+                rowDate.title = rowDate.value ? "Item date (editable)" : "Older item: date not recorded. Select a date.";
+                rowDate.setAttribute("aria-label", "Item date");
+                rowDate.addEventListener("change", () => {
+                    if (!isFresh()) return;
+                    item.date = rowDate.value;
+                    manager.save(true, "before-date-edit");
+                });
+
+                const moveMenu = document.createElement("select");
+                moveMenu.className = "pi-item-move";
+                moveMenu.setAttribute("aria-label", "Move item to another table");
+                const placeholder = document.createElement("option");
+                placeholder.textContent = "⋯ move"; placeholder.value = "";
+                moveMenu.append(placeholder);
+                const targets = [
+                    ["pi-database-notes-v1", "Home Notes"],
+                    ["pi-database-radar-v1", "On My Radar"],
+                    ["pi-database-near-radar-v1", "Near My Radar"],
+                    ...dayKeys.map((key, n) => [key, "Day: " + dayDateStrings[n]]),
+                    ["__focus__", "✦ Focus Now"]
+                ];
+                targets.forEach(([key, label]) => {
+                    if (key === storageKey) return;
+                    const option = document.createElement("option");
+                    option.value = key;
+                    option.textContent = "→ " + label;
+                    moveMenu.append(option);
+                });
+                moveMenu.addEventListener("change", () => {
+                    const target = moveMenu.value;
+                    moveMenu.value = "";
+                    if (!target || !isFresh()) return;
+                    if (target === "__focus__") {
+                        const focusKey = "pi-focus-now-v1";
+                        let focus = [];
+                        try { const parsed = JSON.parse(localStorage.getItem(focusKey) || "[]"); if (Array.isArray(parsed)) focus = parsed; } catch {}
+                        const value = { ...item, id: archiveId("focus"), done: Boolean(item.done), sourceTable: storageKey, createdAt: item.createdAt || new Date().toISOString() };
+                        focus.unshift(value);
+                        // Copy first, then remove; no silent loss on interrupted writes.
+                        localStorage.setItem(focusKey, JSON.stringify(focus));
+                        items.splice(index, 1);
+                        if (!manager.save(false, "before-move-focus")) {
+                            items.splice(index, 0, item);
+                            renderItems();
+                            alert("The original item was kept. Focus Now may contain a second copy because the safety backup could not complete.");
+                            return;
+                        }
+                        renderItems();
+                        window.PIRefreshFocusViews?.();
+                        showSaved();
+                    } else {
+                        if (!checklistManagers.has(target)) return;
+                        moveChecklistItem(storageKey, index, target, checklistManagers.get(target).items.length);
+                    }
+                });
+
+                const kindButton = document.createElement("button");
+                kindButton.type = "button";
+                kindButton.className = "pi-kind-button";
+                kindButton.textContent = isCategoryNote ? "▤" : "☑";
+                kindButton.title = isCategoryNote ? "Convert to checklist line" : "Convert to category note";
+                kindButton.setAttribute("aria-label", kindButton.title);
+                kindButton.addEventListener("click", () => {
+                    if (!isFresh()) return;
+                    item.kind = isCategoryNote ? "task" : "note";
+                    item.expanded = item.kind === "note";
+                    if (manager.save(false, "before-kind-change")) renderItems();
+                });
+
+                const noteBody = document.createElement("div");
+                noteBody.className = "pi-category-note-content";
+                if (isCategoryNote && item.expanded !== false) {
+                    const details = document.createElement("div");
+                    details.className = "pi-category-note-editor";
+                    details.contentEditable = "true";
+                    details.spellcheck = true;
+                    details.dataset.placeholder = "Add details to this category…";
+                    details.textContent = item.details || "";
+                    details.addEventListener("input", () => {
+                        if (!isFresh()) return;
+                        item.details = details.innerText;
+                        manager.save(true, "before-edit");
+                    });
+                    noteBody.append(details);
+                    const media = document.createElement("div");
+                    media.className = "pi-category-note-media";
+                    const image = document.createElement("input");
+                    image.type = "url"; image.placeholder = "Image URL (optional)";
+                    image.setAttribute("aria-label", "Note image URL");
+                    image.value = item.imageUrl || "";
+                    const link = document.createElement("input");
+                    link.type = "url"; link.placeholder = "Link URL (optional)";
+                    link.setAttribute("aria-label", "Note link URL");
+                    link.value = item.linkUrl || "";
+                    [image, link].forEach((field, i) => field.addEventListener("change", () => {
+                        if (!isFresh()) return;
+                        item[i ? "linkUrl" : "imageUrl"] = field.value.trim();
+                        if (manager.save(false, "before-media-edit")) renderItems();
+                    }));
+                    media.append(image, link);
+                    noteBody.append(media);
+                    if (/^https?:\/\//i.test(item.imageUrl || "")) {
+                        const preview = document.createElement("img");
+                        preview.className = "pi-category-image";
+                        preview.src = item.imageUrl; preview.alt = "Attached note image";
+                        preview.loading = "lazy";
+                        noteBody.append(preview);
+                    }
+                    if (/^https?:\/\//i.test(item.linkUrl || "")) {
+                        const urlLink = document.createElement("a");
+                        urlLink.href = item.linkUrl; urlLink.target = "_blank";
+                        urlLink.rel = "noopener noreferrer"; urlLink.textContent = "Open link ↗";
+                        noteBody.append(urlLink);
+                    }
+                }
+                const noteToggle = document.createElement("button");
+                noteToggle.type = "button"; noteToggle.className = "pi-note-open";
+                noteToggle.textContent = item.expanded === false ? "▸" : "▾";
+                noteToggle.title = "Show or hide category note details";
+                noteToggle.setAttribute("aria-label", noteToggle.title);
+                noteToggle.addEventListener("click", () => {
+                    item.expanded = item.expanded === false;
+                    if (manager.save(false, "before-collapse")) renderItems();
                 });
 
                 drag.addEventListener("dragstart", event => {
@@ -2352,10 +2487,24 @@ if (document.getElementById("tileGrid")) {
 
                 const rowActions = document.createElement("div");
                 rowActions.className = "item-row-actions";
-                rowActions.append(selector, archive, del);
+                const toolsMenu = document.createElement("details");
+                toolsMenu.className = "pi-item-tools";
+                const toolsSummary = document.createElement("summary");
+                toolsSummary.textContent = "⋮";
+                toolsSummary.title = "Move, archive, or delete this item";
+                toolsSummary.setAttribute("aria-label", toolsSummary.title);
+                const toolsPanel = document.createElement("div");
+                toolsPanel.className = "pi-item-tools-panel";
+                toolsPanel.append(moveMenu, archive, del);
+                toolsMenu.append(toolsSummary, toolsPanel);
+                rowActions.append(selector);
+                if (noteMode) rowActions.append(kindButton);
+                if (isCategoryNote) rowActions.append(noteToggle);
+                rowActions.append(toolsMenu);
 
-                if (wrap) row.append(drag, wrap, taskText, rowActions);
-                else row.append(drag, taskText, rowActions);
+                if (wrap) row.append(drag, wrap, taskText, rowDate, rowActions);
+                else row.append(drag, taskText, rowDate, rowActions);
+                if (isCategoryNote && item.expanded !== false) row.append(noteBody);
                 listElement.appendChild(row);
             });
         }
@@ -2414,10 +2563,21 @@ if (document.getElementById("tileGrid")) {
             if (!isFresh()) return;
             const value = inputElement.value.trim();
             if (!value) return;
-            const nextItem = { id: archiveId("task"), text: value, done: false };
+            const nextItem = { id: archiveId("task"), text: value, done: false,
+                date: makeLocalIsoDate(), createdAt: new Date().toISOString(),
+                ...(noteMode && document.getElementById("databaseNotesKind")?.value === "note"
+                    ? { kind: "note", details: "", expanded: true,
+                        imageUrl: document.getElementById("databaseNoteImageUrl")?.value.trim() || "",
+                        linkUrl: document.getElementById("databaseNoteLinkUrl")?.value.trim() || "" } : {}) };
             if (newItemsToTop) items.unshift(nextItem);
             else items.push(nextItem);
             inputElement.value = "";
+            if (noteMode) {
+                const image = document.getElementById("databaseNoteImageUrl");
+                const link = document.getElementById("databaseNoteLinkUrl");
+                if (image) image.value = "";
+                if (link) link.value = "";
+            }
             if (inputElement.matches("textarea[data-autogrow], textarea.auto-grow-textarea")) {
                 resizeAutoGrowTextarea(inputElement);
             }
@@ -2501,9 +2661,21 @@ if (document.getElementById("tileGrid")) {
         accentClass: "scroll-teal",
         archiveSource: "Database",
         archiveContext: "Notes",
-        checkable: false,
+        checkable: true,
+        noteMode: true,
         newItemsToTop: true
     });
+
+    window.PIHomeReturnFromFocus = (focusEntry, destination = "pi-database-notes-v1") => {
+        const target = checklistManagers.get(destination);
+        if (!target || (target.isFresh && !target.isFresh())) return false;
+        if (target.items.some(row => row.id === focusEntry.id)) return false;
+        target.items.unshift({ ...focusEntry, id: archiveId("task"), sourceTable: undefined });
+        if (!target.save(false, "before-return-from-focus")) {
+            target.items.shift(); return false;
+        }
+        target.render(); showSaved(); return true;
+    };
 
     /* V18 recovery migration: v7 retired the visible Main Board but left its
        saved line-item keys intact. Bring those lines into the new Notes desk
@@ -4993,6 +5165,8 @@ if (document.getElementById("longformApp")) {
 
     let activeLongformFilter = "all";
     const expandedLongformIds = new Set();
+    let selectedLongformEntry = null;
+    let selectedLongformSection = null;
 
 
     function longformPlainTextToHtml(value) {
@@ -5258,6 +5432,7 @@ if (document.getElementById("longformApp")) {
             card.dataset.accent = longformCategoryAccent(entry.category);
             card.dataset.entryId = entry.id;
             card.classList.toggle("pinned", Boolean(entry.pinned));
+            card.classList.toggle("pi-move-selected", selectedLongformEntry === entry.id);
 
             const top = document.createElement("div");
             top.className = "longform-entry-top";
@@ -5382,7 +5557,20 @@ if (document.getElementById("longformApp")) {
                 renderLongformEntries();
             });
 
-            actions.append(tools, expand);
+            const moveTap = document.createElement("button");
+            moveTap.type = "button";
+            moveTap.className = "pi-tap-move-handle";
+            moveTap.textContent = "⠿";
+            moveTap.draggable = true;
+            moveTap.title = "Drag on desktop; tap then tap another note or section on mobile";
+            moveTap.setAttribute("aria-label", "Select note to move");
+            moveTap.setAttribute("aria-pressed", String(selectedLongformEntry === entry.id));
+            moveTap.addEventListener("click", () => {
+                selectedLongformEntry = selectedLongformEntry === entry.id ? null : entry.id;
+                selectedLongformSection = null;
+                renderLongformEntries();
+            });
+            actions.append(moveTap, tools, expand);
             top.append(meta, actions);
 
             const summary = document.createElement("button");
@@ -5462,6 +5650,7 @@ if (document.getElementById("longformApp")) {
         if (at < 0) at = longformState.entries.length;
         else if(after) at++;
         longformState.entries.splice(at,0,entry);
+        selectedLongformEntry = null;
         saveLongformSections(false); saveLongformState(); renderLongformEntries();
     }
 
@@ -5516,22 +5705,37 @@ if (document.getElementById("longformApp")) {
             showSaved();
         });
 
-        const moveSection = document.createElement("select");
-        moveSection.className = "pi-section-move-select";
-        moveSection.title = "Move section";
-        moveSection.setAttribute("aria-label", "Move section");
-        moveSection.innerHTML = '<option value="">↕ section</option><option value="up">↑ up</option><option value="down">↓ down</option>';
-        moveSection.addEventListener("change", () => {
-            const current = longformSections.sections.findIndex(item => item.id === section.id);
-            const target = current + (moveSection.value === "up" ? -1 : 1);
-            if (moveSection.value && target >= 0 && target < longformSections.sections.length) {
-                const [moved] = longformSections.sections.splice(current, 1);
-                longformSections.sections.splice(target, 0, moved);
+        const moveSection = document.createElement("button");
+        moveSection.type = "button";
+        moveSection.className = "pi-tap-move-handle";
+        moveSection.textContent = "⠿";
+        moveSection.draggable = true;
+        moveSection.title = "Drag section on desktop, or tap then tap destination section";
+        moveSection.setAttribute("aria-label", "Select section to rearrange");
+        moveSection.setAttribute("aria-pressed", String(selectedLongformSection === section.id));
+        moveSection.addEventListener("click", () => {
+            selectedLongformSection = selectedLongformSection === section.id ? null : section.id;
+            selectedLongformEntry = null;
+            renderLongformEntries();
+        });
+        head.addEventListener("click", event => {
+            if (event.target.closest("button, select, input, [contenteditable], a")) return;
+            if (selectedLongformEntry) {
+                const moving = selectedLongformEntry;
+                selectedLongformEntry = null;
+                moveLongformEntry(moving, section.id);
+            } else if (selectedLongformSection && selectedLongformSection !== section.id) {
+                const from = longformSections.sections.findIndex(item => item.id === selectedLongformSection);
+                const to = longformSections.sections.findIndex(item => item.id === section.id);
+                if (from < 0 || to < 0) return;
+                const [moved] = longformSections.sections.splice(from, 1);
+                longformSections.sections.splice(to, 0, moved);
+                selectedLongformSection = null;
                 saveLongformSections(false); renderLongformEntries(); showSaved();
-            } else moveSection.value = "";
+            }
         });
         head.draggable = true;
-        head.addEventListener("dragstart", event => {if(event.target.closest('button,select,[contenteditable]')) {event.preventDefault();return;} event.dataTransfer.setData('text/pi-longform-section',section.id);});
+        head.addEventListener("dragstart", event => {if(event.target.closest('button:not(.pi-tap-move-handle),select,[contenteditable]')) {event.preventDefault();return;} event.dataTransfer.setData('text/pi-longform-section',section.id);});
         head.addEventListener("dragover", event => {if(event.dataTransfer.types.includes('text/pi-longform-section'))event.preventDefault();});
         head.addEventListener("drop", event => {const fromId=event.dataTransfer.getData('text/pi-longform-section');if(!fromId||fromId===section.id)return;event.preventDefault();const from=longformSections.sections.findIndex(x=>x.id===fromId),to=longformSections.sections.findIndex(x=>x.id===section.id);if(from<0||to<0)return;const [moved]=longformSections.sections.splice(from,1);longformSections.sections.splice(to,0,moved);saveLongformSections(false);renderLongformEntries();showSaved();});
         const count = document.createElement("span");
@@ -5579,28 +5783,30 @@ if (document.getElementById("longformApp")) {
             entries.forEach(entry => {
                 const card = makeLongformEntryCard(entry);
                 card.draggable = true;
-                card.addEventListener("dragstart", event => {if(event.target.closest('button,input,select,textarea,[contenteditable]')){event.preventDefault();return;} event.dataTransfer.setData('text/pi-longform-entry',entry.id);});
+                card.addEventListener("dragstart", event => {if(event.target.closest('button:not(.pi-tap-move-handle),input,select,textarea,[contenteditable]')){event.preventDefault();return;} event.dataTransfer.setData('text/pi-longform-entry',entry.id);});
                 card.addEventListener("dragover", event => {if(event.dataTransfer.types.includes('text/pi-longform-entry'))event.preventDefault();});
                 card.addEventListener("drop", event => {const id=event.dataTransfer.getData('text/pi-longform-entry');if(!id||id===entry.id)return;event.preventDefault();moveLongformEntry(id,section.id,entry.id);});
-                const mover = document.createElement("select");
-                mover.className = "pi-entry-move-select";
-                mover.setAttribute("aria-label", "Move thought");
-                mover.innerHTML = '<option value="">↕ move</option><option value="up">↑ up</option><option value="down">↓ down</option>';
-                longformSections.sections.forEach(group => {if(group.id!==section.id){const o=document.createElement('option');o.value=group.id;o.textContent='→ '+group.name;mover.append(o);}});
-                mover.addEventListener("change", () => {
-                    const value=mover.value;
-                    if(value==='up'||value==='down'){
-                        const siblings=longformState.entries.filter(item=>longformSectionForEntry(item.id)===section.id && item.id!==entry.id);
-                        const all=longformState.entries.filter(item=>longformSectionForEntry(item.id)===section.id);
-                        const at=all.findIndex(item=>item.id===entry.id); const other=all[at+(value==='up'?-1:1)];
-                        if(other)moveLongformEntry(entry.id,section.id,other.id,value==='down');
-                    }else if(value)moveLongformEntry(entry.id,value);
+                card.addEventListener("click", event => {
+                    if (!selectedLongformEntry || selectedLongformEntry === entry.id) return;
+                    if (event.target.closest("button, select, input, textarea, a, [contenteditable]")) return;
+                    const moving = selectedLongformEntry;
+                    selectedLongformEntry = null;
+                    moveLongformEntry(moving, section.id, entry.id);
                 });
-                card.querySelector('.longform-entry-actions')?.append(mover);
                 body.appendChild(card);
             });
         }
 
+        body.addEventListener("dragover", event => {
+            if (event.dataTransfer.types.includes("text/pi-longform-entry")) event.preventDefault();
+        });
+        body.addEventListener("drop", event => {
+            if (event.target.closest(".longform-entry")) return;
+            const entryId = event.dataTransfer.getData("text/pi-longform-entry");
+            if (!entryId) return;
+            event.preventDefault(); moveLongformEntry(entryId, section.id);
+        });
+        shell.classList.toggle("pi-move-selected", selectedLongformSection === section.id);
         shell.append(head, body);
         return shell;
     }
@@ -6776,7 +6982,81 @@ if (document.getElementById("neopetsApp")) {
             saveFocus(readFocus().filter(candidate => candidate.id !== item.id));
             recordActivity("database", "removed from Focus Now", item.text);
         });
-        row.append(check, text, remove);
+        const moveHome = document.createElement("select");
+        moveHome.className = "pi-focus-return pi-focus-route";
+        moveHome.title = "Move Focus item to Home Notes, Radar, or a day";
+        moveHome.setAttribute("aria-label", moveHome.title);
+        const defaultRoute = document.createElement("option");
+        defaultRoute.value = "";
+        defaultRoute.textContent = "⇢";
+        moveHome.append(defaultRoute);
+        const routeTargets = [
+            ["pi-database-notes-v1", "Home Notes"],
+            ["pi-database-radar-v1", "On My Radar"],
+            ["pi-database-near-radar-v1", "Near My Radar"]
+        ];
+        for (let i = 0; i < 28; i++) {
+            const dateList = document.getElementById(`dayList${i}`);
+            const key = dateList?.dataset.storageKey;
+            if (key) routeTargets.push([key, `Day: ${key.replace("pi-calendar-day-", "")}`]);
+        }
+        routeTargets.forEach(([key, name]) => {
+            const option = document.createElement("option");
+            option.value = key;
+            option.textContent = `→ ${name}`;
+            moveHome.append(option);
+        });
+        moveHome.addEventListener("change", () => {
+            const destination = moveHome.value;
+            moveHome.value = "";
+            if (!destination) return;
+            if (!window.PIHomeReturnFromFocus?.(item, destination)) {
+                alert("The item was kept in Focus. Please try again from Home."); return;
+            }
+            saveFocus(readFocus().filter(row => row.id !== item.id));
+        });
+        const archive = document.createElement("button");
+        archive.type = "button"; archive.className = "pi-focus-archive";
+        archive.textContent = "↘"; archive.title = "Archive from Focus Now";
+        archive.setAttribute("aria-label", archive.title);
+        archive.addEventListener("click", () => {
+            if (!archiveManualItem({ text: [item.text, item.details].filter(Boolean).join("\n\n"), source: "Focus Now",
+                originalDate: item.date || null,
+                metadata: { ...item } })) return;
+            saveFocus(readFocus().filter(row => row.id !== item.id));
+        });
+        row.append(check, text, moveHome, archive, remove);
+        if (item.kind === "note" && (item.details || item.imageUrl || item.linkUrl)) {
+            // Keep the actual note readable without making it a second editable
+            // field in Focus. Its complete record follows it back to Home.
+            const expanded = document.createElement("details");
+            expanded.className = "pi-focus-attachment";
+            const toggle = document.createElement("summary");
+            toggle.textContent = "▤ note details";
+            expanded.append(toggle);
+            if (item.details) {
+                const body = document.createElement("div");
+                body.className = "pi-focus-note-body";
+                body.textContent = item.details;
+                expanded.append(body);
+            }
+            if (/^https?:\/\//i.test(item.imageUrl || "")) {
+                const picture = document.createElement("img");
+                picture.src = item.imageUrl;
+                picture.alt = "Note image";
+                picture.loading = "lazy";
+                expanded.append(picture);
+            }
+            if (/^https?:\/\//i.test(item.linkUrl || "")) {
+                const link = document.createElement("a");
+                link.href = item.linkUrl;
+                link.target = "_blank";
+                link.rel = "noopener noreferrer";
+                link.textContent = "Open link ↗";
+                expanded.append(link);
+            }
+            row.append(expanded);
+        }
         return row;
     }
 
@@ -6833,6 +7113,8 @@ if (document.getElementById("neopetsApp")) {
         );
     }
 
+    window.PIRefreshFocusViews = refreshFocusViews;
+
     function injectDatabaseFocus() {
         const page = document.querySelector(".database-page");
         const links = page?.querySelector(".database-header");
@@ -6847,11 +7129,9 @@ if (document.getElementById("neopetsApp")) {
             </div>
             <div class="pi-focus-body">
                 <div class="pi-focus-list" id="piDatabaseFocusList"></div>
-                <div class="pi-focus-entry"><input id="piDatabaseFocusInput" type="text" placeholder="What genuinely deserves the front row?"><button id="piDatabaseFocusAdd" type="button">add</button></div>
             </div>`;
         links.insertAdjacentElement("afterend", panel);
         page.classList.add("pi-focus-layout");
-        bindFocusComposer(document.getElementById("piDatabaseFocusInput"), document.getElementById("piDatabaseFocusAdd"));
         refreshFocusViews();
     }
 

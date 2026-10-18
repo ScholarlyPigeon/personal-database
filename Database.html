@@ -9,13 +9,15 @@
 <script defer="" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script defer="" src="CloudSync.js?v=20261014-homesafe1"></script>
 <script defer="" src="Activity.js?v=20261011-compass1"></script>
-<script defer="" src="Script.js?v=20261014-homesafe1"></script>
+<script defer="" src="Script.js?v=20261017-home1"></script>
 <link href="Planner.css?v=20261011-compass1" rel="stylesheet"/>
 <script defer="" src="Planner.js?v=20261011-compass1"></script>
 <link href="Workspace.css?v=20261011-compass1" rel="stylesheet"/>
-<script defer="" src="Workspace.js?v=20261011-compass1"></script>
+<script defer="" src="Workspace.js?v=20261017-home1"></script>
 <link href="MobilePolish.css?v=20261011-compass1" rel="stylesheet">
 <script defer="" src="MobilePolish.js?v=20261011-compass1"></script>
+<link rel="stylesheet" href="Refresh.css?v=20261017-home1"/>
+<script defer src="Refresh.js?v=20261017-home1"></script>
 </head>
 <body class="database-body" data-theme="dark">
 <div class="page database-page">
@@ -66,8 +68,9 @@
 </div>
 <div class="database-notes-body" data-collapse-body="">
 <div class="checklist-list database-notes-list scroll-teal" id="databaseNotesList"></div>
+<div class="pi-note-creation-options"><label for="databaseNotesKind">New item</label><select id="databaseNotesKind" aria-label="Choose checklist or category note"><option value="task">☑ Checklist line</option><option value="note">▤ Category note</option></select><details><summary>+ image / link</summary><div class="pi-note-create-media"><input id="databaseNoteImageUrl" type="url" placeholder="Image URL (optional)" aria-label="Optional image URL"><input id="databaseNoteLinkUrl" type="url" placeholder="Link URL (optional)" aria-label="Optional link URL"></div></details></div>
 <div class="checklist-entry database-notes-entry">
-<textarea class="checklist-input database-notes-input auto-grow-textarea" data-autogrow="true" data-autogrow-min-lines="2" id="databaseNotesInput" placeholder="Drop a note here, then move it where it belongs when you're ready..." rows="2"></textarea>
+<textarea class="checklist-input database-notes-input auto-grow-textarea" data-autogrow="true" data-autogrow-min-lines="2" id="databaseNotesInput" placeholder="Add a checklist line or name a category note…" rows="2"></textarea>
 <button class="checklist-add" id="addDatabaseNote" type="button">Add</button>
 </div>
 </div>

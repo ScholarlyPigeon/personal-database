@@ -1,0 +1,186 @@
+/* 2026-10 Home Refresh: compact, theme-aware surfaces, no new storage keys. */
+.database-page .database-notes-body {
+  grid-template-rows: minmax(0,1fr) auto auto !important;
+  gap: 6px;
+}
+.pi-note-creation-options {
+  display: flex; flex-wrap: wrap; gap: 7px; align-items: center;
+  padding: 2px 1px; color: var(--muted); font-size: 10px;
+}
+.pi-note-creation-options select,
+.pi-note-creation-options input {
+  color: var(--text); background: var(--bg-soft); border: 1px solid var(--border);
+  border-radius: 7px; padding: 4px 6px; font: inherit; min-width: 0;
+}
+.pi-note-creation-options details { position: relative; }
+.pi-note-creation-options summary { cursor: pointer; padding: 5px 4px; }
+.pi-note-create-media { position: absolute; bottom: 100%; left: 0; z-index: 80;
+  display: grid; gap: 5px; padding: 9px; width: min(250px,70vw);
+  border: 1px solid var(--border); border-radius: 9px; background: var(--panel);
+  box-shadow: var(--shadow);
+}
+.database-page .pi-compact-item { display: grid; grid-template-columns: 12px 16px minmax(0,1fr) minmax(75px,105px) auto !important;
+  align-items: center; gap: 4px; min-width: 0; padding: 6px 5px;
+  border: 1px solid transparent; border-bottom-color: color-mix(in srgb,var(--border) 65%,transparent);
+  background: color-mix(in srgb,var(--panel-light) 65%,transparent);
+}
+.database-page .pi-compact-item.pi-category-note,
+.database-page .pi-compact-item.checklist-item-no-check {
+  grid-template-columns: 12px minmax(0,1fr) minmax(75px,105px) auto !important;
+}
+.database-page .pi-compact-item.pi-category-note {
+  border-color: color-mix(in srgb,var(--teal) 27%,var(--border));
+  background: color-mix(in srgb,var(--teal) 4%,var(--panel-light));
+  border-radius: 9px;
+}
+.database-page .pi-category-note .task-text { font-weight: 700; }
+.database-page .pi-compact-item .task-text { min-width: 0; overflow-wrap: anywhere; }
+.database-page .pi-item-date { width: 100%; min-width: 0; padding: 1px 0 !important;
+  border: 0 !important; border-radius: 4px; outline-color: var(--teal);
+  background: transparent !important; color: var(--faint) !important;
+  font: inherit; font-size: 9.5px !important; color-scheme: normal;
+}
+.database-page .pi-compact-item .item-row-actions { display: flex; align-items: center; gap: 2px; min-width: 0; }
+.database-page .pi-compact-item .item-row-actions button { flex: 0 0 auto; }
+.database-page .pi-compact-item .pi-item-move { max-width: 48px; width: 44px; min-width: 0;
+  padding: 3px 1px; cursor: pointer; font-size: 10px; border-radius: 5px;
+  border: 1px solid transparent; color: var(--muted); background: transparent;
+}
+.database-page .pi-compact-item .pi-item-move:hover,
+.database-page .pi-compact-item .pi-item-move:focus { border-color: var(--border); }
+.database-page .pi-kind-button,
+.database-page .pi-note-open { border: 0; background: transparent; color: var(--muted);
+  cursor: pointer; padding: 2px; font-size: 12px;
+}
+.database-page .pi-category-note-content { grid-column: 1/-1; display: grid; min-width: 0;
+  gap: 6px; margin: 2px 3px 3px 15px; padding: 8px 9px 5px;
+  border-top: 1px solid var(--border); }
+.database-page .pi-category-note-editor { min-height: 48px; color: var(--text); font-size: 12px;
+  line-height: 1.55; outline: none; white-space: pre-wrap; overflow-wrap: anywhere; }
+.database-page .pi-category-note-editor:empty::before { content: attr(data-placeholder); color: var(--faint); pointer-events: none; }
+.database-page .pi-category-note-media { display: flex; flex-wrap: wrap; gap: 6px; }
+.database-page .pi-category-note-media input { flex: 1 1 130px; min-width: 0; width: 100%;
+  padding: 4px 6px; color: var(--muted); font-size: 10px; border-radius: 6px;
+  background: var(--bg-soft); border: 1px solid var(--border); }
+.database-page .pi-category-image { display: block; max-width: 100%; width: auto;
+  max-height: 240px; object-fit: contain; border-radius: 7px; }
+.database-page .pi-category-note-content a { color: var(--teal-soft); font-size: 11px; }
+.database-page .pi-focus-body { display: flex !important; padding: 5px 9px; }
+.database-page .pi-focus-list { flex: 1; align-items: stretch; }
+.database-page .pi-focus-item { grid-template-columns: auto minmax(0,1fr) repeat(3,auto); }
+.database-page .pi-focus-return, .database-page .pi-focus-archive { border: 0; padding: 1px;
+  background: transparent; color: var(--muted); font-size: 14px; cursor: pointer; }
+.database-page .pi-focus-return:hover, .database-page .pi-focus-archive:hover { color: var(--teal-soft); }
+/* Uniform saved note headers in Compass, Timeline/Notes, Longform. */
+.pi-notes-section-head, .pi-note-card-head, .longform-saved-section-head {
+  min-height: 30px !important; gap: 5px !important; padding: 5px 7px !important;
+  align-items: center;
+}
+.pi-note-card-head .pi-card-date { flex: 0 0 98px; width: 98px; max-width: 98px;
+  padding: 2px 1px !important; font-size: 10px !important; border-color: transparent !important;
+}
+.pi-note-subrow { display: none !important; }
+.longform-section-head-actions { flex-wrap: nowrap; gap: 4px; }
+.longform-entry-top { gap: 5px !important; }
+.longform-entry-actions { display: flex; align-items: center; gap: 3px !important; }
+.pi-tap-move-handle { border: 0; background: transparent; color: var(--muted);
+  cursor: grab; font: inherit; font-size: 15px; padding: 2px 5px; border-radius: 6px; }
+.pi-tap-move-handle[aria-pressed="true"] { color: var(--teal-soft); background: color-mix(in srgb,var(--teal) 15%,transparent); }
+.pi-move-selected { outline: 2px dashed var(--teal) !important; outline-offset: -2px; }
+/* Pop out the actual live table; no cloning, no detached editing state. */
+.pi-popout-backdrop { position: fixed; inset: 0; z-index: 3998;
+  background: rgba(8,10,17,.74); backdrop-filter: blur(5px); }
+.pi-panel-popout { position: fixed !important; inset: 2.5dvh 2.5vw !important; z-index: 3999 !important;
+  width: 95vw !important; height: 95dvh !important; min-height: 0 !important;
+  max-width: none !important; max-height: none !important; margin: 0 !important;
+  overflow: auto !important; resize: none !important; border: 1px solid var(--teal) !important;
+  background: var(--panel) !important; border-radius: 13px !important;
+  box-shadow: 0 25px 65px rgba(0,0,0,.55) !important; }
+.pi-panel-popout > .checklist-body, .pi-panel-popout > .database-notes-body,
+.pi-panel-popout > .pi-workspace-scroll, .pi-panel-popout > .day-rail,
+.pi-panel-popout > .pi-archive-scroll, .pi-panel-popout > .longform-list,
+.pi-panel-popout > .longform-saved-section-body { min-height: 0; overflow: auto !important; }
+.pi-panel-popout.day-card { display: grid !important; grid-template-rows: auto minmax(0,1fr) auto; }
+.pi-panel-popout.pi-notes-section, .pi-panel-popout.longform-saved-section { display: flex !important; flex-direction: column; }
+.pi-panel-popout.pi-notes-section > .pi-notes-section-body,
+.pi-panel-popout.longform-saved-section > .longform-saved-section-body { flex: 1; overflow: auto !important; }
+.pi-popout-button { display: inline-grid !important; flex: 0 0 auto; place-items: center;
+  width: 25px; height: 23px; padding: 0 !important; margin-left: auto;
+  border: 1px solid transparent; border-radius: 6px;
+  background: transparent; color: var(--muted); font-size: 15px; cursor: pointer; }
+.pi-popout-button:hover, .pi-popout-button:focus { border-color: var(--teal); color: var(--text); }
+.panel-header:has(> .pi-popout-button), .pi-workspace-head:has(> .pi-popout-button),
+.pi-notes-section-head:has(> .pi-popout-button), .day-card-top:has(> .pi-popout-button),
+.longform-saved-section-head:has(> .pi-popout-button) { display: flex !important; align-items: center; }
+.pi-panel-popout .pi-popout-button { color: var(--teal-soft) !important; }
+@media(max-width:760px) {
+ .database-page .pi-compact-item { gap: 2px; padding: 5px 3px; }
+ .database-page .pi-item-date { max-width: 84px; font-size: 9px !important; }
+ .database-page .pi-compact-item .pi-item-move { width: 30px; max-width: 30px; }
+ .database-page .pi-compact-item .item-row-actions { gap: 0; }
+ .database-page .pi-compact-item .pi-item-date { width: 78px; }
+ .database-page .pi-compact-item { grid-template-columns: 11px 15px minmax(0,1fr) 78px auto !important; }
+ .database-page .pi-category-note { grid-template-columns: 11px minmax(0,1fr) 78px auto !important; }
+ .pi-panel-popout { inset: 5px !important; width: calc(100vw - 10px) !important;
+   height: calc(100dvh - 10px) !important; border-radius: 9px !important; }
+ .pi-note-card-head .pi-card-date { width: 87px; flex-basis: 87px; }
+}
+
+/* Calendar grid fits inside its expanded panel. */
+.pi-panel-popout.planner-calendar { display: flex !important; flex-direction: column; }
+.pi-panel-popout.planner-calendar > .planner-grid { flex: 1; min-height: 0; overflow: auto !important; }
+.planner-heading:has(> .pi-popout-button) { display: flex !important; gap: 7px; align-items: center; }
+
+/* Longform title is now an inline header sibling of its metadata and tools. */
+.longform-entry-top > .longform-entry-title { grid-column: 1; grid-row: 1;
+ width: auto !important; min-width: 0 !important; max-width: none;
+ margin: 0 !important; padding: 2px 3px; font-size: 12px; line-height: 1.35; }
+.longform-entry-top > .longform-entry-meta { grid-column: 2; grid-row: 1; }
+.longform-entry-top > .longform-entry-actions { grid-column: 3; grid-row: 1; }
+@media(max-width:760px) {
+ .longform-entry-top { grid-template-columns: minmax(0,1fr) auto !important; grid-template-rows: auto auto; }
+ .longform-entry-top > .longform-entry-title { grid-column: 1; grid-row: 1; }
+ .longform-entry-top > .longform-entry-actions { grid-column: 2; grid-row: 1; }
+ .longform-entry-top > .longform-entry-meta { grid-column: 1 / -1; grid-row: 2;
+   justify-self: start !important; margin: 0 !important; padding: 0 3px; }
+}
+
+/* A single ⋮ menu holds move/archive/delete on every Home table. */
+.database-page .pi-item-tools { position: relative; flex: 0 0 auto; }
+.database-page .pi-item-tools > summary { list-style: none; cursor: pointer; width: 22px; height: 23px;
+ display: grid; place-items: center; font-size: 17px; color: var(--muted); border-radius: 6px; }
+.database-page .pi-item-tools > summary::-webkit-details-marker { display: none; }
+.database-page .pi-item-tools > summary:hover, .database-page .pi-item-tools[open] > summary {
+ color: var(--teal-soft); background: color-mix(in srgb,var(--teal) 13%,var(--panel)); }
+.database-page .pi-item-tools-panel { position: absolute; top: calc(100% + 3px); right: 0;
+ z-index: 140; min-width: 180px; width: max-content; max-width: min(250px,90vw);
+ display: flex; align-items: center; gap: 7px; padding: 8px; border-radius: 8px;
+ background: var(--panel); border: 1px solid var(--border); box-shadow: var(--shadow); }
+.database-page .pi-item-tools-panel .pi-item-move { width: 145px !important; max-width: 145px !important;
+ border: 1px solid var(--border) !important; background: var(--bg-soft) !important; padding: 5px 6px; }
+.database-page .pi-item-tools-panel .archive-icon-button { opacity: .95; width: 23px; }
+.database-page .pi-item-tools-panel .check-delete { opacity: .95; width: 23px; }
+.database-page .pi-compact-item:has(.pi-item-tools[open]) { position: relative; z-index: 50; }
+
+/* Focus is also a Home table: it can expand and reveal moved category notes. */
+.database-page .pi-panel-popout.pi-focus-panel {
+ display: grid !important; grid-template-rows: auto minmax(0,1fr) !important;
+}
+.database-page .pi-panel-popout .pi-focus-list {
+ align-content: start; flex-wrap: wrap; align-items: flex-start; overflow: auto;
+}
+.database-page .pi-focus-item:has(> .pi-focus-attachment) { align-content: start; }
+.database-page .pi-focus-attachment {
+ grid-column: 2 / -1; grid-row: 2;
+ color: var(--muted); font-size: 10px; min-width: 0; padding-top: 2px;
+}
+.database-page .pi-focus-attachment > summary { cursor: pointer; color: var(--teal-soft); }
+.database-page .pi-focus-note-body { white-space: pre-wrap; overflow-wrap: anywhere; color: var(--text); padding: 6px 0; }
+.database-page .pi-focus-attachment img { display: block; max-height: 200px; max-width: 100%; object-fit: contain; }
+.database-page .pi-focus-attachment a { color: var(--teal-soft); }
+
+.database-page select.pi-focus-route { appearance: none; -webkit-appearance: none;
+ width: 23px; min-width: 23px; max-width: 23px; height: 24px; padding: 0 2px;
+ border: 0; border-radius: 5px; background: transparent; color: var(--teal-soft);
+ font-size: 16px; text-align: center; cursor: pointer; }
+.database-page select.pi-focus-route:hover { background: color-mix(in srgb,var(--teal) 12%,var(--panel)); }
