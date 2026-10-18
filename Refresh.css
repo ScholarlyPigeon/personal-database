@@ -289,8 +289,16 @@
   cursor: pointer; padding: 2px 8px; }
 .database-page #piDatabaseFocus.pi-focus-collapsed { grid-template-rows: auto !important; }
 .database-page #piDatabaseFocus.pi-focus-collapsed > .pi-focus-body { display: none !important; }
-.database-page.pi-focus-layout:has(#piDatabaseFocus.pi-focus-collapsed) { grid-template-rows: auto 38px 37px minmax(0,1fr) !important; }
-.database-page.pi-focus-layout { grid-template-rows: auto 38px 164px minmax(0,1fr) !important; }
+/* Four explicit tracks in BOTH Focus states. Matching the .page class is
+   essential: a more-specific legacy .database-page.page.pi-focus-layout rule
+   otherwise wins whenever Focus is expanded, causing Home to reflow wildly. */
+.database-page.page.pi-focus-layout {
+  grid-template-rows: auto 38px 164px minmax(0, 1fr) !important;
+}
+.database-page.page.pi-focus-layout:has(> #piDatabaseFocus.pi-focus-collapsed) {
+  grid-template-rows: auto 38px 37px minmax(0, 1fr) !important;
+}
+/* Only Focus's content is hidden. Other Home tables keep their own grid row. */
 .database-page .pi-panel-popout.pi-focus-panel .pi-focus-list { overflow-y: auto !important;
   align-items: flex-start !important; }
 .database-page .pi-panel-popout.pi-focus-panel .pi-focus-item { max-height: none; }
@@ -300,8 +308,8 @@
  .database-page .pi-focus-panel .pi-focus-list { flex-direction: row !important; overflow-x: auto !important; }
  .database-page .pi-focus-panel .pi-focus-item { width: 290px; min-width: 290px !important;
    flex-basis: 290px !important; }
- .database-page.pi-focus-layout { grid-template-rows: auto auto 164px auto !important; }
- .database-page.pi-focus-layout:has(#piDatabaseFocus.pi-focus-collapsed) { grid-template-rows: auto auto 37px auto !important; }
+ .database-page.page.pi-focus-layout { grid-template-rows: auto auto 164px auto !important; }
+ .database-page.page.pi-focus-layout:has(> #piDatabaseFocus.pi-focus-collapsed) { grid-template-rows: auto auto 37px auto !important; }
 }
 /* Date is visually two-digit but kept as a full ISO value for native date editing and cloud sync. */
 .pi-compact-date-view { display: inline-flex; align-items: center; min-width: 0;
