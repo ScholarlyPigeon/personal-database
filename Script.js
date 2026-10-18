@@ -2326,23 +2326,9 @@ if (document.getElementById("tileGrid")) {
                     moveMenu.value = "";
                     if (!target || !isFresh()) return;
                     if (target === "__focus__") {
-                        const focusKey = "pi-focus-now-v1";
-                        let focus = [];
-                        try { const parsed = JSON.parse(localStorage.getItem(focusKey) || "[]"); if (Array.isArray(parsed)) focus = parsed; } catch {}
-                        const value = { ...item, id: archiveId("focus"), done: Boolean(item.done), sourceTable: storageKey, createdAt: item.createdAt || new Date().toISOString() };
-                        focus.unshift(value);
-                        // Copy first, then remove; no silent loss on interrupted writes.
-                        localStorage.setItem(focusKey, JSON.stringify(focus));
-                        items.splice(index, 1);
-                        if (!manager.save(false, "before-move-focus")) {
-                            items.splice(index, 0, item);
-                            renderItems();
-                            alert("The original item was kept. Focus Now may contain a second copy because the safety backup could not complete.");
-                            return;
+                        if (!window.PIHomeMoveToFocus?.(storageKey, item.id)) {
+                            alert("Move not completed. Your original item was kept in its table.");
                         }
-                        renderItems();
-                        window.PIRefreshFocusViews?.();
-                        showSaved();
                     } else {
                         if (!checklistManagers.has(target)) return;
                         moveChecklistItem(storageKey, index, target, checklistManagers.get(target).items.length);
@@ -2495,7 +2481,17 @@ if (document.getElementById("tileGrid")) {
                 toolsSummary.setAttribute("aria-label", toolsSummary.title);
                 const toolsPanel = document.createElement("div");
                 toolsPanel.className = "pi-item-tools-panel";
-                toolsPanel.append(moveMenu, archive, del);
+                const focusShortcut = document.createElement("button");
+                focusShortcut.type = "button";
+                focusShortcut.className = "pi-focus-shortcut";
+                focusShortcut.textContent = "✦ Focus";
+                focusShortcut.title = "Move this item into Focus Now";
+                focusShortcut.addEventListener("click", () => {
+                    if (!window.PIHomeMoveToFocus?.(storageKey, item.id)) {
+                        alert("Move not completed. Your original item was kept in its table.");
+                    }
+                });
+                toolsPanel.append(moveMenu, focusShortcut, archive, del);
                 toolsMenu.append(toolsSummary, toolsPanel);
                 rowActions.append(selector);
                 if (noteMode) rowActions.append(kindButton);
@@ -2665,6 +2661,41 @@ if (document.getElementById("tileGrid")) {
         noteMode: true,
         newItemsToTop: true
     });
+
+    // One safe Home -> Focus transfer, shared by touch controls and drag/drop.
+    // Keep the source intact until Focus has received a copy; roll back when
+    // the source cannot be saved, including Home Notes' stale-data protection.
+    window.PIHomeMoveToFocus = (sourceKey, sourceItemId) => {
+        const source = checklistManagers.get(sourceKey);
+        if (!source || (source.isFresh && !source.isFresh())) return false;
+        const index = source.items.findIndex(entry => entry.id === sourceItemId);
+        if (index < 0) return false;
+        const item = source.items[index];
+        const focusKey = "pi-focus-now-v1";
+        const originalFocus = localStorage.getItem(focusKey);
+        let focus = [];
+        try { const parsed = JSON.parse(originalFocus || "[]"); if (Array.isArray(parsed)) focus = parsed; }
+        catch { return false; }
+        const moved = { ...item, id: archiveId("focus"), done: Boolean(item.done),
+            sourceTable: sourceKey, createdAt: item.createdAt || new Date().toISOString() };
+        try { localStorage.setItem(focusKey, JSON.stringify([moved, ...focus])); }
+        catch { return false; }
+        source.items.splice(index, 1);
+        if (!source.save(false, "before-move-focus")) {
+            source.items.splice(index, 0, item);
+            try {
+                const current = JSON.parse(localStorage.getItem(focusKey) || "[]");
+                if (Array.isArray(current) && current[0]?.id === moved.id) {
+                    if (originalFocus === null) localStorage.removeItem(focusKey);
+                    else localStorage.setItem(focusKey, originalFocus);
+                }
+            } catch {}
+            source.render(); window.PIRefreshFocusViews?.();
+            return false;
+        }
+        source.render(); window.PIRefreshFocusViews?.(); showSaved();
+        return true;
+    };
 
     window.PIHomeReturnFromFocus = (focusEntry, destination = "pi-database-notes-v1") => {
         const target = checklistManagers.get(destination);
@@ -6940,10 +6971,23 @@ if (document.getElementById("neopetsApp")) {
         if (typeof showSaved === "function") showSaved();
     }
 
+    window.PIHomeMoveFromFocus = (id, destination) => {
+        const item = readFocus().find(entry => entry.id === id);
+        if (!item || !window.PIHomeReturnFromFocus?.(item, destination)) return false;
+        saveFocus(readFocus().filter(entry => entry.id !== id));
+        return true;
+    };
+
     function focusItemNode(item, compact = false) {
         const row = document.createElement("div");
         row.className = `pi-focus-item${item.done ? " done" : ""}${compact ? " compact" : ""}`;
         row.dataset.focusId = item.id;
+        const drag = document.createElement("span");
+        drag.className = "pi-focus-drag";
+        drag.textContent = "⠿";
+        drag.draggable = true;
+        drag.title = "Drag to a Home table or calendar day";
+        drag.setAttribute("aria-label", drag.title);
 
         const check = document.createElement("input");
         check.type = "checkbox";
@@ -6988,7 +7032,7 @@ if (document.getElementById("neopetsApp")) {
         moveHome.setAttribute("aria-label", moveHome.title);
         const defaultRoute = document.createElement("option");
         defaultRoute.value = "";
-        defaultRoute.textContent = "⇢";
+        defaultRoute.textContent = "Move ▾";
         moveHome.append(defaultRoute);
         const routeTargets = [
             ["pi-database-notes-v1", "Home Notes"],
@@ -7010,10 +7054,9 @@ if (document.getElementById("neopetsApp")) {
             const destination = moveHome.value;
             moveHome.value = "";
             if (!destination) return;
-            if (!window.PIHomeReturnFromFocus?.(item, destination)) {
-                alert("The item was kept in Focus. Please try again from Home."); return;
+            if (!window.PIHomeMoveFromFocus?.(item.id, destination)) {
+                alert("The item was kept in Focus. Please try again from Home.");
             }
-            saveFocus(readFocus().filter(row => row.id !== item.id));
         });
         const archive = document.createElement("button");
         archive.type = "button"; archive.className = "pi-focus-archive";
@@ -7025,7 +7068,7 @@ if (document.getElementById("neopetsApp")) {
                 metadata: { ...item } })) return;
             saveFocus(readFocus().filter(row => row.id !== item.id));
         });
-        row.append(check, text, moveHome, archive, remove);
+        row.append(drag, check, text, moveHome, archive, remove);
         if (item.kind === "note" && (item.details || item.imageUrl || item.linkUrl)) {
             // Keep the actual note readable without making it a second editable
             // field in Focus. Its complete record follows it back to Home.
