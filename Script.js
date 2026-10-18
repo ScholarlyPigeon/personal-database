@@ -1,3 +1,62 @@
+/* Nested checklist renderer shared by Home category notes and Focus Now.
+   One parent record contains every child, so routing and archive preserve the group. */
+window.PIHomeNestedChecklist = function(item, applyChange) {
+    const root = document.createElement('div');
+    root.className = 'pi-nested-checklist';
+    const title = document.createElement('div');
+    title.className = 'pi-nested-title';
+    title.textContent = 'Checklist';
+    root.append(title);
+    (Array.isArray(item.subtasks) ? item.subtasks : []).forEach(child => {
+        const line = document.createElement('div');
+        line.className = 'pi-nested-line' + (child.done ? ' done' : '');
+        const check = document.createElement('input');
+        check.type = 'checkbox'; check.checked = Boolean(child.done);
+        check.setAttribute('aria-label', 'Complete subtask');
+        check.addEventListener('change', () => applyChange(live => {
+            const target = (live.subtasks || []).find(entry => entry.id === child.id);
+            if (target) target.done = check.checked;
+        }));
+        const field = document.createElement('input');
+        field.type = 'text'; field.className = 'pi-nested-text';
+        field.value = String(child.text || ''); field.setAttribute('aria-label','Subtask text');
+        field.addEventListener('change', () => applyChange(live => {
+            const target = (live.subtasks || []).find(entry => entry.id === child.id);
+            if (target) target.text = field.value;
+        }));
+        field.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); field.blur(); } });
+        const remove = document.createElement('button');
+        remove.type = 'button'; remove.className = 'pi-nested-remove';
+        remove.textContent = '×'; remove.title = 'Remove subtask';
+        remove.setAttribute('aria-label', 'Remove subtask');
+        remove.addEventListener('click', () => applyChange(live => {
+            live.subtasks = (live.subtasks || []).filter(entry => entry.id !== child.id);
+        }));
+        line.append(check, field, remove); root.append(line);
+    });
+    const compose = document.createElement('form'); compose.className = 'pi-nested-compose';
+    const input = document.createElement('input'); input.type = 'text';
+    input.placeholder = 'Add a checklist item…'; input.setAttribute('aria-label','New subtask');
+    const add = document.createElement('button'); add.type = 'submit'; add.textContent = '+ Add';
+    compose.append(input, add);
+    compose.addEventListener('submit', e => {
+        e.preventDefault(); e.stopPropagation();
+        const text = input.value.trim(); if (!text) return;
+        applyChange(live => {
+            if (!Array.isArray(live.subtasks)) live.subtasks = [];
+            live.subtasks.push({id:'sub-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8),text,done:false});
+        });
+    });
+    root.append(compose);
+    return root;
+};
+window.PIHomeArchiveText = function(item) {
+    const lines = [item.text, item.details].filter(Boolean);
+    if (Array.isArray(item.subtasks) && item.subtasks.length) {
+        lines.push(item.subtasks.map(child => (child.done ? '☑ ' : '☐ ') + String(child.text || '')).join('\n'));
+    }
+    return lines.join('\n\n');
+};
 /* =========================================================
    PERSONAL INTRANET STORAGE NAMESPACE
    ---------------------------------------------------------
@@ -2198,7 +2257,7 @@ if (document.getElementById("tileGrid")) {
 
             items.forEach((item, index) => {
                 const row = document.createElement("div");
-                const isCategoryNote = noteMode && item.kind === "note";
+                const isCategoryNote = item.kind === "note";
                 row.className = "checklist-item pi-compact-item" + (checkable && item.done ? " done" : "") + (!checkable ? " checklist-item-no-check" : "") + (isCategoryNote ? " pi-category-note" : "");
                 row.dataset.itemId = item.id;
                 if (accentClass) row.classList.add(accentClass);
@@ -2210,7 +2269,7 @@ if (document.getElementById("tileGrid")) {
                 drag.title = "Drag between Notes, Radar, Near My Radar, or calendar days";
 
                 let wrap = null;
-                if (checkable && !isCategoryNote) {
+                if (checkable) {
                     wrap = document.createElement("label");
                     wrap.className = "check-wrap";
                     if (accentClass) wrap.classList.add(accentClass);
@@ -2262,7 +2321,7 @@ if (document.getElementById("tileGrid")) {
                     if (!isFresh()) return;
                     if (protectHome && !window.PIHomeNotesSafety.remember(lastStoredValue, "before-archive")) return;
                     const archived = archiveManualItem({
-                        text: [item.text, item.details].filter(Boolean).join("\n\n"),
+                        text: window.PIHomeArchiveText(item),
                         source: archiveSource,
                         context: archiveContext,
                         originalDate: archiveOriginalDate,
@@ -2363,6 +2422,11 @@ if (document.getElementById("tileGrid")) {
                         manager.save(true, "before-edit");
                     });
                     noteBody.append(details);
+                    noteBody.append(window.PIHomeNestedChecklist(item, mutation => {
+                        if (!isFresh()) return;
+                        mutation(item);
+                        if (manager.save(false, "before-subtask")) renderItems();
+                    }));
                     const media = document.createElement("div");
                     media.className = "pi-category-note-media";
                     const image = document.createElement("input");
@@ -2494,7 +2558,7 @@ if (document.getElementById("tileGrid")) {
                 toolsPanel.append(moveMenu, focusShortcut, archive, del);
                 toolsMenu.append(toolsSummary, toolsPanel);
                 rowActions.append(selector);
-                if (noteMode) rowActions.append(kindButton);
+                if (noteMode || isCategoryNote) rowActions.append(kindButton);
                 if (isCategoryNote) rowActions.append(noteToggle);
                 rowActions.append(toolsMenu);
 
@@ -3363,9 +3427,9 @@ if (document.getElementById("aquariumApp")) {
         const date = new Date(value);
         if (Number.isNaN(date.getTime())) return "date unrecorded";
         return date.toLocaleDateString("en-US", {
-            month: "short",
-            day: "numeric",
-            year: "numeric"
+            month: "2-digit",
+            day: "2-digit",
+            year: "2-digit"
         });
     }
 
@@ -4448,12 +4512,9 @@ if (document.getElementById("patternsApp")) {
             ? new Date(`${value}T12:00:00`)
             : new Date(value);
         if (Number.isNaN(date.getTime())) return value;
-        return date.toLocaleDateString("en-US", {
-            weekday: /^\d{4}-\d{2}-\d{2}$/.test(value) ? "short" : undefined,
-            month: "short",
-            day: "numeric",
-            year: includeYear ? "numeric" : undefined
-        });
+        return date.toLocaleDateString("en-US", includeYear
+            ? { month: "2-digit", day: "2-digit", year: "2-digit" }
+            : { month: "short", day: "numeric" });
     }
 
     function removeArchiveRecord(id) {
@@ -6979,127 +7040,136 @@ if (document.getElementById("neopetsApp")) {
     };
 
     function focusItemNode(item, compact = false) {
-        const row = document.createElement("div");
-        row.className = `pi-focus-item${item.done ? " done" : ""}${compact ? " compact" : ""}`;
+        const row = document.createElement('div');
+        const category = item.kind === 'note';
+        row.className = `pi-focus-item pi-compact-item${item.done ? ' done' : ''}${category ? ' pi-category-note' : ''}`;
         row.dataset.focusId = item.id;
-        const drag = document.createElement("span");
-        drag.className = "pi-focus-drag";
-        drag.textContent = "⠿";
-        drag.draggable = true;
-        drag.title = "Drag to a Home table or calendar day";
-        drag.setAttribute("aria-label", drag.title);
-
-        const check = document.createElement("input");
-        check.type = "checkbox";
-        check.checked = Boolean(item.done);
-        check.setAttribute("aria-label", "Mark focus item complete");
-        check.addEventListener("change", () => {
-            const items = readFocus();
-            const live = items.find(candidate => candidate.id === item.id);
-            if (!live) return;
-            live.done = check.checked;
-            saveFocus(items);
-        });
-
-        const text = document.createElement("div");
-        text.className = "pi-focus-text";
-        text.contentEditable = compact ? "false" : "true";
-        text.spellcheck = true;
-        text.textContent = item.text;
-        if (!compact) {
-            text.addEventListener("input", () => {
-                const items = readFocus();
-                const live = items.find(candidate => candidate.id === item.id);
-                if (!live) return;
-                live.text = text.innerText.trim();
-                saveFocus(items, false);
-                if (typeof showSaved === "function") showSaved();
-            });
+        const update = mutation => {
+            const entries = readFocus();
+            const current = entries.find(entry => entry.id === item.id);
+            if (!current) return;
+            mutation(current);
+            saveFocus(entries);
+        };
+        const drag = document.createElement('span');
+        drag.className = 'pi-focus-drag'; drag.textContent = '⋮⋮'; drag.draggable = true;
+        drag.title = 'Drag to another table or a calendar day';
+        const check = document.createElement('input');
+        check.type = 'checkbox'; check.checked = Boolean(item.done);
+        check.setAttribute('aria-label', 'Complete Focus item');
+        check.addEventListener('change', () => update(live => {live.done = check.checked;}));
+        const titleArea = document.createElement('div'); titleArea.className = 'pi-focus-main';
+        const headline = document.createElement('div'); headline.className = 'pi-focus-headline';
+        if (category) {
+            const toggle = document.createElement('button');
+            toggle.type = 'button'; toggle.className = 'pi-focus-expand';
+            toggle.textContent = item.expanded === false ? '▸' : '▾';
+            toggle.title = item.expanded === false ? 'Expand category note' : 'Collapse category note';
+            toggle.setAttribute('aria-label', toggle.title);
+            toggle.addEventListener('click', () => update(live => {live.expanded = live.expanded === false;}));
+            headline.append(toggle);
         }
-
-        const remove = document.createElement("button");
-        remove.type = "button";
-        remove.className = "pi-focus-remove";
-        remove.textContent = "×";
-        remove.title = "Remove from Focus Now";
-        remove.addEventListener("click", () => {
-            saveFocus(readFocus().filter(candidate => candidate.id !== item.id));
-            recordActivity("database", "removed from Focus Now", item.text);
+        const text = document.createElement('div'); text.className = 'pi-focus-text';
+        text.contentEditable = compact ? 'false' : 'true'; text.spellcheck = true;
+        text.textContent = item.text;
+        text.setAttribute('role', 'textbox');
+        text.setAttribute('aria-label', category ? 'Category heading' : 'Focus task');
+        if (!compact) text.addEventListener('blur', () => {
+            if (text.innerText !== item.text) update(live => {live.text = text.innerText.trim();});
         });
-        const moveHome = document.createElement("select");
-        moveHome.className = "pi-focus-return pi-focus-route";
-        moveHome.title = "Move Focus item to Home Notes, Radar, or a day";
-        moveHome.setAttribute("aria-label", moveHome.title);
-        const defaultRoute = document.createElement("option");
-        defaultRoute.value = "";
-        defaultRoute.textContent = "Move ▾";
-        moveHome.append(defaultRoute);
+        headline.append(text); titleArea.append(headline);
+        if (category && item.expanded !== false) {
+            const body = document.createElement('div'); body.className = 'pi-focus-detail';
+            if (item.details) {
+                const details = document.createElement('div');
+                details.className = 'pi-focus-note-body'; details.textContent = item.details;
+                body.append(details);
+            }
+            body.append(window.PIHomeNestedChecklist(item, update));
+            if (/^https?:\/\//i.test(item.imageUrl || '')) {
+                const img = document.createElement('img');
+                img.src = item.imageUrl; img.alt = 'Note image'; img.loading = 'lazy';
+                body.append(img);
+            }
+            if (/^https?:\/\//i.test(item.linkUrl || '')) {
+                const link = document.createElement('a'); link.href = item.linkUrl;
+                link.target = '_blank'; link.rel = 'noopener noreferrer';
+                link.textContent = 'Open link ↗'; body.append(link);
+            }
+            titleArea.append(body);
+        }
+        const actions = document.createElement('div'); actions.className = 'pi-focus-actions';
+        const menu = document.createElement('details'); menu.className = 'pi-item-tools pi-focus-tools';
+        const summary = document.createElement('summary'); summary.textContent = '⋮';
+        summary.setAttribute('aria-label', 'Focus item menu: date, move, archive or delete');
+        summary.title = summary.getAttribute('aria-label');
+        const tools = document.createElement('div'); tools.className = 'pi-item-tools-panel pi-focus-tools-panel';
+        const dateLabel = document.createElement('label'); dateLabel.className = 'pi-focus-menu-date';
+        dateLabel.textContent = 'Date ';
+        const dateInput = document.createElement('input'); dateInput.type = 'date';
+        dateInput.value = item.date || item.createdAt?.slice(0,10) || '';
+        dateInput.setAttribute('aria-label', 'Change item date');
+        dateInput.addEventListener('change', () => update(live => {live.date = dateInput.value;}));
+        dateLabel.append(dateInput);
+        const move = document.createElement('select'); move.className = 'pi-focus-return pi-focus-route';
+        move.setAttribute('aria-label', 'Move Focus item to another table');
+        move.append(new Option('Move to…', ''));
         const routeTargets = [
-            ["pi-database-notes-v1", "Home Notes"],
-            ["pi-database-radar-v1", "On My Radar"],
-            ["pi-database-near-radar-v1", "Near My Radar"]
+            ['pi-database-notes-v1','Home Notes'],
+            ['pi-database-radar-v1','On My Radar'],
+            ['pi-database-near-radar-v1','Near My Radar']
         ];
         for (let i = 0; i < 28; i++) {
-            const dateList = document.getElementById(`dayList${i}`);
-            const key = dateList?.dataset.storageKey;
-            if (key) routeTargets.push([key, `Day: ${key.replace("pi-calendar-day-", "")}`]);
+            const dayList = document.getElementById(`dayList${i}`);
+            if (dayList?.dataset.storageKey) routeTargets.push([dayList.dataset.storageKey, `Day: ${dayList.dataset.storageKey.replace('pi-calendar-day-', '')}`]);
         }
-        routeTargets.forEach(([key, name]) => {
-            const option = document.createElement("option");
-            option.value = key;
-            option.textContent = `→ ${name}`;
-            moveHome.append(option);
+        routeTargets.forEach(([key, label]) => move.append(new Option(label, key)));
+        move.addEventListener('change', () => {
+            const target = move.value; move.value = '';
+            if (target && !window.PIHomeMoveFromFocus?.(item.id, target)) alert('Move not completed. Item remains in Focus.');
         });
-        moveHome.addEventListener("change", () => {
-            const destination = moveHome.value;
-            moveHome.value = "";
-            if (!destination) return;
-            if (!window.PIHomeMoveFromFocus?.(item.id, destination)) {
-                alert("The item was kept in Focus. Please try again from Home.");
+        const kind = document.createElement('button'); kind.type = 'button';
+        kind.textContent = category ? 'Make checklist line' : 'Make category note';
+        kind.addEventListener('click', () => update(live => {
+            live.kind = category ? 'task' : 'note';
+            if (live.kind === 'note') live.expanded = true;
+        }));
+        const archive = document.createElement('button'); archive.type = 'button';
+        archive.textContent = 'Archive'; archive.addEventListener('click', () => {
+            if (!archiveManualItem({text:window.PIHomeArchiveText(item), source:'Focus Now',
+                originalDate:item.date || null, metadata:{...item}})) return;
+            saveFocus(readFocus().filter(entry => entry.id !== item.id));
+        });
+        const remove = document.createElement('button'); remove.type = 'button';
+        remove.textContent = 'Remove'; remove.title = 'Remove from Focus Now';
+        remove.addEventListener('click', () => {
+            saveFocus(readFocus().filter(entry => entry.id !== item.id));
+            recordActivity('database', 'removed from Focus Now', item.text);
+        });
+        tools.append(dateLabel, move, kind, archive, remove);
+        menu.append(summary, tools); actions.append(menu);
+        // Menus in a horizontal scroller must use the browser's top layer.
+        // Otherwise bottom controls are clipped by Focus's scroll viewport.
+        menu.addEventListener('toggle', () => {
+            if (menu.open && menu.isConnected) {
+                const rect = summary.getBoundingClientRect();
+                tools.setAttribute('popover', 'manual');
+                try { tools.showPopover(); } catch {}
+                const left = Math.max(8, Math.min(innerWidth - 238, rect.right - 228));
+                const top = Math.max(8, Math.min(innerHeight - tools.offsetHeight - 8, rect.bottom + 4));
+                tools.style.left = left + 'px'; tools.style.top = top + 'px';
+            } else {
+                try { if (tools.matches(':popover-open')) tools.hidePopover(); } catch {}
+                tools.removeAttribute('popover');
+                tools.style.removeProperty('left'); tools.style.removeProperty('top');
             }
         });
-        const archive = document.createElement("button");
-        archive.type = "button"; archive.className = "pi-focus-archive";
-        archive.textContent = "↘"; archive.title = "Archive from Focus Now";
-        archive.setAttribute("aria-label", archive.title);
-        archive.addEventListener("click", () => {
-            if (!archiveManualItem({ text: [item.text, item.details].filter(Boolean).join("\n\n"), source: "Focus Now",
-                originalDate: item.date || null,
-                metadata: { ...item } })) return;
-            saveFocus(readFocus().filter(row => row.id !== item.id));
-        });
-        row.append(drag, check, text, moveHome, archive, remove);
-        if (item.kind === "note" && (item.details || item.imageUrl || item.linkUrl)) {
-            // Keep the actual note readable without making it a second editable
-            // field in Focus. Its complete record follows it back to Home.
-            const expanded = document.createElement("details");
-            expanded.className = "pi-focus-attachment";
-            const toggle = document.createElement("summary");
-            toggle.textContent = "▤ note details";
-            expanded.append(toggle);
-            if (item.details) {
-                const body = document.createElement("div");
-                body.className = "pi-focus-note-body";
-                body.textContent = item.details;
-                expanded.append(body);
-            }
-            if (/^https?:\/\//i.test(item.imageUrl || "")) {
-                const picture = document.createElement("img");
-                picture.src = item.imageUrl;
-                picture.alt = "Note image";
-                picture.loading = "lazy";
-                expanded.append(picture);
-            }
-            if (/^https?:\/\//i.test(item.linkUrl || "")) {
-                const link = document.createElement("a");
-                link.href = item.linkUrl;
-                link.target = "_blank";
-                link.rel = "noopener noreferrer";
-                link.textContent = "Open link ↗";
-                expanded.append(link);
-            }
-            row.append(expanded);
-        }
+        const visibleDate = document.createElement('span'); visibleDate.className = 'pi-focus-date';
+        const value = item.date || item.createdAt?.slice(0,10) || '';
+        visibleDate.textContent = window.PICompactDate?.(value) || 'date';
+        visibleDate.title = 'Edit the date using ⋮';
+        actions.append(visibleDate);
+        row.append(drag, check, titleArea, actions);
         return row;
     }
 
@@ -7174,6 +7244,19 @@ if (document.getElementById("neopetsApp")) {
                 <div class="pi-focus-list" id="piDatabaseFocusList"></div>
             </div>`;
         links.insertAdjacentElement("afterend", panel);
+        const head = panel.querySelector('.pi-focus-head');
+        const toggle = document.createElement('button');
+        toggle.type = 'button'; toggle.className = 'pi-focus-collapse';
+        const setCollapsed = collapsed => {
+            panel.classList.toggle('pi-focus-collapsed', collapsed);
+            toggle.textContent = collapsed ? '▸' : '▾';
+            toggle.setAttribute('aria-expanded', String(!collapsed));
+            toggle.title = collapsed ? 'Expand Focus Now' : 'Collapse Focus Now';
+            localStorage.setItem('pi-focus-collapsed-v1', String(collapsed));
+        };
+        toggle.addEventListener('click', () => setCollapsed(!panel.classList.contains('pi-focus-collapsed')));
+        head.append(toggle);
+        setCollapsed(localStorage.getItem('pi-focus-collapsed-v1') === 'true');
         page.classList.add("pi-focus-layout");
         refreshFocusViews();
     }

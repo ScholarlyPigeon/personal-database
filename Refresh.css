@@ -209,3 +209,124 @@
  .database-page .pi-item-tools-panel { max-width: min(340px, 93vw); }
  .database-page .pi-item-tools-panel .pi-item-move { width: 120px !important; max-width: 120px !important; }
 }
+
+/* OCT 17 REFINEMENT: checkable category notes with their own nested checklist. */
+.database-page .pi-compact-item.pi-category-note {
+  grid-template-columns: 12px 16px minmax(0,1fr) minmax(75px,105px) auto !important;
+}
+.database-page .pi-category-note .check-wrap { display: grid; place-items: center; }
+.database-page .pi-category-note.done .task-text { text-decoration: line-through; }
+.database-page .pi-nested-checklist { display: grid; gap: 5px; min-width: 0;
+  padding: 5px 0; border-top: 1px solid color-mix(in srgb,var(--border) 50%,transparent); }
+.database-page .pi-nested-title { font-size: 10px; color: var(--faint); letter-spacing: .025em; }
+.database-page .pi-nested-line { display: flex; align-items: center; gap: 7px; min-width: 0; }
+.database-page .pi-nested-line input[type=checkbox] { flex: 0 0 auto; }
+.database-page .pi-nested-text { flex: 1; width: 100%; min-width: 0; color: var(--text);
+  background: transparent; border: 0; border-bottom: 1px solid transparent; font: inherit;
+  font-size: 12px; padding: 3px; outline: none; }
+.database-page .pi-nested-text:focus { border-color: var(--teal); }
+.database-page .pi-nested-line.done .pi-nested-text { text-decoration: line-through; opacity: .65; }
+.database-page .pi-nested-remove { flex: 0 0 auto; border: 0; background: none; color: var(--faint);
+  cursor: pointer; padding: 2px 5px; font-size: 16px; }
+.database-page .pi-nested-compose { display: flex; gap: 6px; min-width: 0; }
+.database-page .pi-nested-compose input { flex: 1; width: 100%; min-width: 0;
+  padding: 6px 7px; background: var(--bg-soft); border: 1px solid var(--border);
+  border-radius: 6px; font-size: 12px; color: var(--text); }
+.database-page .pi-nested-compose button { flex: 0 0 auto; border: 1px solid var(--border);
+  background: var(--panel-light); color: var(--teal-soft); border-radius: 6px;
+  padding: 5px 9px; cursor: pointer; }
+@media(max-width:760px) {
+ .database-page .pi-compact-item.pi-category-note {
+  grid-template-columns: 11px 15px minmax(0,1fr) 78px auto !important;
+ }
+}
+/* Focus Now shares Home row treatment, with space devoted to reading. */
+.database-page #piDatabaseFocus { min-width: 0; }
+.database-page .pi-focus-panel .pi-focus-body { display: flex !important; min-width: 0; overflow: hidden;
+  padding: 6px 9px !important; }
+.database-page .pi-focus-panel .pi-focus-list { display: flex !important; flex-direction: row !important;
+  flex-wrap: nowrap !important; align-items: stretch !important; gap: 8px;
+  width: 100%; min-width: 0; overflow-x: auto !important; overflow-y: hidden !important;
+  scrollbar-width: auto; scrollbar-color: var(--plum-soft) var(--panel-light); padding-bottom: 6px; }
+.database-page .pi-focus-panel .pi-focus-list::-webkit-scrollbar { height: 11px; }
+.database-page .pi-focus-panel .pi-focus-list::-webkit-scrollbar-thumb { border-radius: 9px;
+  background: var(--plum-soft); border: 2px solid var(--panel-light); }
+.database-page .pi-focus-panel .pi-focus-item { display: grid !important;
+  grid-template-columns: 12px 17px minmax(0,1fr) 32px !important;
+  gap: 6px !important; flex: 0 0 300px !important; width: 300px;
+  min-width: 300px !important; min-height: 0; max-height: 100%;
+  overflow: visible; padding: 9px 7px !important; border-radius: 8px;
+  align-content: start; align-items: start; }
+.database-page .pi-focus-item .pi-focus-main { min-width: 0; max-height: 100%; overflow-y: auto; }
+.database-page .pi-focus-headline { display: flex; align-items: flex-start; gap: 3px; min-width: 0; }
+.database-page .pi-focus-item .pi-focus-text { font-size: 14px !important; line-height: 1.4 !important;
+  font-weight: 450; overflow-wrap: anywhere; min-width: 0; flex: 1; }
+.database-page .pi-focus-item .pi-focus-actions { display: flex; flex-direction: column;
+  align-items: center; gap: 1px; min-width: 30px; }
+.database-page .pi-focus-tools { position: relative; }
+.database-page .pi-focus-tools > summary { font-size: 19px; }
+.database-page .pi-focus-tools-panel { width: 228px !important; min-width: 228px;
+  flex-direction: column !important; align-items: stretch !important; gap: 5px; }
+.database-page .pi-focus-tools-panel button { cursor: pointer; border: 1px solid var(--border);
+  background: var(--panel-light); color: var(--text); padding: 5px 7px; border-radius: 6px; text-align: left; }
+.database-page .pi-focus-tools-panel select { width: 100% !important; max-width: 100% !important;
+  min-width: 0 !important; font-size: 12px; height: 30px; }
+.database-page .pi-focus-menu-date { display: flex; align-items: center;
+  gap: 7px; color: var(--muted); font-size: 11px; }
+.database-page .pi-focus-menu-date input { flex: 1; min-width: 0; color: var(--text);
+  background: var(--bg-soft); border: 1px solid var(--border); padding: 5px;
+  border-radius: 6px; font-size: 11px; }
+.database-page .pi-focus-date { font-size: 9px; white-space: nowrap; color: var(--faint); }
+.database-page .pi-focus-expand { border: 0; background: transparent; padding: 0 3px;
+  font-size: 14px; cursor: pointer; color: var(--teal-soft); flex: 0 0 auto; }
+.database-page .pi-focus-detail { min-width: 0; margin-top: 6px;
+  border-top: 1px solid var(--border); padding-top: 6px; font-size: 12px; }
+.database-page .pi-focus-detail .pi-nested-checklist { padding-top: 5px; }
+.database-page .pi-focus-detail img { max-width: 100%; max-height: 180px; object-fit: contain; }
+.database-page .pi-focus-detail a { color: var(--teal-soft); }
+.database-page .pi-focus-collapse { order: 0; background: transparent; color: var(--muted);
+  font-size: 15px; border: 1px solid var(--border); border-radius: 5px;
+  cursor: pointer; padding: 2px 8px; }
+.database-page #piDatabaseFocus.pi-focus-collapsed { grid-template-rows: auto !important; }
+.database-page #piDatabaseFocus.pi-focus-collapsed > .pi-focus-body { display: none !important; }
+.database-page.pi-focus-layout:has(#piDatabaseFocus.pi-focus-collapsed) { grid-template-rows: auto 38px 37px minmax(0,1fr) !important; }
+.database-page.pi-focus-layout { grid-template-rows: auto 38px 164px minmax(0,1fr) !important; }
+.database-page .pi-panel-popout.pi-focus-panel .pi-focus-list { overflow-y: auto !important;
+  align-items: flex-start !important; }
+.database-page .pi-panel-popout.pi-focus-panel .pi-focus-item { max-height: none; }
+.database-page .pi-panel-popout.pi-focus-panel .pi-focus-main { max-height: unset; }
+.database-page .pi-panel-popout.pi-focus-panel.pi-focus-collapsed > .pi-focus-body { display: flex !important; }
+@media(max-width:760px) {
+ .database-page .pi-focus-panel .pi-focus-list { flex-direction: row !important; overflow-x: auto !important; }
+ .database-page .pi-focus-panel .pi-focus-item { width: 290px; min-width: 290px !important;
+   flex-basis: 290px !important; }
+ .database-page.pi-focus-layout { grid-template-rows: auto auto 164px auto !important; }
+ .database-page.pi-focus-layout:has(#piDatabaseFocus.pi-focus-collapsed) { grid-template-rows: auto auto 37px auto !important; }
+}
+/* Date is visually two-digit but kept as a full ISO value for native date editing and cloud sync. */
+.pi-compact-date-view { display: inline-flex; align-items: center; min-width: 0;
+  position: relative; flex: 0 0 auto; }
+.pi-compact-date-button { font: inherit; font-size: 10px; color: var(--faint);
+  cursor: pointer; padding: 2px 3px; border: 1px solid transparent; border-radius: 5px;
+  background: transparent; white-space: nowrap; }
+.pi-compact-date-button:hover, .pi-compact-date-button:focus { border-color: var(--teal); color: var(--text); }
+.pi-compact-date-native { position: absolute !important; width: 1px !important; height: 1px !important;
+  padding: 0 !important; margin: 0 !important; left: 0 !important; top: 0 !important;
+  opacity: 0 !important; pointer-events: none !important; }
+.database-page .pi-compact-item .pi-compact-date-view { justify-self: end; min-width: 64px; }
+.database-page .pi-category-note:has(.pi-item-tools[open]),
+.database-page .pi-focus-item:has(.pi-focus-tools[open]) { z-index: 200; position: relative; }
+@media(max-width:760px) {
+ .database-page .pi-compact-item .pi-compact-date-view { min-width: 53px; }
+ .pi-compact-date-button { font-size: 9px; }
+}
+/* Focus action menu lives in the top layer while open, outside the scroll clipping. */
+.database-page .pi-focus-tools-panel:popover-open {
+  position: fixed !important; inset: auto; margin: 0 !important;
+  z-index: 10000 !important; box-sizing: border-box;
+  width: min(228px, calc(100vw - 16px)) !important;
+  min-width: 0 !important; max-width: calc(100vw - 16px) !important;
+  max-height: min(360px, calc(100dvh - 16px)); overflow-y: auto;
+  border: 1px solid var(--teal) !important;
+  box-shadow: 0 12px 40px rgba(0,0,0,.7);
+}

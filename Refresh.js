@@ -20,6 +20,10 @@
     // Browser top layer keeps the live panel above its backdrop even when
     // page themes introduce transformed/isolated stacking contexts.
     try { if (panel.matches(':popover-open')) panel.hidePopover(); } catch {}
+    // Critical: leaving `popover` on a regular panel makes the browser hide it
+    // when closed. Restore the original DOM state so it occupies its grid slot.
+    if (panel.dataset.piHadPopover !== 'true') panel.removeAttribute('popover');
+    delete panel.dataset.piHadPopover;
     panel.classList.remove('pi-panel-popout');
     panel.querySelector(':scope > .panel-header > .pi-popout-button, :scope > .pi-workspace-head > .pi-popout-button, :scope > .day-card-top > .pi-popout-button, :scope > .pi-notes-section-head > .pi-popout-button, :scope > .longform-saved-section-head > .pi-popout-button')?.setAttribute('aria-label','Pop out this panel');
     backdrop?.remove(); backdrop = null;
@@ -33,6 +37,7 @@
     backdrop.className = 'pi-popout-backdrop';
     backdrop.addEventListener('click', close);
     document.body.append(backdrop);
+    panel.dataset.piHadPopover = String(panel.hasAttribute('popover'));
     panel.classList.add('pi-panel-popout');
     if (typeof panel.showPopover === 'function') {
       panel.setAttribute('popover', 'manual');
@@ -66,7 +71,46 @@
     });
     if (opened && !opened.isConnected) close();
   };
-  install();
+  window.PICompactDate = value => {
+    const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(value || ''));
+    return match ? `${match[2]}/${match[3]}/${match[1].slice(2)}` : '';
+  };
+  // These are *display* wrappers. Native input listeners and ISO values stay
+  // untouched; the browser's real date picker opens when the date is clicked.
+  const compactDates = () => {
+    document.querySelectorAll('input[type="date"].pi-item-date, input[type="date"].pi-card-date, input[type="date"].longform-card-date, input[type="date"].tracker-date-input').forEach(input => {
+      if (input.dataset.piCompactDate === 'true') return;
+      input.dataset.piCompactDate = 'true';
+      const shell = document.createElement('span');
+      shell.className = 'pi-compact-date-view';
+      const button = document.createElement('button');
+      button.type = 'button'; button.className = 'pi-compact-date-button';
+      const paint = () => {
+        button.textContent = window.PICompactDate(input.value) || 'mm/dd/yy';
+        button.title = 'Edit date';
+        button.setAttribute('aria-label', `Edit date ${button.textContent}`);
+      };
+      paint();
+      input.before(shell);
+      shell.append(button, input);
+      input.classList.add('pi-compact-date-native');
+      input.addEventListener('change', paint);
+      button.addEventListener('click', () => {
+        try { input.showPicker(); }
+        catch { input.focus(); input.click(); }
+      });
+    });
+  };
+  install(); compactDates();
+
+  // Keep exactly one compact Focus menu open. Clicking outside dismisses it.
+  document.addEventListener('pointerdown', event => {
+    document.querySelectorAll('.database-page .pi-focus-tools[open]').forEach(menu => {
+      if (!menu.contains(event.target) && !menu.querySelector('.pi-focus-tools-panel')?.contains(event.target)) {
+        menu.open = false;
+      }
+    });
+  }, true);
 
   // One movement affordance on desktop: drag any Home line into Focus,
   // or drag a Focus card into Notes, Radar, or a dated list.
@@ -131,7 +175,7 @@
   const observer = new MutationObserver(() => {
     if (queued) return;
     queued = true;
-    queueMicrotask(() => { queued = false; install(); });
+    queueMicrotask(() => { queued = false; install(); compactDates(); });
   });
   observer.observe(document.body,{childList:true,subtree:true});
 })();

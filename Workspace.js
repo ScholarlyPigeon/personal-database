@@ -10,7 +10,7 @@ const iso=(date=new Date())=>[date.getFullYear(),String(date.getMonth()+1).padSt
 const el=(tag,cls='',txt)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined)e.textContent=txt;return e;};
 const btn=(txt,title,callback,cls='')=>{const b=el('button',cls,txt);b.type='button';b.title=title;b.setAttribute('aria-label',title);b.addEventListener('click',callback);return b;};
 const summary=text=>String(text||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
-const dateLabel=value=>{const d=new Date(/^\d{4}-\d{2}-\d{2}$/.test(value||'')?value+'T12:00:00':value||0);return Number.isNaN(d.getTime())?'date unknown':d.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'});};
+const dateLabel=value=>{const d=new Date(/^\d{4}-\d{2}-\d{2}$/.test(value||'')?value+'T12:00:00':value||0);return Number.isNaN(d.getTime())?'date unknown':d.toLocaleDateString('en-US',{month:'2-digit',day:'2-digit',year:'2-digit'});};
 const when=ts=>{const d=new Date(ts||0);return Number.isNaN(d.getTime())?'recently':d.toLocaleString(undefined,{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});};
 const escHtml=s=>{const e=el('div');e.textContent=s||'';return e.innerHTML.replace(/\n/g,'<br>');};
 function safeHtml(html){
