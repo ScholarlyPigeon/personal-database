@@ -289,14 +289,30 @@
   cursor: pointer; padding: 2px 8px; }
 .database-page #piDatabaseFocus.pi-focus-collapsed { grid-template-rows: auto !important; }
 .database-page #piDatabaseFocus.pi-focus-collapsed > .pi-focus-body { display: none !important; }
-/* Four explicit tracks in BOTH Focus states. Matching the .page class is
-   essential: a more-specific legacy .database-page.page.pi-focus-layout rule
-   otherwise wins whenever Focus is expanded, causing Home to reflow wildly. */
+/* Home has exactly THREE direct children: header, Focus, and the three-column
+   content grid. Previous four-track CSS put the content grid in a tiny 164px
+   row and left a phantom 1fr row empty. Reserve one independent track for
+   Focus and let the actual Home columns receive the remaining viewport. */
 .database-page.page.pi-focus-layout {
-  grid-template-rows: auto 38px 164px minmax(0, 1fr) !important;
+  grid-template-rows: auto 218px minmax(0, 1fr) !important;
 }
 .database-page.page.pi-focus-layout:has(> #piDatabaseFocus.pi-focus-collapsed) {
-  grid-template-rows: auto 38px 37px minmax(0, 1fr) !important;
+  grid-template-rows: auto 37px minmax(0, 1fr) !important;
+}
+/* A compact header must fit inside its own collapsed track, including on
+   mobile where an older Focus minimum height was still taking precedence. */
+.database-page #piDatabaseFocus.pi-focus-collapsed > .pi-focus-head {
+  min-height: 0 !important;
+  padding-top: 3px !important;
+  padding-bottom: 3px !important;
+}
+.database-page #piDatabaseFocus.pi-focus-collapsed {
+  height: 37px !important;
+  min-height: 37px !important;
+  max-height: 37px !important;
+}
+.database-page #piDatabaseFocus:not(.pi-focus-collapsed) {
+  min-height: 0;
 }
 /* Only Focus's content is hidden. Other Home tables keep their own grid row. */
 .database-page .pi-panel-popout.pi-focus-panel .pi-focus-list { overflow-y: auto !important;
@@ -308,8 +324,12 @@
  .database-page .pi-focus-panel .pi-focus-list { flex-direction: row !important; overflow-x: auto !important; }
  .database-page .pi-focus-panel .pi-focus-item { width: 290px; min-width: 290px !important;
    flex-basis: 290px !important; }
- .database-page.page.pi-focus-layout { grid-template-rows: auto auto 164px auto !important; }
- .database-page.page.pi-focus-layout:has(> #piDatabaseFocus.pi-focus-collapsed) { grid-template-rows: auto auto 37px auto !important; }
+ /* Home switches to a vertical flex stack on phones; Focus owns its height. */
+ .database-page #piDatabaseFocus:not(.pi-focus-collapsed) {
+   height: 232px !important; min-height: 232px !important; max-height: 232px !important;
+   flex: 0 0 232px;
+ }
+ .database-page #piDatabaseFocus.pi-focus-collapsed { flex: 0 0 37px; }
 }
 /* Date is visually two-digit but kept as a full ISO value for native date editing and cloud sync. */
 .pi-compact-date-view { display: inline-flex; align-items: center; min-width: 0;

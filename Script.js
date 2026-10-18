@@ -7252,11 +7252,11 @@ if (document.getElementById("neopetsApp")) {
             toggle.textContent = collapsed ? '▸' : '▾';
             toggle.setAttribute('aria-expanded', String(!collapsed));
             toggle.title = collapsed ? 'Expand Focus Now' : 'Collapse Focus Now';
-            localStorage.setItem('pi-focus-collapsed-v1', String(collapsed));
+            localStorage.setItem('pi-focus-collapsed-v2', String(collapsed));
         };
         toggle.addEventListener('click', () => setCollapsed(!panel.classList.contains('pi-focus-collapsed')));
         head.append(toggle);
-        setCollapsed(localStorage.getItem('pi-focus-collapsed-v1') === 'true');
+        setCollapsed(localStorage.getItem('pi-focus-collapsed-v2') === 'true');
         page.classList.add("pi-focus-layout");
         refreshFocusViews();
     }
