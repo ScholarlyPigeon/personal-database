@@ -122,7 +122,7 @@ body[data-theme="y2k"]::after {content:none !important;display:none !important;}
 /* The menu's live DOM enters the top layer, above scroll clipping and pop-outs. */
 .pi-cross-panel:popover-open,
 .database-page .pi-item-tools-panel:popover-open {
-  position:fixed !important;inset:auto !important;margin:0 !important;
+  position:fixed !important;right:auto !important;bottom:auto !important;margin:0 !important;
   width:min(254px,calc(100vw - 16px)) !important;
   max-width:calc(100vw - 16px) !important;
   max-height:min(450px,calc(100dvh - 20px)) !important;
@@ -131,4 +131,41 @@ body[data-theme="y2k"]::after {content:none !important;display:none !important;}
   border:1px solid var(--border) !important;
   background:var(--panel) !important; color:var(--text) !important;
   box-shadow:0 9px 26px rgba(0,0,0,.25) !important;
+}
+
+/* Oct 19: menu coordinates must never be reset to viewport origin. */
+.pi-cross-panel:popover-open,
+.database-page .pi-item-tools-panel:popover-open {
+  right:auto !important; bottom:auto !important;
+  inset-block-start:var(--pi-menu-top, auto);
+  inset-inline-start:var(--pi-menu-left, auto);
+}
+/* Move the archive day action immediately ahead of the pop-out control. */
+.database-page .day-card-top .day-card-actions {margin-left:auto !important;flex:0 0 auto;}
+.database-page .day-card-top > .day-archive-button {flex:0 0 23px !important;margin-left:0 !important;order:2;}
+.database-page .day-card-top > .pi-popout-button {flex:0 0 25px !important;margin-left:0 !important;order:3;}
+.database-page .day-card-top .date-label {color:var(--pi-header-ink,var(--text)) !important;}
+.database-page .day-card-top .today-badge {color:var(--pi-header-ink,var(--text)) !important;
+  border-color:color-mix(in srgb,var(--pi-header-ink,var(--text)) 35%,transparent) !important;}
+.database-page .day-card-top :is(.day-archive-button,.pi-popout-button) {
+  color:var(--pi-header-ink,var(--text)) !important;
+  border-color:color-mix(in srgb,var(--pi-header-ink,var(--text)) 35%,transparent) !important;
+}
+/* Calendar rows and + controls share the exact same one-line height. */
+.database-page .day-card .day-entry-row {display:grid !important;
+  grid-template-columns:minmax(0,1fr) 30px !important;align-items:start !important;
+  gap:5px !important;min-height:34px !important;max-height:34px !important;}
+.database-page .day-card .day-entry-row .day-input,
+.database-page .day-card .day-entry-row .mini-add {
+  box-sizing:border-box !important;height:34px !important;min-height:34px !important;
+  max-height:34px !important;align-self:start !important;margin:0 !important;
+  line-height:18px !important;}
+.database-page .day-card .day-entry-row .mini-add {width:30px !important; min-width:30px !important;
+  padding:0 !important;line-height:1 !important;}
+/* Dedicated Home Inbox and preserved cloud-login access without a Tools drawer. */
+.database-page .header-right > .pi-home-inbox-nav {font-weight:650;white-space:nowrap;}
+.database-page .header-right > .pi-home-cloud-login {white-space:nowrap;}
+/* Specificity matches the older themed day-header rules, so contrast wins. */
+.database-page .day-card .day-card-top :is(.date-label,.day-card-actions,.today-badge,.day-archive-button,.pi-popout-button) {
+  color:var(--pi-header-ink,var(--text)) !important;
 }

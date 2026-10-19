@@ -185,7 +185,12 @@
     const list=document.createElement('div');list.className='pi-move-choices';
     for (const [name, callback] of choices) {
       const button=document.createElement('button');button.type='button';button.textContent=name;
-      button.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();callback();});
+      button.addEventListener('click',event=>{
+        event.preventDefault();event.stopPropagation();
+        const container=button.closest('.pi-cross-menu, .pi-item-tools, .longform-card-tools');
+        if(container)container.open=false;
+        callback();
+      });
       list.append(button);
     }
     group.append(list);return group;
@@ -239,8 +244,15 @@
         const anchor = details.querySelector(':scope > summary') || details;
         const at = anchor.getBoundingClientRect();
         const width = Math.min(254, innerWidth - 16);
-        panel.style.left = Math.max(8,Math.min(innerWidth-width-8,at.right-width))+'px';
-        panel.style.top = Math.max(8,Math.min(innerHeight-panel.offsetHeight-8,at.bottom+5))+'px';
+        // The top-layer stylesheet uses !important positioning. Set the
+        // coordinates at the same priority, or the browser falls back to 0,0.
+        const left = Math.max(8,Math.min(innerWidth-width-8,at.right-width));
+        const above = at.top-panel.offsetHeight-5;
+        const below = at.bottom+5;
+        const top = Math.max(8,Math.min(innerHeight-panel.offsetHeight-8,
+          below+panel.offsetHeight+8<=innerHeight ? below : (above>=8 ? above : below)));
+        panel.style.setProperty('left',left+'px','important');
+        panel.style.setProperty('top',top+'px','important');
       } else {
         try { if (panel.matches(':popover-open')) panel.hidePopover(); } catch {}
         panel.removeAttribute('popover');
@@ -346,17 +358,58 @@
     requestAnimationFrame(()=>{queued=false;installMenus();window.PIFitFocusHeight();});
   }
   document.addEventListener('pointerdown',event=>{
-    document.querySelectorAll('.pi-cross-menu[open], .database-page .checklist-item .pi-item-tools[open]').forEach(menu=>{
-      const panel=menu.querySelector('.pi-cross-panel, .pi-item-tools-panel');
+    document.querySelectorAll('.pi-cross-menu[open], .database-page .pi-item-tools[open], .longform-card-tools[open]').forEach(menu=>{
+      const panel=menu.querySelector('.pi-cross-panel, .pi-item-tools-panel, .longform-card-tool-panel');
       if (!menu.contains(event.target) && !panel?.contains(event.target)) menu.open=false;
     });
   },true);
+  // The calendar days are built dynamically by Script.js. Keep the header
+  // actions in the requested order (Today, Archive, Pop out), and match each
+  // day header to its own actual + button, across all themes.
+  function polishHomeDays(){
+    if(page !== 'home')return;
+    document.querySelectorAll('.database-page .day-card').forEach(card=>{
+      const head=card.querySelector(':scope > .day-card-top');
+      const archive=head?.querySelector('.day-archive-button');
+      const pop=head?.querySelector('.pi-popout-button');
+      if(!head)return;
+      if(archive && archive.nextElementSibling!==pop){
+        // Move only the existing button; preserve its archive listener.
+        if(pop)head.insertBefore(archive,pop);
+        else head.append(archive);
+      }
+      const add=card.querySelector(':scope > .day-entry-row > .mini-add');
+      if(!add)return;
+      const appearance=getComputedStyle(add);
+      const bg=appearance.backgroundColor;
+      const img=appearance.backgroundImage;
+      const color = bg && bg!=='rgba(0, 0, 0, 0)' && bg!=='transparent'
+        ? bg : getComputedStyle(card).getPropertyValue('--pi-day-tone').trim() || 'rgb(99,120,156)';
+      const marker = `${color}|${img}|${document.body.dataset.theme || ''}`;
+      if(head.dataset.piMatchedAccent===marker)return;
+      head.dataset.piMatchedAccent=marker;
+      head.style.setProperty('background-color',color,'important');
+      head.style.setProperty('background-image',img==='none' ? 'none' : img,'important');
+      // Pick readable ink for light and dark theme palettes. rgb() and rgba()
+      // are intentional; no stored data or actual date values change.
+      const rgb=color.match(/[\d.]+/g)?.map(Number) || [];
+      const luminance=(rgb[0] ?? 100)*.2126+(rgb[1] ?? 100)*.7152+(rgb[2] ?? 100)*.0722;
+      const ink=luminance>=148 ? '#14242d' : '#ffffff';
+      head.style.setProperty('--pi-header-ink',ink);
+    });
+  }
+  document.addEventListener('keydown',event=>{
+    if(event.key!=='Escape')return;
+    document.querySelectorAll('.pi-cross-menu[open], .database-page .pi-item-tools[open], .longform-card-tools[open]').forEach(menu=>{menu.open=false;});
+  });
   document.addEventListener('DOMContentLoaded',()=>{
-    queue();
+    queue();polishHomeDays();
     const observer=new MutationObserver(records=>{
-      if(records.some(record=>record.type==='childList'))queue();
+      if(records.some(record=>record.type==='childList')){queue();polishHomeDays();}
     });
     observer.observe(document.body,{subtree:true,childList:true});
-    window.addEventListener('resize',queue,{passive:true});
+    window.addEventListener('resize',()=>{queue();polishHomeDays();},{passive:true});
+    new MutationObserver(()=>{document.querySelectorAll('.database-page .day-card-top').forEach(head=>delete head.dataset.piMatchedAccent);polishHomeDays();})
+      .observe(document.body,{attributes:true,attributeFilter:['data-theme']});
   });
 })();
