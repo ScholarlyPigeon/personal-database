@@ -363,39 +363,19 @@
       if (!menu.contains(event.target) && !panel?.contains(event.target)) menu.open=false;
     });
   },true);
-  // The calendar days are built dynamically by Script.js. Keep the header
-  // actions in the requested order (Today, Archive, Pop out), and match each
-  // day header to its own actual + button, across all themes.
+  // Keep day actions in the requested order; leave all header color
+  // and date label styling to the original theme rules in Style.css.
   function polishHomeDays(){
     if(page !== 'home')return;
     document.querySelectorAll('.database-page .day-card').forEach(card=>{
       const head=card.querySelector(':scope > .day-card-top');
       const archive=head?.querySelector('.day-archive-button');
       const pop=head?.querySelector('.pi-popout-button');
-      if(!head)return;
-      if(archive && archive.nextElementSibling!==pop){
-        // Move only the existing button; preserve its archive listener.
+      if(!head || !archive)return;
+      if(archive.nextElementSibling!==pop){
         if(pop)head.insertBefore(archive,pop);
         else head.append(archive);
       }
-      const add=card.querySelector(':scope > .day-entry-row > .mini-add');
-      if(!add)return;
-      const appearance=getComputedStyle(add);
-      const bg=appearance.backgroundColor;
-      const img=appearance.backgroundImage;
-      const color = bg && bg!=='rgba(0, 0, 0, 0)' && bg!=='transparent'
-        ? bg : getComputedStyle(card).getPropertyValue('--pi-day-tone').trim() || 'rgb(99,120,156)';
-      const marker = `${color}|${img}|${document.body.dataset.theme || ''}`;
-      if(head.dataset.piMatchedAccent===marker)return;
-      head.dataset.piMatchedAccent=marker;
-      head.style.setProperty('background-color',color,'important');
-      head.style.setProperty('background-image',img==='none' ? 'none' : img,'important');
-      // Pick readable ink for light and dark theme palettes. rgb() and rgba()
-      // are intentional; no stored data or actual date values change.
-      const rgb=color.match(/[\d.]+/g)?.map(Number) || [];
-      const luminance=(rgb[0] ?? 100)*.2126+(rgb[1] ?? 100)*.7152+(rgb[2] ?? 100)*.0722;
-      const ink=luminance>=148 ? '#14242d' : '#ffffff';
-      head.style.setProperty('--pi-header-ink',ink);
     });
   }
   document.addEventListener('keydown',event=>{
@@ -409,7 +389,5 @@
     });
     observer.observe(document.body,{subtree:true,childList:true});
     window.addEventListener('resize',()=>{queue();polishHomeDays();},{passive:true});
-    new MutationObserver(()=>{document.querySelectorAll('.database-page .day-card-top').forEach(head=>delete head.dataset.piMatchedAccent);polishHomeDays();})
-      .observe(document.body,{attributes:true,attributeFilter:['data-theme']});
   });
 })();
