@@ -5,6 +5,7 @@
   'use strict';
   const dests = [
     {id:'home', label:'Home Notes', key:'pi-database-notes-v1'},
+    {id:'aquarium', label:'Aquarium Notes', key:'pi-aquarium-state-v3'},
     {id:'compass', label:'Compass Notes', key:'pi-compass-v1'},
     {id:'timeline', label:'Timeline Notes', key:'pi-reflections-notes-v1'},
     {id:'longform', label:'Longform Saved Thoughts', key:'pi-longform-state-v1'},
@@ -32,6 +33,7 @@
   const validUrl = str => /^https?:\/\//i.test(str || '') ? str : '';
   const sourceKind = () => {
     if (document.getElementById('piDatabaseFocusList')) return 'home';
+    if (document.getElementById('aquariumApp')) return 'aquarium';
     if (document.getElementById('piCompass')) return 'compass';
     if (document.getElementById('piReflections')) return 'timeline';
     if (document.getElementById('longformApp')) return 'longform';
@@ -54,14 +56,15 @@
     const contentHtml = item.html || '';
     const childLines = (Array.isArray(item.subtasks) ? item.subtasks : [])
       .map(child => `${child.done ? '☑' : '☐'} ${String(child.text || '')}`).join('\n');
-    if (item.title && item.html) body = safeText(item.html).trim();
+    if (sourceId === 'aquarium' && item.title) body = String(item.text || safeText(item.html)).trim();
+    else if (item.title && item.html) body = safeText(item.html).trim();
     else if (item.title && item.text) body = String(item.text).trim();
     const combined = [displayTitle, body && body !== displayTitle ? body : '', childLines].filter(Boolean).join('\n\n');
     return {
       id: uid(), title: displayTitle, text: combined || title,
       kind:item.piTransferKind || item.kind || (item.html || item.details ? 'note' : 'task'),
       body, html: contentHtml || esc(body && body !== displayTitle ? body : ''),
-      details: String(item.details || ''), date: item.date || localDate(),
+      details: String(item.details || ''), date: item.date || (item.createdAt && /^\d{4}-\d{2}-\d{2}/.test(item.createdAt) ? item.createdAt.slice(0,10) : localDate()),
       done: Boolean(item.done), checkable:item.checkable !== false,
       imageUrl:validUrl(item.imageUrl), linkUrl:validUrl(item.linkUrl),
       subtasks:Array.isArray(item.subtasks) ? item.subtasks.map(child=>({...child})) : [],
@@ -72,6 +75,16 @@
   function targetRecord(targetId, payload, state) {
     const common = {id:payload.id, date:payload.date, done:payload.done, createdAt:payload.createdAt,
       imageUrl:payload.imageUrl, linkUrl:payload.linkUrl};
+    if (targetId === 'aquarium') {
+      // A saved Aquarium card in the neutral Inbox; it can be placed in any tile later.
+      const extra = payload.subtasks.map(x => (x.done ? '☑ ' : '☐ ')+String(x.text || '')).join('\n');
+      const body = [payload.body && payload.body !== payload.title ? payload.body : '',extra].filter(Boolean).join('\n\n');
+      return {id:payload.id,title:payload.title,text:body,html:payload.subtasks.length ? esc(body) : (payload.html || esc(body)),
+        zone:'inbox',kind:payload.kind==='task' ? 'action' : 'thought',done:payload.done,
+        collapsed:true,createdAt:payload.createdAt,
+        piTransferKind:payload.kind,piTransferTitle:payload.title,
+        piTransferDetails:payload.body,piTransferHtml:payload.html,piTransferSubtasks:payload.subtasks};
+    }
     if (targetId === 'home') return {...common, text:payload.title,
       kind:payload.kind === 'note' || (payload.body && payload.body !== payload.title) || payload.subtasks.length || payload.imageUrl || payload.linkUrl ? 'note':'task',
       expanded:false, details:payload.body && payload.body !== payload.title ? payload.body : '', subtasks:payload.subtasks};
@@ -94,7 +107,9 @@
     const key = formKey(targetId);
     if (!key) throw new Error('Unknown target');
     const before = storage(key);
-    const root = getData(key,targetId==='compass'||targetId==='timeline'?null:targetId==='longform'?null:[]);
+    // Do not manufacture a partial Aquarium database: require its real initialized board.
+    if (targetId === 'aquarium' && before === null) throw new Error('Open Aquarium once before moving notes into it.');
+    const root = getData(key,['compass','timeline','longform','aquarium'].includes(targetId)?null:[]);
     let state,entries;
     if (targetId === 'compass' || targetId === 'timeline') {
       const defaultSections = targetId === 'compass'
@@ -104,6 +119,11 @@
       if (!Array.isArray(state.entries) || !Array.isArray(state.sections)) throw new Error('Unexpected saved note format.');
       if (!state.sections.length) state.sections = defaultSections;
       entries=state.entries;
+    } else if (targetId === 'aquarium') {
+      state = root;
+      if (!state || !Array.isArray(state.cards) || !Array.isArray(state.categories) || !Array.isArray(state.kinds))
+        throw new Error('Unexpected Aquarium notes format. Original note preserved.');
+      entries=state.cards;
     } else if (targetId === 'longform') {
       state = root || {entries:[]};
       if (!Array.isArray(state.entries)) throw new Error('Unexpected Longform notes format');
@@ -157,7 +177,8 @@
         const key = source.key;
         const previous = storage(key);
         const original = getData(key, ['home','week','month'].includes(source.scope) ? [] : null);
-        const arr = source.scope === 'home' ? original : (Array.isArray(original) ? original : original.entries);
+        const arr = source.scope === 'home' ? original :
+          (source.scope === 'aquarium' ? original?.cards : (Array.isArray(original) ? original : original?.entries));
         if (!Array.isArray(arr)) throw new Error('Unexpected source notes format');
         const index = arr.findIndex(entry => entry.id === source.id);
         if (index < 0) throw new Error('Source note changed; please refresh before moving.');
@@ -198,6 +219,7 @@
   function findSource(row) {
     if (!row) return null;
     if (row.matches('.pi-focus-item')) return {scope:'home',key:'pi-focus-now-v1',id:row.dataset.focusId};
+    if (row.matches('.aq-card')) return {scope:'aquarium',key:formKey('aquarium'),id:row.dataset.cardId};
     if (row.matches('.checklist-item')) return {scope:'home',key:row.closest('[data-storage-key]')?.dataset.storageKey,id:row.dataset.itemId};
     if (row.matches('.pi-note-card')) return {scope:page,key:formKey(page),id:row.dataset.itemId};
     if (row.matches('.longform-entry')) return {scope:'longform',key:formKey('longform'),id:row.dataset.entryId};
@@ -279,6 +301,21 @@
         } else moveWithinHome(row,key);
       }]);
       sections.push(scope('Within Home ▾',actions));
+    } else if (source.scope==='aquarium') {
+      const state=getData(formKey('aquarium'),null);
+      const card=state?.cards?.find(x=>x.id===source.id);
+      const zones=[['Inbox','inbox'],...(state?.categories||[]).map(c=>[c.name,c.id])];
+      sections.push(scope('Within Aquarium ▾',zones.filter(([,id])=>id!==card?.zone).map(([name,id])=>
+        [name,()=> {
+          try {
+            const current=getData(formKey('aquarium'),null);
+            const entry=current?.cards?.find(x=>x.id===source.id);
+            if (!entry) throw new Error('Card changed; refresh first.');
+            entry.zone=id;
+            localStorage.setItem(formKey('aquarium'),JSON.stringify(current));
+            location.reload();
+          }catch(error){alert('Move not completed: '+error.message);}
+        }] )));
     } else if (source.scope==='compass' || source.scope==='timeline') {
       const selector=row.querySelector('.pi-card-section-select');
       if (selector) sections.push(scope('Within this page ▾',[...selector.options].filter(o=>o.value!==selector.value).map(o=>[o.textContent,()=>{
@@ -320,6 +357,10 @@
     document.querySelectorAll('.database-page .pi-focus-item').forEach(row=>{
       const panel=row.querySelector('.pi-focus-tools-panel');
       if(panel) addMenus(row,panel,true);
+    });
+    document.querySelectorAll('.aq-card').forEach(row=>{
+      const actions=row.querySelector('.aq-card-actions');
+      if (actions) addMenus(row,actions);
     });
     document.querySelectorAll('.pi-note-card').forEach(row=>{
       const head=row.querySelector('.pi-note-card-head');if(head)addMenus(row,head);
@@ -383,6 +424,15 @@
     document.querySelectorAll('.pi-cross-menu[open], .database-page .pi-item-tools[open], .longform-card-tools[open]').forEach(menu=>{menu.open=false;});
   });
   document.addEventListener('DOMContentLoaded',()=>{
+    const syncBadge=document.getElementById('saveStatus');
+    if (syncBadge) {
+      const simplifySynced=()=>{
+        if (syncBadge.dataset.syncState === 'connected' && /(?:synced safely|saved safely)/i.test(syncBadge.textContent || ''))
+          syncBadge.textContent='synced ☁️';
+      };
+      new MutationObserver(simplifySynced).observe(syncBadge,{childList:true,characterData:true,subtree:true,attributes:true,attributeFilter:['data-sync-state']});
+      simplifySynced();
+    }
     queue();polishHomeDays();
     const observer=new MutationObserver(records=>{
       if(records.some(record=>record.type==='childList')){queue();polishHomeDays();}

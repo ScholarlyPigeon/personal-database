@@ -147,3 +147,37 @@ body[data-theme="y2k"]::after {content:none !important;display:none !important;}
 /* Dedicated Home Inbox and preserved cloud-login access without a Tools drawer. */
 .database-page .header-right > .pi-home-inbox-nav {font-weight:650;white-space:nowrap;}
 .database-page .header-right > .pi-home-cloud-login {white-space:nowrap;}
+
+/* October 18 night polish: keep native Theme selection behavior, match Pages styling. */
+body header .theme-select {
+  box-sizing:border-box !important;
+  height:29px !important; min-height:29px !important;
+  padding:4px 26px 4px 8px !important;
+  font:inherit !important; font-size:14px !important; font-weight:550 !important;
+  line-height:1.35 !important;
+  border:1px solid var(--border) !important;
+  border-radius:8px !important;
+  background-color:var(--panel-light) !important;
+  color:var(--text) !important;
+  box-shadow:none !important;
+  cursor:pointer;
+}
+body header .theme-select:hover,body header .theme-select:focus-visible {
+  border-color:var(--teal) !important;
+}
+/* Home header actions use matching rounded corners. */
+body .database-page .header-right > :is(.pi-home-inbox-nav,.backup-button) {
+  border-radius:8px !important;
+}
+@media (max-width:900px), (pointer:coarse) {
+  body header .theme-select {height:38px !important; min-height:38px !important; padding:5px 10px !important;}
+}
+/* Aquarium cards get the same discrete three-dot transfer control as other notes. */
+html.aquarium-page .aq-card-actions > .pi-cross-menu {
+  display:inline-flex !important;align-items:center;justify-content:center;
+  flex:0 0 auto; min-width:26px; min-height:28px;
+}
+html.aquarium-page .aq-card-actions > .pi-cross-menu > summary {
+  display:flex;align-items:center;justify-content:center;
+  min-width:26px; min-height:28px;font-size:18px;padding:0 5px;
+}
