@@ -2772,6 +2772,27 @@ if (document.getElementById("tileGrid")) {
         target.render(); showSaved(); return true;
     };
 
+    // Cross-page moves must use the live manager to preserve Home Notes'
+    // stale-write guard and safety snapshots, never edit its storage behind it.
+    window.PIHomeMoveToPage = (sourceKey, itemId, commitTarget) => {
+        const source = checklistManagers.get(sourceKey);
+        if (!source || (source.isFresh && !source.isFresh())) return false;
+        const index = source.items.findIndex(item => item.id === itemId);
+        if (index < 0) return false;
+        let rollback = null;
+        try { rollback = commitTarget({ ...source.items[index] }); } catch (error) { console.error(error); return false; }
+        if (typeof rollback !== 'function') return false;
+        const [item] = source.items.splice(index, 1);
+        try {
+            if (!source.save(false, 'before-move-to-page')) {
+                source.items.splice(index, 0, item); rollback(); return false;
+            }
+        } catch (error) {
+            console.error(error); source.items.splice(index, 0, item); rollback(); return false;
+        }
+        source.render(); showSaved(); return true;
+    };
+
     /* V18 recovery migration: v7 retired the visible Main Board but left its
        saved line-item keys intact. Bring those lines into the new Notes desk
        exactly once so the information is visible again. The original tile
@@ -7039,6 +7060,8 @@ if (document.getElementById("neopetsApp")) {
         return true;
     };
 
+    const focusViewExpanded = new Set(); // presentation only; default one-line, no data migration
+
     function focusItemNode(item, compact = false) {
         const row = document.createElement('div');
         const category = item.kind === 'note';
@@ -7063,10 +7086,10 @@ if (document.getElementById("neopetsApp")) {
         if (category) {
             const toggle = document.createElement('button');
             toggle.type = 'button'; toggle.className = 'pi-focus-expand';
-            toggle.textContent = item.expanded === false ? '▸' : '▾';
-            toggle.title = item.expanded === false ? 'Expand category note' : 'Collapse category note';
+            toggle.textContent = !focusViewExpanded.has(item.id) ? '▸' : '▾';
+            toggle.title = !focusViewExpanded.has(item.id) ? 'Expand category note' : 'Collapse category note';
             toggle.setAttribute('aria-label', toggle.title);
-            toggle.addEventListener('click', () => update(live => {live.expanded = live.expanded === false;}));
+            toggle.addEventListener('click', () => { if (focusViewExpanded.has(item.id)) focusViewExpanded.delete(item.id); else focusViewExpanded.add(item.id); refreshFocusViews(); });
             headline.append(toggle);
         }
         const text = document.createElement('div'); text.className = 'pi-focus-text';
@@ -7078,7 +7101,7 @@ if (document.getElementById("neopetsApp")) {
             if (text.innerText !== item.text) update(live => {live.text = text.innerText.trim();});
         });
         headline.append(text); titleArea.append(headline);
-        if (category && item.expanded !== false) {
+        if (category && focusViewExpanded.has(item.id)) {
             const body = document.createElement('div'); body.className = 'pi-focus-detail';
             if (item.details) {
                 const details = document.createElement('div');
@@ -7190,6 +7213,7 @@ if (document.getElementById("neopetsApp")) {
             return;
         }
         items.forEach(item => list.appendChild(focusItemNode(item, compact)));
+        if (list.id === 'piDatabaseFocusList') requestAnimationFrame(() => window.PIFitFocusHeight?.());
     }
 
     function bindFocusComposer(input, button) {
@@ -7258,6 +7282,7 @@ if (document.getElementById("neopetsApp")) {
         head.append(toggle);
         setCollapsed(localStorage.getItem('pi-focus-collapsed-v2') === 'true');
         page.classList.add("pi-focus-layout");
+        toggle.addEventListener('click', () => requestAnimationFrame(() => window.PIFitFocusHeight?.()));
         refreshFocusViews();
     }
 
