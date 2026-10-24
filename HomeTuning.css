@@ -1,26 +1,31 @@
 /* OCT 24 HOME: category notebook refinements, 2-column layout, original data keys intact. */
 @media (min-width:901px) {
   .database-page .database-grid.content-shell {
-    grid-template-columns: minmax(0, 1.8fr) minmax(300px, 1fr) !important;
+    grid-template-columns: minmax(300px, 1fr) minmax(0, 1.8fr) !important;
   }
-  .database-page .database-grid > .center-workspace {grid-column:1;}
-  .database-page .database-grid > .right-date-rail {grid-column:2;}
+  .database-page .database-grid > .right-date-rail {grid-column:1;}
+  .database-page .database-grid > .center-workspace {grid-column:2;}
 }
 /* The original top focus shelf now serves as On My Radar. */
 .database-page .database-notes-list .pi-category-note {
-  grid-template-columns:12px 16px minmax(0,1fr) auto !important;
+  grid-template-columns:12px minmax(0,1fr) auto !important;
 }
 .database-page .database-notes-list .pi-category-note > .pi-category-note-content {grid-column:1/-1;}
 .database-page .database-notes-list .pi-category-note .item-row-actions {gap:4px;}
-.database-page .database-notes-list .pi-category-note .pi-note-open {
-  display:inline-grid;place-items:center; min-height:27px; min-width:27px;
-  padding:0 5px; border:1px solid var(--border);border-radius:7px;
-  background:var(--panel-light); color:var(--teal-soft);
-  font-weight:800;font-size:21px;line-height:1;cursor:pointer;
+.database-page .pi-note-open,
+.database-page .panel-collapse-toggle {
+  display:inline-grid;place-items:center; flex:0 0 auto;
+  width:27px; height:27px; min-width:27px; min-height:27px; padding:0;
+  border:1px solid color-mix(in srgb, var(--border) 90%, transparent); border-radius:7px;
+  background:color-mix(in srgb, var(--panel-light) 78%, transparent);
+  color:var(--text); font-weight:800; font-size:18px; line-height:1; cursor:pointer;
 }
-.database-page .database-notes-list .pi-category-note .pi-note-open:hover,
-.database-page .database-notes-list .pi-category-note .pi-note-open:focus-visible {
-  color:var(--text);border-color:var(--teal);background:color-mix(in srgb,var(--teal) 15%,var(--panel));
+.database-page .pi-note-open:hover,
+.database-page .pi-note-open:focus-visible,
+.database-page .panel-collapse-toggle:hover,
+.database-page .panel-collapse-toggle:focus-visible {
+  color:var(--text);border-color:var(--teal);background:color-mix(in srgb,var(--teal) 12%,var(--panel));
+  outline:none;
 }
 .database-page .pi-category-popout-button {
   display:inline-grid;place-items:center;flex:0 0 auto;
@@ -56,7 +61,7 @@
 /* Nested lines have no one-line clipping. Show a separate permanent added date. */
 .database-page .pi-nested-checklist {min-width:0;}
 .database-page .pi-nested-line {
-  display:grid !important;grid-template-columns:17px 17px minmax(0,1fr) auto;
+  display:grid !important;grid-template-columns:17px 17px minmax(0,1fr) minmax(48px,auto) auto;
   align-items:start !important;column-gap:5px;row-gap:3px;min-width:0;
   padding:6px 3px;border-radius:6px;
 }
@@ -67,14 +72,16 @@
 .database-page .pi-nested-line.pi-nested-drop-target {outline:2px dashed var(--teal);}
 .database-page .pi-nested-line.pi-nested-dragging {opacity:.5;}
 .database-page .pi-nested-line input[type="checkbox"] {margin-top:7px;}
-.database-page .pi-nested-text-stack {display:grid;gap:2px;min-width:0;}
 .database-page .pi-nested-text {
   display:block;width:100%;height:auto;min-height:25px;max-height:none;
   overflow:hidden;resize:none;box-sizing:border-box;
   padding:4px 3px;white-space:pre-wrap;overflow-wrap:anywhere;
   line-height:1.45;border-radius:4px;
 }
-.database-page .pi-nested-added {color:var(--faint);font-size:9.5px;white-space:normal;}
+.database-page .pi-nested-date {
+  color:var(--faint);font-size:9.5px;white-space:nowrap;align-self:center;justify-self:end;
+  font-variant-numeric:tabular-nums;
+}
 .database-page .pi-nested-actions {display:flex;align-items:start;gap:1px;}
 .database-page .pi-nested-actions button {
   border:0;border-radius:4px;background:transparent;color:var(--muted);
@@ -136,22 +143,15 @@ dialog.pi-category-dialog .pi-category-note-editor {
 dialog.pi-category-dialog .pi-category-note-editor:empty::before {
   content:attr(data-placeholder);color:var(--faint);pointer-events:none;
 }
-dialog.pi-category-dialog .pi-category-note-media {display:flex;flex-wrap:wrap;gap:9px;}
-dialog.pi-category-dialog .pi-category-note-media input {
-  flex:1 1 180px;min-width:0;padding:8px;border:1px solid var(--border);
-  border-radius:7px;color:var(--text);background:var(--bg-soft);
-}
-dialog.pi-category-dialog .pi-category-image {max-width:100%;max-height:400px;object-fit:contain;}
 dialog.pi-category-dialog .pi-nested-checklist {display:grid;gap:7px;min-width:0;}
 dialog.pi-category-dialog .pi-nested-title {color:var(--muted);font-size:12px;}
 dialog.pi-category-dialog .pi-nested-line {
-  display:grid;grid-template-columns:23px 23px minmax(0,1fr) auto;gap:8px;
+  display:grid;grid-template-columns:23px 23px minmax(0,1fr) minmax(64px,auto) auto;gap:8px;
   align-items:start;padding:7px 5px;border-bottom:1px solid var(--border);
 }
 dialog.pi-category-dialog .pi-nested-line.pi-nested-drop-target {outline:2px dashed var(--teal);}
 dialog.pi-category-dialog .pi-nested-drag {cursor:grab;padding-top:5px;color:var(--muted);}
 dialog.pi-category-dialog .pi-nested-line input[type="checkbox"] {margin-top:8px;}
-dialog.pi-category-dialog .pi-nested-text-stack {display:grid;gap:4px;min-width:0;}
 dialog.pi-category-dialog .pi-nested-text {
   display:block;box-sizing:border-box;width:100%;height:auto;min-height:32px;max-height:none;
   border:1px solid transparent;border-radius:5px;outline-color:var(--teal);
@@ -159,7 +159,10 @@ dialog.pi-category-dialog .pi-nested-text {
   line-height:1.5;font:inherit;font-size:14px;color:var(--text);background:transparent;
 }
 dialog.pi-category-dialog .pi-nested-line.done .pi-nested-text {text-decoration:line-through;opacity:.65;}
-dialog.pi-category-dialog .pi-nested-added {font-size:11px;color:var(--faint);}
+dialog.pi-category-dialog .pi-nested-date {
+  font-size:11px;color:var(--faint);white-space:nowrap;align-self:center;justify-self:end;
+  font-variant-numeric:tabular-nums;
+}
 dialog.pi-category-dialog .pi-nested-actions {display:flex;gap:3px;}
 dialog.pi-category-dialog .pi-nested-actions button {
   min-width:27px;min-height:29px;padding:1px 3px;border:0;border-radius:5px;
@@ -189,9 +192,33 @@ dialog.pi-category-dialog .pi-nested-compose button {
   .database-page .database-notes-list .pi-category-note .pi-note-open {min-width:24px;min-height:26px;}
   .database-page .pi-category-popout-button {width:24px;}
   .database-page .pi-nested-actions button {min-width:19px;}
-  .database-page .pi-nested-line {grid-template-columns:14px 18px minmax(0,1fr) auto;gap:3px;}
+  .database-page .pi-nested-line {grid-template-columns:14px 18px minmax(0,1fr) minmax(44px,auto) auto;gap:3px;}
   .pi-category-dialog-scroll {padding:10px 12px 20px;}
   .pi-category-dialog-title {font-size:17px;}
-  dialog.pi-category-dialog .pi-nested-line {grid-template-columns:15px 20px minmax(0,1fr) auto;gap:4px;}
+  dialog.pi-category-dialog .pi-nested-line {grid-template-columns:15px 20px minmax(0,1fr) minmax(50px,auto) auto;gap:4px;}
   dialog.pi-category-dialog .pi-nested-actions button {min-width:24px;}
+}
+
+
+/* Home note controls: stronger theme-safe contrast without extra clutter. */
+.database-page .pi-note-creation-options,
+.database-page .pi-note-creation-options label {
+  color: var(--muted);
+}
+.database-page .pi-note-creation-options select,
+.database-page .pi-note-creation-options select option {
+  color: var(--text) !important;
+  -webkit-text-fill-color: var(--text);
+  background: color-mix(in srgb, var(--bg-soft) 80%, var(--panel));
+}
+.database-page .pi-category-popout-button {
+  color: var(--text);
+  border-color: color-mix(in srgb, var(--border) 75%, transparent);
+  background: color-mix(in srgb, var(--panel-light) 50%, transparent);
+}
+.database-page .pi-category-popout-button:hover,
+.database-page .pi-category-popout-button:focus-visible {
+  color: var(--text);
+  border-color: var(--teal);
+  background: color-mix(in srgb, var(--teal) 10%, var(--panel));
 }

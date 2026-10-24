@@ -15,7 +15,7 @@ window.PIHomeNestedChecklist = function(item, applyChange) {
     root.className = 'pi-nested-checklist';
     const title = document.createElement('div');
     title.className = 'pi-nested-title';
-    title.textContent = 'Checklist · drag or use arrows to reorder';
+    title.textContent = 'Checklist · drag to reorder';
     root.append(title);
     let dragging = null;
     function reorder(childId, targetId, offset = 0) {
@@ -30,7 +30,7 @@ window.PIHomeNestedChecklist = function(item, applyChange) {
         });
     }
     const children = Array.isArray(item.subtasks) ? item.subtasks : [];
-    children.forEach((child,index) => {
+    children.forEach(child => {
         const line = document.createElement('div');
         line.className = 'pi-nested-line' + (child.done ? ' done' : '');
         line.dataset.subtaskId = child.id;
@@ -68,7 +68,6 @@ window.PIHomeNestedChecklist = function(item, applyChange) {
             const target = (live.subtasks || []).find(entry => entry.id === child.id);
             if (target) target.done = check.checked;
         }));
-        const textStack = document.createElement('div'); textStack.className = 'pi-nested-text-stack';
         const field = document.createElement('textarea');
         field.rows = 1; field.className = 'pi-nested-text';
         field.value = String(child.text || ''); field.setAttribute('aria-label','Checklist item text');
@@ -78,22 +77,12 @@ window.PIHomeNestedChecklist = function(item, applyChange) {
             const target = (live.subtasks || []).find(entry => entry.id === child.id);
             if (target) target.text = field.value;
         }));
-        textStack.append(field);
-        const when = document.createElement('span'); when.className = 'pi-nested-added';
+        const when = document.createElement('span');
+        when.className = 'pi-nested-date';
         const added = window.PIHomeAddedDate(child);
-        when.textContent = added ? 'Added '+added : 'Date added not recorded';
-        when.title = child.createdAt ? 'Original date added' : (added ? 'Saved item date (original creation time unavailable)' : 'Older checklist item without recorded date');
-        textStack.append(when);
+        when.textContent = added || '—';
+        when.title = child.createdAt ? 'Original date added' : (added ? 'Saved item date' : 'Date not recorded');
         const actions = document.createElement('div'); actions.className = 'pi-nested-actions';
-        for (const [symbol,delta,name] of [['↑',-1,'Move checklist item up'],['↓',1,'Move checklist item down']]) {
-            const btn = document.createElement('button'); btn.type = 'button';
-            btn.textContent = symbol; btn.title = name; btn.setAttribute('aria-label',name);
-            btn.disabled = delta < 0 ? index===0 : index===children.length-1;
-            btn.addEventListener('click', () => {
-                const sibling = children[index+delta]; if (sibling) reorder(child.id,sibling.id,delta > 0 ? 1 : 0);
-            });
-            actions.append(btn);
-        }
         const remove = document.createElement('button');
         remove.type = 'button'; remove.className = 'pi-nested-remove';
         remove.textContent = '×'; remove.title = 'Remove checklist item';
@@ -102,7 +91,7 @@ window.PIHomeNestedChecklist = function(item, applyChange) {
             live.subtasks = (live.subtasks || []).filter(entry => entry.id !== child.id);
         }));
         actions.append(remove);
-        line.append(drag,check,textStack,actions); root.append(line);
+        line.append(drag,check,field,when,actions); root.append(line);
         requestAnimationFrame(fit);
     });
     const compose = document.createElement('form'); compose.className = 'pi-nested-compose';
@@ -2278,13 +2267,37 @@ if (document.getElementById("tileGrid")) {
                 console.warn(`Could not read ${storageKey}; preserving the stored value and continuing with an empty/default view instead of stopping the whole Database.`, error);
             }
         }
-        let addedStableIds = false;
+        let normalizedItemsChanged = false;
         items = items.map(item => {
-            if (item && item.id) return item;
-            addedStableIds = true;
-            return { ...item, id: archiveId("task") };
+            const next = item && typeof item === 'object' ? { ...item } : { text: String(item || '') };
+            if (!next.id) {
+                next.id = archiveId("task");
+                normalizedItemsChanged = true;
+            }
+            if (next.kind === 'note') {
+                if ('done' in next && next.done) {
+                    next.done = false;
+                    normalizedItemsChanged = true;
+                }
+                if ('imageUrl' in next) {
+                    delete next.imageUrl;
+                    normalizedItemsChanged = true;
+                }
+                if ('linkUrl' in next) {
+                    delete next.linkUrl;
+                    normalizedItemsChanged = true;
+                }
+                if (Array.isArray(next.subtasks)) {
+                    next.subtasks = next.subtasks.map(child => {
+                        if (child && child.id) return child;
+                        normalizedItemsChanged = true;
+                        return { ...child, id: archiveId("sub") };
+                    });
+                }
+            }
+            return next;
         });
-        if (addedStableIds) localStorage.setItem(storageKey, JSON.stringify(items));
+        if (normalizedItemsChanged) localStorage.setItem(storageKey, JSON.stringify(items));
         const protectHome = storageKey === PI_HOME_NOTES_KEY;
         let lastStoredValue = localStorage.getItem(storageKey);
         function isFresh() {
@@ -2367,35 +2380,6 @@ if (document.getElementById("tileGrid")) {
             foldInner.append(details);
             fold.append(trigger,foldInner); body.append(fold);
             body.append(window.PIHomeNestedChecklist(item,applyChange));
-            const media = document.createElement('div'); media.className = 'pi-category-note-media';
-            for (const [key,placeholder,label] of [
-                ['imageUrl','Image URL (optional)','Note image URL'],
-                ['linkUrl','Link URL (optional)','Note link URL']
-            ]) {
-                const field = document.createElement('input'); field.type='url';
-                field.placeholder=placeholder; field.setAttribute('aria-label',label);
-                field.value=item[key] || '';
-                field.addEventListener('change', () => {
-                    if (!isFresh()) return;
-                    item[key] = field.value.trim();
-                    if (manager.save(false,'before-media-edit')) {
-                        renderItems();
-                        if (categoryDialog?.open) renderCategoryDialog();
-                    }
-                });
-                media.append(field);
-            }
-            foldInner.append(media);
-            if (/^https?:\/\//i.test(item.imageUrl || '')) {
-                const preview = document.createElement('img');
-                preview.className='pi-category-image'; preview.src=item.imageUrl;
-                preview.alt='Attached note image'; preview.loading='lazy'; foldInner.append(preview);
-            }
-            if (/^https?:\/\//i.test(item.linkUrl || '')) {
-                const link = document.createElement('a');
-                link.href=item.linkUrl; link.target='_blank'; link.rel='noopener noreferrer';
-                link.textContent='Open link ↗'; foldInner.append(link);
-            }
             return body;
         }
         function renderCategoryDialog() {
@@ -2451,7 +2435,7 @@ if (document.getElementById("tileGrid")) {
             items.forEach((item, index) => {
                 const row = document.createElement("div");
                 const isCategoryNote = item.kind === "note";
-                row.className = "checklist-item pi-compact-item" + (checkable && item.done ? " done" : "") + (!checkable ? " checklist-item-no-check" : "") + (isCategoryNote ? " pi-category-note" : "");
+                row.className = "checklist-item pi-compact-item" + (checkable && item.done && !isCategoryNote ? " done" : "") + ((!checkable || isCategoryNote) ? " checklist-item-no-check" : "") + (isCategoryNote ? " pi-category-note" : "");
                 row.dataset.itemId = item.id;
                 if (accentClass) row.classList.add(accentClass);
 
@@ -2462,7 +2446,7 @@ if (document.getElementById("tileGrid")) {
                 drag.title = "Drag between Home Notes, On My Radar, or calendar days";
 
                 let wrap = null;
-                if (checkable) {
+                if (checkable && !isCategoryNote) {
                     wrap = document.createElement("label");
                     wrap.className = "check-wrap";
                     if (accentClass) wrap.classList.add(accentClass);
@@ -2553,14 +2537,7 @@ if (document.getElementById("tileGrid")) {
                     manager.save(true, "before-date-edit");
                 });
 
-                let shownDate = rowDate;
-                if (noteMode && !isCategoryNote) {
-                    shownDate = document.createElement('span');
-                    shownDate.className = 'pi-note-added';
-                    const dateAdded = window.PIHomeAddedDate(item);
-                    shownDate.textContent = dateAdded ? 'Added ' + dateAdded : 'Date unknown';
-                    shownDate.title = item.createdAt ? 'Original date added' : 'Saved date, if known (original creation time unavailable)';
-                }
+                const shownDate = rowDate;
 
                 const moveMenu = document.createElement("select");
                 moveMenu.className = "pi-item-move";
@@ -2781,18 +2758,10 @@ if (document.getElementById("tileGrid")) {
             const nextItem = { id: archiveId("task"), text: value, done: false,
                 date: makeLocalIsoDate(), createdAt: new Date().toISOString(),
                 ...(noteMode && document.getElementById("databaseNotesKind")?.value === "note"
-                    ? { kind: "note", details: "", expanded: true,
-                        imageUrl: document.getElementById("databaseNoteImageUrl")?.value.trim() || "",
-                        linkUrl: document.getElementById("databaseNoteLinkUrl")?.value.trim() || "" } : {}) };
+                    ? { kind: "note", details: "", expanded: true } : {}) };
             if (newItemsToTop) items.unshift(nextItem);
             else items.push(nextItem);
             inputElement.value = "";
-            if (noteMode) {
-                const image = document.getElementById("databaseNoteImageUrl");
-                const link = document.getElementById("databaseNoteLinkUrl");
-                if (image) image.value = "";
-                if (link) link.value = "";
-            }
             if (inputElement.matches("textarea[data-autogrow], textarea.auto-grow-textarea")) {
                 resizeAutoGrowTextarea(inputElement);
             }
