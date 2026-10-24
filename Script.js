@@ -7283,7 +7283,7 @@ if (document.getElementById("neopetsApp")) {
         });
         const visibleDate = document.createElement('span'); visibleDate.className = 'pi-focus-date';
         const value = item.date || item.createdAt?.slice(0,10) || '';
-        visibleDate.textContent = (window.PIHomeAddedDate?.(item) || window.PICompactDate?.(value)) ? 'Added ' + (window.PIHomeAddedDate?.(item) || window.PICompactDate?.(value)) : 'Date unknown';
+        visibleDate.textContent = window.PIHomeAddedDate?.(item) || window.PICompactDate?.(value) || '—';
         visibleDate.title = 'Date this item was added (for older items, saved date where available)';
         if (!category) actions.append(visibleDate);
         row.append(drag, check, titleArea, actions);

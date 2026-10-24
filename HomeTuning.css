@@ -2,7 +2,10 @@
 @media (min-width:901px) {
   .database-page .database-grid.content-shell {
     grid-template-columns: minmax(300px, 1fr) minmax(0, 1.8fr) !important;
-    align-items: start;
+    grid-template-rows: minmax(0, 1fr) !important;
+    align-items: stretch !important;
+    min-height: 0;
+    height: 100%;
   }
   .database-page .database-grid > .right-date-rail {
     grid-column: 1;
@@ -11,6 +14,25 @@
   .database-page .database-grid > .center-workspace {
     grid-column: 2;
     grid-row: 1;
+  }
+  /* Both panels fill exactly the same available row, with internal scrolling. */
+  .database-page .database-grid > .right-date-rail,
+  .database-page .database-grid > .center-workspace {
+    align-self: stretch !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    max-height: 100%;
+    overflow: hidden;
+  }
+  .database-page .database-grid .database-notes-panel {
+    min-height: 0 !important;
+    height: 100% !important;
+    overflow: hidden;
+  }
+  .database-page .database-grid .database-notes-body,
+  .database-page .database-grid .database-notes-list,
+  .database-page .database-grid .day-rail {
+    min-height: 0 !important;
   }
 }
 /* The original top focus shelf now serves as On My Radar. */
