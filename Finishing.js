@@ -291,7 +291,7 @@
     const available = dests.filter(d=>d.id!==source.scope && !(d.id==='month' && location.search.includes('month=20')));
     const sections=[];
     if (inHome) {
-      const options=[['Home Notes','pi-database-notes-v1'],['On My Radar','pi-database-radar-v1'],['Near My Radar','pi-database-near-radar-v1'],['✦ Focus Now','__focus__']]
+      const options=[['Home Notes','pi-database-notes-v1'],['✦ On My Radar','__focus__']]
         .filter(([name,key])=>key!==source.key && !(source.key==='pi-focus-now-v1' && key==='__focus__'));
       const actions=options.map(([name,key])=>[name,()=> {
         if (source.key === 'pi-focus-now-v1') {

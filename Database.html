@@ -9,7 +9,7 @@
 <script defer="" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script defer="" src="CloudSync.js?v=20261014-homesafe1"></script>
 <script defer="" src="Activity.js?v=20261011-compass1"></script>
-<script defer="" src="Script.js?v=20261018-home-polish1"></script>
+<script defer="" src="Script.js?v=20261024-category-notes"></script>
 <link href="Planner.css?v=20261011-compass1" rel="stylesheet"/>
 <script defer="" src="Planner.js?v=20261011-compass1"></script>
 <link href="Workspace.css?v=20261011-compass1" rel="stylesheet"/>
@@ -19,7 +19,8 @@
 <link rel="stylesheet" href="Refresh.css?v=20261017-focusrows3"/>
 <script defer src="Refresh.js?v=20261017-nestedfocus2"></script>
 <link rel="stylesheet" href="Finishing.css?v=20261019-night-polish2"/>
-<script defer src="Finishing.js?v=20261019-night-polish2"></script>
+<script defer src="Finishing.js?v=20261024-category-notes"></script>
+<link rel="stylesheet" href="HomeTuning.css?v=20261024-category-notes"/>
 </head>
 <body class="database-body" data-theme="dark">
 <div class="page database-page">
@@ -37,32 +38,6 @@
 </div><button class="small-button backup-button" id="localBackupButton" title="Download a JSON snapshot of your current Personal Intranet data" type="button">backup</button></div>
 </header>
 <div class="content-shell database-grid">
-<aside class="left-rail">
-<section class="panel checklist-panel" data-collapsible-panel="database-radar">
-<div class="panel-header">
-<div class="panel-title"><span>📡</span><span class="editable-ui" contenteditable="true" data-ui-save="radar-title">On My Radar</span></div>
-</div>
-<div class="checklist-body" data-collapse-body="">
-<div class="checklist-list scroll-teal" id="radarList"></div>
-<div class="checklist-entry radar-entry">
-<textarea class="checklist-input radar-input auto-grow-textarea" data-autogrow="true" data-autogrow-min-lines="2" id="radarInput" placeholder="Add to radar..." rows="2"></textarea>
-<button class="checklist-add radar-add" id="addRadar" type="button">Add</button>
-</div>
-</div>
-</section>
-<section class="panel checklist-panel near-radar-panel" data-collapsible-panel="database-near-radar">
-<div class="panel-header">
-<div class="panel-title"><span>◌</span><span class="editable-ui" contenteditable="true" data-ui-save="near-radar-title">Near My Radar</span></div>
-</div>
-<div class="checklist-body" data-collapse-body="">
-<div class="checklist-list scroll-plum" id="nearRadarList"></div>
-<div class="checklist-entry radar-entry">
-<textarea class="checklist-input radar-input auto-grow-textarea" data-autogrow="true" data-autogrow-min-lines="2" id="nearRadarInput" placeholder="Keep nearby..." rows="2"></textarea>
-<button class="checklist-add radar-add" id="addNearRadar" type="button">Add</button>
-</div>
-</div>
-</section>
-</aside>
 <main class="center-workspace">
 <section class="panel database-notes-panel" data-collapsible-panel="database-notes">
 <div class="panel-header">

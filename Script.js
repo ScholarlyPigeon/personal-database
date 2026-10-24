@@ -1,50 +1,127 @@
-/* Nested checklist renderer shared by Home category notes and Focus Now.
-   One parent record contains every child, so routing and archive preserve the group. */
+/* Home category notes: multi-line, dated and reorderable nested checklist. */
+window.PIHomeAddedDate = function(record) {
+    if (!record) return '';
+    if (record.createdAt) {
+        const instant = new Date(record.createdAt);
+        if (!Number.isNaN(instant.getTime())) {
+            return `${String(instant.getMonth()+1).padStart(2,'0')}/${String(instant.getDate()).padStart(2,'0')}/${String(instant.getFullYear()).slice(-2)}`;
+        }
+    }
+    const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(record.date || ''));
+    return match ? `${match[2]}/${match[3]}/${match[1].slice(-2)}` : '';
+};
 window.PIHomeNestedChecklist = function(item, applyChange) {
     const root = document.createElement('div');
     root.className = 'pi-nested-checklist';
     const title = document.createElement('div');
     title.className = 'pi-nested-title';
-    title.textContent = 'Checklist';
+    title.textContent = 'Checklist · drag or use arrows to reorder';
     root.append(title);
-    (Array.isArray(item.subtasks) ? item.subtasks : []).forEach(child => {
+    let dragging = null;
+    function reorder(childId, targetId, offset = 0) {
+        applyChange(live => {
+            const subtasks = Array.isArray(live.subtasks) ? live.subtasks : [];
+            const from = subtasks.findIndex(entry => entry.id === childId);
+            const to = subtasks.findIndex(entry => entry.id === targetId);
+            if (from < 0 || to < 0 || (from === to && !offset)) return;
+            const [moved] = subtasks.splice(from,1);
+            const insertAt = subtasks.findIndex(entry => entry.id === targetId);
+            subtasks.splice(Math.max(0,insertAt + (offset > 0 ? 1 : 0)),0,moved);
+        });
+    }
+    const children = Array.isArray(item.subtasks) ? item.subtasks : [];
+    children.forEach((child,index) => {
         const line = document.createElement('div');
         line.className = 'pi-nested-line' + (child.done ? ' done' : '');
+        line.dataset.subtaskId = child.id;
+        const drag = document.createElement('span');
+        drag.className = 'pi-nested-drag'; drag.textContent = '⋮⋮';
+        drag.title = 'Drag checklist item to reorder'; drag.draggable = true;
+        drag.setAttribute('aria-label',drag.title);
+        drag.addEventListener('dragstart', e => {
+            e.stopPropagation(); dragging = child.id;
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain',child.id);
+            line.classList.add('pi-nested-dragging');
+        });
+        drag.addEventListener('dragend', e => {
+            e.stopPropagation(); dragging = null;
+            root.querySelectorAll('.pi-nested-drop-target,.pi-nested-dragging').forEach(el => el.classList.remove('pi-nested-drop-target','pi-nested-dragging'));
+        });
+        line.addEventListener('dragover', e => {
+            if (!dragging || dragging===child.id) return;
+            e.preventDefault(); e.stopPropagation();
+            e.dataTransfer.dropEffect = 'move'; line.classList.add('pi-nested-drop-target');
+        });
+        line.addEventListener('dragleave', () => line.classList.remove('pi-nested-drop-target'));
+        line.addEventListener('drop', e => {
+            if (!dragging) return;
+            e.preventDefault(); e.stopPropagation();
+            const source = dragging; dragging = null;
+            const after = e.clientY > line.getBoundingClientRect().top + line.offsetHeight/2;
+            reorder(source, child.id, after ? 1 : 0);
+        });
         const check = document.createElement('input');
         check.type = 'checkbox'; check.checked = Boolean(child.done);
-        check.setAttribute('aria-label', 'Complete subtask');
+        check.setAttribute('aria-label', 'Complete checklist item');
         check.addEventListener('change', () => applyChange(live => {
             const target = (live.subtasks || []).find(entry => entry.id === child.id);
             if (target) target.done = check.checked;
         }));
-        const field = document.createElement('input');
-        field.type = 'text'; field.className = 'pi-nested-text';
-        field.value = String(child.text || ''); field.setAttribute('aria-label','Subtask text');
+        const textStack = document.createElement('div'); textStack.className = 'pi-nested-text-stack';
+        const field = document.createElement('textarea');
+        field.rows = 1; field.className = 'pi-nested-text';
+        field.value = String(child.text || ''); field.setAttribute('aria-label','Checklist item text');
+        const fit = () => { field.style.height = 'auto'; field.style.height = field.scrollHeight + 'px'; };
+        field.addEventListener('input',fit);
         field.addEventListener('change', () => applyChange(live => {
             const target = (live.subtasks || []).find(entry => entry.id === child.id);
             if (target) target.text = field.value;
         }));
-        field.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); field.blur(); } });
+        textStack.append(field);
+        const when = document.createElement('span'); when.className = 'pi-nested-added';
+        const added = window.PIHomeAddedDate(child);
+        when.textContent = added ? 'Added '+added : 'Date added not recorded';
+        when.title = child.createdAt ? 'Original date added' : (added ? 'Saved item date (original creation time unavailable)' : 'Older checklist item without recorded date');
+        textStack.append(when);
+        const actions = document.createElement('div'); actions.className = 'pi-nested-actions';
+        for (const [symbol,delta,name] of [['↑',-1,'Move checklist item up'],['↓',1,'Move checklist item down']]) {
+            const btn = document.createElement('button'); btn.type = 'button';
+            btn.textContent = symbol; btn.title = name; btn.setAttribute('aria-label',name);
+            btn.disabled = delta < 0 ? index===0 : index===children.length-1;
+            btn.addEventListener('click', () => {
+                const sibling = children[index+delta]; if (sibling) reorder(child.id,sibling.id,delta > 0 ? 1 : 0);
+            });
+            actions.append(btn);
+        }
         const remove = document.createElement('button');
         remove.type = 'button'; remove.className = 'pi-nested-remove';
-        remove.textContent = '×'; remove.title = 'Remove subtask';
-        remove.setAttribute('aria-label', 'Remove subtask');
+        remove.textContent = '×'; remove.title = 'Remove checklist item';
+        remove.setAttribute('aria-label', remove.title);
         remove.addEventListener('click', () => applyChange(live => {
             live.subtasks = (live.subtasks || []).filter(entry => entry.id !== child.id);
         }));
-        line.append(check, field, remove); root.append(line);
+        actions.append(remove);
+        line.append(drag,check,textStack,actions); root.append(line);
+        requestAnimationFrame(fit);
     });
     const compose = document.createElement('form'); compose.className = 'pi-nested-compose';
-    const input = document.createElement('input'); input.type = 'text';
-    input.placeholder = 'Add a checklist item…'; input.setAttribute('aria-label','New subtask');
+    const input = document.createElement('textarea'); input.rows=1;
+    input.placeholder = 'Add a checklist item…'; input.setAttribute('aria-label','New checklist item');
+    input.title = 'Enter for a new line, Ctrl+Enter to add';
+    input.addEventListener('keydown',e => {
+        if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); compose.requestSubmit(); }
+    });
     const add = document.createElement('button'); add.type = 'submit'; add.textContent = '+ Add';
-    compose.append(input, add);
+    compose.append(input,add);
     compose.addEventListener('submit', e => {
         e.preventDefault(); e.stopPropagation();
         const text = input.value.trim(); if (!text) return;
+        const now = new Date();
+        const localDate = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
         applyChange(live => {
             if (!Array.isArray(live.subtasks)) live.subtasks = [];
-            live.subtasks.push({id:'sub-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8),text,done:false});
+            live.subtasks.push({id:'sub-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8),text,done:false,date:localDate,createdAt:now.toISOString()});
         });
     });
     root.append(compose);
@@ -2252,6 +2329,122 @@ if (document.getElementById("tileGrid")) {
         checklistManagers.set(storageKey, manager);
         listElement.dataset.storageKey = storageKey;
 
+        let categoryDialog = null;
+        let categoryDialogId = null;
+        function buildCategoryContent(item, applyChange) {
+            const body = document.createElement('div');
+            body.className = 'pi-category-note-content';
+            const fold = document.createElement('section'); fold.className = 'pi-category-details-fold';
+            const trigger = document.createElement('button');
+            trigger.type = 'button'; trigger.className = 'pi-category-details-toggle';
+            const isOpen = item.detailsExpanded !== false;
+            trigger.textContent = (isOpen ? '▾' : '▸') + ' Details';
+            trigger.setAttribute('aria-expanded',String(isOpen));
+            trigger.setAttribute('aria-label', (isOpen ? 'Collapse' : 'Expand')+' freeform details');
+            const details = document.createElement('div');
+            details.className = 'pi-category-note-editor';
+            details.contentEditable = 'true'; details.spellcheck = true;
+            details.dataset.placeholder = 'Add details to this category…';
+            details.textContent = item.details || '';
+            const foldInner = document.createElement('div');
+            foldInner.className = 'pi-category-details-inner';
+            foldInner.hidden = !isOpen;
+            trigger.addEventListener('click', () => {
+                if (!isFresh()) return;
+                const expanded = trigger.getAttribute('aria-expanded') !== 'true';
+                item.detailsExpanded = expanded;
+                foldInner.hidden = !expanded;
+                trigger.textContent = (expanded ? '▾' : '▸')+' Details';
+                trigger.setAttribute('aria-expanded',String(expanded));
+                trigger.setAttribute('aria-label',(expanded ? 'Collapse' : 'Expand')+' freeform details');
+                manager.save(false,'before-details-fold');
+            });
+            details.addEventListener('input', () => {
+                if (!isFresh()) return;
+                item.details = details.innerText;
+                manager.save(true,'before-edit');
+            });
+            foldInner.append(details);
+            fold.append(trigger,foldInner); body.append(fold);
+            body.append(window.PIHomeNestedChecklist(item,applyChange));
+            const media = document.createElement('div'); media.className = 'pi-category-note-media';
+            for (const [key,placeholder,label] of [
+                ['imageUrl','Image URL (optional)','Note image URL'],
+                ['linkUrl','Link URL (optional)','Note link URL']
+            ]) {
+                const field = document.createElement('input'); field.type='url';
+                field.placeholder=placeholder; field.setAttribute('aria-label',label);
+                field.value=item[key] || '';
+                field.addEventListener('change', () => {
+                    if (!isFresh()) return;
+                    item[key] = field.value.trim();
+                    if (manager.save(false,'before-media-edit')) {
+                        renderItems();
+                        if (categoryDialog?.open) renderCategoryDialog();
+                    }
+                });
+                media.append(field);
+            }
+            foldInner.append(media);
+            if (/^https?:\/\//i.test(item.imageUrl || '')) {
+                const preview = document.createElement('img');
+                preview.className='pi-category-image'; preview.src=item.imageUrl;
+                preview.alt='Attached note image'; preview.loading='lazy'; foldInner.append(preview);
+            }
+            if (/^https?:\/\//i.test(item.linkUrl || '')) {
+                const link = document.createElement('a');
+                link.href=item.linkUrl; link.target='_blank'; link.rel='noopener noreferrer';
+                link.textContent='Open link ↗'; foldInner.append(link);
+            }
+            return body;
+        }
+        function renderCategoryDialog() {
+            if (!categoryDialog) return;
+            const item = items.find(entry => entry.id === categoryDialogId && entry.kind === 'note');
+            if (!item) {categoryDialog.close();return;}
+            const head = document.createElement('div'); head.className = 'pi-category-dialog-head';
+            const title = document.createElement('textarea');
+            title.rows=1; title.className='pi-category-dialog-title'; title.value=item.text || '';
+            title.setAttribute('aria-label','Category name');
+            title.addEventListener('change',()=>{
+                if (!isFresh()) return;
+                item.text=title.value.trim();
+                if (manager.save(false,'before-title-edit')) renderItems();
+            });
+            const close = document.createElement('button'); close.type='button';
+            close.className='pi-category-dialog-close'; close.textContent='×';
+            close.title='Close category popout'; close.setAttribute('aria-label',close.title);
+            close.addEventListener('click',()=>categoryDialog.close());
+            head.append(title,close);
+            const scroll = document.createElement('div'); scroll.className='pi-category-dialog-scroll';
+            scroll.append(buildCategoryContent(item,mutation => {
+                if (!isFresh()) return;
+                mutation(item);
+                if (manager.save(false,'before-subtask')) {
+                    renderItems(); renderCategoryDialog();
+                }
+            }));
+            categoryDialog.replaceChildren(head,scroll);
+        }
+        function openCategoryDialog(id) {
+            if (!isFresh()) return;
+            if (categoryDialog?.isConnected) categoryDialog.close();
+            categoryDialogId = id;
+            const modal = document.createElement('dialog');
+            modal.className='pi-category-dialog';
+            modal.setAttribute('aria-label','Category note editor');
+            categoryDialog = modal;
+            modal.addEventListener('click',event => {
+                if (event.target===modal) modal.close();
+            });
+            modal.addEventListener('close',()=>{
+                modal.remove();
+                if (categoryDialog === modal) {categoryDialog=null;categoryDialogId=null;}
+                renderItems();
+            });
+            document.body.append(modal); renderCategoryDialog(); modal.showModal();
+        }
+
         function renderItems() {
             listElement.innerHTML = "";
 
@@ -2266,7 +2459,7 @@ if (document.getElementById("tileGrid")) {
                 drag.className = "check-drag";
                 drag.textContent = "⋮⋮";
                 drag.draggable = true;
-                drag.title = "Drag between Notes, Radar, Near My Radar, or calendar days";
+                drag.title = "Drag between Home Notes, On My Radar, or calendar days";
 
                 let wrap = null;
                 if (checkable) {
@@ -2360,6 +2553,15 @@ if (document.getElementById("tileGrid")) {
                     manager.save(true, "before-date-edit");
                 });
 
+                let shownDate = rowDate;
+                if (noteMode && !isCategoryNote) {
+                    shownDate = document.createElement('span');
+                    shownDate.className = 'pi-note-added';
+                    const dateAdded = window.PIHomeAddedDate(item);
+                    shownDate.textContent = dateAdded ? 'Added ' + dateAdded : 'Date unknown';
+                    shownDate.title = item.createdAt ? 'Original date added' : 'Saved date, if known (original creation time unavailable)';
+                }
+
                 const moveMenu = document.createElement("select");
                 moveMenu.className = "pi-item-move";
                 moveMenu.setAttribute("aria-label", "Move item to another table");
@@ -2368,10 +2570,8 @@ if (document.getElementById("tileGrid")) {
                 moveMenu.append(placeholder);
                 const targets = [
                     ["pi-database-notes-v1", "Home Notes"],
-                    ["pi-database-radar-v1", "On My Radar"],
-                    ["pi-database-near-radar-v1", "Near My Radar"],
                     ...dayKeys.map((key, n) => [key, "Day: " + dayDateStrings[n]]),
-                    ["__focus__", "✦ Focus Now"]
+                    ["__focus__", "✦ On My Radar"]
                 ];
                 targets.forEach(([key, label]) => {
                     if (key === storageKey) return;
@@ -2394,75 +2594,21 @@ if (document.getElementById("tileGrid")) {
                     }
                 });
 
-                const kindButton = document.createElement("button");
-                kindButton.type = "button";
-                kindButton.className = "pi-kind-button";
-                kindButton.textContent = isCategoryNote ? "▤" : "☑";
-                kindButton.title = isCategoryNote ? "Convert to checklist line" : "Convert to category note";
-                kindButton.setAttribute("aria-label", kindButton.title);
-                kindButton.addEventListener("click", () => {
-                    if (!isFresh()) return;
-                    item.kind = isCategoryNote ? "task" : "note";
-                    item.expanded = item.kind === "note";
-                    if (manager.save(false, "before-kind-change")) renderItems();
-                });
-
-                const noteBody = document.createElement("div");
-                noteBody.className = "pi-category-note-content";
-                if (isCategoryNote && item.expanded !== false) {
-                    const details = document.createElement("div");
-                    details.className = "pi-category-note-editor";
-                    details.contentEditable = "true";
-                    details.spellcheck = true;
-                    details.dataset.placeholder = "Add details to this category…";
-                    details.textContent = item.details || "";
-                    details.addEventListener("input", () => {
-                        if (!isFresh()) return;
-                        item.details = details.innerText;
-                        manager.save(true, "before-edit");
-                    });
-                    noteBody.append(details);
-                    noteBody.append(window.PIHomeNestedChecklist(item, mutation => {
+                const noteBody = isCategoryNote && item.expanded !== false
+                    ? buildCategoryContent(item, mutation => {
                         if (!isFresh()) return;
                         mutation(item);
-                        if (manager.save(false, "before-subtask")) renderItems();
-                    }));
-                    const media = document.createElement("div");
-                    media.className = "pi-category-note-media";
-                    const image = document.createElement("input");
-                    image.type = "url"; image.placeholder = "Image URL (optional)";
-                    image.setAttribute("aria-label", "Note image URL");
-                    image.value = item.imageUrl || "";
-                    const link = document.createElement("input");
-                    link.type = "url"; link.placeholder = "Link URL (optional)";
-                    link.setAttribute("aria-label", "Note link URL");
-                    link.value = item.linkUrl || "";
-                    [image, link].forEach((field, i) => field.addEventListener("change", () => {
-                        if (!isFresh()) return;
-                        item[i ? "linkUrl" : "imageUrl"] = field.value.trim();
-                        if (manager.save(false, "before-media-edit")) renderItems();
-                    }));
-                    media.append(image, link);
-                    noteBody.append(media);
-                    if (/^https?:\/\//i.test(item.imageUrl || "")) {
-                        const preview = document.createElement("img");
-                        preview.className = "pi-category-image";
-                        preview.src = item.imageUrl; preview.alt = "Attached note image";
-                        preview.loading = "lazy";
-                        noteBody.append(preview);
-                    }
-                    if (/^https?:\/\//i.test(item.linkUrl || "")) {
-                        const urlLink = document.createElement("a");
-                        urlLink.href = item.linkUrl; urlLink.target = "_blank";
-                        urlLink.rel = "noopener noreferrer"; urlLink.textContent = "Open link ↗";
-                        noteBody.append(urlLink);
-                    }
-                }
+                        if (manager.save(false, 'before-subtask')) {
+                            renderItems();
+                            if (categoryDialog?.open) renderCategoryDialog();
+                        }
+                    }) : null;
                 const noteToggle = document.createElement("button");
                 noteToggle.type = "button"; noteToggle.className = "pi-note-open";
                 noteToggle.textContent = item.expanded === false ? "▸" : "▾";
-                noteToggle.title = "Show or hide category note details";
+                noteToggle.title = "Expand or collapse this category";
                 noteToggle.setAttribute("aria-label", noteToggle.title);
+                noteToggle.setAttribute("aria-expanded",String(item.expanded !== false));
                 noteToggle.addEventListener("click", () => {
                     item.expanded = item.expanded === false;
                     if (manager.save(false, "before-collapse")) renderItems();
@@ -2548,8 +2694,8 @@ if (document.getElementById("tileGrid")) {
                 const focusShortcut = document.createElement("button");
                 focusShortcut.type = "button";
                 focusShortcut.className = "pi-focus-shortcut";
-                focusShortcut.textContent = "✦ Focus";
-                focusShortcut.title = "Move this item into Focus Now";
+                focusShortcut.textContent = "✦ Radar";
+                focusShortcut.title = "Move this item into On My Radar";
                 focusShortcut.addEventListener("click", () => {
                     if (!window.PIHomeMoveToFocus?.(storageKey, item.id)) {
                         alert("Move not completed. Your original item was kept in its table.");
@@ -2558,13 +2704,22 @@ if (document.getElementById("tileGrid")) {
                 toolsPanel.append(moveMenu, focusShortcut, archive, del);
                 toolsMenu.append(toolsSummary, toolsPanel);
                 rowActions.append(selector);
-                if (noteMode || isCategoryNote) rowActions.append(kindButton);
-                if (isCategoryNote) rowActions.append(noteToggle);
+                if (isCategoryNote) {
+                    rowActions.append(noteToggle);
+                    const pop = document.createElement('button');
+                    pop.type = 'button'; pop.className = 'pi-category-popout-button';
+                    pop.textContent = '⤢'; pop.title = 'Pop out category note';
+                    pop.setAttribute('aria-label',`Pop out ${item.text || 'category note'}`);
+                    pop.addEventListener('click', () => openCategoryDialog(item.id));
+                    rowActions.append(pop);
+                }
                 rowActions.append(toolsMenu);
 
-                if (wrap) row.append(drag, wrap, taskText, rowDate, rowActions);
-                else row.append(drag, taskText, rowDate, rowActions);
-                if (isCategoryNote && item.expanded !== false) row.append(noteBody);
+                if (wrap) row.append(drag, wrap, taskText);
+                else row.append(drag, taskText);
+                if (!isCategoryNote) row.append(shownDate);
+                row.append(rowActions);
+                if (noteBody) row.append(noteBody);
                 listElement.appendChild(row);
             });
         }
@@ -2686,31 +2841,9 @@ if (document.getElementById("tileGrid")) {
         }
     }
 
-    const radarManager = createChecklistManager({
-        storageKey: "pi-database-radar-v1",
-        listId: "radarList",
-        inputId: "radarInput",
-        buttonId: "addRadar",
-        defaults: [
-            { text: "Confirm housing / showing status", done: false },
-            { text: "Capture Ignite questions as they come up", done: false },
-            { text: "Review upcoming bills", done: false }
-        ],
-        accentClass: "scroll-teal",
-        archiveSource: "Database",
-        archiveContext: "On My Radar"
-    });
-
-    createChecklistManager({
-        storageKey: "pi-database-near-radar-v1",
-        listId: "nearRadarList",
-        inputId: "nearRadarInput",
-        buttonId: "addNearRadar",
-        defaults: [],
-        accentClass: "scroll-plum",
-        archiveSource: "Database",
-        archiveContext: "Near My Radar"
-    });
+    // Old Radar storage remains untouched for backward-compatible JSON backups.
+    // The separate Radar panels/managers are retired from Home.
+    const radarManager = null;
 
     const databaseNotesManager = createChecklistManager({
         storageKey: "pi-database-notes-v1",
@@ -6901,7 +7034,7 @@ if (document.getElementById("neopetsApp")) {
 
 /* =========================================================
    PERSONAL INTRANET — CORE EXPERIENCE
-   Orientation, universal capture, Focus Now, global search,
+   Orientation, universal capture, On My Radar, global search,
    recent activity, Longform draft safety, and quieter headers.
    Existing user data is migrated into the canonical pi-* storage namespace.
    ========================================================= */
@@ -7049,7 +7182,7 @@ if (document.getElementById("neopetsApp")) {
         const items = readFocus();
         items.unshift({ id: uid("focus"), text: cleaned, done: false, createdAt: new Date().toISOString() });
         saveFocus(items, false);
-        recordActivity("database", "added to Focus Now", cleaned);
+        recordActivity("database", "added to On My Radar", cleaned);
         if (typeof showSaved === "function") showSaved();
     }
 
@@ -7138,9 +7271,7 @@ if (document.getElementById("neopetsApp")) {
         move.setAttribute('aria-label', 'Move Focus item to another table');
         move.append(new Option('Move to…', ''));
         const routeTargets = [
-            ['pi-database-notes-v1','Home Notes'],
-            ['pi-database-radar-v1','On My Radar'],
-            ['pi-database-near-radar-v1','Near My Radar']
+            ['pi-database-notes-v1','Home Notes']
         ];
         for (let i = 0; i < 28; i++) {
             const dayList = document.getElementById(`dayList${i}`);
@@ -7151,25 +7282,19 @@ if (document.getElementById("neopetsApp")) {
             const target = move.value; move.value = '';
             if (target && !window.PIHomeMoveFromFocus?.(item.id, target)) alert('Move not completed. Item remains in Focus.');
         });
-        const kind = document.createElement('button'); kind.type = 'button';
-        kind.textContent = category ? 'Make checklist line' : 'Make category note';
-        kind.addEventListener('click', () => update(live => {
-            live.kind = category ? 'task' : 'note';
-            if (live.kind === 'note') live.expanded = true;
-        }));
         const archive = document.createElement('button'); archive.type = 'button';
         archive.textContent = 'Archive'; archive.addEventListener('click', () => {
-            if (!archiveManualItem({text:window.PIHomeArchiveText(item), source:'Focus Now',
+            if (!archiveManualItem({text:window.PIHomeArchiveText(item), source:'On My Radar',
                 originalDate:item.date || null, metadata:{...item}})) return;
             saveFocus(readFocus().filter(entry => entry.id !== item.id));
         });
         const remove = document.createElement('button'); remove.type = 'button';
-        remove.textContent = 'Remove'; remove.title = 'Remove from Focus Now';
+        remove.textContent = 'Remove'; remove.title = 'Remove from On My Radar';
         remove.addEventListener('click', () => {
             saveFocus(readFocus().filter(entry => entry.id !== item.id));
-            recordActivity('database', 'removed from Focus Now', item.text);
+            recordActivity('database', 'removed from On My Radar', item.text);
         });
-        tools.append(dateLabel, move, kind, archive, remove);
+        tools.append(dateLabel, move, archive, remove);
         menu.append(summary, tools); actions.append(menu);
         // Menus in a horizontal scroller must use the browser's top layer.
         // Otherwise bottom controls are clipped by Focus's scroll viewport.
@@ -7189,9 +7314,9 @@ if (document.getElementById("neopetsApp")) {
         });
         const visibleDate = document.createElement('span'); visibleDate.className = 'pi-focus-date';
         const value = item.date || item.createdAt?.slice(0,10) || '';
-        visibleDate.textContent = window.PICompactDate?.(value) || 'date';
-        visibleDate.title = 'Edit the date using ⋮';
-        actions.append(visibleDate);
+        visibleDate.textContent = (window.PIHomeAddedDate?.(item) || window.PICompactDate?.(value)) ? 'Added ' + (window.PIHomeAddedDate?.(item) || window.PICompactDate?.(value)) : 'Date unknown';
+        visibleDate.title = 'Date this item was added (for older items, saved date where available)';
+        if (!category) actions.append(visibleDate);
         row.append(drag, check, titleArea, actions);
         return row;
     }
@@ -7261,7 +7386,7 @@ if (document.getElementById("neopetsApp")) {
         panel.className = "panel pi-focus-panel pi-database-focus-panel";
         panel.innerHTML = `
             <div class="pi-focus-head">
-                <div class="pi-focus-title"><span>✦</span><strong>Focus Now</strong><span class="pi-focus-count" id="piDatabaseFocusCount"></span></div>
+                <div class="pi-focus-title"><span>✦</span><strong>On My Radar</strong><span class="pi-focus-count" id="piDatabaseFocusCount"></span></div>
                 <span class="pi-focus-warning" id="piDatabaseFocusWarning" hidden></span>
             </div>
             <div class="pi-focus-body">
@@ -7275,7 +7400,7 @@ if (document.getElementById("neopetsApp")) {
             panel.classList.toggle('pi-focus-collapsed', collapsed);
             toggle.textContent = collapsed ? '▸' : '▾';
             toggle.setAttribute('aria-expanded', String(!collapsed));
-            toggle.title = collapsed ? 'Expand Focus Now' : 'Collapse Focus Now';
+            toggle.title = collapsed ? 'Expand On My Radar' : 'Collapse On My Radar';
             localStorage.setItem('pi-focus-collapsed-v2', String(collapsed));
         };
         toggle.addEventListener('click', () => setCollapsed(!panel.classList.contains('pi-focus-collapsed')));
@@ -7455,7 +7580,7 @@ if (document.getElementById("neopetsApp")) {
             targetPage = "almanac"; action = "sent Inbox item to Timeline Notes";
         } else if (destination === "focus") {
             addFocus(item.text); success = true;
-            targetPage = "database"; action = "sent Inbox item to Focus Now";
+            targetPage = "database"; action = "sent Inbox item to On My Radar";
         } else if (destination === "radar") {
             success = pushChecklist(PI_KEYS.radarKey, item.text);
             targetPage = "database"; action = "sent Inbox item to Radar";
@@ -7541,7 +7666,7 @@ if (document.getElementById("neopetsApp")) {
             ["database","Home Notes"],
             ["longform","Longform"],
             ["archive","Timeline Notes"],
-            ["focus","Focus Now"],
+            ["focus","On My Radar"],
             ["radar","Radar"],
             ["today","Today"]
         ].forEach(([value,label]) => {
@@ -7720,7 +7845,7 @@ if (document.getElementById("neopetsApp")) {
         const docs = [];
         readCaptureInbox().forEach(item => addDoc(docs, "home", "Inbox", [item.title, item.text].filter(Boolean).join(" · ")));
         const focus = readFocus();
-        focus.forEach(item => addDoc(docs, "database", "Focus Now", item.text));
+        focus.forEach(item => addDoc(docs, "database", "On My Radar", item.text));
         [
             [PI_KEYS.radarKey, "Radar"], [PI_KEYS.nearRadarKey, "Near Radar"], [PI_KEYS.databaseNotesKey, "Notes"]
         ].forEach(([key, label]) => humanArray(key).forEach(item => addDoc(docs, "database", label, item.text)));
