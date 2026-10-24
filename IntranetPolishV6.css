@@ -247,3 +247,111 @@ html body .database-page .home-upcoming-panel .day-card .day-list > .pi-category
 html body .database-page .home-upcoming-panel .day-card.pi-panel-popout .day-list > .checklist-item.pi-category-note {
   padding:4px 6px !important;
 }
+
+
+/* V8 follow-up: wider day cards, cleaner radar alignment, inline remove buttons. */
+@media(min-width:901px) {
+  html body .database-page.page > .home-upcoming-panel .day-rail {
+    grid-auto-columns:minmax(360px, calc((100% - 30px) / 4)) !important;
+    padding-bottom:12px !important;
+    scrollbar-gutter: stable both-edges;
+  }
+}
+
+html body .database-page #piDatabaseFocus .pi-focus-list {
+  gap:6px !important;
+}
+html body .database-page #piDatabaseFocus .pi-focus-item {
+  grid-template-columns:12px 16px minmax(0,1fr) auto !important;
+  column-gap:6px !important;
+  align-items:center !important;
+}
+html body .database-page #piDatabaseFocus .pi-focus-item .pi-focus-main,
+html body .database-page #piDatabaseFocus .pi-focus-item .pi-focus-headline {
+  min-width:0 !important;
+  display:flex !important;
+  align-items:center !important;
+}
+html body .database-page #piDatabaseFocus .pi-focus-item .pi-focus-text {
+  min-width:0 !important;
+}
+html body .database-page #piDatabaseFocus .pi-focus-item .pi-focus-actions {
+  display:flex !important;
+  flex-direction:row !important;
+  align-items:center !important;
+  justify-content:flex-end !important;
+  gap:6px !important;
+  min-width:max-content !important;
+}
+html body .database-page #piDatabaseFocus .pi-focus-item .pi-focus-date {
+  margin:0 !important;
+  order:1 !important;
+  align-self:center !important;
+  white-space:nowrap !important;
+}
+html body .database-page #piDatabaseFocus .pi-focus-item .pi-item-tools,
+html body .database-page #piDatabaseFocus .pi-focus-item .pi-focus-tools {
+  order:2 !important;
+  margin:0 !important;
+  align-self:center !important;
+}
+html body .database-page #piDatabaseFocus .pi-focus-item .pi-item-tools > summary,
+html body .database-page #piDatabaseFocus .pi-focus-item .pi-focus-tools > summary {
+  display:inline-grid !important;
+  place-items:center !important;
+  margin:0 !important;
+}
+html body .database-page #piDatabaseFocus .pi-focus-item.pi-category-note .pi-focus-headline {
+  gap:4px !important;
+}
+html body .database-page #piDatabaseFocus .pi-focus-item.pi-category-note .pi-focus-main {
+  overflow:hidden !important;
+}
+
+html body .database-page :is(#piDatabaseFocus,.database-notes-list,.home-upcoming-panel .day-card,.home-upcoming-panel .day-card.pi-panel-popout) .pi-nested-line {
+  grid-template-columns:12px 16px minmax(0,1fr) auto auto !important;
+  align-items:center !important;
+}
+html body .database-page :is(#piDatabaseFocus,.database-notes-list,.home-upcoming-panel .day-card,.home-upcoming-panel .day-card.pi-panel-popout) .pi-nested-date {
+  white-space:nowrap !important;
+  align-self:center !important;
+  justify-self:end !important;
+  margin:0 !important;
+}
+html body .database-page :is(#piDatabaseFocus,.database-notes-list,.home-upcoming-panel .day-card,.home-upcoming-panel .day-card.pi-panel-popout) .pi-nested-actions {
+  display:flex !important;
+  align-items:center !important;
+  justify-content:flex-end !important;
+  gap:0 !important;
+  align-self:center !important;
+}
+html body .database-page :is(#piDatabaseFocus,.database-notes-list,.home-upcoming-panel .day-card,.home-upcoming-panel .day-card.pi-panel-popout) .pi-nested-remove {
+  align-self:center !important;
+  justify-self:end !important;
+  margin:0 !important;
+  padding:0 0 0 4px !important;
+  line-height:1 !important;
+}
+
+/* Match the same compact alignment inside category popout dialogs. */
+dialog.pi-category-dialog .pi-nested-line {
+  grid-template-columns:14px 18px minmax(0,1fr) auto auto !important;
+  align-items:center !important;
+  row-gap:1px !important;
+}
+dialog.pi-category-dialog .pi-nested-date {
+  white-space:nowrap !important;
+  align-self:center !important;
+  justify-self:end !important;
+}
+dialog.pi-category-dialog .pi-nested-actions {
+  display:flex !important;
+  align-items:center !important;
+  justify-content:flex-end !important;
+  gap:0 !important;
+}
+dialog.pi-category-dialog .pi-nested-remove {
+  margin:0 !important;
+  padding-left:4px !important;
+  line-height:1 !important;
+}
