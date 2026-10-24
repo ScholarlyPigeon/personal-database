@@ -2378,7 +2378,8 @@ if (document.getElementById("tileGrid")) {
                 manager.save(true,'before-edit');
             });
             foldInner.append(details);
-            fold.append(trigger,foldInner); body.append(fold);
+            fold.append(trigger,foldInner);
+            if (item.showDetails !== false) body.append(fold);
             body.append(window.PIHomeNestedChecklist(item,applyChange));
             return body;
         }
@@ -2399,7 +2400,18 @@ if (document.getElementById("tileGrid")) {
             close.className='pi-category-dialog-close'; close.textContent='×';
             close.title='Close category popout'; close.setAttribute('aria-label',close.title);
             close.addEventListener('click',()=>categoryDialog.close());
-            head.append(title,close);
+            const detailsOption = document.createElement('button');
+            detailsOption.type = 'button'; detailsOption.className = 'pi-category-dialog-details-option';
+            detailsOption.textContent = item.showDetails === false ? 'Show Details' : 'Hide Details';
+            detailsOption.title = 'Toggle Details section without deleting its text';
+            detailsOption.addEventListener('click', () => {
+                if (!isFresh()) return;
+                item.showDetails = item.showDetails === false;
+                if (manager.save(false,'before-visibility-toggle')) {
+                    renderItems(); renderCategoryDialog();
+                }
+            });
+            head.append(title,detailsOption,close);
             const scroll = document.createElement('div'); scroll.className='pi-category-dialog-scroll';
             scroll.append(buildCategoryContent(item,mutation => {
                 if (!isFresh()) return;
@@ -2678,6 +2690,22 @@ if (document.getElementById("tileGrid")) {
                         alert("Move not completed. Your original item was kept in its table.");
                     }
                 });
+                if (isCategoryNote) {
+                    const detailsVisibility = document.createElement('button');
+                    detailsVisibility.type = 'button';
+                    detailsVisibility.className = 'pi-category-visibility-action';
+                    detailsVisibility.textContent = item.showDetails === false ? 'Show Details' : 'Hide Details';
+                    detailsVisibility.title = 'Show or hide this category’s freeform Details section';
+                    detailsVisibility.addEventListener('click', () => {
+                        if (!isFresh()) return;
+                        item.showDetails = item.showDetails === false;
+                        if (manager.save(false,'before-visibility-toggle')) {
+                            renderItems();
+                            if (categoryDialog?.open) renderCategoryDialog();
+                        }
+                    });
+                    toolsPanel.append(detailsVisibility);
+                }
                 toolsPanel.append(moveMenu, focusShortcut, archive, del);
                 toolsMenu.append(toolsSummary, toolsPanel);
                 rowActions.append(selector);
@@ -7181,8 +7209,9 @@ if (document.getElementById("neopetsApp")) {
         drag.title = 'Drag to another table or a calendar day';
         const check = document.createElement('input');
         check.type = 'checkbox'; check.checked = Boolean(item.done);
-        check.setAttribute('aria-label', 'Complete Focus item');
+        check.setAttribute('aria-label', 'Complete On My Radar item');
         check.addEventListener('change', () => update(live => {live.done = check.checked;}));
+        if (category) check.classList.add('pi-radar-category-checkbox');
         const titleArea = document.createElement('div'); titleArea.className = 'pi-focus-main';
         const headline = document.createElement('div'); headline.className = 'pi-focus-headline';
         if (category) {
@@ -7205,7 +7234,7 @@ if (document.getElementById("neopetsApp")) {
         headline.append(text); titleArea.append(headline);
         if (category && focusViewExpanded.has(item.id)) {
             const body = document.createElement('div'); body.className = 'pi-focus-detail';
-            if (item.details) {
+            if (item.details && item.showDetails !== false) {
                 const details = document.createElement('div');
                 details.className = 'pi-focus-note-body'; details.textContent = item.details;
                 body.append(details);
@@ -7283,7 +7312,7 @@ if (document.getElementById("neopetsApp")) {
         });
         const visibleDate = document.createElement('span'); visibleDate.className = 'pi-focus-date';
         const value = item.date || item.createdAt?.slice(0,10) || '';
-        visibleDate.textContent = window.PIHomeAddedDate?.(item) || window.PICompactDate?.(value) || '—';
+        visibleDate.textContent = (window.PIHomeAddedDate?.(item) || window.PICompactDate?.(value) || '—').replace(/^(?:Added|Date added)\s*:?[ \t]*/i, '');
         visibleDate.title = 'Date this item was added (for older items, saved date where available)';
         if (!category) actions.append(visibleDate);
         row.append(drag, check, titleArea, actions);
@@ -7361,7 +7390,9 @@ if (document.getElementById("neopetsApp")) {
             <div class="pi-focus-body">
                 <div class="pi-focus-list" id="piDatabaseFocusList"></div>
             </div>`;
-        links.insertAdjacentElement("afterend", panel);
+        const homeColumns = document.getElementById('homeMainColumns');
+        if (homeColumns) homeColumns.prepend(panel);
+        else links.insertAdjacentElement("afterend", panel);
         const head = panel.querySelector('.pi-focus-head');
         const toggle = document.createElement('button');
         toggle.type = 'button'; toggle.className = 'pi-focus-collapse';

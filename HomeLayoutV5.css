@@ -1,0 +1,321 @@
+/* Home V5: calendar above, Radar left, Notes right. Three real tracks,
+   rather than the legacy rails that fought earlier overrides. */
+@media (min-width: 901px) {
+  html body .database-page.page.pi-focus-layout {
+    display: grid !important;
+    grid-template-columns: minmax(0,1fr) !important;
+    grid-template-rows: auto clamp(168px, 24vh, 235px) minmax(0,1fr) !important;
+    gap: 9px !important;
+    align-content: stretch !important;
+  }
+  html body .database-page.page.pi-focus-layout:has(> .home-upcoming-panel.is-collapsed) {
+    grid-template-rows: auto 36px minmax(0,1fr) !important;
+  }
+}
+html body .database-page .database-header {
+  position:relative; z-index:8000; overflow:visible !important;
+}
+/* Always the whole-width horizontal day track. */
+html body .database-page.page > .home-upcoming-panel {
+  grid-column:1 !important; grid-row:2 !important;
+  width:100% !important; min-width:0 !important;
+  height:100% !important; min-height:0 !important; max-height:100% !important;
+  display:grid !important; grid-template-rows: 33px minmax(0,1fr) !important;
+  overflow:hidden !important;
+}
+html body .database-page.page > .home-upcoming-panel.is-collapsed {
+  height:36px !important; min-height:36px !important; max-height:36px !important;
+  grid-template-rows:36px !important;
+}
+html body .database-page .home-upcoming-panel > .panel-header {
+  display:flex !important; align-items:center !important; gap:7px !important;
+  min-height:0 !important; padding:4px 9px !important;
+}
+html body .database-page .home-upcoming-panel .home-rail-hint {
+  font: 500 10.5px/1.2 "Segoe UI", Arial, sans-serif;
+  color:var(--muted); margin-left:10px; flex:1 1 auto;
+}
+html body .database-page.page > .home-upcoming-panel .day-rail {
+  display:grid !important;
+  grid-auto-flow:column !important;
+  grid-auto-columns:minmax(255px, 310px) !important;
+  grid-template-rows:minmax(0,1fr) !important;
+  grid-template-columns:none !important;
+  align-items:stretch !important;
+  gap:8px !important;
+  width:100% !important; height:100% !important; min-width:0 !important; min-height:0 !important;
+  max-width:100% !important; max-height:none !important;
+  padding:7px 9px 9px !important;
+  overflow-x:auto !important; overflow-y:hidden !important;
+  scrollbar-width:thin;
+  scroll-snap-type:x proximity;
+}
+html body .database-page .home-upcoming-panel .day-card {
+  width:100% !important; min-width:0 !important; max-width:none !important;
+  height:100% !important; min-height:0 !important; max-height:100% !important;
+  grid-template-rows:auto minmax(0,1fr) auto !important;
+  padding:8px !important; overflow:hidden !important; scroll-snap-align:start;
+}
+html body .database-page .home-upcoming-panel .day-card .day-list {
+  min-height:0 !important; height:auto !important; max-height:100% !important;
+  overflow-y:auto !important; overflow-x:hidden !important;
+}
+html body .database-page .home-upcoming-panel .day-entry-row {
+  min-height:32px !important; flex:0 0 auto !important;
+}
+html body .database-page .home-upcoming-panel .day-entry-row textarea {
+  min-height:33px !important; height:33px !important;
+  max-height:72px !important; padding:6px !important;
+}
+/* Main columns: Focus is no longer above everything. */
+html body .database-page.page > .home-main-columns.database-grid.content-shell {
+  grid-column:1 !important; grid-row:3 !important;
+  display:grid !important;
+  grid-template-columns:minmax(250px, .77fr) minmax(0, 1.85fr) !important;
+  grid-template-rows:minmax(0,1fr) !important;
+  width:100% !important; height:100% !important; min-height:0 !important;
+  max-height:100% !important; min-width:0 !important;
+  align-items:stretch !important; gap:9px !important;
+  overflow:hidden !important; padding:0 !important; margin:0 !important;
+}
+html body .database-page .home-main-columns > #piDatabaseFocus {
+  grid-column:1 !important; grid-row:1 !important;
+  height:100% !important; min-height:0 !important; max-height:100% !important;
+  width:100% !important; min-width:0 !important;
+  display:grid !important;
+  grid-template-rows:33px minmax(0,1fr) !important;
+  overflow:hidden !important;
+  align-self:stretch !important;
+}
+html body .database-page .home-main-columns > #piDatabaseFocus.pi-focus-collapsed {
+  height:37px !important; min-height:37px !important; max-height:37px !important;
+  grid-template-rows:37px !important;
+  align-self:start !important;
+}
+html body .database-page .home-main-columns > #piDatabaseFocus .pi-focus-head {
+  height:33px; min-height:0 !important; padding:5px 9px !important;
+}
+html body .database-page .home-main-columns > #piDatabaseFocus .pi-focus-body {
+  display:flex !important; min-height:0 !important; height:auto !important;
+  overflow:hidden !important; padding:8px !important;
+}
+html body .database-page .home-main-columns > #piDatabaseFocus.pi-focus-collapsed .pi-focus-body {
+  display:none !important;
+}
+html body .database-page .home-main-columns > #piDatabaseFocus .pi-focus-list {
+  display:flex !important; flex-direction:column !important; align-items:stretch !important;
+  flex:1 1 auto !important; gap:7px !important;
+  width:100% !important; min-height:0 !important; min-width:0 !important;
+  overflow-y:auto !important; overflow-x:hidden !important;
+  scrollbar-width:thin !important;
+}
+html body .database-page .home-main-columns > #piDatabaseFocus .pi-focus-item {
+  width:100% !important; min-width:0 !important; max-width:100% !important;
+  height:auto !important; min-height:48px !important; max-height:none !important;
+  flex:0 0 auto !important; padding:8px !important;
+  grid-template-columns:12px 17px minmax(0,1fr) 42px !important;
+}
+html body .database-page .home-main-columns > #piDatabaseFocus .pi-focus-main {
+  overflow:visible !important; max-height:none !important;
+}
+html body .database-page .home-main-columns > #piDatabaseFocus .pi-focus-item.pi-category-note .pi-radar-category-checkbox {
+  visibility:hidden; pointer-events:none;
+}
+html body .database-page .home-main-columns > .center-workspace {
+  grid-column:2 !important; grid-row:1 !important;
+  width:100% !important; height:100% !important; min-width:0 !important; min-height:0 !important;
+  max-height:100% !important; overflow:hidden !important;
+  display:grid !important; grid-template-rows:minmax(0,1fr) !important;
+}
+html body .database-page .home-main-columns > .center-workspace > .database-notes-panel {
+  height:100% !important; min-height:0 !important; max-height:100% !important;
+  overflow:hidden !important; display:grid !important;
+  grid-template-rows:33px minmax(0,1fr) !important;
+}
+html body .database-page .home-main-columns .database-notes-body {
+  height:100% !important; min-height:0 !important; max-height:100% !important;
+  overflow:hidden !important; display:grid !important;
+  grid-template-rows:minmax(0,1fr) auto auto !important;
+  gap:6px !important; padding:8px 10px 10px !important;
+}
+html body .database-page .home-main-columns .database-notes-list {
+  min-height:0 !important; max-height:none !important; height:100% !important;
+  overflow-y:auto !important; overflow-x:hidden !important;
+}
+html body .database-page .home-main-columns .database-notes-panel.is-collapsed {
+  height:37px !important; min-height:37px !important; max-height:37px !important;
+  align-self:start !important; grid-template-rows:37px !important;
+}
+/* Notes readability: readable Clarity-like sans-serif, with actual textarea foreground. */
+html body .database-page :is(.database-notes-list .task-text,
+  .pi-category-note .task-text,.pi-nested-text,.pi-category-note-editor,
+  .pi-nested-compose textarea,.database-notes-input,.day-card .task-text,
+  .day-card .day-input,.pi-focus-item .pi-focus-text,.pi-focus-note-body) {
+  font-family:"Segoe UI", "Trebuchet MS", Arial, sans-serif !important;
+  font-size:15px !important; line-height:1.52 !important;
+  color:var(--text) !important; -webkit-text-fill-color:var(--text) !important;
+  letter-spacing:0 !important;
+}
+html body .database-page .pi-category-note .task-text {font-weight:700!important;font-size:16px!important;}
+html body .database-page .pi-focus-item .pi-focus-text {font-size:15px!important;}
+html body .database-page .pi-nested-line .pi-nested-date,
+html body .database-page .pi-focus-item .pi-focus-date,
+html body .database-page .pi-compact-date-button {
+  font: 500 11px/1.35 "Segoe UI",Arial,sans-serif !important;
+  color:var(--muted) !important;
+}
+html body .database-page :is(.pi-category-note-editor,.pi-nested-compose textarea,
+  .pi-nested-text,.database-notes-entry textarea,.pi-note-creation-options select) {
+  color:var(--text) !important; -webkit-text-fill-color:var(--text) !important;
+}
+html body .database-page :is(.pi-category-note-editor,.pi-nested-compose textarea,.pi-note-creation-options select) {
+  background:color-mix(in srgb,var(--panel) 90%,var(--panel-light)) !important;
+  border-color:var(--border) !important;
+}
+html body .database-page :is(.pi-category-note-editor,.pi-nested-compose textarea,.database-notes-entry textarea)::placeholder {
+  -webkit-text-fill-color:var(--muted) !important; color:var(--muted) !important;
+}
+html body .database-page .pi-category-details-toggle {
+  font-family:"Segoe UI",Arial,sans-serif !important; font-size:12px !important;
+  color:var(--text) !important; background:var(--panel-light) !important;
+}
+html body .database-page .pi-nested-title {font-size:11px!important;color:var(--muted)!important;}
+html body .database-page .pi-category-dialog-details-option {
+  border:1px solid var(--border);border-radius:7px;padding:7px 9px;
+  background:var(--panel-light);color:var(--text);font-size:12px;
+  font-family:"Segoe UI",Arial,sans-serif;cursor:pointer;flex:0 0 auto;
+}
+html body .database-page .pi-note-creation-options select {
+  font: 500 12.5px/1.3 "Segoe UI",Arial,sans-serif!important;
+}
+/* Category note popout renders outside .database-page. */
+dialog.pi-category-dialog .pi-category-dialog-details-option {
+  border:1px solid var(--border);border-radius:7px;padding:7px 9px;
+  background:var(--panel-light);color:var(--text);font-size:12px;cursor:pointer;flex:0 0 auto;
+}
+dialog.pi-category-dialog .pi-nested-text,
+dialog.pi-category-dialog .pi-category-note-editor {
+  font: 15px/1.55 "Segoe UI",Arial,sans-serif!important;
+  color:var(--text)!important;-webkit-text-fill-color:var(--text)!important;
+}
+/* Mobile: same horizontal calendar, then Radar above Notes. */
+@media(max-width:900px) {
+  html body .database-page.page.pi-focus-layout {
+    display:flex !important; flex-direction:column !important;
+    min-height:100dvh !important; height:auto !important; max-height:none !important;
+    overflow:visible !important; gap:9px !important;
+  }
+  html body .database-page.page > .home-upcoming-panel {
+    flex:0 0 212px !important; height:212px !important;
+    max-height:212px !important; min-height:212px !important;
+    grid-template-rows:33px minmax(0,1fr) !important;
+  }
+  html body .database-page.page > .home-upcoming-panel.is-collapsed {
+    flex:0 0 36px !important; height:36px !important;
+    max-height:36px !important; min-height:36px !important;
+    grid-template-rows:36px !important;
+  }
+  html body .database-page .home-upcoming-panel .home-rail-hint {display:none;}
+  html body .database-page.page > .home-upcoming-panel .day-rail {
+    grid-auto-columns:minmax(260px, 85vw) !important;
+  }
+  html body .database-page.page > .home-main-columns.database-grid.content-shell {
+    display:flex !important; flex-direction:column !important;
+    height:auto !important; max-height:none !important; min-height:0 !important;
+    overflow:visible !important; gap:9px !important; flex:1 0 auto !important;
+  }
+  html body .database-page .home-main-columns > #piDatabaseFocus {
+    flex:0 0 auto !important; height:min(255px,36vh) !important;
+    min-height:185px !important; max-height:255px !important;
+  }
+  html body .database-page .home-main-columns > #piDatabaseFocus.pi-focus-collapsed {
+    height:37px !important; min-height:37px !important; max-height:37px !important;
+  }
+  html body .database-page .home-main-columns > .center-workspace {
+    order:2 !important; height:auto !important; max-height:none !important;
+    overflow:visible !important; display:block !important;
+  }
+  html body .database-page .home-main-columns > .center-workspace > .database-notes-panel {
+    height:auto !important; min-height:420px !important; max-height:none !important;
+    grid-template-rows:33px minmax(0,1fr) !important;
+  }
+  html body .database-page .home-main-columns .database-notes-body {
+    height:auto !important; min-height:370px !important; max-height:none !important;
+    overflow:visible !important;
+  }
+  html body .database-page .home-main-columns .database-notes-list {
+    max-height:57vh !important; min-height:160px !important;
+    height:auto !important; overflow-y:auto !important;
+  }
+  html body .database-page .home-main-columns > .center-workspace > .database-notes-panel.is-collapsed {
+    min-height:37px !important; height:37px !important; max-height:37px !important;
+  }
+}
+
+/* Overrides for the old Focus auto-sizing script. In the new left column,
+   Radar owns the full column instead of the historic 86–218px top shelf. */
+@media (min-width:901px) {
+  html body .database-page .home-main-columns > #piDatabaseFocus:not(.pi-focus-collapsed):not(.pi-panel-popout) {
+    height:100% !important; min-height:0 !important; max-height:100% !important;
+    align-self:stretch !important;
+    grid-template-rows:33px minmax(0,1fr) !important;
+  }
+}
+@media(max-width:900px) {
+  html body .database-page.page > .database-header {order:0 !important;}
+  html body .database-page.page > .home-upcoming-panel {order:1 !important;}
+  html body .database-page.page > .home-main-columns {order:2 !important;}
+  html body .database-page .home-main-columns > #piDatabaseFocus:not(.pi-focus-collapsed):not(.pi-panel-popout) {
+    height:min(255px,36vh) !important;
+    min-height:185px !important; max-height:255px !important;
+    flex:0 0 min(255px,36vh) !important;
+  }
+  html body .database-page .database-notes-list .pi-compact-item.pi-category-note {
+    grid-template-columns:16px minmax(0,1fr) auto !important;
+    grid-template-rows:auto auto !important;
+    column-gap:7px !important;
+  }
+  html body .database-page .database-notes-list .pi-compact-item.pi-category-note > .task-text {
+    width:100% !important; min-width:0 !important;
+    overflow-wrap:anywhere !important; word-break:normal !important;
+    align-self:center;
+  }
+  html body .database-page .database-notes-list .pi-compact-item.pi-category-note > .item-row-actions {
+    min-width:0 !important; justify-self:end !important;
+  }
+  html body .database-page .database-notes-list .pi-compact-item.pi-category-note > .pi-category-note-content {
+    grid-column:1/-1 !important; min-width:0 !important;
+    margin:3px 3px !important;
+  }
+  html body .database-page .pi-category-dialog-head {gap:4px !important;}
+}
+
+/* The live-panel popouts must escape their normal grid sizing. */
+html body .database-page .home-upcoming-panel.pi-panel-popout,
+html body .database-page .home-main-columns > #piDatabaseFocus.pi-panel-popout,
+html body .database-page .home-main-columns .database-notes-panel.pi-panel-popout,
+html body .database-page .home-upcoming-panel .day-card.pi-panel-popout {
+  position:fixed !important; inset:2.5dvh 2.5vw !important;
+  width:95vw !important; height:95dvh !important;
+  min-height:0 !important; max-height:none !important;
+  min-width:0 !important; max-width:none !important;
+  margin:0 !important; z-index:10000 !important;
+  overflow:hidden !important; align-self:auto !important;
+  display:grid !important;
+  grid-template-rows:42px minmax(0,1fr) !important;
+}
+html body .database-page .home-main-columns .database-notes-panel.pi-panel-popout .database-notes-body {
+  min-height:0 !important; height:100% !important;
+}
+html body .database-page .home-upcoming-panel.pi-panel-popout > .day-rail {
+  height:100% !important; min-height:0 !important; overflow-x:auto !important;
+}
+html body .database-page .home-main-columns > #piDatabaseFocus.pi-panel-popout > .pi-focus-body {
+  height:100% !important; min-height:0 !important; display:flex !important;
+}
+html body .database-page .home-upcoming-panel .day-card.pi-panel-popout {
+  grid-template-rows:42px minmax(0,1fr) auto !important;
+}
+html body .database-page .home-upcoming-panel .day-card.pi-panel-popout .day-list {
+  overflow-y:auto !important; height:100% !important;
+}
