@@ -2,9 +2,16 @@
 @media (min-width:901px) {
   .database-page .database-grid.content-shell {
     grid-template-columns: minmax(300px, 1fr) minmax(0, 1.8fr) !important;
+    align-items: start;
   }
-  .database-page .database-grid > .right-date-rail {grid-column:1;}
-  .database-page .database-grid > .center-workspace {grid-column:2;}
+  .database-page .database-grid > .right-date-rail {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .database-page .database-grid > .center-workspace {
+    grid-column: 2;
+    grid-row: 1;
+  }
 }
 /* The original top focus shelf now serves as On My Radar. */
 .database-page .database-notes-list .pi-category-note {
@@ -221,4 +228,30 @@ dialog.pi-category-dialog .pi-nested-compose button {
   color: var(--text);
   border-color: var(--teal);
   background: color-mix(in srgb, var(--teal) 10%, var(--panel));
+}
+
+
+/* OCT 24 quick follow-up: fix desktop placement + theme-safe text contrast. */
+.database-page .pi-nested-compose textarea,
+.database-page .pi-category-note-editor,
+.database-page .database-notes-entry .checklist-input,
+.database-page .pi-note-creation-options select {
+  color: var(--text) !important;
+  -webkit-text-fill-color: var(--text);
+}
+
+.database-page .pi-nested-compose textarea,
+.database-page .pi-category-note-editor {
+  background: color-mix(in srgb, var(--panel) 92%, var(--panel-light)) !important;
+  border-color: var(--border) !important;
+}
+
+.database-page .pi-nested-compose textarea::placeholder,
+.database-page .database-notes-entry .checklist-input::placeholder {
+  color: var(--faint) !important;
+}
+
+.database-page .pi-note-creation-options select {
+  background: color-mix(in srgb, var(--panel) 90%, var(--panel-light)) !important;
+  border-color: var(--border) !important;
 }
