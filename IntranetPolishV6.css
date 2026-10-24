@@ -1,0 +1,177 @@
+/* PERSONAL INTRANET V6 • shared cleanup, no changes to stored notes */
+:root { --pi-dock-space: 0px !important; }
+#piUniversalDock, .pi-universal-dock, .pi-home-capture-center,
+.pi-home-capture, [data-pi-open-inbox], .pi-home-inbox-nav {
+  display:none !important;
+}
+/* Reserve the space only once, even while sync messages change. */
+header #saveStatus.sync-status {
+  box-sizing:border-box !important;
+  width:112px !important; min-width:112px !important; max-width:112px !important;
+  flex:0 0 112px !important;
+  white-space:nowrap !important; overflow:hidden !important;
+  text-overflow:ellipsis !important;
+  text-align:center !important;
+  display:inline-block !important;
+  line-height:25px !important;
+  padding:0 7px !important;
+}
+@media(max-width:650px) {
+  header #saveStatus.sync-status {
+    width:87px !important; min-width:87px !important; max-width:87px !important;
+    flex-basis:87px !important;
+  }
+}
+/* Shorter pages after retiring the bottom dock; preserve normal content scrolling. */
+body.pi-shell-active :is(.database-page.page,.longform-page) {
+  height:100dvh !important; max-height:100dvh !important;
+}
+@media(max-width:900px) {
+  body.pi-shell-active :is(.database-page.page,.longform-page) {
+    height:auto !important; max-height:none !important;
+  }
+}
+/* Reclaim navigation space for content, without hiding any meaningful features. */
+header :is(.header-right,.aq-header-actions,.almanac-header-actions,.patterns-header-actions,.longform-header-actions,.neo-header-tools) {
+  gap:8px !important;
+}
+
+/* HOME layout: larger, reliably scrollable day cards. */
+@media(min-width:901px) {
+  html body .database-page.page.pi-focus-layout {
+    grid-template-rows:auto clamp(246px,31vh,300px) minmax(0,1fr) !important;
+  }
+}
+html body .database-page .home-upcoming-panel .day-card {
+  padding:7px !important; display:grid !important;
+  grid-template-rows:auto minmax(0,1fr) auto !important;
+  align-items:stretch !important;
+}
+html body .database-page .home-upcoming-panel .day-card .day-list {
+  display:flex !important; flex-direction:column !important;
+  flex:1 1 auto !important;
+  min-height:0 !important; max-height:none !important;
+  overflow-y:auto !important; overflow-x:hidden !important;
+  gap:5px !important;
+}
+html body .database-page .home-upcoming-panel .day-card .day-list > .checklist-item:not(.pi-category-note) {
+  display:grid !important;
+  grid-template-columns:13px 17px minmax(0,1fr) 65px auto !important;
+  width:100% !important; min-width:0 !important; max-width:none !important;
+  height:auto !important; min-height:38px !important;
+  align-items:center !important; gap:4px !important; padding:5px !important;
+}
+html body .database-page .home-upcoming-panel .day-card .day-list > .checklist-item.pi-category-note {
+  display:grid !important;
+  grid-template-columns:13px minmax(0,1fr) auto !important;
+  grid-template-rows:auto auto !important;
+  min-width:0 !important; width:100% !important;
+  align-items:center !important; padding:6px !important;
+}
+html body .database-page .home-upcoming-panel .day-card .day-list .task-text {
+  min-width:0 !important; overflow-wrap:anywhere !important;
+  font-size:13.5px !important; line-height:1.4 !important;
+}
+html body .database-page .home-upcoming-panel .day-card .day-list > .pi-category-note .pi-category-note-content {
+  grid-column:1/-1 !important; min-width:0 !important;
+  max-height:200px !important; overflow-y:auto !important;
+}
+html body .database-page .home-upcoming-panel .day-card .day-entry-row {
+  display:flex !important; width:100% !important; min-width:0 !important;
+  align-items:stretch !important; gap:6px !important;
+}
+html body .database-page .home-upcoming-panel .day-card .day-entry-row .day-input {
+  min-width:0 !important; flex:1 1 auto !important; width:auto !important;
+}
+@media(max-width:900px) {
+  html body .database-page.page > .home-upcoming-panel:not(.is-collapsed) {
+    height:270px !important; max-height:270px !important; min-height:270px !important;
+    flex:0 0 270px !important;
+  }
+  html body .database-page.page > .home-upcoming-panel.is-collapsed {
+    height:36px !important; max-height:36px !important; min-height:36px !important;
+    flex:0 0 36px !important;
+  }
+}
+/* Uniform header placement: expand first, collapse last. */
+html body .database-page :is(.pi-focus-head,.home-upcoming-panel>.panel-header,.database-notes-panel>.panel-header) {
+  display:flex !important; align-items:center !important; gap:5px !important;
+}
+html body .database-page :is(.pi-focus-head,.home-upcoming-panel>.panel-header,.database-notes-panel>.panel-header) > :is(.pi-popout-button,.pi-focus-collapse,.panel-collapse-toggle) {
+  flex:0 0 27px !important;
+  width:27px !important; height:27px !important;
+  min-width:27px !important; min-height:27px !important;
+  border:1px solid var(--border) !important;
+  border-radius:7px !important;
+  background:var(--panel-light) !important;
+  color:var(--text) !important;
+  display:inline-grid !important; place-items:center !important;
+  font-size:16px !important; padding:0 !important; margin:0 !important;
+  line-height:1 !important; cursor:pointer !important;
+}
+html body .database-page .pi-focus-head > .pi-popout-button { margin-left:auto !important; order:98 !important; }
+html body .database-page .pi-focus-head > .pi-focus-collapse { order:99 !important; }
+html body .database-page :is(.home-upcoming-panel>.panel-header,.database-notes-panel>.panel-header) > .pi-popout-button {
+  margin-left:auto !important; order:98 !important;
+}
+html body .database-page :is(.home-upcoming-panel>.panel-header,.database-notes-panel>.panel-header) > .panel-collapse-toggle {
+  order:99 !important;
+}
+html body .database-page .home-upcoming-panel .home-rail-hint {display:none!important;}
+/* Compact nested checklists, while preserving multiline auto-height and dates. */
+html body .database-page .pi-nested-checklist {gap:3px !important;}
+html body .database-page .pi-nested-line {
+  padding:2px 3px !important; row-gap:2px !important;
+  min-height:29px !important; height:auto !important;
+  align-items:center !important;
+}
+html body .database-page .pi-nested-line .pi-nested-text {
+  padding:2px 3px !important; min-height:25px !important;
+  font-size:14px !important; line-height:1.35 !important;
+  height:auto; max-height:none !important; overflow:hidden !important;
+}
+html body .database-page .pi-nested-line .pi-nested-date {
+  align-self:center !important; font-size:10px !important;
+}
+html body .database-page .pi-nested-line input[type="checkbox"] {margin-top:0!important;}
+html body .database-page .pi-nested-compose {margin-top:3px !important;}
+/* Nested item moves: unobtrusive on the line itself, full labels in menus. */
+html body .database-page .pi-nested-move-select {
+  box-sizing:border-box !important; width:62px !important; min-width:62px !important;
+  max-width:62px !important; height:24px !important;
+  font:500 10px/1.2 'Segoe UI',Arial,sans-serif !important;
+  background:var(--panel-light) !important; color:var(--text) !important;
+  border:1px solid var(--border) !important; border-radius:5px !important;
+  cursor:pointer !important; padding:1px !important;
+}
+html body .database-page .pi-category-route-select {
+  color:var(--text) !important; background:var(--panel-light) !important;
+  font:500 12px/1.3 'Segoe UI',Arial,sans-serif !important;
+  max-width:210px !important; min-width:125px !important;
+  border:1px solid var(--border) !important; border-radius:5px !important;
+  padding:5px 4px !important;
+}
+html body .database-page .pi-category-drop-target {outline:2px dashed var(--teal)!important;outline-offset:-3px;}
+/* Keep v5 popout contents comfortable even at the new panel dimensions. */
+html body .database-page .home-upcoming-panel.pi-panel-popout .day-rail {max-height:100%!important;}
+
+html body .database-page #piDatabaseFocus .pi-focus-head > .pi-focus-title {
+  flex:1 1 auto !important; min-width:0 !important;
+}
+html body .database-page #piDatabaseFocus .pi-focus-head > .pi-focus-warning[hidden] {
+  display:none !important;
+}
+html body .database-page #piDatabaseFocus .pi-focus-head > .pi-popout-button,
+html body .database-page #piDatabaseFocus .pi-focus-head > .pi-focus-collapse {
+  margin-left:0 !important;
+  flex:0 0 27px !important;
+}
+
+/* The category popout is a document-level dialog, outside the Home wrapper. */
+dialog.pi-category-dialog .pi-nested-move-select {
+  box-sizing:border-box; min-width:62px; width:62px; max-width:62px;
+  height:29px; border:1px solid var(--border); border-radius:5px;
+  background:var(--panel-light); color:var(--text);
+  font:500 11px/1.2 'Segoe UI',Arial,sans-serif;
+  cursor:pointer;
+}

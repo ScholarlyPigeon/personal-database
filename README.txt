@@ -90,3 +90,6 @@ RETIRED / ARCHIVED FEATURES (REFERENCE)
   interface; prior assignments are not deleted.
 - Redundant bottom "+N more" indicators on monthly tiles: retired in favor of
   the quiet total count near the date.
+
+
+2026-10-24: Home V6 retired the universal capture dock and header Inbox. See README-RETIRED-QUICK-CAPTURE.txt. Existing captured data remains stored.

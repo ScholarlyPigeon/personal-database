@@ -151,6 +151,9 @@
     }
   }, true);
   document.addEventListener('drop', event => {
+    // V6 category-to-category moves are handled by the dedicated category transfer layer.
+    if (event.dataTransfer?.types?.includes('application/x-pi-home-transfer') &&
+        event.target.closest?.('.database-page .pi-category-note, .database-page #databaseNotesList, .database-page #piDatabaseFocusList')) return;
     const focus = event.target.closest?.('.database-page .pi-focus-panel');
     const list = event.target.closest?.('.database-page .checklist-list, .database-page .day-list');
     if (!focus && !list) return;

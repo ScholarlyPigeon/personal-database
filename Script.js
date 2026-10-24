@@ -2428,6 +2428,7 @@ if (document.getElementById("tileGrid")) {
             categoryDialogId = id;
             const modal = document.createElement('dialog');
             modal.className='pi-category-dialog';
+            modal.dataset.piCategoryId = id;
             modal.setAttribute('aria-label','Category note editor');
             categoryDialog = modal;
             modal.addEventListener('click',event => {
@@ -2855,6 +2856,64 @@ if (document.getElementById("tileGrid")) {
         noteMode: true,
         newItemsToTop: true
     });
+
+    // V6: Move individual entries between category containers and standalone Home/Radar.
+    // Use the live Notes manager so stale-write safeguards and safety snapshots remain active.
+    // No new storage keys; each item keeps its original ID, date, createdAt and done state.
+    window.PIHomeTransferItem = (source, destination) => {
+        if (!source || !destination || !source.itemId) return false;
+        const valid = value => value === 'notes' || value === 'radar';
+        if (!valid(source.where) || !valid(destination.where)) return false;
+        if (source.where === destination.where && (source.parentId || '') === (destination.parentId || '')) return false;
+        const notes = databaseNotesManager;
+        if (!notes || !notes.isFresh?.()) return false;
+        const focusKey = 'pi-focus-now-v1';
+        let radar;
+        try { radar = JSON.parse(localStorage.getItem(focusKey) || '[]'); if (!Array.isArray(radar)) return false; }
+        catch { return false; }
+        const notesSnapshot = JSON.stringify(notes.items);
+        const focusSnapshot = localStorage.getItem(focusKey);
+        const notesDirty = source.where === 'notes' || destination.where === 'notes';
+        const radarDirty = source.where === 'radar' || destination.where === 'radar';
+        const list = where => where === 'notes' ? notes.items : radar;
+        const getContainer = (where, parentId) => {
+            const root = list(where);
+            if (!parentId) return root;
+            const parent = root.find(entry => entry.id === parentId && entry.kind === 'note');
+            if (!parent) return null;
+            if (!Array.isArray(parent.subtasks)) parent.subtasks = [];
+            return parent.subtasks;
+        };
+        const from = getContainer(source.where, source.parentId);
+        const to = getContainer(destination.where, destination.parentId);
+        if (!from || !to) return false;
+        const index = from.findIndex(entry => entry.id === source.itemId);
+        if (index < 0 || to.some(entry => entry.id === source.itemId)) return false;
+        const item = from[index];
+        // Category headers themselves do not become checklist entries.
+        if (item.kind === 'note') return false;
+        const [moved] = from.splice(index, 1);
+        to.push(moved);
+        const restoreMemory = () => {
+            notes.items.splice(0, notes.items.length, ...JSON.parse(notesSnapshot));
+            if (focusSnapshot === null) localStorage.removeItem(focusKey);
+            else localStorage.setItem(focusKey, focusSnapshot);
+            notes.render(); window.PIRefreshFocusViews?.();
+        };
+        try {
+            if (notesDirty && !notes.save(false, 'before-category-move')) {
+                restoreMemory(); return false;
+            }
+            if (radarDirty) localStorage.setItem(focusKey, JSON.stringify(radar));
+        } catch (error) {
+            console.error('Category item transfer failed; restoring saved state',error);
+            try {restoreMemory(); if (notesDirty) notes.save(false,'category-move-rollback');} catch (rollbackError) {console.error(rollbackError);}
+            return false;
+        }
+        notes.render(); window.PIRefreshFocusViews?.();
+        showSaved();
+        return true;
+    };
 
     // One safe Home -> Focus transfer, shared by touch controls and drag/drop.
     // Keep the source intact until Focus has received a copy; roll back when
@@ -7798,6 +7857,8 @@ if (document.getElementById("neopetsApp")) {
     }
 
     function injectDock() {
+        // RETIRED v6: dormant source preserved for future reactivation (README-RETIRED-QUICK-CAPTURE.txt).
+        return;
         if (currentPageId === "home" || document.getElementById("piUniversalDock")) return;
         const dock = document.createElement("div");
         dock.id = "piUniversalDock";
