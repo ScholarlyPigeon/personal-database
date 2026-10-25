@@ -5,6 +5,10 @@
   const FOCUS='pi-focus-now-v1';
   const NOTES='pi-database-notes-v1';
   const mime='application/x-pi-home-transfer';
+  const clearDragHighlights=()=>{
+    document.querySelectorAll('.pi-category-drop-target,.pi-focus-drop-target,.task-drop-target,.pi-nested-drop-target,.pi-nested-dragging').forEach(el=>
+      el.classList.remove('pi-category-drop-target','pi-focus-drop-target','task-drop-target','pi-nested-drop-target','pi-nested-dragging'));
+  };
   const parse = key => { try { const v=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(v)?v:[]; }catch{return [];} };
   const categories = () => [
     ...parse(NOTES).filter(x=>x?.kind==='note').map(x=>({where:'notes',id:x.id,label:'Notes: '+String(x.text||'Untitled').trim()})),
@@ -27,10 +31,11 @@
   const move = (from,to) => {
     if (!from || !to) return;
     const ok=window.PIHomeTransferItem?.(from,to);
-    if(!ok) { alert('Move not completed. Your original item was kept in its place.'); return; }
+    if(!ok) { clearDragHighlights(); alert('Move not completed. Your original item was kept in its place.'); return; }
     // Popup uses a live category record, but its checklist was rendered before the move.
     // Close rather than leave a stale editable copy on screen.
     document.querySelector('dialog.pi-category-dialog[open]')?.close();
+    clearDragHighlights();
     paint();
   };
   const option = (select,label,value) => select.append(new Option(label,value));
@@ -123,16 +128,19 @@
   },true);
   document.addEventListener('drop',event=>{
     if(!event.dataTransfer?.types.includes(mime))return;
+    // Clear even when this drop is delegated to the native same-category reorder.
     const to=dropDestination(event.target);
-    if(!to)return;
-    let from;try{from=JSON.parse(event.dataTransfer.getData(mime));}catch{return;}
-    // Native drag/drop handles reordering within the same list or category.
-    if(from?.parentId===to.parentId && from?.where===to.where)return;
+    let from=null;try{from=JSON.parse(event.dataTransfer.getData(mime));}catch{clearDragHighlights();return;}
+    if(!to || (from?.parentId===to.parentId && from?.where===to.where)){
+      clearDragHighlights();return;
+    }
     event.preventDefault();event.stopImmediatePropagation();
-    move(from,to);
-    document.querySelectorAll('.pi-category-drop-target').forEach(el=>el.classList.remove('pi-category-drop-target'));
+    try { move(from,to); } finally { clearDragHighlights(); }
   },true);
-  document.addEventListener('dragend',()=>document.querySelectorAll('.pi-category-drop-target').forEach(el=>el.classList.remove('pi-category-drop-target')),true);
+  document.addEventListener('dragend',clearDragHighlights,true);
+  // A drop can be consumed by an older capture handler before our drop listener.
+  // The default source node may also be removed before dragend fires.
+  document.addEventListener('drop',()=>requestAnimationFrame(clearDragHighlights),true);
   paint();
   let queued=false;
   new MutationObserver(()=>{

@@ -386,7 +386,7 @@ const THEME_USAGE_KEY = "pi-theme-usage-v1";
 /* One shared catalog keeps every page's theme menu identical. */
 const THEME_OPTIONS = [
     { value: "dark", label: "🌙 Dark Original", mode: "dark" },
-    { value: "aquarium", label: "🐠 Dark Teal Celestial Aquarium", mode: "dark" },
+    { value: "aquarium", label: "🐠 Teal celestial aquarium", mode: "dark" },
     { value: "observatory", label: "🔭 Midnight Observatory", mode: "dark" },
     { value: "nightgarden", label: "🪻 Night Garden", mode: "dark" },
     { value: "fieldnotes", label: "📓 Universal Field Notes", mode: "dark" },
@@ -2692,6 +2692,8 @@ if (document.getElementById("tileGrid")) {
                         alert("Move not completed. Your original item was kept in its table.");
                     }
                 });
+                const quickActions = document.createElement('div');
+                quickActions.className = 'pi-item-quick-actions';
                 if (isCategoryNote) {
                     const detailsVisibility = document.createElement('button');
                     detailsVisibility.type = 'button';
@@ -2706,9 +2708,12 @@ if (document.getElementById("tileGrid")) {
                             if (categoryDialog?.open) renderCategoryDialog();
                         }
                     });
-                    toolsPanel.append(detailsVisibility);
+                    quickActions.append(detailsVisibility);
                 }
-                toolsPanel.append(moveMenu, focusShortcut, archive, del);
+                archive.title = 'Archive this note';
+                del.title = 'Delete this note';
+                quickActions.append(archive,del);
+                toolsPanel.append(quickActions, moveMenu, focusShortcut);
                 toolsMenu.append(toolsSummary, toolsPanel);
                 rowActions.append(selector);
                 if (isCategoryNote) {
@@ -7124,6 +7129,7 @@ if (document.getElementById("neopetsApp")) {
     const PAGES = {
         week: { role: "PLAN", note: "", href: "Week.html", label: "This Week", icon: "◷" },
         month: { role: "PLAN", note: "", href: "Month.html", label: "This Month", icon: "▦" },
+        "next-month": { role: "PLAN", note: "", href: "NextMonth.html", label: "Next Month", icon: "📆" },
         home: { role: "FOCUS", note: "Go directly to your most useful page.", href: "Database.html", label: "Home", icon: "⌂" },
         database: { role: "FOCUS", note: "See what needs attention and where things currently stand.", href: "Database.html", label: "Home", icon: "⌂" },
         aquarium: { role: "CAPTURE", note: "Catch something before deciding what it needs to become.", href: "Aquarium.html", label: "Aquarium", icon: "🪼" },
@@ -7361,7 +7367,25 @@ if (document.getElementById("neopetsApp")) {
             saveFocus(readFocus().filter(entry => entry.id !== item.id));
             recordActivity('database', 'removed from On My Radar', item.text);
         });
-        tools.append(dateLabel, move, archive, remove);
+        const quickActions = document.createElement('div');
+        quickActions.className = 'pi-item-quick-actions';
+        if (category) {
+            const visibility = document.createElement('button');
+            visibility.type='button';visibility.className='pi-category-visibility-action';
+            visibility.textContent=item.showDetails===false ? 'Show Details':'Hide Details';
+            visibility.addEventListener('click',()=>update(live=>{live.showDetails=live.showDetails===false;}));
+            quickActions.append(visibility);
+        }
+        const archiveQuick = document.createElement('button');
+        archiveQuick.type='button'; archiveQuick.className='pi-quick-archive'; archiveQuick.textContent='↘';
+        archiveQuick.title='Archive item'; archiveQuick.setAttribute('aria-label','Archive item');
+        archiveQuick.addEventListener('click',()=>archive.click());
+        const removeQuick = document.createElement('button');
+        removeQuick.type='button'; removeQuick.className='pi-quick-delete'; removeQuick.textContent='×';
+        removeQuick.title='Remove item'; removeQuick.setAttribute('aria-label','Remove item');
+        removeQuick.addEventListener('click',()=>remove.click());
+        quickActions.append(archiveQuick,removeQuick);
+        tools.append(quickActions,dateLabel, move);
         menu.append(summary, tools); actions.append(menu);
         // Menus in a horizontal scroller must use the browser's top layer.
         // Otherwise bottom controls are clipped by Focus's scroll viewport.
@@ -7400,10 +7424,7 @@ if (document.getElementById("neopetsApp")) {
         const items = readFocus();
         list.innerHTML = "";
         if (count) { count.textContent = ''; count.hidden = true; }
-        if (warning) {
-            warning.hidden = items.length <= 5;
-            warning.textContent = items.length > 5 ? `${items.length} items · shelf is getting noisy` : "";
-        }
+        if (warning) { warning.textContent = ''; warning.hidden = true; }
         if (!items.length) {
             const empty = document.createElement("div");
             empty.className = "pi-empty-state";

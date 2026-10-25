@@ -10,7 +10,8 @@
     {id:'timeline', label:'Timeline Notes', key:'pi-reflections-notes-v1'},
     {id:'longform', label:'Longform Saved Thoughts', key:'pi-longform-state-v1'},
     {id:'week', label:'This Week Notes', key:'pi-planner-week-notes-v1'},
-    {id:'month', label:'This Month Notes', key:'pi-planner-month-'}
+    {id:'month', label:'This Month Notes', key:'pi-planner-month-'},
+    {id:'next-month', label:'Next Month Notes', key:'pi-planner-month-'}
   ];
   const storage = key => localStorage.getItem(key);
   const parse = (raw, fallback) => {
@@ -22,6 +23,11 @@
     return [d.getFullYear(), String(d.getMonth()+1).padStart(2,'0'), String(d.getDate()).padStart(2,'0')].join('-');
   };
   const monthKey = () => 'pi-planner-month-' + localDate().slice(0,7);
+  const nextMonthKey = () => {
+    const [year,month] = localDate().slice(0,7).split('-').map(Number);
+    const target = new Date(year,month,1,12);
+    return 'pi-planner-month-' + `${target.getFullYear()}-${String(target.getMonth()+1).padStart(2,'0')}`;
+  };
   const uid = () => globalThis.crypto?.randomUUID?.() || 'move-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2);
   const textOf = item => String(item.text || '').trim();
   const safeText = html => {
@@ -37,11 +43,11 @@
     if (document.getElementById('piCompass')) return 'compass';
     if (document.getElementById('piReflections')) return 'timeline';
     if (document.getElementById('longformApp')) return 'longform';
-    if (document.getElementById('plannerNotes')) return location.pathname.endsWith('Month.html') ? 'month' : 'week';
+    if (document.getElementById('plannerNotes')) return document.body.dataset.planner==='next-month' ? 'next-month' : document.body.dataset.planner==='month' ? 'month' : 'week';
     return '';
   };
   const page = sourceKind();
-  const formKey = id => id === 'month' ? monthKey() : dests.find(d=>d.id===id)?.key;
+  const formKey = id => id === 'month' ? monthKey() : id === 'next-month' ? nextMonthKey() : dests.find(d=>d.id===id)?.key;
   function getData(key, fallback) {
     const value = parse(storage(key),fallback);
     if (Array.isArray(fallback) && !Array.isArray(value)) throw new Error('Unexpected saved list format in '+key);
@@ -176,7 +182,7 @@
       } else {
         const key = source.key;
         const previous = storage(key);
-        const original = getData(key, ['home','week','month'].includes(source.scope) ? [] : null);
+        const original = getData(key, ['home','week','month','next-month'].includes(source.scope) ? [] : null);
         const arr = source.scope === 'home' ? original :
           (source.scope === 'aquarium' ? original?.cards : (Array.isArray(original) ? original : original?.entries));
         if (!Array.isArray(arr)) throw new Error('Unexpected source notes format');
@@ -332,7 +338,7 @@
         }]));
       }
       if(choices.length)sections.push(scope('Within Longform ▾',choices));
-    } else if (source.scope==='week' || source.scope==='month') {
+    } else if (source.scope==='week' || source.scope==='month' || source.scope==='next-month') {
       sections.push(scope('Within this page ▾', [['Move to top',()=>reorderPlanner(source,true)],
         ['Move to bottom',()=>reorderPlanner(source,false)]]));
     }

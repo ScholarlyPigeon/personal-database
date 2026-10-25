@@ -4,6 +4,11 @@
  const $ = id => document.getElementById(id);
  const today = () => makeLocalIsoDate();
  const month = () => today().slice(0,7);
+ const followingMonth = key => {
+   const [year, mm] = key.split('-').map(Number);
+   const date = new Date(year, mm, 1, 12);
+   return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}`;
+ };
  const read = (key, fallback=[]) => {
    const raw = localStorage.getItem(key);
    if (raw === null) return fallback;
@@ -65,7 +70,7 @@
  safe(archivePanel);
  const kind=document.body.dataset.planner;
  if(!kind)return;
- let dateStamp=today(), currentMonth=month();
+ let dateStamp=today(), currentMonth=kind==='next-month'?followingMonth(month()):month();
  const requested=new URLSearchParams(location.search).get('month');
  const historical=kind==='month'&&/^\d{4}-(0[1-9]|1[0-2])$/.test(requested||'')&&requested<month()?requested:null;
  const snapshot=historical?JSON.parse(localStorage.getItem('pi-planner-archive-'+historical)||'null'):null;
@@ -282,7 +287,7 @@
  dayDialog.addEventListener('click',e=>{if(e.target===dayDialog)dayDialog.close();});
  function renderDays(){
    document.querySelectorAll('.planner-day-input').forEach(n=>drafts.set(n.dataset.date,n.value));
-   const grid=$('plannerGrid');grid.replaceChildren();grid.classList.toggle('is-month',kind==='month');
+   const grid=$('plannerGrid');grid.replaceChildren();grid.classList.toggle('is-month',kind!=='week');
    let dates=[];
    if(kind==='week'){
      const d=new Date(dateStamp+'T12:00:00');for(let i=0;i<8;i++){dates.push(makeLocalIsoDate(d));d.setDate(d.getDate()+1);}
@@ -291,7 +296,7 @@
      $('plannerHint').textContent='Today + 7 days';
    }else{
      dates=datesOfMonth(historical||currentMonth);$('plannerRange').textContent=labelMonth(historical||currentMonth);
-     $('plannerHint').textContent=historical?'Archived month · read only':'Shared with Database';
+     $('plannerHint').textContent=historical?'Archived month · read only':kind==='next-month'?'Upcoming month · shared with calendar':'Shared with Database';
      if(historical){const a=el('a','small-button','Current month');a.href='Month.html';$('plannerHint').append(' · ',a);}
      ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach(d=>grid.append(el('div','planner-weekday',d)));
      const offset=(new Date(dates[0]+'T12:00:00').getDay()+6)%7;
@@ -304,16 +309,16 @@
     const list=el('div','planner-day-items');const entries=getDayEntries(date);
     // Month tiles are compact previews, not scrolling lists. The heading shows
     // the total item count; the pop-out shows every item in full.
-    const previewLimit=kind==='month'?2:entries.length;
+    const previewLimit=kind!=='week'?2:entries.length;
     const shown=entries.slice(0,previewLimit);
     shown.forEach(({item})=>list.append(row(item,-1,'',true,'preview')));
-    if(kind==='month' && entries.length){
+    if(kind!=='week' && entries.length){
       const count=el('span','planner-month-total',`${entries.length} item${entries.length===1?'':'s'}`);
       count.title=`${entries.length} items on this date`;
       h.append(count);
     }
     card.append(list);
-    if(kind==='month'){
+    if(kind!=='week'){
       card.append(el('span','planner-mobile-count',entries.length?`${entries.length} item${entries.length===1?'':'s'}`:''));
     }
      if(!readonly){const plus=button('+','Add item for '+date,()=>openDay(date));plus.classList.add('planner-add-toggle');card.append(plus);}
@@ -321,7 +326,7 @@
      card.addEventListener('click',activate);card.setAttribute('tabindex','0');card.setAttribute('role','button');card.setAttribute('aria-label','Open '+date+' day details');card.addEventListener('keydown',e=>{if(e.target===card&&(e.key==='Enter'||e.key===' ')){e.preventDefault();openDay(date);}});
      grid.append(card);
    });
-   if(kind==='month'){while((grid.children.length-7)%7)grid.append(el('div','planner-blank'));grid.style.setProperty('--month-weeks',(grid.children.length-7)/7);}
+   if(kind!=='week'){while((grid.children.length-7)%7)grid.append(el('div','planner-blank'));grid.style.setProperty('--month-weeks',(grid.children.length-7)/7);}
  }
  function restoreDraft(){ $('plannerNoteInput').value=historical?(snapshot?.draft||''):localStorage.getItem(draftKey())||''; }
  $('plannerComposer').hidden=!!historical;
@@ -330,7 +335,7 @@
  function refreshDate(){safe(()=>{
    if(today()===dateStamp)return;
    // Draft is already saved under the old month's key before rollover.
-   archiveExpiredDayLists();archiveMonths();dateStamp=today();currentMonth=month();restoreDraft();renderNotes();renderDays();
+   archiveExpiredDayLists();archiveMonths();dateStamp=today();currentMonth=kind==='next-month'?followingMonth(month()):month();restoreDraft();renderNotes();renderDays();
  });}
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshDate();});
  setInterval(refreshDate,30000);
