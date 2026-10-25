@@ -355,3 +355,69 @@ dialog.pi-category-dialog .pi-nested-remove {
   padding-left:4px !important;
   line-height:1 !important;
 }
+
+
+/* V9 follow-up: restore stacked category rows, align left starts, polish collapsed panels. */
+html body .database-page #piDatabaseFocus .pi-focus-item,
+html body .database-page .database-notes-list .pi-compact-item {
+  padding-left:10px !important;
+}
+html body .database-page #piDatabaseFocus .pi-focus-item .pi-focus-drag,
+html body .database-page .database-notes-list .pi-compact-item .drag-handle {
+  justify-self:start !important;
+}
+
+/* Radar category notes should keep the title on its own row and nested items beneath it. */
+html body .database-page #piDatabaseFocus .pi-focus-item.pi-category-note {
+  grid-template-columns:12px 16px minmax(0,1fr) auto !important;
+  grid-template-rows:auto auto !important;
+  align-items:start !important;
+}
+html body .database-page #piDatabaseFocus .pi-focus-item.pi-category-note > .pi-focus-main {
+  grid-column:3 !important;
+  grid-row:1 !important;
+  display:block !important;
+  min-width:0 !important;
+}
+html body .database-page #piDatabaseFocus .pi-focus-item.pi-category-note > .pi-focus-actions {
+  grid-column:4 !important;
+  grid-row:1 !important;
+  align-self:start !important;
+}
+html body .database-page #piDatabaseFocus .pi-focus-item.pi-category-note .pi-focus-detail {
+  display:block !important;
+  margin-top:6px !important;
+}
+html body .database-page #piDatabaseFocus .pi-focus-item.pi-category-note .pi-focus-headline {
+  display:flex !important;
+  align-items:center !important;
+  gap:4px !important;
+}
+
+/* Give Radar the same themed header treatment as the other Home panels. */
+html body .database-page #piDatabaseFocus {
+  border-radius:10px !important;
+  overflow:hidden !important;
+}
+html body .database-page #piDatabaseFocus > .pi-focus-head {
+  min-height:40px !important;
+  padding:7px 10px !important;
+  border-bottom:1px solid var(--border) !important;
+  background: var(--header-bg, var(--panel-light)) !important;
+  color: var(--header-text, var(--text)) !important;
+}
+html body .database-page #piDatabaseFocus > .pi-focus-head .pi-focus-title,
+html body .database-page #piDatabaseFocus > .pi-focus-head .pi-focus-count {
+  color: inherit !important;
+}
+
+/* Collapsed panel bodies should leave a touch of space beneath the header controls. */
+html body .database-page :is(.home-upcoming-panel,.database-notes-panel,#piDatabaseFocus).is-collapsed {
+  padding-bottom:6px !important;
+}
+html body .database-page :is(.home-upcoming-panel,.database-notes-panel,#piDatabaseFocus).is-collapsed > :is(.day-rail,.database-notes-body,.pi-focus-body) {
+  display:none !important;
+}
+html body .database-page :is(.home-upcoming-panel,.database-notes-panel,#piDatabaseFocus).is-collapsed > :is(.panel-header,.pi-focus-head) {
+  margin-bottom:3px !important;
+}
