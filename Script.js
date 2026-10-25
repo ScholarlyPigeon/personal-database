@@ -15,7 +15,8 @@ window.PIHomeNestedChecklist = function(item, applyChange) {
     root.className = 'pi-nested-checklist';
     const title = document.createElement('div');
     title.className = 'pi-nested-title';
-    title.textContent = 'Checklist';
+    title.textContent = '';
+    title.setAttribute('aria-hidden', 'true');
     root.append(title);
     let dragging = null;
     function reorder(childId, targetId, offset = 0) {
@@ -2711,13 +2712,13 @@ if (document.getElementById("tileGrid")) {
                 toolsMenu.append(toolsSummary, toolsPanel);
                 rowActions.append(selector);
                 if (isCategoryNote) {
-                    rowActions.append(noteToggle);
                     const pop = document.createElement('button');
                     pop.type = 'button'; pop.className = 'pi-category-popout-button';
                     pop.textContent = '⤢'; pop.title = 'Pop out category note';
                     pop.setAttribute('aria-label',`Pop out ${item.text || 'category note'}`);
                     pop.addEventListener('click', () => openCategoryDialog(item.id));
                     rowActions.append(pop);
+                    rowActions.append(noteToggle);
                 }
                 rowActions.append(toolsMenu);
 
@@ -7382,8 +7383,14 @@ if (document.getElementById("neopetsApp")) {
         const value = item.date || item.createdAt?.slice(0,10) || '';
         visibleDate.textContent = (window.PIHomeAddedDate?.(item) || window.PICompactDate?.(value) || '—').replace(/^(?:Added|Date added)\s*:?[ \t]*/i, '');
         visibleDate.title = 'Date this item was added (for older items, saved date where available)';
-        if (!category) actions.append(visibleDate);
-        row.append(drag, category ? categoryToggle : check, titleArea, actions);
+        if (!category) {
+            actions.append(visibleDate);
+        } else if (categoryToggle) {
+            actions.prepend(categoryToggle);
+        }
+        const leadingControl = category ? Object.assign(document.createElement('span'), { className: 'pi-focus-control-spacer' }) : check;
+        if (category) leadingControl.setAttribute('aria-hidden', 'true');
+        row.append(drag, leadingControl, titleArea, actions);
         if (categoryDetail) row.append(categoryDetail);
         return row;
     }
@@ -7392,7 +7399,7 @@ if (document.getElementById("neopetsApp")) {
         if (!list) return;
         const items = readFocus();
         list.innerHTML = "";
-        if (count) count.textContent = `${items.filter(item => !item.done).length} active`;
+        if (count) { count.textContent = ''; count.hidden = true; }
         if (warning) {
             warning.hidden = items.length <= 5;
             warning.textContent = items.length > 5 ? `${items.length} items · shelf is getting noisy` : "";

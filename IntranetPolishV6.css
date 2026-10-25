@@ -489,3 +489,117 @@ html body .database-page .home-main-columns > .center-workspace > .database-note
     flex:0 0 48px !important;
   }
 }
+
+
+/* V11 readability and category-control cleanup. */
+html body, html body button, html body input, html body select, html body textarea {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Clarity-like larger standard headings across pages/themes. */
+html body :is(.page-header h1, .panel-title, .panel-title strong, .panel-header .panel-title, .pi-focus-title, .pi-focus-title strong, .longform-page h2, .page h2.section-title) {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif !important;
+  font-size: 1.12rem !important;
+  line-height: 1.25 !important;
+  letter-spacing: 0 !important;
+}
+
+/* Larger, cleaner note/category text across the intranet. */
+html body :is(.checklist-item, .task-text, .pi-focus-text, .pi-focus-note-body, .pi-nested-text, .pi-category-note-editor, .checklist-input, .board-tile, .day-card, .longform-entry, .timeline-card, .note-card, .almanac-card, .calendar-note) {
+  font-size: 15px !important;
+  line-height: 1.4 !important;
+}
+html body :is(.page-subtitle, .panel-subtitle, .pi-focus-date, .pi-item-date, .pi-nested-date, .timeline-date, .meta, .muted) {
+  font-size: 11px !important;
+}
+
+/* Hide nested checklist label row entirely. */
+html body .pi-nested-title {
+  display: none !important;
+}
+html body .pi-nested-checklist {
+  padding-top: 2px !important;
+}
+
+/* Category-note toggles on Home Notes should live on the right and match header controls. */
+html body .database-page .database-notes-list .pi-category-note .item-row-actions {
+  display:flex !important;
+  align-items:center !important;
+  justify-content:flex-end !important;
+  gap:6px !important;
+}
+html body .database-page .database-notes-list .pi-category-note .pi-note-open,
+html body .database-page #piDatabaseFocus .pi-focus-expand {
+  display:inline-grid !important;
+  place-items:center !important;
+  width:27px !important;
+  height:27px !important;
+  min-width:27px !important;
+  min-height:27px !important;
+  padding:0 !important;
+  border:1px solid color-mix(in srgb, var(--border) 90%, transparent) !important;
+  border-radius:7px !important;
+  background:color-mix(in srgb, var(--panel-light) 78%, transparent) !important;
+  color:var(--text) !important;
+  font-weight:800 !important;
+  font-size:18px !important;
+  line-height:1 !important;
+  cursor:pointer !important;
+}
+html body .database-page .database-notes-list .pi-category-note .pi-note-open:hover,
+html body .database-page .database-notes-list .pi-category-note .pi-note-open:focus-visible,
+html body .database-page #piDatabaseFocus .pi-focus-expand:hover,
+html body .database-page #piDatabaseFocus .pi-focus-expand:focus-visible {
+  color:var(--text) !important;
+  border-color:var(--teal) !important;
+  background:color-mix(in srgb,var(--teal) 12%,var(--panel)) !important;
+  outline:none !important;
+}
+
+/* Radar count hidden and title row stays clean. */
+html body .database-page .pi-focus-count[hidden] {
+  display:none !important;
+}
+
+/* Radar category collapse button belongs on the right; keep left column aligned with standalone rows. */
+html body .database-page #piDatabaseFocus .pi-focus-control-spacer {
+  display:block !important;
+  width:16px !important;
+  height:16px !important;
+}
+html body .database-page #piDatabaseFocus .pi-focus-item.pi-category-note {
+  grid-template-columns:12px 18px minmax(0,1fr) auto !important;
+}
+html body .database-page #piDatabaseFocus .pi-focus-item.pi-category-note > .pi-focus-main {
+  grid-column:3 !important;
+  grid-row:1 !important;
+}
+html body .database-page #piDatabaseFocus .pi-focus-item.pi-category-note > .pi-focus-actions {
+  grid-column:4 !important;
+  grid-row:1 !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:flex-end !important;
+  gap:6px !important;
+}
+html body .database-page #piDatabaseFocus .pi-focus-item.pi-category-note > .pi-focus-detail {
+  grid-column:1 / -1 !important;
+  grid-row:2 !important;
+}
+
+/* On My Radar header spacing and standard theme header treatment. */
+html body .database-page #piDatabaseFocus > .pi-focus-head {
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  gap:10px !important;
+}
+
+/* Collapsed panels need a little breathing room below the button line. */
+html body .database-page :is(.home-upcoming-panel,.database-notes-panel,#piDatabaseFocus).is-collapsed {
+  min-height: 48px !important;
+  padding-bottom: 8px !important;
+}
+html body .database-page :is(.home-upcoming-panel,.database-notes-panel,#piDatabaseFocus).is-collapsed > :is(.panel-header,.pi-focus-head) {
+  margin-bottom: 6px !important;
+}
