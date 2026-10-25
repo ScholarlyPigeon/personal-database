@@ -1,0 +1,21 @@
+/* V12: smaller editable title hotspots, larger clickable header surfaces. */
+body :is(.panel-header,.pi-focus-head,.aq-panel-head,.aq-category-head,.longform-saved-section-head,
+  .pi-notes-section-head,.longform-library-head,.longform-composer-head,.neo-panel-heading,
+  .neo-dailies-head,.almanac-panel-head,.archive-v2-panel-head)
+  :is([contenteditable="true"],[contenteditable=""]) {
+  flex:0 1 auto !important;
+  max-width:min(34ch, 48%) !important;
+  min-width:0 !important;
+  overflow-wrap:anywhere;
+}
+body :is(.panel-header,.pi-focus-head,.aq-panel-head,.aq-category-head,.longform-saved-section-head,
+  .pi-notes-section-head,.longform-library-head,.longform-composer-head,.neo-panel-heading,
+  .neo-dailies-head,.almanac-panel-head,.archive-v2-panel-head,.planner-category-head)[data-pi-header-click-bound="1"] {
+  cursor:pointer;
+}
+body :is(.panel-header,.pi-focus-head,.aq-category-head,.longform-saved-section-head,.planner-category-head)[data-pi-header-click-bound="1"]:focus-visible {
+  outline:2px solid var(--teal);outline-offset:-2px;
+}
+body :is(.panel-header,.pi-focus-head,.aq-category-head,.longform-saved-section-head,.planner-category-head)
+  :is(button,[contenteditable],textarea,input,select) {cursor:auto;}
+body :is(.panel-header,.pi-focus-head,.aq-category-head,.longform-saved-section-head,.planner-category-head) button {cursor:pointer;}

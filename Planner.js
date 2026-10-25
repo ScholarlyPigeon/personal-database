@@ -98,6 +98,125 @@
  }
  document.addEventListener('pointerdown',event=>{if(!event.target.closest('.planner-item-actions,.planner-more'))closeActionMenus();});
  document.addEventListener('keydown',event=>{if(event.key==='Escape')closeActionMenus();});
+ // Home category notes are stored directly in pi-calendar-day-YYYY-MM-DD.
+ // The planner edits those same records, never makes separate copies.
+ const stamp = record => {
+   if(record?.createdAt) {
+     const d=new Date(record.createdAt);
+     if(!Number.isNaN(d.getTime())) return [String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0'),String(d.getFullYear()).slice(-2)].join('/');
+   }
+   const m=String(record?.date||'').match(/^(\d{4})-(\d\d)-(\d\d)/);
+   return m?`${m[2]}/${m[3]}/${m[1].slice(-2)}`:'';
+ };
+ const autoHeight = field => {field.style.height='auto';field.style.height=`${field.scrollHeight+2}px`;};
+ function categoryRow(item,index,key,readonly){
+   const wrap=el('section','planner-category'+(item.expanded===false?' is-closed':''));
+   const head=el('div','planner-category-head');
+   const name=el('textarea','planner-category-name');
+   name.rows=1;name.value=item.text||'';name.readOnly=readonly;
+   name.setAttribute('aria-label','Category name');
+   name.addEventListener('input',()=>autoHeight(name));
+   name.addEventListener('change',()=>safe(()=>{
+     if(readonly||!name.value.trim())return;
+     updateList(key,index,items=>{items[index].text=name.value.trim();});
+   }));
+   head.append(name);
+   const toggle=button(item.expanded===false?'▸':'▾','Expand or collapse category',()=>{
+     if(readonly){wrap.classList.toggle('is-closed');toggle.textContent=wrap.classList.contains('is-closed')?'▸':'▾';toggle.setAttribute('aria-expanded',String(!wrap.classList.contains('is-closed')));return;}
+     updateList(key,index,items=>{items[index].expanded=items[index].expanded===false;});
+   });
+   toggle.classList.add('planner-category-toggle');
+   toggle.setAttribute('aria-expanded',String(item.expanded!==false));
+   head.append(toggle);
+   if(!readonly){
+     const menu=el('details','planner-category-menu');
+     const trigger=el('summary','','⋮');trigger.title='Category options';
+     trigger.setAttribute('aria-label','Category options');
+     const options=el('div','planner-category-menu-actions');
+     options.append(button(item.showDetails===false?'Show Details':'Hide Details','Show or hide the category Details section',()=>{
+       menu.open=false;
+       updateList(key,index,items=>{items[index].showDetails=items[index].showDetails===false;});
+     }));
+     menu.append(trigger,options);head.append(menu);
+   }
+   wrap.append(head);
+   const content=el('div','planner-category-content');
+   if(item.expanded===false)content.hidden=true;
+   wrap.append(content);
+   const fold=el('div','planner-category-details');
+   if(item.showDetails!==false){
+     const detailsToggle=button(item.detailsExpanded===false?'▸ Details':'▾ Details','Show or collapse category details',()=>{
+       if(readonly){fold.classList.toggle('is-folded');detailsToggle.textContent=fold.classList.contains('is-folded')?'▸ Details':'▾ Details';return;}
+       updateList(key,index,items=>{items[index].detailsExpanded=items[index].detailsExpanded===false;});
+     });
+     detailsToggle.classList.add('planner-details-toggle');
+     fold.append(detailsToggle);
+     if(item.detailsExpanded===false)fold.classList.add('is-folded');
+     const details=el('textarea','planner-details-input');
+     details.rows=2;details.value=item.details||'';details.readOnly=readonly;details.placeholder='Add details to this category…';
+     details.setAttribute('aria-label','Freeform category details');
+     details.addEventListener('input',()=>autoHeight(details));
+     details.addEventListener('change',()=>safe(()=>{if(!readonly)updateList(key,index,items=>{items[index].details=details.value;});}));
+     fold.append(details);content.append(fold);
+     requestAnimationFrame(()=>autoHeight(details));
+   }
+   const list=el('div','planner-category-checklist');
+   const subtasks=Array.isArray(item.subtasks)?item.subtasks:[];
+   let movedId=null;
+   subtasks.forEach((sub,subindex)=>{
+     const line=el('div','planner-category-line'+(sub.done?' is-done':''));
+     const drag=el('span','planner-category-drag','⋮⋮');drag.title='Drag to reorder checklist item';
+     drag.setAttribute('aria-label',drag.title);drag.draggable=!readonly;
+     drag.ondragstart=e=>{if(readonly)return;movedId=sub.id;e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',sub.id);};
+     drag.ondragend=()=>{movedId=null;};
+     line.ondragover=e=>{if(movedId&&movedId!==sub.id){e.preventDefault();e.dataTransfer.dropEffect='move';}};
+     line.ondrop=e=>{if(readonly||!movedId||movedId===sub.id)return;e.preventDefault();e.stopPropagation();
+       const sourceId=movedId;movedId=null;
+       const after=e.clientY>line.getBoundingClientRect().top+line.getBoundingClientRect().height/2;
+       safe(()=>updateList(key,index,items=>{
+         const entries=items[index].subtasks||[];
+         const from=entries.findIndex(i=>i.id===sourceId),to=entries.findIndex(i=>i.id===sub.id);
+         if(from<0||to<0)return;
+         const [entry]=entries.splice(from,1);
+         const dest=entries.findIndex(i=>i.id===sub.id);
+         entries.splice(dest+(after?1:0),0,entry);
+       }));
+     };
+     const box=el('input');box.type='checkbox';box.checked=!!sub.done;box.disabled=readonly;
+     box.setAttribute('aria-label','Complete '+(sub.text||'checklist item'));
+     box.onchange=()=>safe(()=>updateList(key,index,items=>{const target=(items[index].subtasks||[]).find(x=>x.id===sub.id);if(target)target.done=box.checked;}));
+     const field=el('textarea','planner-category-line-text');field.rows=1;field.value=sub.text||'';field.readOnly=readonly;
+     field.setAttribute('aria-label','Checklist item text');field.addEventListener('input',()=>autoHeight(field));
+     field.addEventListener('change',()=>safe(()=>{if(!readonly)updateList(key,index,items=>{const target=(items[index].subtasks||[]).find(x=>x.id===sub.id);if(target)target.text=field.value;});}));
+     const date=el('span','planner-category-line-date',stamp(sub)||'—');date.title=stamp(sub)?'Date added':'Date not recorded';
+     line.append(drag,box,field,date);
+     if(!readonly)line.append(button('×','Delete checklist item',()=>{
+       if(!confirm('Delete this checklist item?'))return;
+       updateList(key,index,items=>{items[index].subtasks=(items[index].subtasks||[]).filter(x=>x.id!==sub.id);});
+     }));
+     list.append(line);
+     requestAnimationFrame(()=>autoHeight(field));
+   });
+   content.append(list);
+   if(!readonly){
+     const addForm=el('form','planner-category-add');
+     const field=el('textarea');field.rows=1;field.placeholder='Add a checklist item…';
+     field.setAttribute('aria-label','New category checklist item');
+     field.addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();addForm.requestSubmit();}});
+     const add=el('button','planner-action','+ Add');add.type='submit';
+     addForm.append(field,add);
+     addForm.onsubmit=e=>{e.preventDefault();e.stopPropagation();safe(()=>{
+       const text=field.value.trim();if(!text)return;
+       updateList(key,index,items=>{
+         if(!Array.isArray(items[index].subtasks))items[index].subtasks=[];
+         items[index].subtasks.push({id:archiveId('sub'),text,done:false,date:today(),createdAt:new Date().toISOString()});
+       });
+     });};
+     content.append(addForm);
+   }
+   requestAnimationFrame(()=>autoHeight(name));
+   return wrap;
+ }
  function row(item,index,key,readonly=false,mode='full'){
    const r=el('div','planner-item'+(item.done?' is-done':''));
    if(mode==='preview'){
@@ -105,6 +224,7 @@
      r.append(el('span','planner-item-text',item.text));
      return r;
    }
+   if(item.kind==='note')return categoryRow(item,index,key,readonly);
    if(item.checkable!==false){const c=el('input');c.type='checkbox';c.checked=!!item.done;c.disabled=readonly;c.setAttribute('aria-label','Complete: '+item.text);c.onchange=()=>safe(()=>updateList(key,index,a=>{a[index].done=c.checked;}));r.append(c);}
    const content=el('div','planner-item-text',item.text);r.append(content);
    if(readonly)return r;
@@ -135,8 +255,11 @@
  function makeDayForm(date){
    const form=el('form','planner-day-form is-open');const input=el('textarea','planner-day-input');input.rows=2;input.dataset.date=date;input.setAttribute('aria-label','Add item for '+date);input.placeholder='Write an item…';input.value=drafts.get(date)??localStorage.getItem('pi-planner-day-draft-'+date)??'';
    input.oninput=()=>safe(()=>{drafts.set(date,input.value);localStorage.setItem('pi-planner-day-draft-'+date,input.value);});
-   const add=el('button','planner-action planner-submit-add','+');add.type='submit';add.title='Save item';add.setAttribute('aria-label','Save item for '+date);form.append(input,add);
-   form.onsubmit=e=>{e.preventDefault();safe(()=>{if(!input.value.trim())return;const key='pi-calendar-day-'+date,a=read(key);a.push({id:archiveId('task'),text:input.value.trim(),done:false});write(key,a);input.value='';drafts.delete(date);localStorage.removeItem('pi-planner-day-draft-'+date);renderDays();if(dayDialog.open)fillDayDialog();showSaved();});};
+   const kindPicker=el('select','planner-day-kind');
+   kindPicker.setAttribute('aria-label','Add checklist line or category note');
+   kindPicker.append(new Option('Checklist line','task'),new Option('Category note','note'));
+   const add=el('button','planner-action planner-submit-add','+');add.type='submit';add.title='Save item';add.setAttribute('aria-label','Save item for '+date);form.append(kindPicker,input,add);
+   form.onsubmit=e=>{e.preventDefault();safe(()=>{if(!input.value.trim())return;const key='pi-calendar-day-'+date,a=read(key);a.push({id:archiveId('task'),text:input.value.trim(),done:false,date:date,createdAt:new Date().toISOString(),...(kindPicker.value==='note'?{kind:'note',expanded:true,details:'',subtasks:[],showDetails:true}:{} )});write(key,a);input.value='';drafts.delete(date);localStorage.removeItem('pi-planner-day-draft-'+date);renderDays();if(dayDialog.open)fillDayDialog();showSaved();});};
    return form;
  }
  function fillDayDialog(){

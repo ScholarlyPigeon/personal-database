@@ -1,0 +1,93 @@
+/* V12: The weekly/monthly day popout edits Home's canonical category notes. */
+.planner-day-dialog .planner-category {
+  border:1px solid var(--border); border-radius:9px; margin:0 0 9px;
+  background:color-mix(in srgb,var(--panel-light) 58%,var(--panel));
+  color:var(--text); min-width:0; overflow:hidden;
+}
+.planner-day-dialog .planner-category-head {
+  display:flex; align-items:center; gap:8px; padding:7px 9px;
+  background:color-mix(in srgb,var(--panel-light) 82%,var(--panel));
+  cursor:pointer;
+}
+.planner-day-dialog .planner-category-name {
+  flex:0 1 34ch; width:auto; max-width:55%; margin-right:auto; min-width:0; min-height:26px; height:auto; padding:4px 6px;
+  font:700 15px/1.35 'Segoe UI',Arial,sans-serif; color:var(--text);
+  background:transparent; border:1px solid transparent; border-radius:5px;
+  overflow:hidden; resize:none; overflow-wrap:anywhere;
+}
+.planner-day-dialog .planner-category-name:focus-visible {outline:1px solid var(--teal);}
+.planner-day-dialog .planner-category-toggle,
+.planner-day-dialog .planner-details-toggle {
+  display:inline-grid; place-items:center; flex:0 0 auto;
+  min-width:27px; min-height:27px; border:1px solid var(--border); border-radius:7px;
+  background:var(--panel-light); color:var(--text); padding:0 6px;
+  cursor:pointer; font:700 17px/1 'Segoe UI',Arial,sans-serif;
+}
+.planner-day-dialog .planner-category-content {padding:8px 10px 10px;min-width:0;display:grid;gap:9px;}
+.planner-day-dialog .planner-category.is-closed .planner-category-content {display:none;}
+.planner-day-dialog .planner-category-details {display:grid;gap:6px;min-width:0;}
+.planner-day-dialog .planner-details-toggle {justify-content:start; width:100%; font-size:12px; padding:5px 8px;}
+.planner-day-dialog .planner-category-details.is-folded .planner-details-input {display:none;}
+.planner-day-dialog .planner-details-input {
+  width:100%;box-sizing:border-box;min-height:58px; max-height:none; resize:none;
+  padding:8px; border:1px solid var(--border); border-radius:7px;
+  background:color-mix(in srgb,var(--panel) 89%,var(--panel-light));
+  color:var(--text); font:400 14px/1.5 'Segoe UI',Arial,sans-serif;overflow:hidden;
+}
+.planner-day-dialog .planner-details-input::placeholder {color:var(--muted);}
+.planner-day-dialog .planner-category-checklist {display:grid;gap:3px; min-width:0;}
+.planner-day-dialog .planner-category-line {
+  display:grid;grid-template-columns:14px 17px minmax(0,1fr) auto auto;
+  gap:5px;align-items:center;min-width:0; padding:3px 0;
+  border-bottom:1px solid color-mix(in srgb,var(--border) 35%,transparent);
+}
+.planner-day-dialog .planner-category-line input[type=checkbox] {margin:0;align-self:center;}
+.planner-day-dialog .planner-category-drag {font-size:13px;color:var(--muted);cursor:grab;user-select:none;}
+.planner-day-dialog .planner-category-line-text {
+  width:100%;min-width:0;min-height:24px;height:auto;max-height:none;overflow:hidden;
+  resize:none;border:1px solid transparent;border-radius:5px;
+  color:var(--text);background:transparent;font:400 15px/1.4 'Segoe UI',Arial,sans-serif;
+  padding:2px 3px;box-sizing:border-box;overflow-wrap:anywhere;
+}
+.planner-day-dialog .planner-category-line-text:focus-visible {outline:1px solid var(--teal);}
+.planner-day-dialog .planner-category-line.is-done .planner-category-line-text {text-decoration:line-through;opacity:.65;}
+.planner-day-dialog .planner-category-line-date {font-size:11px;color:var(--muted);white-space:nowrap;}
+.planner-day-dialog .planner-category-line .planner-action {padding:0 4px;min-width:22px;min-height:26px;}
+.planner-day-dialog .planner-category-add {display:flex;align-items:start;gap:6px;min-width:0;}
+.planner-day-dialog .planner-category-add textarea {
+  flex:1;min-width:0;min-height:38px;border:1px solid var(--border);border-radius:6px;
+  color:var(--text);background:var(--panel);padding:7px;font:400 14px/1.4 'Segoe UI',Arial,sans-serif;
+}
+.planner-day-dialog .planner-category-add button {flex:0 0 auto; min-height:37px; padding:0 10px;}
+.planner-day-dialog .planner-category-details-visibility {
+  background:transparent;color:var(--muted);border:0;font-size:11px;justify-self:start;padding:2px 4px;
+}
+.planner-day-dialog .planner-day-kind {flex:0 0 132px;max-width:132px;min-width:90px;
+  border:1px solid var(--border);border-radius:6px;color:var(--text);
+  background:var(--panel-light);padding:8px 3px;font-size:12px;}
+.planner-day-dialog .planner-dialog-list {min-height:70px;min-width:0;}
+@media(max-width:600px){
+  .planner-day-dialog .planner-day-kind {flex:0 1 95px;max-width:95px;font-size:11px;}
+  .planner-day-dialog .planner-category-content {padding:7px 6px;}
+  .planner-day-dialog .planner-category-line {grid-template-columns:12px 16px minmax(0,1fr) auto auto;gap:3px;}
+  .planner-day-dialog .planner-category-line-date {font-size:10px;}
+  .planner-day-dialog .planner-category-add button {padding:0 6px;}
+}
+
+/* Home-like category options menu lives beside the collapse arrow. */
+.planner-day-dialog .planner-category-menu {position:relative;flex:0 0 auto;}
+.planner-day-dialog .planner-category-menu > summary {
+  display:grid;place-items:center;list-style:none;cursor:pointer;
+  min-width:27px;min-height:27px;padding:0 3px;border-radius:6px;
+  border:1px solid var(--border);background:var(--panel-light);color:var(--text);
+  font:600 18px/1 'Segoe UI',Arial,sans-serif;
+}
+.planner-day-dialog .planner-category-menu > summary::marker {content:'';}
+.planner-day-dialog .planner-category-menu > summary::-webkit-details-marker {display:none;}
+.planner-day-dialog .planner-category-menu-actions {
+  position:absolute;z-index:75;right:0;top:calc(100% + 3px);padding:5px;
+  border:1px solid var(--border);border-radius:8px;min-width:120px;
+  box-shadow:var(--shadow);background:var(--panel);
+}
+.planner-day-dialog .planner-category-menu-actions button {width:100%;text-align:left;white-space:nowrap;padding:5px 7px;}
+.planner-day-dialog .planner-category:has(.planner-category-menu[open]) {position:relative;z-index:60;overflow:visible;}
