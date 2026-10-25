@@ -403,21 +403,89 @@ html body .database-page #piDatabaseFocus > .pi-focus-head {
   min-height:40px !important;
   padding:7px 10px !important;
   border-bottom:1px solid var(--border) !important;
-  background: var(--header-bg, var(--panel-light)) !important;
-  color: var(--header-text, var(--text)) !important;
-}
-html body .database-page #piDatabaseFocus > .pi-focus-head .pi-focus-title,
-html body .database-page #piDatabaseFocus > .pi-focus-head .pi-focus-count {
-  color: inherit !important;
 }
 
 /* Collapsed panel bodies should leave a touch of space beneath the header controls. */
-html body .database-page :is(.home-upcoming-panel,.database-notes-panel,#piDatabaseFocus).is-collapsed {
-  padding-bottom:6px !important;
+
+
+/* V10: markup-backed category stacking, matching themed headers, visible collapsed footer. */
+/* Full-width category contents are their own row, never a side column. */
+html body .database-page .home-main-columns #piDatabaseFocus .pi-focus-item.pi-category-note {
+  display:grid !important;
+  grid-template-columns:12px 17px minmax(0,1fr) auto !important;
+  grid-template-rows:auto auto !important;
+  align-items:center !important;
+  gap:5px !important;
 }
-html body .database-page :is(.home-upcoming-panel,.database-notes-panel,#piDatabaseFocus).is-collapsed > :is(.day-rail,.database-notes-body,.pi-focus-body) {
+html body .database-page .home-main-columns #piDatabaseFocus .pi-focus-item.pi-category-note > .pi-focus-drag {
+  grid-row:1 !important; grid-column:1 !important; align-self:center !important;
+}
+html body .database-page .home-main-columns #piDatabaseFocus .pi-focus-item.pi-category-note > .pi-focus-expand {
+  grid-row:1 !important; grid-column:2 !important;
+  padding:0 !important; margin:0 !important; width:17px !important;
+  justify-self:center !important; align-self:center !important;
+}
+html body .database-page .home-main-columns #piDatabaseFocus .pi-focus-item.pi-category-note > .pi-focus-main {
+  grid-row:1 !important; grid-column:3 !important;
+  min-width:0 !important; display:block !important; overflow:visible !important;
+}
+html body .database-page .home-main-columns #piDatabaseFocus .pi-focus-item.pi-category-note > .pi-focus-actions {
+  grid-row:1 !important; grid-column:4 !important; align-self:center !important;
+  display:flex !important; align-items:center !important; justify-content:flex-end !important;
+}
+html body .database-page .home-main-columns #piDatabaseFocus .pi-focus-item.pi-category-note > .pi-focus-detail {
+  grid-row:2 !important; grid-column:1/-1 !important;
+  margin:4px 0 0 !important; padding:7px 0 0 !important;
+  border-top:1px solid var(--border) !important;
+  min-width:0 !important; width:100% !important;
+}
+html body .database-page .home-main-columns #piDatabaseFocus .pi-focus-item.pi-category-note .pi-nested-checklist {
+  width:100% !important; min-width:0 !important;
+}
+/* Notes headings get an invisible checkbox-sized slot, matching standalone text baselines. */
+html body .database-page .database-notes-list > .pi-category-note.pi-compact-item {
+  grid-template-columns:12px 16px minmax(0,1fr) auto !important;
+  grid-template-rows:auto auto !important;
+}
+html body .database-page .database-notes-list > .pi-category-note > .pi-category-heading-aligner {
+  width:16px !important; height:16px !important;
+}
+html body .database-page .database-notes-list > .pi-category-note > .pi-category-note-content {
+  grid-column:1/-1 !important; grid-row:2 !important;
+}
+/* The normal theme already knows how to paint .panel-header; don't override its gradient. */
+html body .database-page #piDatabaseFocus > .pi-focus-head.panel-header {
+  height:40px !important; min-height:40px !important; max-height:40px !important;
+  padding:5px 9px !important;
+}
+html body .database-page #piDatabaseFocus > .pi-focus-head.panel-header .pi-focus-title strong,
+html body .database-page #piDatabaseFocus > .pi-focus-head.panel-header .pi-focus-title .pi-focus-count {
+  color:inherit !important;
+}
+/* Collapsed controls should have an 8px painted ledge beneath them, not a clipped padding. */
+@media (min-width:901px) {
+  html body .database-page.page.pi-focus-layout:has(> .home-upcoming-panel.is-collapsed) {
+    grid-template-rows:auto 48px minmax(0,1fr) !important;
+  }
+}
+html body .database-page.page > .home-upcoming-panel.is-collapsed,
+html body .database-page .home-main-columns > #piDatabaseFocus.pi-focus-collapsed,
+html body .database-page .home-main-columns > .center-workspace > .database-notes-panel.is-collapsed {
+  box-sizing:border-box !important;
+  height:48px !important; min-height:48px !important; max-height:48px !important;
+  grid-template-rows:40px !important;
+  padding-bottom:8px !important;
+  align-self:start !important;
+}
+html body .database-page.page > .home-upcoming-panel.is-collapsed > .day-rail,
+html body .database-page .home-main-columns > #piDatabaseFocus.pi-focus-collapsed > .pi-focus-body,
+html body .database-page .home-main-columns > .center-workspace > .database-notes-panel.is-collapsed > .database-notes-body {
   display:none !important;
 }
-html body .database-page :is(.home-upcoming-panel,.database-notes-panel,#piDatabaseFocus).is-collapsed > :is(.panel-header,.pi-focus-head) {
-  margin-bottom:3px !important;
+@media(max-width:900px) {
+  html body .database-page.page > .home-upcoming-panel.is-collapsed,
+  html body .database-page .home-main-columns > #piDatabaseFocus.pi-focus-collapsed,
+  html body .database-page .home-main-columns > .center-workspace > .database-notes-panel.is-collapsed {
+    flex:0 0 48px !important;
+  }
 }

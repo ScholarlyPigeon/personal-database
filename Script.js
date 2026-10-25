@@ -15,7 +15,7 @@ window.PIHomeNestedChecklist = function(item, applyChange) {
     root.className = 'pi-nested-checklist';
     const title = document.createElement('div');
     title.className = 'pi-nested-title';
-    title.textContent = 'Checklist · drag to reorder';
+    title.textContent = 'Checklist';
     root.append(title);
     let dragging = null;
     function reorder(childId, targetId, offset = 0) {
@@ -2722,7 +2722,12 @@ if (document.getElementById("tileGrid")) {
                 rowActions.append(toolsMenu);
 
                 if (wrap) row.append(drag, wrap, taskText);
-                else row.append(drag, taskText);
+                else if (isCategoryNote && noteMode) {
+                    const aligner = document.createElement('span');
+                    aligner.className = 'pi-category-heading-aligner';
+                    aligner.setAttribute('aria-hidden', 'true');
+                    row.append(drag, aligner, taskText);
+                } else row.append(drag, taskText);
                 if (!isCategoryNote) row.append(shownDate);
                 row.append(rowActions);
                 if (noteBody) row.append(noteBody);
@@ -7270,17 +7275,20 @@ if (document.getElementById("neopetsApp")) {
         check.type = 'checkbox'; check.checked = Boolean(item.done);
         check.setAttribute('aria-label', 'Complete On My Radar item');
         check.addEventListener('change', () => update(live => {live.done = check.checked;}));
-        if (category) check.classList.add('pi-radar-category-checkbox');
+        // A category heading uses its own toggle in the same column where a
+        // standalone item has a checkbox. Do not create a hidden checkbox that
+        // takes up space or pushes the nested checklist beside the title.
+        let categoryToggle = null;
         const titleArea = document.createElement('div'); titleArea.className = 'pi-focus-main';
         const headline = document.createElement('div'); headline.className = 'pi-focus-headline';
         if (category) {
-            const toggle = document.createElement('button');
-            toggle.type = 'button'; toggle.className = 'pi-focus-expand';
-            toggle.textContent = !focusViewExpanded.has(item.id) ? '▸' : '▾';
-            toggle.title = !focusViewExpanded.has(item.id) ? 'Expand category note' : 'Collapse category note';
-            toggle.setAttribute('aria-label', toggle.title);
-            toggle.addEventListener('click', () => { if (focusViewExpanded.has(item.id)) focusViewExpanded.delete(item.id); else focusViewExpanded.add(item.id); refreshFocusViews(); });
-            headline.append(toggle);
+            categoryToggle = document.createElement('button');
+            categoryToggle.type = 'button'; categoryToggle.className = 'pi-focus-expand';
+            categoryToggle.textContent = !focusViewExpanded.has(item.id) ? '▸' : '▾';
+            categoryToggle.title = !focusViewExpanded.has(item.id) ? 'Expand category note' : 'Collapse category note';
+            categoryToggle.setAttribute('aria-label', categoryToggle.title);
+            categoryToggle.setAttribute('aria-expanded', String(focusViewExpanded.has(item.id)));
+            categoryToggle.addEventListener('click', () => { if (focusViewExpanded.has(item.id)) focusViewExpanded.delete(item.id); else focusViewExpanded.add(item.id); refreshFocusViews(); });
         }
         const text = document.createElement('div'); text.className = 'pi-focus-text';
         text.contentEditable = compact ? 'false' : 'true'; text.spellcheck = true;
@@ -7291,6 +7299,7 @@ if (document.getElementById("neopetsApp")) {
             if (text.innerText !== item.text) update(live => {live.text = text.innerText.trim();});
         });
         headline.append(text); titleArea.append(headline);
+        let categoryDetail = null;
         if (category && focusViewExpanded.has(item.id)) {
             const body = document.createElement('div'); body.className = 'pi-focus-detail';
             if (item.details && item.showDetails !== false) {
@@ -7309,7 +7318,7 @@ if (document.getElementById("neopetsApp")) {
                 link.target = '_blank'; link.rel = 'noopener noreferrer';
                 link.textContent = 'Open link ↗'; body.append(link);
             }
-            titleArea.append(body);
+            categoryDetail = body;
         }
         const actions = document.createElement('div'); actions.className = 'pi-focus-actions';
         const menu = document.createElement('details'); menu.className = 'pi-item-tools pi-focus-tools';
@@ -7374,7 +7383,8 @@ if (document.getElementById("neopetsApp")) {
         visibleDate.textContent = (window.PIHomeAddedDate?.(item) || window.PICompactDate?.(value) || '—').replace(/^(?:Added|Date added)\s*:?[ \t]*/i, '');
         visibleDate.title = 'Date this item was added (for older items, saved date where available)';
         if (!category) actions.append(visibleDate);
-        row.append(drag, check, titleArea, actions);
+        row.append(drag, category ? categoryToggle : check, titleArea, actions);
+        if (categoryDetail) row.append(categoryDetail);
         return row;
     }
 
@@ -7442,8 +7452,8 @@ if (document.getElementById("neopetsApp")) {
         panel.id = "piDatabaseFocus";
         panel.className = "panel pi-focus-panel pi-database-focus-panel";
         panel.innerHTML = `
-            <div class="pi-focus-head">
-                <div class="pi-focus-title"><span>✦</span><strong>On My Radar</strong><span class="pi-focus-count" id="piDatabaseFocusCount"></span></div>
+            <div class="pi-focus-head panel-header">
+                <div class="pi-focus-title panel-title"><span>✦</span><strong>On My Radar</strong><span class="pi-focus-count" id="piDatabaseFocusCount"></span></div>
                 <span class="pi-focus-warning" id="piDatabaseFocusWarning" hidden></span>
             </div>
             <div class="pi-focus-body">
