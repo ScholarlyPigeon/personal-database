@@ -20,12 +20,15 @@
     const category=line.closest('.pi-category-note');
     if (!category) return null;
     if (category.matches('.pi-focus-item')) return {where:'radar',parentId:category.dataset.focusId,itemId:line.dataset.subtaskId};
+    const day=line.closest('.day-list');
+    if(day?.dataset.storageKey?.startsWith('pi-calendar-day-'))return {where:'day',date:day.dataset.storageKey.slice('pi-calendar-day-'.length),parentId:category.dataset.itemId,itemId:line.dataset.subtaskId};
     return {where:'notes',parentId:category.dataset.itemId,itemId:line.dataset.subtaskId};
   };
   const standaloneOrigin = row => {
     if(row?.classList.contains('pi-category-note')) return null;
     if(row?.matches('.pi-focus-item') && row.dataset.focusId)return {where:'radar',itemId:row.dataset.focusId};
     if(row?.matches('.checklist-item') && row.closest('#databaseNotesList') && row.dataset.itemId)return {where:'notes',itemId:row.dataset.itemId};
+    const day=row?.closest('.day-list');if(row?.dataset.itemId&&day?.dataset.storageKey?.startsWith('pi-calendar-day-'))return {where:'day',date:day.dataset.storageKey.slice('pi-calendar-day-'.length),itemId:row.dataset.itemId};
     return null;
   };
   const move = (from,to) => {
@@ -64,8 +67,8 @@
   };
   function paint() {
     const nodes=[
-      ...document.querySelectorAll('#databaseNotesList .pi-nested-line, #piDatabaseFocusList .pi-nested-line, dialog.pi-category-dialog[open] .pi-nested-line'),
-      ...document.querySelectorAll('#databaseNotesList > .checklist-item:not(.pi-category-note), #piDatabaseFocusList > .pi-focus-item:not(.pi-category-note)')
+      ...document.querySelectorAll('#databaseNotesList .pi-nested-line, #piDatabaseFocusList .pi-nested-line, .day-list .pi-nested-line, dialog.pi-category-dialog[open] .pi-nested-line'),
+      ...document.querySelectorAll('#databaseNotesList > .checklist-item:not(.pi-category-note), #piDatabaseFocusList > .pi-focus-item:not(.pi-category-note), .day-list > .checklist-item:not(.pi-category-note)')
     ];
     for(const node of nodes) {
       const nested=node.classList.contains('pi-nested-line');
@@ -103,25 +106,29 @@
     }
   }
   const dropDestination=target=>{
-    const category=target.closest?.('#databaseNotesList .pi-category-note, #piDatabaseFocusList .pi-category-note');
-    if(category) return category.matches('.pi-focus-item')
-      ? {where:'radar',parentId:category.dataset.focusId}
-      : {where:'notes',parentId:category.dataset.itemId};
+    const category=target.closest?.('#databaseNotesList .pi-category-note, #piDatabaseFocusList .pi-category-note, .day-list .pi-category-note');
+    if(category){
+      if(category.matches('.pi-focus-item'))return {where:'radar',parentId:category.dataset.focusId};
+      const day=category.closest('.day-list');
+      if(day?.dataset.storageKey?.startsWith('pi-calendar-day-'))return {where:'day',date:day.dataset.storageKey.slice('pi-calendar-day-'.length),parentId:category.dataset.itemId};
+      return {where:'notes',parentId:category.dataset.itemId};
+    }
     const notes=target.closest?.('#databaseNotesList');
     const radar=target.closest?.('#piDatabaseFocusList');
     if(notes)return {where:'notes'};
+    const day=target.closest?.('.day-list');
+    if(day?.dataset.storageKey?.startsWith('pi-calendar-day-'))return {where:'day',date:day.dataset.storageKey.slice('pi-calendar-day-'.length)};
     if(radar)return {where:'radar'};
     return null;
   };
   document.addEventListener('dragover',event=>{
     if(!event.dataTransfer?.types.includes(mime))return;
     if(!dropDestination(event.target))return;
-    const target=event.target.closest('.pi-category-note, #databaseNotesList, #piDatabaseFocusList');
+    const target=event.target.closest('.pi-category-note, #databaseNotesList, #piDatabaseFocusList, .day-list');
     // Let ordinary same-category reorder continue unchanged.
     if(event.target.closest('.pi-nested-line')) {
-      const src=JSON.parse(event.dataTransfer.getData(mime)||'null');
       const dst=dropDestination(event.target);
-      if(src?.parentId===dst?.parentId && src?.where===dst?.where)return;
+      if(!dst)return;
     }
     event.preventDefault();event.dataTransfer.dropEffect='move';
     target?.classList.add('pi-category-drop-target');
@@ -131,7 +138,7 @@
     // Clear even when this drop is delegated to the native same-category reorder.
     const to=dropDestination(event.target);
     let from=null;try{from=JSON.parse(event.dataTransfer.getData(mime));}catch{clearDragHighlights();return;}
-    if(!to || (from?.parentId===to.parentId && from?.where===to.where)){
+    if(!to || (from?.parentId===to.parentId && from?.where===to.where && from?.date===to.date)){
       clearDragHighlights();return;
     }
     event.preventDefault();event.stopImmediatePropagation();
@@ -141,6 +148,63 @@
   // A drop can be consumed by an older capture handler before our drop listener.
   // The default source node may also be removed before dragend fires.
   document.addEventListener('drop',()=>requestAnimationFrame(clearDragHighlights),true);
+  // Reorder Radar cards in their own column. Previously this handle only
+  // supported cross-panel moves, making in-column drops snap back.
+  let draggedRadarId=null;
+  document.addEventListener('dragstart',event=>{
+    const handle=event.target.closest?.('#piDatabaseFocusList .pi-focus-drag');
+    const card=handle?.closest('.pi-focus-item');
+    if(card?.dataset.focusId)draggedRadarId=card.dataset.focusId;
+  },true);
+  document.addEventListener('dragover',event=>{
+    if(!draggedRadarId)return;
+    if(!event.target.closest?.('#piDatabaseFocusList .pi-focus-item'))return;
+    event.preventDefault();event.dataTransfer.dropEffect='move';
+  },true);
+  document.addEventListener('drop',event=>{
+    if(!draggedRadarId)return;
+    const target=event.target.closest?.('#piDatabaseFocusList .pi-focus-item');
+    const id=draggedRadarId;draggedRadarId=null;
+    if(!target?.dataset.focusId || target.dataset.focusId===id)return;
+    event.preventDefault();event.stopImmediatePropagation();
+    window.PIReorderRadarV14?.(id,target.dataset.focusId);
+    clearDragHighlights();
+  },true);
+  document.addEventListener('dragend',()=>{draggedRadarId=null;},true);
+  // Mobile: tap a drag handle, then tap its destination. No tiny menus required.
+  let tapSource=null;
+  const coarse=()=>matchMedia('(pointer:coarse)').matches;
+  document.addEventListener('click',event=>{
+    if(!coarse())return;
+    const nested=event.target.closest?.('.database-page .pi-nested-drag');
+    const radar=event.target.closest?.('#piDatabaseFocusList .pi-focus-drag');
+    if(nested||radar){
+      if(nested){
+        const line=nested.closest('.pi-nested-line');
+        tapSource=line?{kind:'nested',origin:nestedOrigin(line)}:null;
+      }else{
+        const card=radar.closest('.pi-focus-item');
+        tapSource=card?.dataset.focusId?{kind:'radar',id:card.dataset.focusId}:null;
+      }
+      document.querySelectorAll('.pi-v14-tap-source').forEach(n=>n.classList.remove('pi-v14-tap-source'));
+      (nested||radar).closest('.pi-nested-line,.pi-focus-item')?.classList.add('pi-v14-tap-source');
+      event.preventDefault();event.stopPropagation();return;
+    }
+    if(!tapSource)return;
+    if(event.target.closest('button,input,textarea,select,summary,details,a,[contenteditable]'))return;
+    const end=()=>{tapSource=null;document.querySelectorAll('.pi-v14-tap-source').forEach(n=>n.classList.remove('pi-v14-tap-source'));};
+    if(tapSource.kind==='radar'){
+      const target=event.target.closest?.('#piDatabaseFocusList .pi-focus-item');
+      if(!target?.dataset.focusId)return;
+      window.PIReorderRadarV14?.(tapSource.id,target.dataset.focusId);end();
+      event.preventDefault();event.stopPropagation();return;
+    }
+    const to=dropDestination(event.target);
+    if(!to)return;
+    if(tapSource.origin && (to.where!==tapSource.origin.where||to.date!==tapSource.origin.date||to.parentId!==tapSource.origin.parentId))
+      move(tapSource.origin,to);
+    end();event.preventDefault();event.stopPropagation();
+  },true);
   paint();
   let queued=false;
   new MutationObserver(()=>{

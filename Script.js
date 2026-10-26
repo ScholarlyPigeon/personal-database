@@ -10,6 +10,13 @@ window.PIHomeAddedDate = function(record) {
     const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(record.date || ''));
     return match ? `${match[2]}/${match[3]}/${match[1].slice(-2)}` : '';
 };
+// Completion stamps are written only when a user checks an item, never inferred retroactively.
+window.PISetCompletedV14 = (entry,checked) => {
+  if(!entry)return;
+  if(checked && !entry.done)entry.completedAt=new Date().toISOString();
+  if(!checked)delete entry.completedAt;
+  entry.done=!!checked;
+};
 window.PIHomeNestedChecklist = function(item, applyChange) {
     const root = document.createElement('div');
     root.className = 'pi-nested-checklist';
@@ -43,6 +50,13 @@ window.PIHomeNestedChecklist = function(item, applyChange) {
             e.stopPropagation(); dragging = child.id;
             e.dataTransfer.effectAllowed = 'move';
             e.dataTransfer.setData('text/plain',child.id);
+            const parent=line.closest('.pi-category-note');
+            const list=line.closest('.day-list, .database-notes-list, #piDatabaseFocusList');
+            const key=list?.dataset.storageKey||'';
+            const where=parent?.matches('.pi-focus-item')?'radar':key.startsWith('pi-calendar-day-')?'day':'notes';
+            const origin=parent?{where,parentId:parent.dataset.focusId||parent.dataset.itemId,itemId:child.id}:null;
+            if(where==='day'&&origin)origin.date=key.replace('pi-calendar-day-','');
+            if(origin)e.dataTransfer.setData('application/x-pi-home-transfer',JSON.stringify(origin));
             line.classList.add('pi-nested-dragging');
         });
         drag.addEventListener('dragend', e => {
@@ -67,7 +81,7 @@ window.PIHomeNestedChecklist = function(item, applyChange) {
         check.setAttribute('aria-label', 'Complete checklist item');
         check.addEventListener('change', () => applyChange(live => {
             const target = (live.subtasks || []).find(entry => entry.id === child.id);
-            if (target) target.done = check.checked;
+            if (target) window.PISetCompletedV14(target,check.checked);
         }));
         const field = document.createElement('textarea');
         field.rows = 1; field.className = 'pi-nested-text';
@@ -81,7 +95,7 @@ window.PIHomeNestedChecklist = function(item, applyChange) {
         const when = document.createElement('span');
         when.className = 'pi-nested-date';
         const added = window.PIHomeAddedDate(child);
-        when.textContent = added || '—';
+        when.textContent = (added || '—')+(child.done && child.completedAt ? ' · ✓ '+window.PIHomeAddedDate({createdAt:child.completedAt}) : '');
         when.title = child.createdAt ? 'Original date added' : (added ? 'Saved item date' : 'Date not recorded');
         const actions = document.createElement('div'); actions.className = 'pi-nested-actions';
         const remove = document.createElement('button');
@@ -92,6 +106,18 @@ window.PIHomeNestedChecklist = function(item, applyChange) {
             live.subtasks = (live.subtasks || []).filter(entry => entry.id !== child.id);
         }));
         actions.append(remove);
+        const tools=document.createElement('details');tools.className='pi-nested-tools';
+        const trigger=document.createElement('summary');trigger.textContent='⋮';
+        trigger.title='Item actions';trigger.setAttribute('aria-label','Checklist item actions');
+        const panel=document.createElement('div');panel.className='pi-nested-tools-menu';
+        const archive=document.createElement('button');archive.type='button';archive.textContent='Archive';
+        archive.addEventListener('click',()=>{
+            if(!confirm('Archive this checklist item?'))return;
+            if(!archiveManualItem({text:child.text,source:'Category checklist',context:item.text||'',
+              originalDate:child.date||null,createdAt:child.createdAt||null,metadata:{...child}}))return;
+            applyChange(live=>{live.subtasks=(live.subtasks||[]).filter(entry=>entry.id!==child.id);});
+        });
+        panel.append(archive);tools.append(trigger,panel);actions.prepend(tools);
         line.append(drag,check,field,when,actions); root.append(line);
         requestAnimationFrame(fit);
     });
@@ -886,7 +912,8 @@ function archiveManualItem({
         context,
         kind,
         originalDate,
-        createdAt,
+        createdAt: createdAt || metadata?.createdAt || null,
+        completedAt: metadata?.completedAt || null,
         archivedAt: new Date().toISOString(),
         metadata
     });
@@ -2471,7 +2498,7 @@ if (document.getElementById("tileGrid")) {
                     check.addEventListener("change", () => {
                         if (!isFresh()) return;
                         const [changedItem] = items.splice(index, 1);
-                        changedItem.done = check.checked;
+                        window.PISetCompletedV14(changedItem,check.checked);
 
                         if (doneToBottom) {
                             if (changedItem.done) {
@@ -2552,6 +2579,7 @@ if (document.getElementById("tileGrid")) {
                 });
 
                 const shownDate = rowDate;
+                if(item.done && item.completedAt) shownDate.title='Created: '+(window.PIHomeAddedDate(item)||'unknown')+' · Completed: '+window.PIHomeAddedDate({createdAt:item.completedAt});
 
                 const moveMenu = document.createElement("select");
                 moveMenu.className = "pi-item-move";
@@ -2725,6 +2753,13 @@ if (document.getElementById("tileGrid")) {
                     rowActions.append(pop);
                     rowActions.append(noteToggle);
                 }
+                if(!isCategoryNote && item.done && item.completedAt){
+                    const completed=document.createElement('span');
+                    completed.className='pi-v14-completed-badge';
+                    completed.textContent='✓ '+(window.PIHomeAddedDate({createdAt:item.completedAt})||'');
+                    completed.title='Completed on '+completed.textContent.slice(2);
+                    rowActions.prepend(completed);
+                }
                 rowActions.append(toolsMenu);
 
                 if (wrap) row.append(drag, wrap, taskText);
@@ -2871,58 +2906,65 @@ if (document.getElementById("tileGrid")) {
     // V6: Move individual entries between category containers and standalone Home/Radar.
     // Use the live Notes manager so stale-write safeguards and safety snapshots remain active.
     // No new storage keys; each item keeps its original ID, date, createdAt and done state.
+    // V14: every live Home day is a first-class source/destination, not a dead-end.
     window.PIHomeTransferItem = (source, destination) => {
-        if (!source || !destination || !source.itemId) return false;
-        const valid = value => value === 'notes' || value === 'radar';
-        if (!valid(source.where) || !valid(destination.where)) return false;
-        if (source.where === destination.where && (source.parentId || '') === (destination.parentId || '')) return false;
-        const notes = databaseNotesManager;
-        if (!notes || !notes.isFresh?.()) return false;
-        const focusKey = 'pi-focus-now-v1';
-        let radar;
-        try { radar = JSON.parse(localStorage.getItem(focusKey) || '[]'); if (!Array.isArray(radar)) return false; }
-        catch { return false; }
-        const notesSnapshot = JSON.stringify(notes.items);
-        const focusSnapshot = localStorage.getItem(focusKey);
-        const notesDirty = source.where === 'notes' || destination.where === 'notes';
-        const radarDirty = source.where === 'radar' || destination.where === 'radar';
-        const list = where => where === 'notes' ? notes.items : radar;
-        const getContainer = (where, parentId) => {
-            const root = list(where);
-            if (!parentId) return root;
-            const parent = root.find(entry => entry.id === parentId && entry.kind === 'note');
-            if (!parent) return null;
-            if (!Array.isArray(parent.subtasks)) parent.subtasks = [];
-            return parent.subtasks;
+        if (!source?.itemId || !source.where || !destination?.where) return false;
+        const storageKeyFor = location => {
+            if (location.where === 'notes') return 'pi-database-notes-v1';
+            if (location.where === 'radar') return 'pi-focus-now-v1';
+            if (location.where === 'day' && /^\d{4}-\d{2}-\d{2}$/.test(location.date || ''))
+                return 'pi-calendar-day-' + location.date;
+            return null;
         };
-        const from = getContainer(source.where, source.parentId);
-        const to = getContainer(destination.where, destination.parentId);
-        if (!from || !to) return false;
-        const index = from.findIndex(entry => entry.id === source.itemId);
-        if (index < 0 || to.some(entry => entry.id === source.itemId)) return false;
-        const item = from[index];
-        // Category headers themselves do not become checklist entries.
-        if (item.kind === 'note') return false;
-        const [moved] = from.splice(index, 1);
-        to.push(moved);
-        const restoreMemory = () => {
-            notes.items.splice(0, notes.items.length, ...JSON.parse(notesSnapshot));
-            if (focusSnapshot === null) localStorage.removeItem(focusKey);
-            else localStorage.setItem(focusKey, focusSnapshot);
-            notes.render(); window.PIRefreshFocusViews?.();
+        const srcKey=storageKeyFor(source),dstKey=storageKeyFor(destination);
+        if(!srcKey||!dstKey)return false;
+        if(srcKey===dstKey && (source.parentId||'')===(destination.parentId||''))return false;
+        const srcManager=checklistManagers.get(srcKey),dstManager=checklistManagers.get(dstKey);
+        const managers=[...new Set([srcManager,dstManager].filter(Boolean))];
+        if(managers.some(m=>m.isFresh && !m.isFresh()))return false;
+        if(srcKey==='pi-database-notes-v1'||dstKey==='pi-database-notes-v1'){
+            if(!databaseNotesManager?.isFresh?.())return false;
+        }
+        const original=new Map([[srcKey,localStorage.getItem(srcKey)],[dstKey,localStorage.getItem(dstKey)]]);
+        const readSafe=key=>{
+            if(checklistManagers.has(key))return structuredClone(checklistManagers.get(key).items);
+            try{const value=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(value)?value:null;}catch{return null;}
         };
+        const sourceItems=readSafe(srcKey),destinationItems=srcKey===dstKey?sourceItems:readSafe(dstKey);
+        if(!sourceItems||!destinationItems)return false;
+        const getBucket=(root,parentId)=>{
+            if(!parentId)return root;
+            const parent=root.find(i=>i?.id===parentId&&i.kind==='note');
+            if(!parent)return null;
+            return parent.subtasks ||= [];
+        };
+        const from=getBucket(sourceItems,source.parentId),to=getBucket(destinationItems,destination.parentId);
+        if(!from||!to)return false;
+        const i=from.findIndex(item=>item.id===source.itemId);
+        if(i<0)return false;
+        const moved=from[i];if(moved.kind==='note'||to.some(item=>item.id===moved.id))return false;
+        from.splice(i,1);to.push(moved);
+        const snapshots=new Map([[srcKey,sourceItems],[dstKey,destinationItems]]);
         try {
-            if (notesDirty && !notes.save(false, 'before-category-move')) {
-                restoreMemory(); return false;
+            // Save managed lists through their existing writers so Home backup,
+            // freshness checks, and cloud event tracking still run normally.
+            for(const manager of managers){
+                manager.items.splice(0,manager.items.length,...snapshots.get(manager.storageKey));
+                if(!manager.save(false,'before-category-move'))throw Error('Managed list rejected move');
             }
-            if (radarDirty) localStorage.setItem(focusKey, JSON.stringify(radar));
-        } catch (error) {
-            console.error('Category item transfer failed; restoring saved state',error);
-            try {restoreMemory(); if (notesDirty) notes.save(false,'category-move-rollback');} catch (rollbackError) {console.error(rollbackError);}
+            for(const [key,value] of snapshots){
+                if(!checklistManagers.has(key))localStorage.setItem(key,JSON.stringify(value));
+            }
+        }catch(error){
+            console.error('Transfer not saved',error);
+            for(const [key,value] of original){try{if(value===null)localStorage.removeItem(key);else localStorage.setItem(key,value);}catch{}}
+            for(const m of managers){
+                const value=original.get(m.storageKey);
+                try{m.items.splice(0,m.items.length,...JSON.parse(value||'[]'));m.save(false,'category-move-rollback');}catch{}
+            }
             return false;
         }
-        notes.render(); window.PIRefreshFocusViews?.();
-        showSaved();
+        managers.forEach(m=>m.render());window.PIRefreshFocusViews?.();showSaved();
         return true;
     };
 
@@ -3710,7 +3752,7 @@ if (document.getElementById("aquariumApp")) {
         complete.setAttribute("aria-label", complete.title);
         complete.dataset.accent = aquariumKindById(card.kind)?.accent || "teal";
         complete.addEventListener("change", () => {
-            card.done = complete.checked;
+            window.PISetCompletedV14(card,complete.checked);
             saveAquariumState();
             renderAquarium();
         });
@@ -3784,7 +3826,7 @@ if (document.getElementById("aquariumApp")) {
                 context: aquariumZoneLabel(card.zone),
                 kind: card.kind,
                 createdAt: card.createdAt,
-                metadata: { zone: card.zone, done: Boolean(card.done), bodyHtml: card.html || "" }
+                metadata: { zone: card.zone, done: Boolean(card.done), createdAt:card.createdAt||null, completedAt:card.completedAt||null, bodyHtml: card.html || "" }
             });
             if (!archived) return;
             aquariumState.cards = aquariumState.cards.filter(item => item.id !== card.id);
@@ -4656,7 +4698,7 @@ if (document.getElementById("aquariumApp")) {
                 originalDate: null,
                 createdAt: card.createdAt || null,
                 archivedAt,
-                metadata: { zone: card.zone, done: true }
+                metadata: { zone: card.zone, done: true, createdAt:card.createdAt||null, completedAt:card.completedAt||null }
             });
         });
 
@@ -4690,7 +4732,7 @@ if (document.getElementById("aquariumApp")) {
                 originalDate: null,
                 createdAt: card.createdAt || null,
                 archivedAt,
-                metadata: { zone: card.zone, done: Boolean(card.done) }
+                metadata: { zone: card.zone, done: Boolean(card.done), createdAt:card.createdAt||null, completedAt:card.completedAt||null }
             });
         });
 
@@ -4815,7 +4857,7 @@ if (document.getElementById("patternsApp")) {
                     const recordsNow = readArchiveRecords();
                     const liveRecord = recordsNow.find(candidate => candidate.id === record.id);
                     if (!liveRecord || !Array.isArray(liveRecord.items) || !liveRecord.items[itemIndex]) return;
-                    liveRecord.items[itemIndex].done = check.checked;
+                    window.PISetCompletedV14(liveRecord.items[itemIndex],check.checked);
                     saveArchiveRecords(recordsNow, true);
                     row.classList.toggle("was-done", check.checked);
                 });
@@ -4826,6 +4868,10 @@ if (document.getElementById("patternsApp")) {
                 text.textContent = item.text;
 
                 row.append(wrap, text);
+                const dateTag=document.createElement('span');dateTag.className='pi-v14-archive-dates';
+                const added=item.createdAt||item.date; const finished=item.completedAt;
+                dateTag.textContent=[added?'Created '+formatArchiveDate(added):'',finished?'Completed '+formatArchiveDate(finished):(item.done?'Completion date not recorded':'')].filter(Boolean).join(' · ');
+                if(dateTag.textContent)row.append(dateTag);
                 list.appendChild(row);
             });
 
@@ -4880,6 +4926,11 @@ if (document.getElementById("patternsApp")) {
             const metaBits = [];
             if (record.kind) metaBits.push(record.kind);
             if (record.originalDate) metaBits.push(`from ${formatArchiveDate(record.originalDate)}`);
+            const creation=record.createdAt||record.metadata?.createdAt||null;
+            const completion=record.completedAt||record.metadata?.completedAt||null;
+            if(creation)metaBits.push(`created ${formatArchiveDate(creation)}`);
+            if(completion)metaBits.push(`completed ${formatArchiveDate(completion)}`);
+            else if(record.metadata?.done)metaBits.push('completed date not recorded');
             metaBits.push(`archived ${formatArchiveDate(record.archivedAt)}`);
             meta.textContent = metaBits.join(" · ");
 
@@ -7238,6 +7289,12 @@ if (document.getElementById("neopetsApp")) {
         return humanArray(PI_KEYS.focusKey).filter(item => item && typeof item.id === "string");
     }
 
+    window.PIReorderRadarV14=(draggedId,targetId)=>{
+        if(!draggedId||!targetId||draggedId===targetId)return false;
+        const items=readFocus();const a=items.findIndex(i=>i.id===draggedId),b=items.findIndex(i=>i.id===targetId);
+        if(a<0||b<0)return false;
+        const [entry]=items.splice(a,1);items.splice(b,0,entry);saveFocus(items);return true;
+    };
     function saveFocus(items, announce = true) {
         localStorage.setItem(PI_KEYS.focusKey, JSON.stringify(items));
         if (announce && typeof showSaved === "function") showSaved();
@@ -7281,7 +7338,7 @@ if (document.getElementById("neopetsApp")) {
         const check = document.createElement('input');
         check.type = 'checkbox'; check.checked = Boolean(item.done);
         check.setAttribute('aria-label', 'Complete On My Radar item');
-        check.addEventListener('change', () => update(live => {live.done = check.checked;}));
+        check.addEventListener('change', () => update(live => {window.PISetCompletedV14(live,check.checked);}));
         // A category heading uses its own toggle in the same column where a
         // standalone item has a checkbox. Do not create a hidden checkbox that
         // takes up space or pushes the nested checklist beside the title.
@@ -7405,7 +7462,7 @@ if (document.getElementById("neopetsApp")) {
         });
         const visibleDate = document.createElement('span'); visibleDate.className = 'pi-focus-date';
         const value = item.date || item.createdAt?.slice(0,10) || '';
-        visibleDate.textContent = (window.PIHomeAddedDate?.(item) || window.PICompactDate?.(value) || '—').replace(/^(?:Added|Date added)\s*:?[ \t]*/i, '');
+        visibleDate.textContent = (window.PIHomeAddedDate?.(item) || window.PICompactDate?.(value) || '—').replace(/^(?:Added|Date added)\s*:?[ \t]*/i, '')+(item.done&&item.completedAt ? ' · ✓ '+window.PIHomeAddedDate({createdAt:item.completedAt}) : '');
         visibleDate.title = 'Date this item was added (for older items, saved date where available)';
         if (!category) {
             actions.append(visibleDate);

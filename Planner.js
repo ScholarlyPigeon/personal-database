@@ -79,6 +79,55 @@
  let drag=null;
  const drafts=new Map();
  const dayDialog=el('dialog','planner-day-dialog');
+ // Move entries from day categories to another category, a day, or outside the category.
+ const moveNestedDayItem=(from,to)=>{
+   if(!from?.key?.startsWith('pi-calendar-day-')||!to?.key?.startsWith('pi-calendar-day-'))return false;
+   if(from.key===to.key&&from.parentId===to.parentId)return false;
+   const source=read(from.key),dest=from.key===to.key?source:read(to.key);
+   const src=source.find(x=>x.id===from.parentId&&x.kind==='note');
+   const destParent=to.parentId?dest.find(x=>x.id===to.parentId&&x.kind==='note'):null;
+   if(!src||!Array.isArray(src.subtasks)||(to.parentId&&!destParent))return false;
+   const i=src.subtasks.findIndex(x=>x.id===from.itemId);if(i<0)return false;
+   const entry=src.subtasks[i];const bucket=destParent?(destParent.subtasks ||= []):dest;
+   if(bucket.some(x=>x.id===entry.id))return false;
+   src.subtasks.splice(i,1);bucket.push(entry);
+   const originalSource=localStorage.getItem(from.key),originalDest=localStorage.getItem(to.key);
+   try {write(to.key,dest);if(from.key!==to.key)write(from.key,source);}catch(e){
+     if(originalSource===null)localStorage.removeItem(from.key);else localStorage.setItem(from.key,originalSource);
+     if(from.key!==to.key){if(originalDest===null)localStorage.removeItem(to.key);else localStorage.setItem(to.key,originalDest);}return false;
+   }
+   renderDays();if(dayDialog.open)fillDayDialog();showSaved();return true;
+ };
+ let plannerDragSource=null;
+ document.addEventListener('dragstart',e=>{
+   const line=e.target.closest?.('.planner-category-line');
+   const group=line?.closest('.planner-category');
+   if(!group||!line?.dataset.piSubtaskId||!e.target.closest('.planner-category-drag'))return;
+   plannerDragSource={key:'pi-calendar-day-'+group.dataset.piDate,parentId:group.dataset.piCategoryId,itemId:line.dataset.piSubtaskId};
+ },true);
+ const plannerDest=target=>{
+   const cat=target.closest?.('.planner-day-dialog .planner-category');
+   if(cat)return {key:'pi-calendar-day-'+cat.dataset.piDate,parentId:cat.dataset.piCategoryId};
+   const day=target.closest?.('.planner-day[data-date]');
+   if(day)return {key:'pi-calendar-day-'+day.dataset.date};
+   if(target.closest?.('.planner-day-dialog .planner-dialog-list')&&selectedDate)return {key:'pi-calendar-day-'+selectedDate};
+   return null;
+ };
+ document.addEventListener('dragover',e=>{
+   if(!plannerDragSource||!plannerDest(e.target))return;
+   const dest=plannerDest(e.target);
+   if(dest.key===plannerDragSource.key&&dest.parentId===plannerDragSource.parentId)return;
+   e.preventDefault();e.dataTransfer.dropEffect='move';
+ },true);
+ document.addEventListener('drop',e=>{
+   if(!plannerDragSource)return;
+   const source=plannerDragSource;plannerDragSource=null;
+   const dest=plannerDest(e.target);
+   if(!dest||(dest.key===source.key&&dest.parentId===source.parentId))return;
+   e.preventDefault();e.stopImmediatePropagation();safe(()=>moveNestedDayItem(source,dest));
+ },true);
+ document.addEventListener('dragend',()=>{plannerDragSource=null;},true);
+
  let selectedDate=null;
  document.body.append(dayDialog);
  const sortedEntries = entries => entries.slice().sort((a,b)=>Number(!!a.item.done)-Number(!!b.item.done));
@@ -116,6 +165,7 @@
  const autoHeight = field => {field.style.height='auto';field.style.height=`${field.scrollHeight+2}px`;};
  function categoryRow(item,index,key,readonly){
    const wrap=el('section','planner-category'+(item.expanded===false?' is-closed':''));
+   wrap.dataset.piCategoryId=item.id;wrap.dataset.piDate=key.replace('pi-calendar-day-','');
    const head=el('div','planner-category-head');
    const name=el('textarea','planner-category-name');
    name.rows=1;name.value=item.text||'';name.readOnly=readonly;
@@ -170,9 +220,10 @@
    let movedId=null;
    subtasks.forEach((sub,subindex)=>{
      const line=el('div','planner-category-line'+(sub.done?' is-done':''));
+     line.dataset.piSubtaskId=sub.id;
      const drag=el('span','planner-category-drag','⋮⋮');drag.title='Drag to reorder checklist item';
      drag.setAttribute('aria-label',drag.title);drag.draggable=!readonly;
-     drag.ondragstart=e=>{if(readonly)return;movedId=sub.id;e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',sub.id);};
+     drag.ondragstart=e=>{if(readonly)return;movedId=sub.id;e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('application/x-pi-planner-subtask',JSON.stringify({key,parentId:item.id,itemId:sub.id}));e.dataTransfer.setData('text/plain',sub.id);};
      drag.ondragend=()=>{movedId=null;};
      line.ondragover=e=>{if(movedId&&movedId!==sub.id){e.preventDefault();e.dataTransfer.dropEffect='move';}};
      line.ondrop=e=>{if(readonly||!movedId||movedId===sub.id)return;e.preventDefault();e.stopPropagation();
@@ -189,16 +240,29 @@
      };
      const box=el('input');box.type='checkbox';box.checked=!!sub.done;box.disabled=readonly;
      box.setAttribute('aria-label','Complete '+(sub.text||'checklist item'));
-     box.onchange=()=>safe(()=>updateList(key,index,items=>{const target=(items[index].subtasks||[]).find(x=>x.id===sub.id);if(target)target.done=box.checked;}));
+     box.onchange=()=>safe(()=>updateList(key,index,items=>{const target=(items[index].subtasks||[]).find(x=>x.id===sub.id);if(target)window.PISetCompletedV14(target,box.checked);}));
      const field=el('textarea','planner-category-line-text');field.rows=1;field.value=sub.text||'';field.readOnly=readonly;
      field.setAttribute('aria-label','Checklist item text');field.addEventListener('input',()=>autoHeight(field));
      field.addEventListener('change',()=>safe(()=>{if(!readonly)updateList(key,index,items=>{const target=(items[index].subtasks||[]).find(x=>x.id===sub.id);if(target)target.text=field.value;});}));
-     const date=el('span','planner-category-line-date',stamp(sub)||'—');date.title=stamp(sub)?'Date added':'Date not recorded';
+     const date=el('span','planner-category-line-date',(sub.done && sub.completedAt ? `${stamp(sub)||'—'} · ✓ ${stamp({createdAt:sub.completedAt})}` : stamp(sub)||'—'));date.title=stamp(sub)?'Date added':'Date not recorded';
      line.append(drag,box,field,date);
      if(!readonly)line.append(button('×','Delete checklist item',()=>{
        if(!confirm('Delete this checklist item?'))return;
        updateList(key,index,items=>{items[index].subtasks=(items[index].subtasks||[]).filter(x=>x.id!==sub.id);});
      }));
+     if(!readonly){
+       const menu=el('details','planner-nested-tools');
+       const summary=el('summary','','⋮');summary.title='Checklist item actions';summary.setAttribute('aria-label','Checklist item actions');
+       const actions=el('div','planner-nested-options');
+       actions.append(button('Archive','Archive this checklist item',()=>{
+         if(!confirm('Archive this checklist item?'))return;
+         const archiveItem={...sub};
+         if(!archiveManualItem({text:archiveItem.text,source:'Calendar category',context:item.text,
+              originalDate:archiveItem.date||null,createdAt:archiveItem.createdAt||null,metadata:archiveItem}))return;
+         updateList(key,index,items=>{items[index].subtasks=(items[index].subtasks||[]).filter(x=>x.id!==sub.id);});
+       }));
+       menu.append(summary,actions);line.append(menu);
+     }
      list.append(line);
      requestAnimationFrame(()=>autoHeight(field));
    });
@@ -230,8 +294,12 @@
      return r;
    }
    if(item.kind==='note')return categoryRow(item,index,key,readonly);
-   if(item.checkable!==false){const c=el('input');c.type='checkbox';c.checked=!!item.done;c.disabled=readonly;c.setAttribute('aria-label','Complete: '+item.text);c.onchange=()=>safe(()=>updateList(key,index,a=>{a[index].done=c.checked;}));r.append(c);}
+   if(item.checkable!==false){const c=el('input');c.type='checkbox';c.checked=!!item.done;c.disabled=readonly;c.setAttribute('aria-label','Complete: '+item.text);c.onchange=()=>safe(()=>updateList(key,index,a=>{window.PISetCompletedV14(a[index],c.checked);}));r.append(c);}
    const content=el('div','planner-item-text',item.text);r.append(content);
+   if(item.done&&item.completedAt){
+     const meta=el('span','planner-v14-dates',`${stamp(item)||'—'} · ✓ ${stamp({createdAt:item.completedAt})}`);
+     meta.title='Created date · completed date';r.append(meta);
+   }
    if(readonly)return r;
    const more=button('⋮','Item options',()=>{const was=r.classList.contains('actions-open');closeActionMenus();r.classList.toggle('actions-open',!was);});more.classList.add('planner-more');more.setAttribute('aria-haspopup','true');r.append(more);
    const actions=el('div','planner-item-actions');
@@ -298,8 +366,8 @@
      dates=datesOfMonth(historical||currentMonth);$('plannerRange').textContent=labelMonth(historical||currentMonth);
      $('plannerHint').textContent=historical?'Archived month · read only':kind==='next-month'?'Upcoming month · shared with calendar':'Shared with Database';
      if(historical){const a=el('a','small-button','Current month');a.href='Month.html';$('plannerHint').append(' · ',a);}
-     ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach(d=>grid.append(el('div','planner-weekday',d)));
-     const offset=(new Date(dates[0]+'T12:00:00').getDay()+6)%7;
+     ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(d=>grid.append(el('div','planner-weekday',d)));
+     const offset=new Date(dates[0]+'T12:00:00').getDay();
      for(let i=0;i<offset;i++){const empty=el('div','planner-blank');empty.setAttribute('aria-hidden','true');grid.append(empty);}
    }
    dates.forEach(date=>{

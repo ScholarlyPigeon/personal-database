@@ -1,0 +1,63 @@
+/* V14: preserve room to tap headers while allowing long saved titles to wrap. */
+body :is(.aq-panel-head,.aq-category-head,.panel-header,.longform-saved-section-head,
+          .pi-notes-section-head,.neo-panel-heading) {min-width:0 !important;gap:8px !important;}
+body :is(.aq-panel-head,.aq-category-head,.panel-header,.longform-saved-section-head,
+          .pi-notes-section-head,.neo-panel-heading) > :is(.panel-title,.aq-title-wrap,.aq-section-title),
+body .aq-capture-panel .aq-panel-head .aq-title-wrap {
+  min-width:0 !important; flex:1 1 auto !important;
+}
+body .aq-capture-panel .aq-panel-head .aq-title-wrap > div {
+  min-width:0 !important;max-width:100% !important;flex:1 1 auto !important;
+}
+body .aq-capture-panel .aq-panel-head .aq-panel-title,
+body .aq-capture-panel .aq-panel-head [contenteditable],
+body .aq-category-head [contenteditable],
+body .database-page .pi-category-note > .task-text,
+body .database-page .pi-focus-item.pi-category-note .pi-focus-text,
+body .longform-saved-section-head [contenteditable] {
+  box-sizing:border-box !important;
+  max-width:min(56%, 50ch) !important;
+  min-width:0 !important;
+  width:auto !important;
+  flex:0 1 auto !important;
+  overflow-wrap:break-word !important;
+  word-break:normal !important;
+  white-space:normal !important;
+  text-overflow:clip !important;
+}
+body .aq-capture-panel .aq-panel-head .aq-panel-title {max-width:60% !important;}
+@media(max-width:650px) {
+  body .aq-capture-panel .aq-panel-head .aq-panel-title {max-width:68% !important;}
+  body .aq-capture-panel .aq-panel-head {flex-wrap:nowrap !important;}
+}
+/* Nested archive menu uses same compact three-dot affordance as a standalone note. */
+.pi-nested-actions {position:relative;}
+.pi-nested-tools {position:relative;display:inline-block;flex:0 0 auto;}
+.pi-nested-tools > summary,
+.planner-nested-tools > summary {
+  display:inline-grid;place-items:center;list-style:none;cursor:pointer;
+  width:24px;height:24px;box-sizing:border-box;border-radius:6px;
+  background:var(--panel-light);color:var(--text);border:1px solid var(--border);
+  font:700 17px/1 'Segoe UI',Arial,sans-serif;
+}
+.pi-nested-tools > summary::marker,.planner-nested-tools > summary::marker{content:'';}
+.pi-nested-tools > summary::-webkit-details-marker,.planner-nested-tools > summary::-webkit-details-marker{display:none;}
+.pi-nested-tools-menu,.planner-nested-options {
+  position:absolute;right:0;top:calc(100% + 3px);z-index:100;
+  background:var(--panel);border:1px solid var(--border);border-radius:7px;
+  padding:5px;box-shadow:var(--shadow);min-width:100px;
+}
+.pi-nested-tools-menu button,.planner-nested-options button {
+  border:1px solid var(--border);border-radius:5px;background:var(--panel-light);
+  color:var(--text);min-height:28px;padding:4px 9px;width:100%;cursor:pointer;
+}
+.pi-nested-line:has(.pi-nested-tools[open]),.planner-category-line:has(.planner-nested-tools[open]){position:relative;z-index:55;}
+.planner-nested-tools{position:relative;flex:0 0 auto;}
+.planner-day-dialog .planner-category-line{grid-template-columns:14px 16px minmax(0,1fr) auto auto auto !important;}
+.pi-v14-archive-dates{font-size:11px;color:var(--muted);margin-left:8px;line-height:1.35;}
+.pi-v14-tap-source {outline:2px dashed var(--teal) !important;outline-offset:-2px;}
+
+/* Keep completion metadata visible yet quiet, without shifting the checkbox. */
+html body .database-page .pi-v14-completed-badge {font:500 10px/1.25 'Segoe UI',Arial,sans-serif;color:var(--muted);white-space:nowrap;align-self:center;}
+.planner-v14-dates{font:500 11px/1.3 'Segoe UI',Arial,sans-serif;color:var(--muted);white-space:nowrap;margin-left:auto;}
+@media(max-width:550px){.planner-v14-dates{white-space:normal;}}
