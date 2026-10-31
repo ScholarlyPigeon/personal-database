@@ -246,10 +246,6 @@
      field.addEventListener('change',()=>safe(()=>{if(!readonly)updateList(key,index,items=>{const target=(items[index].subtasks||[]).find(x=>x.id===sub.id);if(target)target.text=field.value;});}));
      const date=el('span','planner-category-line-date',(sub.done && sub.completedAt ? `${stamp(sub)||'—'} · ✓ ${stamp({createdAt:sub.completedAt})}` : stamp(sub)||'—'));date.title=stamp(sub)?'Date added':'Date not recorded';
      line.append(drag,box,field,date);
-     if(!readonly)line.append(button('×','Delete checklist item',()=>{
-       if(!confirm('Delete this checklist item?'))return;
-       updateList(key,index,items=>{items[index].subtasks=(items[index].subtasks||[]).filter(x=>x.id!==sub.id);});
-     }));
      if(!readonly){
        const menu=el('details','planner-nested-tools');
        const summary=el('summary','','⋮');summary.title='Checklist item actions';summary.setAttribute('aria-label','Checklist item actions');
@@ -259,6 +255,9 @@
          const archiveItem={...sub};
          if(!archiveManualItem({text:archiveItem.text,source:'Calendar category',context:item.text,
               originalDate:archiveItem.date||null,createdAt:archiveItem.createdAt||null,metadata:archiveItem}))return;
+         updateList(key,index,items=>{items[index].subtasks=(items[index].subtasks||[]).filter(x=>x.id!==sub.id);});
+       }));
+       actions.append(button('Delete','Delete this checklist item',()=>{
          updateList(key,index,items=>{items[index].subtasks=(items[index].subtasks||[]).filter(x=>x.id!==sub.id);});
        }));
        menu.append(summary,actions);line.append(menu);

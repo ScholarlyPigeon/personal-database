@@ -1,0 +1,124 @@
+/* October 31 V16: common Tools and a quieter, more readable Neopets header. */
+.pi-tools-menu .pi-v16-retired-select,
+.pi-tools-menu .pi-v16-retired-select[hidden]{display:none!important;}
+.pi-tools-popover .pi-v16-tool-action,
+.pi-tools-popover .backup-button {display:block!important;width:100%!important;min-height:33px;text-align:left!important;border-radius:7px!important;cursor:pointer;white-space:nowrap;}
+.pi-tools-menu{z-index:110!important;}
+.pi-tools-popover{z-index:10000!important;}
+/* Home's existing backup is now beside Search and Archive in Tools. */
+.database-page .header-right>.backup-button{display:none!important;}
+/* Radar gets the very same round checkbox treatment as Notes and Upcoming. */
+html body .database-page #piDatabaseFocus .pi-focus-item:not(.pi-category-note) > input[type="checkbox"] {
+  appearance:none!important;-webkit-appearance:none!important;box-sizing:border-box!important;
+  width:14px!important;height:14px!important;min-width:14px!important;min-height:14px!important;
+  border:1.5px solid var(--teal-soft)!important;border-radius:50%!important;
+  margin:0!important;padding:0!important;align-self:center!important;cursor:pointer!important;
+  background:transparent!important;box-shadow:none!important;accent-color:var(--teal-soft)!important;
+}
+html body .database-page #piDatabaseFocus .pi-focus-item:not(.pi-category-note) > input[type="checkbox"]:checked {
+  background:radial-gradient(circle at center,var(--teal-soft) 0 45%,transparent 48%)!important;
+}
+html body .database-page #piDatabaseFocus .pi-focus-item:not(.pi-category-note) > input[type="checkbox"]:focus-visible {
+  outline:2px solid var(--teal-soft);outline-offset:2px;
+}
+/* Category headings are equal-weight typographically across all Home lists. */
+html body .database-page :is(#piDatabaseFocus,.database-notes-list,.day-list) .pi-category-note
+:is(.pi-focus-text,.task-text,.pi-category-heading,.pi-category-dialog-title){
+  font-weight:750!important;color:var(--text)!important;
+}
+/* Neopets headings: title leads; add/pop/expand buttons stay small and quiet. */
+body.neopets-page :is(.neo-dream-card,.neo-task-card,.neo-treasure-card)>.neo-panel-heading,
+body.neopets-page .neo-dailies-card>.neo-dailies-head {
+  gap:6px!important;min-height:36px;padding:0 0 9px!important;margin-bottom:9px!important;
+  align-items:center!important;border-bottom:1px solid color-mix(in srgb,var(--border) 72%,transparent)!important;
+}
+body.neopets-page .neo-panel-heading>.neo-panel-title {
+  flex:1 1 auto!important;min-width:0!important;max-width:none!important;width:auto!important;
+  background:none!important;border:none!important;box-shadow:none!important;
+  color:var(--text)!important;font-size:clamp(18px,2vw,24px)!important;
+  font-weight:750!important;line-height:1.25!important;padding:3px 0!important;margin:0!important;
+}
+body.neopets-page .neo-dailies-head>.neo-dailies-title {
+  flex:1 1 auto!important;min-width:0!important;max-width:none!important;
+  font-size:clamp(20px,2vw,27px)!important;font-weight:750!important;
+  padding:2px 0!important;line-height:1.25!important;
+}
+body.neopets-page :is(.neo-panel-heading,.neo-dailies-head) :is(.neo-panel-add,.panel-collapse-toggle,.pi-popout-button) {
+  flex:0 0 auto!important;align-self:center!important;min-width:26px!important;
+  width:auto!important;max-width:90px!important;min-height:26px!important;height:26px!important;
+  margin:0!important;padding:3px 7px!important;
+  border-radius:7px!important;border:1px solid transparent!important;
+  box-shadow:none!important;background:transparent!important;
+  color:var(--muted)!important;font-size:11px!important;font-weight:600!important;line-height:1.1!important;
+}
+body.neopets-page :is(.neo-panel-heading,.neo-dailies-head) :is(.neo-panel-add,.panel-collapse-toggle,.pi-popout-button):hover,
+body.neopets-page :is(.neo-panel-heading,.neo-dailies-head) :is(.neo-panel-add,.panel-collapse-toggle,.pi-popout-button):focus-visible {
+  background:var(--panel-light)!important;color:var(--text)!important;border-color:var(--border)!important;
+}
+body.neopets-page .neo-dailies-head-right{gap:5px!important;align-items:center!important;}
+body.neopets-page .neo-dailies-note {font-size:10px!important;color:var(--faint)!important;opacity:.65!important;max-width:155px!important;}
+body.neopets-page .neo-reference-head .neo-reference-label{font-weight:700!important;}
+body.neopets-page .neo-reference-head .neo-reference-add{font-size:11px!important;opacity:.75;}
+@media(max-width:690px){
+  body.neopets-page .neo-dailies-head {display:flex!important;flex-wrap:wrap!important;}
+  body.neopets-page .neo-dailies-note{display:none!important;}
+  body.neopets-page .neo-panel-heading>.neo-panel-title{font-size:19px!important;}
+}
+/* Explicit, opt-in formatting: the little button appears only while editing. */
+.pi-v16-format-trigger{
+  position:fixed!important;bottom:max(14px,env(safe-area-inset-bottom))!important;
+  right:14px!important;z-index:4000!important;min-height:36px!important;
+  padding:7px 12px!important;background:var(--panel)!important;
+  color:var(--text)!important;border:1px solid var(--teal-soft)!important;
+  border-radius:10px!important;box-shadow:0 7px 25px #0007!important;
+  font-size:12px!important;font-weight:700!important;cursor:pointer!important;
+}
+.pi-v16-format-trigger[hidden]{display:none!important;}
+.pi-v16-rich-dialog{
+  position:fixed;inset:0;margin:auto;max-width:calc(100vw - 18px);width:min(700px,94vw);
+  max-height:87dvh;box-sizing:border-box;border:1px solid var(--teal-soft);
+  border-radius:12px;background:var(--panel);color:var(--text);padding:16px;
+  box-shadow:0 20px 65px #0008;overflow-y:auto;
+}
+.pi-v16-rich-dialog::backdrop{background:#080b12be;backdrop-filter:blur(4px);}
+.pi-v16-rich-head,.pi-v16-rich-foot,.pi-v16-rich-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.pi-v16-rich-head{justify-content:space-between;margin-bottom:12px;font-size:17px;}
+.pi-v16-rich-dialog button{cursor:pointer;color:var(--text);background:var(--panel-light);border:1px solid var(--border);padding:6px 10px;border-radius:6px;}
+.pi-v16-rich-toolbar{margin-bottom:8px;}
+.pi-v16-rich-toolbar button{min-width:35px;min-height:35px;font-size:14px;}
+.pi-v16-rich-toolbar button:hover,.pi-v16-rich-toolbar button:focus-visible{border-color:var(--teal-soft);}
+.pi-v16-rich-input{min-height:165px;max-height:45dvh;overflow:auto;border:1px solid var(--border);border-radius:8px;
+  background:var(--bg-soft);color:var(--text);white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.55;
+  padding:12px;outline:none;font:inherit;font-size:15px;}
+.pi-v16-rich-input:focus{border-color:var(--teal-soft);}
+.pi-v16-rich-foot{justify-content:flex-end;margin-top:12px;}
+.pi-v16-rich-foot span{margin-right:auto;font-size:11px;color:var(--muted);}
+.pi-v16-rich-foot [data-save]{border-color:var(--teal-soft);font-weight:700;}
+
+/* V17: category checklist rows show a single ⋮ action.
+   Archive and Delete share the existing dropdown on Home and in calendars. */
+html body .database-page .pi-nested-tools-menu > button,
+html body dialog.pi-category-dialog .pi-nested-tools-menu > button {
+  display:block!important;width:100%!important;min-width:112px!important;
+  height:auto!important;min-height:32px!important;
+  margin:0!important;padding:6px 10px!important;
+  border:1px solid transparent!important;border-radius:5px!important;
+  background:transparent!important;color:var(--text)!important;
+  font:500 12px/1.35 'Segoe UI',Arial,sans-serif!important;
+  text-align:left!important;cursor:pointer!important;
+}
+html body .database-page .pi-nested-tools-menu > button:hover,
+html body dialog.pi-category-dialog .pi-nested-tools-menu > button:hover,
+html body .planner-nested-options > button:hover {
+  background:var(--panel-light)!important;border-color:var(--border)!important;
+}
+.pi-nested-tools-menu > button + button,
+.planner-nested-options > button + button {margin-top:3px!important;}
+.planner-day-dialog .planner-category-line {
+  grid-template-columns:14px 16px minmax(0,1fr) auto auto!important;
+}
+@media (max-width:650px) {
+  .planner-day-dialog .planner-category-line {
+    grid-template-columns:12px 16px minmax(0,1fr) auto auto!important;
+  }
+}

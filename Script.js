@@ -105,7 +105,8 @@ window.PIHomeNestedChecklist = function(item, applyChange) {
         remove.addEventListener('click', () => applyChange(live => {
             live.subtasks = (live.subtasks || []).filter(entry => entry.id !== child.id);
         }));
-        actions.append(remove);
+        // Nested checklist actions live in one quiet three-dot menu.
+        // Never leave the destructive action visible beside the menu.
         const tools=document.createElement('details');tools.className='pi-nested-tools';
         const trigger=document.createElement('summary');trigger.textContent='⋮';
         trigger.title='Item actions';trigger.setAttribute('aria-label','Checklist item actions');
@@ -117,7 +118,10 @@ window.PIHomeNestedChecklist = function(item, applyChange) {
               originalDate:child.date||null,createdAt:child.createdAt||null,metadata:{...child}}))return;
             applyChange(live=>{live.subtasks=(live.subtasks||[]).filter(entry=>entry.id!==child.id);});
         });
-        panel.append(archive);tools.append(trigger,panel);actions.prepend(tools);
+        remove.textContent = 'Delete';
+        remove.title = 'Delete checklist item';
+        remove.setAttribute('aria-label',remove.title);
+        panel.append(archive,remove);tools.append(trigger,panel);actions.append(tools);
         line.append(drag,check,field,when,actions); root.append(line);
         requestAnimationFrame(fit);
     });
@@ -7983,16 +7987,19 @@ if (document.getElementById("neopetsApp")) {
     function addDoc(docs, page, section, text) {
         const cleaned = cleanText(text);
         if (!page || cleaned.length < 2) return;
-        docs.push({ page, section, text: cleaned.slice(0, 900), href: activityHref(page) });
+        docs.push({ page, section, text: cleaned.slice(0, 10000), href: activityHref(page) });
     }
 
     function objectHumanText(object) {
         if (!object || typeof object !== "object") return "";
-        const preferred = ["title", "text", "label", "name", "description", "detail", "context", "status"];
+        const preferred = ["title", "text", "label", "name", "description", "detail", "details", "body", "context", "status"];
         const bits = [];
         preferred.forEach(key => {
             const value = object[key];
             if (typeof value === "string" && value.trim()) bits.push(value);
+        });
+        if (Array.isArray(object.subtasks)) object.subtasks.forEach(child => {
+            if (child && typeof child.text === "string") bits.push(child.text);
         });
         return bits.join(" · ");
     }
@@ -8001,38 +8008,38 @@ if (document.getElementById("neopetsApp")) {
         const docs = [];
         readCaptureInbox().forEach(item => addDoc(docs, "home", "Inbox", [item.title, item.text].filter(Boolean).join(" · ")));
         const focus = readFocus();
-        focus.forEach(item => addDoc(docs, "database", "On My Radar", item.text));
+        focus.forEach(item => addDoc(docs, "database", "On My Radar", objectHumanText(item)));
         [
             [PI_KEYS.radarKey, "Radar"], [PI_KEYS.nearRadarKey, "Near Radar"], [PI_KEYS.databaseNotesKey, "Notes"]
-        ].forEach(([key, label]) => humanArray(key).forEach(item => addDoc(docs, "database", label, item.text)));
+        ].forEach(([key, label]) => humanArray(key).forEach(item => addDoc(docs, "database", label, objectHumanText(item))));
 
         for (let i = 0; i < localStorage.length; i += 1) {
             const key = localStorage.key(i);
             if (!key?.startsWith("pi-calendar-day-")) continue;
             const date = key.slice("pi-calendar-day-".length);
-            humanArray(key).forEach(item => addDoc(docs, "database", `Calendar · ${date}`, item.text));
+            humanArray(key).forEach(item => addDoc(docs, "database", `Calendar · ${date}`, objectHumanText(item)));
         }
 
-        humanArray("pi-planner-week-notes-v1").forEach(item => addDoc(docs, "week", "Notes", item.text));
+        humanArray("pi-planner-week-notes-v1").forEach(item => addDoc(docs, "week", "Notes", objectHumanText(item)));
         Object.keys(localStorage).filter(key => /^pi-planner-month-\d{4}-\d{2}$/.test(key)).forEach(key => {
-            humanArray(key).forEach(item => addDoc(docs, key.slice(-7) === makeLocalIsoDate().slice(0,7) ? "month" : "archive", `Month notes · ${key.slice(-7)}`, item.text));
+            humanArray(key).forEach(item => addDoc(docs, key.slice(-7) === makeLocalIsoDate().slice(0,7) ? "month" : "archive", `Month notes · ${key.slice(-7)}`, objectHumanText(item)));
         });
         const customReference = jsonRead("pi-almanac-tiles-v1", {custom: [], hidden: []});
         (customReference.custom || []).filter(tile => !(customReference.hidden || []).includes(tile.id)).forEach(tile => {
             (tile.items || []).forEach(item => addDoc(docs, "almanac", tile.name || "Reference", item.text || ""));
         });
         const aquarium = readAquarium();
-        aquarium.cards.forEach(card => addDoc(docs, "aquarium", card.zone === "inbox" ? "Inbox" : (card.zone || "Aquarium"), [card.title, card.text].filter(Boolean).join(" · ")));
+        aquarium.cards.forEach(card => addDoc(docs, "aquarium", card.zone === "inbox" ? "Inbox" : (card.zone || "Aquarium"), objectHumanText(card)));
 
         const longform = jsonRead(PI_KEYS.longformKey, { entries: [] });
         const titles = jsonRead(PI_KEYS.longformTitlesKey, {});
         (Array.isArray(longform?.entries) ? longform.entries : []).forEach(entry => addDoc(docs, "longform", "Saved thought", [titles?.[entry.id], entry.text].filter(Boolean).join(" · ")));
 
         humanArray(PI_KEYS.archiveWorkspaceKey).forEach(item => addDoc(docs, "almanac", item.zone || "Working note", [item.title, item.text].filter(Boolean).join(" · ")));
-        (jsonRead("pi-reflections-notes-v1", {entries:[]})?.entries || []).forEach(item => addDoc(docs, "almanac", "Saved note", [item.title,item.text].filter(Boolean).join(" · ")));
+        (jsonRead("pi-reflections-notes-v1", {entries:[]})?.entries || []).forEach(item => addDoc(docs, "almanac", "Saved note", objectHumanText(item)));
         humanArray(PI_KEYS.archiveKey).forEach(record => {
             if (record.recordType === "day") {
-                (Array.isArray(record.items) ? record.items : []).forEach(item => addDoc(docs, "archive", record.displayLabel || record.originalDate || "Day Archive", item.text));
+                (Array.isArray(record.items) ? record.items : []).forEach(item => addDoc(docs, "archive", record.displayLabel || record.originalDate || "Day Archive", objectHumanText(item)));
             } else addDoc(docs, "archive", [record.source, record.context].filter(Boolean).join(" · ") || "Archive", record.text);
         });
 
@@ -8052,6 +8059,31 @@ if (document.getElementById("neopetsApp")) {
                 items.forEach(item => addDoc(docs, "neopets", section, objectHumanText(item)));
             });
         }
+        // Search the remaining live stores using a deliberate allowlist: never index
+        // authentication, cloud-sync metadata, conflict records or old recovery snapshots.
+        [
+            ["pi-compass-v1", "almanac", "Compass"],
+            ["pi-reflections-notes-v1", "almanac", "Notes"],
+            ["pi-archive-workspace-v1", "almanac", "Workspace"],
+            ["pi-planner-next-notes-v1", "next-month", "Next Month"],
+            ["pi-longform-draft-v1", "longform", "Draft"]
+        ].forEach(([key, page, section]) => {
+            const data = jsonRead(key, null);
+            const visited = new WeakSet();
+            let count = 0;
+            function walk(value, level = 0) {
+                if (level > 8 || count > 500 || value == null) return;
+                if (typeof value === "string") { if (value.trim()) addDoc(docs, page, section, value); count++; return; }
+                if (typeof value !== "object" || visited.has(value)) return;
+                visited.add(value);
+                if (Array.isArray(value)) { value.forEach(x => walk(x, level + 1)); return; }
+                Object.entries(value).forEach(([name, val]) => {
+                    if (/^(id|url|image|icon|createdAt|updatedAt|completedAt|date|color|theme|kind|html|status)$/i.test(name)) return;
+                    walk(val, level + 1);
+                });
+            }
+            walk(data);
+        });
         return docs;
     }
 
@@ -8097,8 +8129,16 @@ if (document.getElementById("neopetsApp")) {
             card.className = "pi-search-result";
             card.href = doc.href;
             const role = PAGES[doc.page]?.role || doc.page;
-            card.innerHTML = `<div class="pi-search-meta"><span>${PAGES[doc.page]?.icon || "•"} ${PAGES[doc.page]?.label || doc.page}</span><span>${role}</span><span>${doc.section}</span></div><div class="pi-search-text"></div>`;
-            card.querySelector(".pi-search-text").textContent = doc.text;
+            const meta = document.createElement("div"); meta.className = "pi-search-meta";
+            [ `${PAGES[doc.page]?.icon || "•"} ${PAGES[doc.page]?.label || doc.page}`, role, doc.section ].forEach(value => {
+                const chip = document.createElement("span"); chip.textContent = value; meta.append(chip);
+            });
+            const preview = document.createElement("div"); preview.className = "pi-search-text";
+            const matchAt = doc.text.toLowerCase().indexOf(q);
+            const start = Math.max(0, matchAt - 100);
+            const excerpt = doc.text.slice(start, Math.min(doc.text.length, start + 370));
+            preview.textContent = (start ? "…" : "") + excerpt + (start + excerpt.length < doc.text.length ? "…" : "");
+            card.append(meta,preview);
             results.appendChild(card);
         });
     }
@@ -8112,6 +8152,9 @@ if (document.getElementById("neopetsApp")) {
         renderSearchResults("", overlay.querySelector("#piFinderResults"));
         setTimeout(() => input.focus(), 0);
     }
+
+    // Public hook for the Tools menu on every page.
+    window.PIOpenSearch = openSearch;
 
     function makeRecentOverlay() {
         let overlay = document.getElementById("piRecentOverlay");
