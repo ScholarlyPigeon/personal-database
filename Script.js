@@ -418,18 +418,14 @@ const THEME_USAGE_KEY = "pi-theme-usage-v1";
 const THEME_OPTIONS = [
     { value: "dark", label: "🌙 Dark Original", mode: "dark" },
     { value: "aquarium", label: "🐠 Teal celestial aquarium", mode: "dark" },
-    { value: "observatory", label: "🔭 Midnight Observatory", mode: "dark" },
     { value: "nightgarden", label: "🪻 Night Garden", mode: "dark" },
     { value: "fieldnotes", label: "📓 Universal Field Notes", mode: "dark" },
-    { value: "nightledger", label: "📘 Night Ledger", mode: "dark" },
     { value: "y2k", label: "🖥️ Y2K Web Portal", mode: "dark" },
     { value: "fall2", label: "🍁 Fall 2", mode: "dark" },
     { value: "clarity-dark", label: "🧾 Clarity Dark", mode: "dark" },
     { value: "cozy", label: "💿 Cozy 2000s", mode: "light" },
     { value: "green", label: "🌿 Full Green", mode: "light" },
     { value: "fall", label: "🍂 Fall", mode: "light" },
-    { value: "study", label: "📜 Study", mode: "light" },
-    { value: "clarity-light", label: "🧾 Clarity Light", mode: "light" }
 ];
 
 const validThemes = new Set(THEME_OPTIONS.map(theme => theme.value));
@@ -504,7 +500,12 @@ function applyTheme(theme, save = false) {
     }
 }
 
-const storedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+let storedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+// A retired/unknown selection becomes Dark Original once; page data is untouched.
+if (storedTheme && !validThemes.has(storedTheme)) {
+    storedTheme = "dark";
+    localStorage.setItem(THEME_STORAGE_KEY, storedTheme);
+}
 applyTheme(storedTheme || document.body.dataset.defaultTheme || "dark");
 
 if (themeSelect) {

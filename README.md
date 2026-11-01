@@ -1,3 +1,15 @@
+# V20.2 Theme retirement
+
+Removed four unused themes: **Night Ledger**, **Midnight Observatory**, **Clarity Light**, and **Study**. Their menu catalog entries and their dedicated CSS rules have been deleted, including the optional Study botanical override. Shared Clarity Dark styles were retained, and cross-theme rules were narrowed to kept themes only.
+
+**Retained themes (10):** Dark Original, Teal celestial aquarium, Night Garden, Universal Field Notes, Y2K Web Portal, Fall 2, Clarity Dark, Cozy 2000s, Full Green, Fall.
+
+**New default appearances:** Compass uses Universal Field Notes; Timeline, Longform, and Archive use Full Green. When an old theme choice is still stored on a device, it is safely replaced by Dark Original at the next load. Notes, history, saved content, backup keys, and cloud records are not changed.
+
+**Deployment:** Download a JSON backup first, upload the contents of `CURRENT/` to the existing GitHub repository, wait for GitHub Pages to deploy, then hard-refresh (`Ctrl+Shift+R`). Test the theme selector and all pages. This update keeps V20.1's corrected `defer` loading order and code structure.
+
+---
+
 # V20.1 Loading-order repair (recommended over V20)
 
 V20 accidentally removed the `defer` attribute from all local application scripts while consolidating HTML file imports. The Supabase CDN script was still deferred, so the local cloud-sync script could run before the Supabase library was available; the other scripts also ran before the page body existed. This prevented dynamic Home notes, calendars, theme selectors and other page content from appearing. **V20.1 restores `defer` on every application page** and uses new URL version tags to refresh browser caches. No user-data keys, stored records, Supabase code, layout markup, or code bundles are changed relative to V20.
@@ -49,7 +61,7 @@ A focused file/maintenance cleanup of V19, **not a data migration or feature red
 | `CalendarNotes.css` | Week/Month category notes |
 | `Interface.css` | Shared selector and editor refinements |
 | `HomeMobile.css` | Home-specific responsive repairs |
-| `Polish.css` | Recent tools, V18/V19 visual fixes, Study theme, and shared keyboard-focus treatment |
+| `Polish.css` | Recent tools, V18/V19 visual fixes, and shared keyboard-focus treatment |
 | `README.md` | This guide and condensed release notes |
 
 ### Why there are still multiple CSS/JS files
@@ -72,7 +84,7 @@ To avoid CSS override bugs and JavaScript dependency changes, the bundles preser
 - Old / retired features can still hold archived or prior-generation user content. Don't remove storage readers, save handlers, or migrations just because a control is hidden.
 - Cloud sync must not be rebuilt or mixed with rendering code merely to reduce file count. Keep its conflict and migration protections.
 - Cloud status and JSON backup must remain usable on every page. Test a deploy in a single tab before opening additional devices.
-- The existing Study theme keeps the botanical palette: `#0A3323`, `#839958`, `#F7F4D5`, `#D3968C`, `#105666`.
+- Theme styling for the four retired options was removed in V20.2; the other ten themes remain available.
 - On Aquarium, hidden action menus still use the original save/archive/delete handlers and must remain non-destructive until the user chooses an action.
 
 ## Condensed version history
@@ -83,7 +95,7 @@ To avoid CSS override bugs and JavaScript dependency changes, the bundles preser
 - **Oct 25–26:** Calendar category notes, Next Month, navigation sizing, completion timestamps, keyboard entry behavior, mobile fixes.
 - **Oct 31 / V17:** Shared Tools search, download backup and archive completed; richer editing and note/action menus.
 - **Nov 1 / V18:** Calendar click-to-edit and drag handles; Aquarium action menus; Neopets status restoration; Timeline central composer.
-- **Nov 1 / V19:** Neopets layout corrections, Aquarium click-to-collapse, higher contrast section headings and botanical Study theme.
+- **Nov 1 / V19:** Neopets layout corrections, Aquarium click-to-collapse, higher contrast section headings and Study styling (retired in V20.2).
 - **V20:** Documentation merge, logical CSS/JS bundles, removal of repeated imports, one redundant CSS declaration, and a small shared focus/control styling pass. No data migration.
 
 ## Legacy files to remove **after successful deployment**

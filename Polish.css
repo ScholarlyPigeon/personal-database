@@ -260,7 +260,7 @@ html.aquarium-page .aq-card-actions .pi-cross-panel .pi-aq-menu-actions > button
 
 /* ===== Original module: IntranetPolishV19.css ===== */
 /* Personal Intranet V19: Neopets header consolidation, Aquarium header clarity,
-   and a botanical Study palette. Presentation only; no storage changes. */
+   and presentation refinements. No storage changes. */
 
 /* NEOPETS: on desktop, one uninterrupted title/navigation line, then a
    status stripe exactly as wide as the control group beneath it. */
@@ -464,121 +464,6 @@ html.aquarium-page .aq-card-actions > .pi-cross-menu > summary {
 html.aquarium-page .aq-card-actions > .selection-control {order:0 !important;}
 html.aquarium-page .aq-card-header:focus-visible,
 html.aquarium-page .aq-category-head:focus-visible {outline:2px solid var(--teal-soft);outline-offset:1px;}
-
-/* STUDY THEME: Lotus library palette • #0A3323 #839958 #F7F4D5
-   #D3968C #105666. Keep the theme's existing identity and storage value. */
-body[data-theme="study"] {
-  --bg:#0a3323; --bg-soft:#18483b;
-  --panel:#f7f4d5; --panel-light:#e5e8ca;
-  --plum:#ad7471; --plum-soft:#874c53;
-  --teal:#105666; --teal-soft:#146d78;
-  --blue:#376f77; --blue-soft:#105666;
-  --rose:#d3968c; --rose-soft:#935e5a;
-  --green:#839958; --green-soft:#49652d;
-  --orange:#ba9374; --orange-soft:#956b4b;
-  --text:#163c2e; --muted:#49624b; --faint:#63745d;
-  --border:#839958;
-  --shadow:0 6px 22px rgba(5,31,21,.24),inset 0 1px 0 rgba(255,255,241,.65);
-  color:var(--text);
-  background-color:#0a3323 !important;
-  background-image:
-    radial-gradient(ellipse at 7% 17%,rgba(131,153,88,.32),transparent 42%),
-    radial-gradient(ellipse at 90% 78%,rgba(16,86,102,.6),transparent 43%),
-    radial-gradient(ellipse at 83% 12%,rgba(211,150,140,.13),transparent 25%),
-    linear-gradient(145deg,#08291c,#0a3323 45%,#105666 100%) !important;
-}
-body[data-theme="study"]::before {
-  background:radial-gradient(circle at 15% 30%,rgba(247,244,213,.065) 0 1px,transparent 2px),
-             radial-gradient(circle at 75% 60%,rgba(131,153,88,.09) 0 1px,transparent 2px) !important;
-  background-size:68px 77px,95px 91px !important;mix-blend-mode:normal !important;
-}
-body[data-theme="study"]::after {
-  background:radial-gradient(circle,rgba(131,153,88,.18),transparent 69%) !important;
-}
-body[data-theme="study"] :is(.panel,.link-strip,.current-strip,.aq-panel,.aq-category,
-  .board-tile,.checklist-item,.note,.aq-card,.link-chip,.pi-workspace-panel,.pi-notes-section,
-  .neo-card,.planner-day,.planner-notes,.longform-library,.longform-composer) {
-  background-color:var(--panel) !important;
-  border-color:color-mix(in srgb,var(--border) 70%,#0a3323 30%) !important;
-  box-shadow:var(--shadow);
-}
-body[data-theme="study"] :is(.panel-header,.aq-panel-head,.aq-category-head,
-  .pi-workspace-head,.pi-notes-section-head,.longform-library-head) {
-  background:linear-gradient(100deg,#0a3323,#105666) !important;
-  color:#f7f4d5 !important;
-  border-bottom-color:#839958 !important;
-}
-body[data-theme="study"] :is(.panel-header,.aq-panel-head,.aq-category-head,
-  .pi-workspace-head,.pi-notes-section-head,.longform-library-head)
-  :is(.panel-title,.aq-panel-title,.aq-category-name,.pi-workspace-title,.pi-notes-section-title,
-      .longform-library-title,.editable-ui) {
-  color:#f7f4d5 !important;
-}
-body[data-theme="study"] :is(.database-header,.aq-header,.almanac-header,.patterns-header,
-  .longform-header,.neo-field-header) {
-  background:linear-gradient(110deg,#0a3323,#105666) !important;
-  border:1px solid #839958 !important;
-  color:#f7f4d5 !important;
-}
-body[data-theme="study"] h1 {color:#f7f4d5 !important;text-shadow:0 1px 3px rgba(0,0,0,.3) !important;}
-body[data-theme="study"] :is(.subtitle,.header-right,.aq-subtitle,.aq-header-actions) {
-  color:#f7f4d5 !important;text-shadow:none !important;
-}
-body[data-theme="study"] .pi-mark {
-  background:linear-gradient(145deg,#839958,#105666) !important;
-  color:#f7f4d5 !important;border-color:#d3968c !important;
-}
-body[data-theme="study"] :is(.small-button,.theme-select,.link-add-button,
-  .aq-filter-button,.aq-mini-button,.pi-popout-button,.panel-collapse-toggle) {
-  background:#e6eac9 !important;color:#163c2e !important;border-color:#839958 !important;
-  text-shadow:none !important;box-shadow:none !important;
-}
-body[data-theme="study"] :is(.small-button,.theme-select,.link-add-button,
-  .aq-filter-button,.aq-mini-button,.pi-popout-button,.panel-collapse-toggle):hover {
-  background:#c8d5a7 !important;border-color:#105666 !important;
-}
-body[data-theme="study"] :is(.mini-add,.add-button,.checklist-add,.aq-primary-button,#saveLinkEdit) {
-  background:linear-gradient(150deg,#105666,#0a3323) !important;
-  color:#f7f4d5 !important;border-color:#839958 !important;
-}
-body[data-theme="study"] :is(.day-input,.checklist-input,#scratchpad,#noteInput,
- .link-editor input,.aq-capture-input,.aq-capture-rich-input,.grow-input,input:not([type="checkbox"]):not([type="radio"]),textarea) {
-  background:#fffbe8;color:#163c2e;border-color:#839958;box-shadow:none;
-}
-body[data-theme="study"] :is(.day-input,.checklist-input,#scratchpad,#noteInput,
-  .aq-capture-input,.aq-capture-rich-input,.grow-input,textarea)::placeholder {
-  color:#60715e;
-}
-body[data-theme="study"] :is(.link-chip,.checklist-item,.note,.aq-card) {
-  background:linear-gradient(180deg,#fffbe7,#e8eacb) !important;color:#163c2e !important;
-}
-body[data-theme="study"] :is(.link-chip a,.tile-text,.task-text,.note-text,.aq-card-text) {color:#163c2e !important;}
-body[data-theme="study"] .board-tile[data-accent="plum"] {background:linear-gradient(160deg,#f3d9d1,#d3968c) !important;}
-body[data-theme="study"] .board-tile[data-accent="rose"] {background:linear-gradient(160deg,#f3d9d1,#d3968c) !important;}
-body[data-theme="study"] .board-tile[data-accent="teal"] {background:linear-gradient(160deg,#b4d9cf,#7eaea3) !important;}
-body[data-theme="study"] .board-tile[data-accent="blue"] {background:linear-gradient(160deg,#cce3dd,#97bfc3) !important;}
-body[data-theme="study"] .board-tile[data-accent="green"] {background:linear-gradient(160deg,#dce4bd,#a6bb7b) !important;}
-body[data-theme="study"] .board-tile[data-accent="orange"] {background:linear-gradient(160deg,#ead6c5,#d3b091) !important;}
-body[data-theme="study"] .aq-category[data-accent="plum"],
-body[data-theme="study"] .aq-category[data-accent="rose"] {background:linear-gradient(165deg,#f7f4d5,#edc5b9) !important;}
-body[data-theme="study"] .aq-category[data-accent="teal"],
-body[data-theme="study"] .aq-category[data-accent="blue"] {background:linear-gradient(165deg,#f7f4d5,#b5d7ca) !important;}
-body[data-theme="study"] .aq-category[data-accent="green"] {background:linear-gradient(165deg,#f7f4d5,#d1dda8) !important;}
-body[data-theme="study"] .aq-category[data-accent="orange"] {background:linear-gradient(165deg,#f7f4d5,#e9d4b5) !important;}
-body[data-theme="study"] .aq-section-divider {background:#e3e8c7 !important;border-color:#839958 !important;}
-body[data-theme="study"] .aq-section-label {color:#0a3323 !important;}
-body[data-theme="study"] .aq-kind-choice {background:#f7f4d5 !important;color:#163c2e !important;border-color:#839958 !important;}
-body[data-theme="study"] .aq-kind-choice.active {background:#d9e3b8 !important;border-color:#105666 !important;}
-body[data-theme="study"] .link-editor-backdrop {background:rgba(4,30,19,.76) !important;}
-body[data-theme="study"] .link-editor {background:#f7f4d5 !important;border-color:#839958 !important;}
-body[data-theme="study"] .theme-select option {background:#f7f4d5;color:#163c2e;}
-body[data-theme="study"] .pi-theme-menu > summary,
-body[data-theme="study"] header .ecosystem-menu > summary {background:#e7ebc8 !important;color:#0a3323 !important;border-color:#839958 !important;}
-body[data-theme="study"] header .ecosystem-menu-popover,
-body[data-theme="study"] .pi-tools-popover {background:#f7f4d5 !important;color:#0a3323 !important;border:1px solid #839958 !important;}
-body[data-theme="study"] header .pi-theme-choice {color:#0a3323 !important;}
-body[data-theme="study"] header .pi-theme-choice:hover {background:#dae6ba !important;}
-body[data-theme="study"] .sync-status {color:#f7f4d5 !important;}
 
 @media (prefers-reduced-motion:reduce) {
   html.aquarium-page .aq-card-header,html.aquarium-page .aq-category-head {scroll-behavior:auto;}
