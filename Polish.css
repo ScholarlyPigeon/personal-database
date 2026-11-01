@@ -828,7 +828,7 @@ html body.pi-compass-body .pi-current-tile:nth-child(4n+2) {
   background: linear-gradient(180deg, color-mix(in srgb,var(--rose-soft) 22%,var(--panel-light)), var(--panel-light)) !important;
 }
 html body.pi-compass-body .pi-current-tile:nth-child(4n+3) {
-  background: linear-gradient(180deg, color-mix(in srgb,var(--gold-soft) 26%,var(--panel-light)), var(--panel-light)) !important;
+  background: linear-gradient(180deg, color-mix(in srgb,var(--orange-soft) 26%,var(--panel-light)), var(--panel-light)) !important;
 }
 html body.pi-compass-body .pi-current-tile:nth-child(4n+4) {
   background: linear-gradient(180deg, color-mix(in srgb,var(--lav-soft, #b9afd7) 24%,var(--panel-light)), var(--panel-light)) !important;
@@ -894,5 +894,129 @@ html body.pi-compass-body .pi-current-tile.pi-drop-ready {
 @media (max-width: 1080px) {
   html body.pi-compass-body .pi-current-panel > .pi-workspace-scroll.pi-current-rail {
     grid-auto-columns: minmax(220px, 82%) !important;
+  }
+}
+
+
+/* ===== V20.8: Currently is a genuinely collapsible, framed priority rail ===== */
+html body.pi-compass-body .pi-current-panel {
+  display:flex !important;
+  flex-direction:column !important;
+  box-sizing:border-box !important;
+  min-width:0 !important;
+  height:auto !important;
+  min-height:0 !important;
+  border:1px solid var(--border) !important;
+  border-radius:var(--radius, 12px) !important;
+  background:var(--panel) !important;
+  box-shadow:var(--shadow) !important;
+  overflow:hidden !important;
+}
+html body.pi-compass-body .pi-current-panel > .pi-workspace-head {
+  flex:0 0 auto !important;
+  background:var(--panel-light) !important;
+  border-bottom:1px solid var(--border) !important;
+  cursor:pointer;
+}
+html body.pi-compass-body .pi-current-panel > .pi-workspace-head .panel-collapse-toggle {
+  display:grid !important;
+  place-items:center !important;
+  width:29px !important;
+  height:29px !important;
+  min-width:29px !important;
+  flex:0 0 29px !important;
+  font-size:17px !important;
+  color:var(--text) !important;
+}
+/* This is the actual V20.7 bug: the rail's grid display !important was
+   overriding hidden, so the arrow changed but the notes stayed visible. */
+html body.pi-compass-body .pi-current-panel.is-collapsed > .pi-workspace-scroll,
+html body.pi-compass-body .pi-current-panel > .pi-workspace-scroll[hidden] {
+  display:none !important;
+}
+html body.pi-compass-body .pi-current-panel.is-collapsed > .pi-workspace-head {
+  border-bottom:0 !important;
+}
+html body.pi-compass-body .pi-current-panel > .pi-workspace-scroll.pi-current-rail {
+  box-sizing:border-box !important;
+  flex:0 0 auto !important;
+  display:grid !important;
+  grid-auto-flow:column !important;
+  /* Four visible on spacious desktops; more cards scroll inside the rail. */
+  grid-auto-columns:clamp(205px,calc((100% - 30px) / 4),390px) !important;
+  gap:10px !important;
+  min-height:138px !important;
+  max-height:none !important;
+  padding:12px !important;
+  margin:9px !important;
+  width:calc(100% - 18px) !important;
+  overflow-x:auto !important;
+  overflow-y:hidden !important;
+  border:1px solid color-mix(in srgb,var(--border) 82%,transparent) !important;
+  border-radius:12px !important;
+  background:color-mix(in srgb,var(--bg-soft) 77%,var(--panel-light) 23%) !important;
+  box-shadow:inset 0 1px 5px color-mix(in srgb,var(--text) 5%,transparent) !important;
+  align-items:stretch !important;
+  scroll-snap-type:x proximity;
+}
+html body.pi-compass-body .pi-current-tile {
+  box-sizing:border-box !important;
+  min-height:122px !important;
+  grid-template-rows:auto minmax(0,1fr) auto auto !important;
+  align-self:stretch !important;
+  border:1px solid color-mix(in srgb,var(--border) 84%,transparent) !important;
+}
+html body.pi-compass-body .pi-current-tile-head {
+  grid-template-columns:22px minmax(0,1fr) 24px 22px !important;
+  align-items:center !important;
+}
+html body.pi-compass-body .pi-current-tile-head .pi-current-tile-toggle {
+  font-size:16px !important;
+  color:var(--text) !important;
+}
+html body.pi-compass-body .pi-current-tile-head .pi-current-tile-title {
+  cursor:pointer;
+}
+html body.pi-compass-body .pi-current-tile-details[hidden] {
+  display:none !important;
+}
+html body.pi-compass-body .pi-current-tile-details {
+  box-sizing:border-box !important;
+  min-width:0 !important;
+  max-height:165px !important;
+  overflow-y:auto !important;
+  border-top:1px solid color-mix(in srgb,var(--border) 80%,transparent) !important;
+  padding:3px 1px !important;
+}
+html body.pi-compass-body .pi-current-tile.is-expanded {
+  min-height:230px !important;
+  grid-template-rows:auto 0fr minmax(80px,1fr) auto !important;
+}
+html body.pi-compass-body .pi-current-tile.is-expanded .pi-current-tile-preview {
+  display:none !important;
+}
+html body.pi-compass-body .pi-current-tile-details .pi-note-card-body {
+  border:0 !important;
+  border-radius:7px !important;
+  padding:7px 8px !important;
+  min-height:68px !important;
+  background:color-mix(in srgb,var(--panel) 78%,transparent) !important;
+  font-size:12px !important;
+  line-height:1.55 !important;
+}
+html body.pi-compass-body .pi-current-tile-details .pi-note-image {
+  display:block;
+  max-width:100%;
+  height:auto;
+  border-radius:7px;
+  margin:6px auto;
+}
+html body.pi-compass-body .pi-current-tile-details .pi-note-link {
+  display:inline-block;
+  margin:5px 8px;
+}
+@media(max-width:1080px) {
+  html body.pi-compass-body .pi-current-panel > .pi-workspace-scroll.pi-current-rail {
+    grid-auto-columns:minmax(220px,80%) !important;
   }
 }

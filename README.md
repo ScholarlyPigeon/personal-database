@@ -127,3 +127,11 @@ were changed. V20.4 fixes otherwise remain in place.
 - Aquarium section + and × actions share one centered control rail. Section names and records are unchanged.
 - Longform Write it out and Saved thoughts headers match in desktop height. Category management is labeled “Edit categories,” positioned before the category and date inputs; visible category/date captions removed, accessible labels retained.
 - Changes are presentation/markup-only; data keys and cloud-sync behavior are unchanged.
+
+
+## V20.8 Compass priority rail polish (November 1, 2026)
+
+- Compass **Currently...** uses the existing `pi-ui-panel-collapse-v1` key for its panel collapse state, and explicitly hides the horizontally laid-out rail when collapsed. The header's empty space also toggles it.
+- Its notes remain in the original `pi-compass-v1` records. Each highlighted tile now has its own disclosure for editable details, with expansion saved as an optional `currentExpanded` property. No existing note data is migrated or removed.
+- The horizontal rail now has a distinct framed background, similar to Home's day cards, with restrained theme-aware color variation.
+- Reload after deployment (Ctrl+Shift+R). Always make a JSON backup before testing editing, moving, or deleting.

@@ -395,46 +395,94 @@ function initCompass(){
   card.addEventListener('click',event=>{if(!selectedItem||selectedItem===item.id||event.target.closest('button,input,select,[contenteditable="true"],a'))return;event.preventDefault();reorderEntry(selectedItem,item.id,item.sectionId);});
   return card;
  }
- function makeCurrentTile(item,index){
+ function makeCurrentTile(item){
+  // The current rail is a glanceable view of the original synced Compass notes.
+  // Keep their title, details, attachments and move destination in the same record.
   const tile=el('article','pi-current-tile');
   tile.dataset.itemId=item.id;
-  tile.dataset.side=(item.currentSide||'neutral');
+  tile.dataset.side=item.currentSide||'neutral';
+  const expanded=Boolean(item.currentExpanded);
+  tile.classList.toggle('is-expanded',expanded);
   if(selectedItem===item.id)tile.classList.add('pi-move-selected');
 
   const head=el('div','pi-current-tile-head');
-  const move=btn('⠿','Move this note into a section',()=>{selectedItem=selectedItem===item.id?null:item.id;selectedSection=null;renderAll();},'pi-mini-icon pi-move-handle');
+  const move=btn('⠿','Move this note into a Compass section',()=>{
+    selectedItem=selectedItem===item.id?null:item.id;
+    selectedSection=null;renderAll();
+  },'pi-mini-icon pi-move-handle');
   move.draggable=true;
-  move.addEventListener('dragstart',event=>{dragItem=item.id;event.dataTransfer.setData('text/plain',item.id);event.dataTransfer.effectAllowed='move';});
+  move.addEventListener('dragstart',event=>{
+    dragItem=item.id;event.dataTransfer.setData('text/plain',item.id);event.dataTransfer.effectAllowed='move';
+  });
   move.addEventListener('dragend',()=>{dragItem=null;});
-  const title=el('div','pi-current-tile-title',item.title||'Untitled');
-  const del=btn('×','Delete note',()=>{if(!confirm('Delete this note?'))return;state.entries=state.entries.filter(entry=>entry.id!==item.id);store();renderAll();},'pi-mini-icon');
-  head.append(move,title,del);
 
-  const previewText=(item.text||'').trim();
-  const preview=el('div','pi-current-tile-preview',previewText || 'Tap the move handle to place this note into a section.');
+  const title=el('strong','pi-current-tile-title',item.title||'Untitled');
+  const detailsId='pi-current-details-'+String(item.id).replace(/[^a-zA-Z0-9_-]/g,'');
+  const fold=btn(expanded?'▾':'▸',expanded?'Collapse note details':'Expand note details',()=>{
+    item.currentExpanded=!Boolean(item.currentExpanded);
+    store();renderCurrent();
+  },'pi-mini-icon pi-current-tile-toggle');
+  fold.setAttribute('aria-controls',detailsId);
+  fold.setAttribute('aria-expanded',String(expanded));
+  const del=btn('×','Delete note',()=>{
+    if(!confirm('Delete this note?'))return;
+    state.entries=state.entries.filter(entry=>entry.id!==item.id);store();renderAll();
+  },'pi-mini-icon pi-current-tile-delete');
+  head.append(move,title,fold,del);
+  head.addEventListener('click',event=>{
+    if(event.target.closest('button'))return;
+    fold.click();
+  });
+
+  const previewText=String(item.text||'').trim();
+  const preview=el('div','pi-current-tile-preview',previewText||'No details yet. Expand to add a note.');
+
+  const details=el('div','pi-current-tile-details');
+  details.id=detailsId;
+  details.hidden=!expanded;
+  if(expanded){
+    details.append(makeBodyEditor(item));
+    if(item.imageUrl&&/^https?:\/\//i.test(item.imageUrl)){
+      const image=el('img','pi-note-image');image.src=item.imageUrl;
+      image.alt=item.title||'Attached image';image.loading='lazy';details.append(image);
+    }
+    if(item.linkUrl&&/^https?:\/\//i.test(item.linkUrl)){
+      const link=el('a','pi-note-link','open link ↗');link.href=item.linkUrl;
+      link.target='_blank';link.rel='noopener noreferrer';details.append(link);
+    }
+  }
 
   const footer=el('div','pi-current-tile-foot');
-  const dateChip=el('span','pi-current-tile-date',item.date||'');
-  const sideLabel=(item.currentSide==='goals'?'Goals':item.currentSide==='grounding'?'Grounding':'Active now');
+  const dateChip=el('span','pi-current-tile-date',dateLabel(item.date));
+  const sideLabel=item.currentSide==='goals'?'Goals':item.currentSide==='grounding'?'Grounding':'Active now';
   const badge=el('span','pi-current-tile-badge',sideLabel);
   footer.append(dateChip,badge);
+  tile.append(head,preview,details,footer);
 
-  tile.append(head,preview,footer);
-
-  tile.addEventListener('dragover',event=>{if(dragItem&&dragItem!==item.id){event.preventDefault();tile.classList.add('pi-drop-ready');}});
+  tile.addEventListener('dragover',event=>{
+    if(dragItem&&dragItem!==item.id){event.preventDefault();tile.classList.add('pi-drop-ready');}
+  });
   tile.addEventListener('dragleave',()=>tile.classList.remove('pi-drop-ready'));
-  tile.addEventListener('drop',event=>{if(!dragItem||dragItem===item.id)return;event.preventDefault();reorderEntry(dragItem,item.id,CURRENT_ID);});
-  tile.addEventListener('click',event=>{if(!selectedItem||selectedItem===item.id||event.target.closest('button'))return;event.preventDefault();reorderEntry(selectedItem,item.id,CURRENT_ID);});
+  tile.addEventListener('drop',event=>{
+    if(!dragItem||dragItem===item.id)return;
+    event.preventDefault();event.stopPropagation();reorderEntry(dragItem,item.id,CURRENT_ID);
+  });
+  tile.addEventListener('click',event=>{
+    if(!selectedItem||selectedItem===item.id||event.target.closest('button,[contenteditable="true"],a'))return;
+    event.preventDefault();reorderEntry(selectedItem,item.id,CURRENT_ID);
+  });
   return tile;
  }
 
  function renderCurrent(){
+  const oldScroll=listCurrent?.scrollLeft||0;
   listCurrent?.replaceChildren();
   const entries=state.entries.filter(entry=>entry.sectionId===CURRENT_ID);
   $('piCompassCurrentCount').textContent=String(entries.length);
   listCurrent.classList.add('pi-current-rail');
   if(!entries.length)listCurrent.append(el('p','pi-muted pi-current-empty','Use this for what is actively alive right now, regardless of which side it came from.'));
-  entries.forEach((entry,index)=>listCurrent.append(makeCurrentTile(entry,index)));
+  entries.forEach(entry=>listCurrent.append(makeCurrentTile(entry)));
+  listCurrent.scrollLeft=oldScroll;
   listCurrent.ondragover=event=>{if(dragItem){event.preventDefault();listCurrent.classList.add('pi-drop-ready');}};
   listCurrent.ondragleave=()=>listCurrent.classList.remove('pi-drop-ready');
   listCurrent.ondrop=event=>{if(!dragItem)return;event.preventDefault();reorderEntry(dragItem,null,CURRENT_ID);};

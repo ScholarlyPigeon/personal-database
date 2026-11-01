@@ -818,6 +818,13 @@ function bindCollapsiblePanels(root = document) {
             apply(Boolean(state[id]));
             writePanelCollapseState(state);
         });
+        // The Compass priority rail also folds when empty header space is clicked.
+        if (id === "compass-current") {
+            header.addEventListener("click", event => {
+                if (event.target.closest("button, input, select, a, [contenteditable]")) return;
+                toggle.click();
+            });
+        }
     });
 }
 
