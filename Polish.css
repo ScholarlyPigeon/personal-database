@@ -764,3 +764,135 @@ html.longform-page-html :is(.longform-library-head,.longform-composer-head) > :i
     flex-wrap: wrap !important;
   }
 }
+
+
+/* ===== V20.7: Compass current rail + cleaner column footing ===== */
+html body.pi-compass-body .pi-compass-layout {
+  grid-template-rows: auto minmax(0,1fr) !important;
+  align-items: stretch !important;
+}
+html body.pi-compass-body .pi-compass-grid {
+  height: 100% !important;
+  min-height: 0 !important;
+  align-self: stretch !important;
+}
+html body.pi-compass-body .pi-compass-grid > .pi-workspace-panel,
+html body.pi-compass-body .pi-current-panel {
+  min-height: 0 !important;
+}
+html body.pi-compass-body .pi-current-panel > .pi-workspace-head {
+  min-height: 44px !important;
+  align-items: center !important;
+}
+html body.pi-compass-body .pi-current-panel > .pi-workspace-scroll.pi-current-rail {
+  display: grid !important;
+  grid-auto-flow: column !important;
+  grid-auto-columns: minmax(210px, calc((100% - 24px) / 4)) !important;
+  gap: 8px !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  align-items: stretch !important;
+  padding: 10px !important;
+  scroll-snap-type: x proximity;
+}
+html body.pi-compass-body .pi-current-panel > .pi-workspace-scroll.pi-current-rail.pi-drop-ready {
+  background: color-mix(in srgb,var(--teal) 6%,transparent) !important;
+}
+html body.pi-compass-body .pi-current-empty {
+  display: grid !important;
+  place-items: center !important;
+  min-height: 96px !important;
+  margin: 0 !important;
+  padding: 16px !important;
+  border: 1px dashed color-mix(in srgb,var(--border) 78%,transparent) !important;
+  border-radius: 12px !important;
+  scroll-snap-align: start;
+}
+html body.pi-compass-body .pi-current-tile {
+  display: grid !important;
+  grid-template-rows: auto 1fr auto !important;
+  min-height: 122px !important;
+  border: 1px solid color-mix(in srgb,var(--border) 82%,transparent) !important;
+  border-radius: 14px !important;
+  padding: 10px !important;
+  gap: 8px !important;
+  background: linear-gradient(180deg, color-mix(in srgb,var(--panel-light) 90%,white 10%), var(--panel-light)) !important;
+  box-shadow: 0 4px 14px rgba(0,0,0,.06) !important;
+  min-width: 0 !important;
+  scroll-snap-align: start;
+}
+html body.pi-compass-body .pi-current-tile:nth-child(4n+1) {
+  background: linear-gradient(180deg, color-mix(in srgb,var(--teal) 18%,var(--panel-light)), var(--panel-light)) !important;
+}
+html body.pi-compass-body .pi-current-tile:nth-child(4n+2) {
+  background: linear-gradient(180deg, color-mix(in srgb,var(--rose-soft) 22%,var(--panel-light)), var(--panel-light)) !important;
+}
+html body.pi-compass-body .pi-current-tile:nth-child(4n+3) {
+  background: linear-gradient(180deg, color-mix(in srgb,var(--gold-soft) 26%,var(--panel-light)), var(--panel-light)) !important;
+}
+html body.pi-compass-body .pi-current-tile:nth-child(4n+4) {
+  background: linear-gradient(180deg, color-mix(in srgb,var(--lav-soft, #b9afd7) 24%,var(--panel-light)), var(--panel-light)) !important;
+}
+html body.pi-compass-body .pi-current-tile-head {
+  display: grid !important;
+  grid-template-columns: 22px minmax(0,1fr) 22px !important;
+  gap: 6px !important;
+  align-items: start !important;
+}
+html body.pi-compass-body .pi-current-tile .pi-mini-icon {
+  width: 22px !important;
+  height: 22px !important;
+  min-width: 22px !important;
+  min-height: 22px !important;
+}
+html body.pi-compass-body .pi-current-tile-title {
+  min-width: 0 !important;
+  font: 700 12px/1.35 'Segoe UI', Arial, sans-serif !important;
+  color: var(--text) !important;
+  overflow-wrap: anywhere !important;
+}
+html body.pi-compass-body .pi-current-tile-preview {
+  font-size: 11px !important;
+  line-height: 1.45 !important;
+  color: color-mix(in srgb,var(--text) 82%,transparent) !important;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 3 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+}
+html body.pi-compass-body .pi-current-tile-foot {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+}
+html body.pi-compass-body .pi-current-tile-date {
+  font-size: 10px !important;
+  color: var(--muted) !important;
+  white-space: nowrap !important;
+}
+html body.pi-compass-body .pi-current-tile-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 20px !important;
+  padding: 0 8px !important;
+  border-radius: 999px !important;
+  font: 700 10px/1 'Segoe UI', Arial, sans-serif !important;
+  color: var(--text) !important;
+  background: color-mix(in srgb,var(--bg-soft) 76%,white 24%) !important;
+  border: 1px solid color-mix(in srgb,var(--border) 82%,transparent) !important;
+}
+html body.pi-compass-body .pi-current-tile.pi-move-selected {
+  outline: 2px solid color-mix(in srgb,var(--teal) 75%,white 10%) !important;
+  outline-offset: 1px !important;
+}
+html body.pi-compass-body .pi-current-tile.pi-drop-ready {
+  border-color: var(--teal) !important;
+  transform: translateY(-1px);
+}
+@media (max-width: 1080px) {
+  html body.pi-compass-body .pi-current-panel > .pi-workspace-scroll.pi-current-rail {
+    grid-auto-columns: minmax(220px, 82%) !important;
+  }
+}

@@ -786,7 +786,7 @@ function bindCollapsiblePanels(root = document) {
         if (!id) return;
 
         const header = panel.querySelector(
-            ":scope > .panel-header, :scope > .aq-panel-head, :scope > .longform-library-head, :scope > .longform-composer-head, :scope > .neo-panel-heading, :scope > .neo-dailies-head, :scope > .almanac-panel-head, :scope > .archive-v2-panel-head"
+            ":scope > .panel-header, :scope > .pi-workspace-head, :scope > .aq-panel-head, :scope > .longform-library-head, :scope > .longform-composer-head, :scope > .neo-panel-heading, :scope > .neo-dailies-head, :scope > .almanac-panel-head, :scope > .archive-v2-panel-head"
         );
         const bodies = [...panel.querySelectorAll(":scope > [data-collapse-body]")];
         if (!header || !bodies.length) return;

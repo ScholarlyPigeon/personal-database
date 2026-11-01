@@ -340,7 +340,13 @@ function initCompass(){
  function reorderEntry(itemId,beforeId,targetSectionId){
   const from=state.entries.findIndex(entry=>entry.id===itemId);if(from<0)return;
   const [entry]=state.entries.splice(from,1);
-  if(targetSectionId)entry.sectionId=targetSectionId;
+  if(targetSectionId){
+    if(targetSectionId===CURRENT_ID && entry.sectionId!==CURRENT_ID){
+      entry.currentSide=sectionSide(entry.sectionId);
+      entry.lastSectionId=entry.sectionId;
+    }
+    entry.sectionId=targetSectionId;
+  }
   let to=beforeId?state.entries.findIndex(x=>x.id===beforeId):-1;
   if(to<0)to=state.entries.length;
   state.entries.splice(to,0,entry);selectedItem=null;dragItem=null;store();renderAll();
@@ -389,16 +395,50 @@ function initCompass(){
   card.addEventListener('click',event=>{if(!selectedItem||selectedItem===item.id||event.target.closest('button,input,select,[contenteditable="true"],a'))return;event.preventDefault();reorderEntry(selectedItem,item.id,item.sectionId);});
   return card;
  }
+ function makeCurrentTile(item,index){
+  const tile=el('article','pi-current-tile');
+  tile.dataset.itemId=item.id;
+  tile.dataset.side=(item.currentSide||'neutral');
+  if(selectedItem===item.id)tile.classList.add('pi-move-selected');
+
+  const head=el('div','pi-current-tile-head');
+  const move=btn('⠿','Move this note into a section',()=>{selectedItem=selectedItem===item.id?null:item.id;selectedSection=null;renderAll();},'pi-mini-icon pi-move-handle');
+  move.draggable=true;
+  move.addEventListener('dragstart',event=>{dragItem=item.id;event.dataTransfer.setData('text/plain',item.id);event.dataTransfer.effectAllowed='move';});
+  move.addEventListener('dragend',()=>{dragItem=null;});
+  const title=el('div','pi-current-tile-title',item.title||'Untitled');
+  const del=btn('×','Delete note',()=>{if(!confirm('Delete this note?'))return;state.entries=state.entries.filter(entry=>entry.id!==item.id);store();renderAll();},'pi-mini-icon');
+  head.append(move,title,del);
+
+  const previewText=(item.text||'').trim();
+  const preview=el('div','pi-current-tile-preview',previewText || 'Tap the move handle to place this note into a section.');
+
+  const footer=el('div','pi-current-tile-foot');
+  const dateChip=el('span','pi-current-tile-date',item.date||'');
+  const sideLabel=(item.currentSide==='goals'?'Goals':item.currentSide==='grounding'?'Grounding':'Active now');
+  const badge=el('span','pi-current-tile-badge',sideLabel);
+  footer.append(dateChip,badge);
+
+  tile.append(head,preview,footer);
+
+  tile.addEventListener('dragover',event=>{if(dragItem&&dragItem!==item.id){event.preventDefault();tile.classList.add('pi-drop-ready');}});
+  tile.addEventListener('dragleave',()=>tile.classList.remove('pi-drop-ready'));
+  tile.addEventListener('drop',event=>{if(!dragItem||dragItem===item.id)return;event.preventDefault();reorderEntry(dragItem,item.id,CURRENT_ID);});
+  tile.addEventListener('click',event=>{if(!selectedItem||selectedItem===item.id||event.target.closest('button'))return;event.preventDefault();reorderEntry(selectedItem,item.id,CURRENT_ID);});
+  return tile;
+ }
+
  function renderCurrent(){
   listCurrent?.replaceChildren();
   const entries=state.entries.filter(entry=>entry.sectionId===CURRENT_ID);
   $('piCompassCurrentCount').textContent=String(entries.length);
-  if(!entries.length)listCurrent.append(el('p','pi-muted','Use this for what is actively alive right now, regardless of which side it came from.'));
-  entries.forEach(entry=>listCurrent.append(makeNoteCard(entry)));
+  listCurrent.classList.add('pi-current-rail');
+  if(!entries.length)listCurrent.append(el('p','pi-muted pi-current-empty','Use this for what is actively alive right now, regardless of which side it came from.'));
+  entries.forEach((entry,index)=>listCurrent.append(makeCurrentTile(entry,index)));
   listCurrent.ondragover=event=>{if(dragItem){event.preventDefault();listCurrent.classList.add('pi-drop-ready');}};
   listCurrent.ondragleave=()=>listCurrent.classList.remove('pi-drop-ready');
   listCurrent.ondrop=event=>{if(!dragItem)return;event.preventDefault();reorderEntry(dragItem,null,CURRENT_ID);};
-  listCurrent.onclick=event=>{if(selectedItem && !event.target.closest('button,input,select,[contenteditable="true"],.pi-note-card'))reorderEntry(selectedItem,null,CURRENT_ID);};
+  listCurrent.onclick=event=>{if(selectedItem && !event.target.closest('button,.pi-current-tile'))reorderEntry(selectedItem,null,CURRENT_ID);};
  }
  function renderColumn(side,root){
   root.replaceChildren();
@@ -452,7 +492,7 @@ function initCompass(){
  function addNote(){
   const title=name.value.trim();const html=safeHtml(editor.innerHTML);const plainText=editor.innerText.trim();
   if(!title&&!plainText){name.focus();return;}
-  state.entries.unshift({id:uid('compass'),title:title||plainText.slice(0,90)||'Untitled',text:plainText,html,sectionId:sectionSelect.value||CURRENT_ID,date:date.value||iso(),createdAt:new Date().toISOString(),expanded:true,imageUrl:$('piCompassImageUrl').value.trim(),linkUrl:$('piCompassLinkUrl').value.trim()});
+  state.entries.unshift({id:uid('compass'),title:title||plainText.slice(0,90)||'Untitled',text:plainText,html,sectionId:sectionSelect.value||CURRENT_ID,currentSide:(sectionSelect.value===CURRENT_ID?'neutral':sectionSide(sectionSelect.value)),date:date.value||iso(),createdAt:new Date().toISOString(),expanded:true,imageUrl:$('piCompassImageUrl').value.trim(),linkUrl:$('piCompassLinkUrl').value.trim()});
   store();name.value='';editor.innerHTML='';$('piCompassImageUrl').value='';$('piCompassLinkUrl').value='';renderAll();name.focus();
  }
  $('piCompassSave').addEventListener('click',addNote);
