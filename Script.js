@@ -4298,6 +4298,26 @@ if (document.getElementById("aquariumApp")) {
             });
 
             divider.append(toggle, label);
+
+            const addSection = document.createElement("button");
+            addSection.type = "button";
+            addSection.className = "aq-section-add";
+            addSection.textContent = "+";
+            addSection.setAttribute("aria-label", "Add section");
+            addSection.title = "Add a new section";
+            addSection.addEventListener("click", event => {
+                event.stopPropagation();
+                const name = prompt("Section name:", "New section");
+                if (!name || !name.trim()) return;
+                const insertAt = aquariumState.sections.findIndex(item => item.id === section.id);
+                const newSection = { id: piUuid("section"), name: name.trim() };
+                if (insertAt === -1) aquariumState.sections.push(newSection);
+                else aquariumState.sections.splice(insertAt + 1, 0, newSection);
+                saveAquariumState();
+                renderAquarium();
+            });
+            addSection.addEventListener("keydown", event => event.stopPropagation());
+
             const removeSection = document.createElement("button");
             removeSection.type = "button";
             removeSection.className = "aq-section-remove";
@@ -4316,7 +4336,7 @@ if (document.getElementById("aquariumApp")) {
                 saveCollapsedAquariumSections(); saveAquariumState(); renderAquarium();
             });
             removeSection.addEventListener("keydown", event => event.stopPropagation());
-            divider.appendChild(removeSection);
+            divider.append(addSection, removeSection);
 
             function toggleSection() {
                 if (collapsedAquariumSections.has(section.id)) collapsedAquariumSections.delete(section.id);

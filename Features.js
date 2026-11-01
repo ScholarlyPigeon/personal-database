@@ -318,9 +318,9 @@
       const label = `${el.id} ${el.getAttribute('aria-label') || ''} ${el.getAttribute('placeholder') || ''}`;
       if (/url|link|https|icon|date|filter|search|name of|category|title of new|\bsection\b|hex|\bid\b/i.test(label) && el.tagName==='INPUT') return;
       if(el.matches('input')) {
-        if (el.hasAttribute('placeholder')) el.placeholder='Write here…';
-      } else if (el.matches('textarea')) el.placeholder='Write here…';
-      else el.dataset.placeholder='Write here…';
+        if (el.hasAttribute('placeholder')) el.placeholder='. . .';
+      } else if (el.matches('textarea')) el.placeholder='. . .';
+      else el.dataset.placeholder='. . .';
     });
   }
 

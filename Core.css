@@ -15876,3 +15876,87 @@ html.aquarium-page .aq-card-actions > .pi-cross-menu > summary {
   display:flex;align-items:center;justify-content:center;
   min-width:26px; min-height:28px;font-size:18px;padding:0 5px;
 }
+
+
+/* ===== V20.3 polish: Aquarium header controls, Longform one-line heads, generic placeholder copy ===== */
+html.aquarium-page .aq-capture-column {
+    grid-template-rows: minmax(0, 1fr) !important;
+}
+html.aquarium-page .aq-capture-panel {
+    margin-top: 0 !important;
+}
+html.aquarium-page .aq-section-divider {
+    grid-template-columns: 18px minmax(0,1fr) 18px 18px !important;
+    gap: 6px !important;
+}
+html.aquarium-page .aq-section-toggle { grid-column: 1 !important; }
+html.aquarium-page .aq-section-label { grid-column: 2 !important; }
+html.aquarium-page .aq-section-add,
+html.aquarium-page .aq-section-remove {
+    display: inline-grid !important;
+    place-items: center !important;
+    width: 17px !important;
+    min-width: 17px !important;
+    height: 17px !important;
+    min-height: 17px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 6px !important;
+    background: transparent !important;
+    color: var(--muted) !important;
+    line-height: 1 !important;
+    cursor: pointer;
+    position: relative;
+    z-index: 2;
+}
+html.aquarium-page .aq-section-add {
+    grid-column: 3 !important;
+    justify-self: end !important;
+    font-size: 13px !important;
+    color: var(--teal-soft) !important;
+}
+html.aquarium-page .aq-section-remove {
+    grid-column: 4 !important;
+    justify-self: end !important;
+    font-size: 12px !important;
+}
+html.aquarium-page .aq-section-add:hover { color: var(--text) !important; }
+html.aquarium-page .aq-section-remove:hover { color: var(--rose-soft) !important; }
+
+@media (min-width: 761px) {
+    .longform-library-head,
+    .longform-composer-head {
+        display: flex !important;
+        align-items: flex-start !important;
+        justify-content: space-between !important;
+        gap: 10px !important;
+        flex-wrap: nowrap !important;
+    }
+    .longform-library-head > :first-child,
+    .longform-composer-head > :first-child {
+        flex: 1 1 auto !important;
+        min-width: 0 !important;
+    }
+    .longform-library-controls,
+    .longform-compose-meta {
+        flex: 0 0 auto !important;
+        margin-left: auto !important;
+        display: flex !important;
+        align-items: flex-start !important;
+        justify-content: flex-end !important;
+        gap: 8px !important;
+        flex-wrap: nowrap !important;
+        width: auto !important;
+    }
+    .longform-compose-meta label,
+    .longform-filter-dropdown {
+        flex: 0 0 auto !important;
+    }
+    .longform-library-head > .panel-collapse-toggle,
+    .longform-composer-head > .panel-collapse-toggle {
+        flex: 0 0 auto !important;
+        align-self: flex-start !important;
+        margin-left: 0 !important;
+    }
+}
