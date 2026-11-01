@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html class="longform-page-html alignment-page-html" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>✨ Alignment</title>
+<link rel="stylesheet" href="Core.css?v=20261101-v21-3"/>
+<script defer="" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script defer src="CloudSync.js?v=20261101-v21-3"></script>
+<script defer src="Activity.js?v=20261101-v21-3"></script>
+<script defer src="Script.js?v=20261101-v21-3"></script>
+
+
+<script defer src="Planner.js?v=20261101-v21-3"></script>
+
+<script defer src="Workspace.js?v=20261101-v21-3"></script>
+
+<script defer src="UI.js?v=20261101-v21-3"></script>
+
+
+
+
+<link rel="stylesheet" href="Navigation.css?v=20261101-v21-3"/>
+<link rel="stylesheet" href="Panels.css?v=20261101-v21-3"/>
+
+
+<script defer src="Features.js?v=20261101-v21-3"></script>
+<link rel="stylesheet" href="Interface.css?v=20261101-v21-3"/>
+
+
+
+<link rel="stylesheet" href="Polish.css?v=20261101-v21-3"/>
+
+
+
+
+<link rel="stylesheet" href="Alignment.css?v=20261101-v21-3"/>
+<script defer src="Alignment.js?v=20261101-v21-3"></script>
+</head>
+<body data-default-theme="fieldnotes">
+<div class="longform-page alignment-page" id="alignmentApp">
+<header class="longform-header alignment-header">
+<div class="brand longform-brand"><span aria-hidden="true" class="pi-mark">✨</span><div><h1>Alignment</h1></div></div>
+<div class="longform-header-actions">
+<span aria-live="polite" class="sync-status" id="saveStatus">cloud ready</span>
+<select aria-label="Theme" class="theme-select" id="themeSelect"></select>
+<details class="ecosystem-menu"><summary>pages</summary><nav aria-label="Open another page" class="ecosystem-menu-popover"><a href="Database.html">🏠 Home</a><a href="Aquarium.html">🪼 Aquarium</a><a href="Longform.html">✎ Longform</a><a href="Compass.html">🧭 Compass</a><a href="Alignment.html" aria-current="page" class="current">✨ Alignment</a><a href="Week.html">🗓️ This Week</a><a href="Month.html">📅 This Month</a><a href="NextMonth.html">📆 Next Month</a><a href="Almanac.html">◷ Timeline</a><a href="Patterns.html">🗂 Archive</a><a href="neopets.html">✦ Neopets</a></nav></details>
+<details class="ecosystem-menu pi-tools-menu"><summary>tools</summary><div class="pi-tools-popover"><button class="small-button cloud-login-button" id="cloudLoginButton" type="button">cloud login</button></div></details>
+</div></header>
+<main class="alignment-workspace" aria-label="Alignment workspace">
+<aside class="panel longform-library alignment-library" aria-label="Readings and rituals">
+  <div class="longform-library-head alignment-library-head">
+    <div><div class="longform-section-title">Readings &amp; Rituals</div></div>
+    <div class="alignment-header-controls"><button type="button" class="small-button" id="alignmentAddSection">+ section</button></div>
+  </div>
+  <div class="alignment-library-list" id="alignmentLibrary"></div>
+</aside>
+<div class="alignment-writing-column">
+<section class="panel alignment-tiles" data-collapsible-panel="alignment-tiles" aria-label="Affirmations and scripts">
+  <div class="longform-library-head alignment-tiles-head">
+    <div><div class="longform-section-title">Affirmations &amp; Scripts</div></div>
+    <div class="alignment-header-controls"><span class="alignment-count" id="alignmentTileCount">0</span>
+      <details class="alignment-menu" id="alignmentShelfMenu"><summary aria-label="Affirmations and Scripts options" title="Options">⋮</summary>
+        <div class="alignment-menu-panel"><button type="button" data-shelf-action="folder">+ Folder</button><button type="button" data-shelf-action="note">+ Note</button></div>
+      </details>
+    </div>
+  </div>
+  <div class="alignment-tiles-body" data-collapse-body id="alignmentShelf" aria-label="Drop notes or folders here"></div>
+</section>
+<section class="panel longform-composer alignment-composer" aria-label="Write it out">
+  <div class="longform-composer-head alignment-composer-head">
+    <div><div class="longform-section-title">Write it out</div></div>
+    <div class="alignment-compose-controls"><label class="alignment-inline-field"><span class="alignment-sr-only">Save to</span><select id="alignmentDestination" aria-label="Save note to"></select></label>
+    <label class="alignment-inline-field"><span class="alignment-sr-only">Date</span><input id="alignmentDate" type="date" aria-label="Note date"/></label></div>
+  </div>
+  <input id="alignmentTitle" class="longform-title-input" type="text" maxlength="180" placeholder=". . ." aria-label="Note title" autocomplete="off"/>
+  <div class="longform-input alignment-editor" id="alignmentEditor" contenteditable="true" data-placeholder=". . ." role="textbox" aria-multiline="true" aria-label="Note content"></div>
+  <details class="longform-attachment alignment-attachment"><summary>optional image / clickable link</summary>
+    <div class="longform-attachment-fields"><label><span>image URL</span><input id="alignmentImage" type="url" placeholder="https://..."/></label>
+    <label><span>click-through URL</span><input id="alignmentLink" type="url" placeholder="https://..."/></label></div>
+  </details>
+  <div class="longform-submit-row alignment-save-row"><span class="longform-submit-note" id="alignmentSaveHint">Enter adds a new line · click Save thought when ready</span>
+    <button type="button" class="longform-save-button" id="alignmentSave">Save thought</button><button type="button" class="small-button" id="alignmentCancel" hidden>Cancel edit</button></div>
+</section>
+</div>
+</main>
+<dialog id="alignmentFolderDialog" class="alignment-dialog" aria-label="Folder contents">
+  <div class="alignment-dialog-heading"><div class="alignment-dialog-label"><span class="alignment-dialog-icon">✧</span><input id="alignmentFolderName" aria-label="Folder name" maxlength="90"/></div>
+    <button type="button" class="small-button" id="alignmentFolderClose" aria-label="Close folder">×</button></div>
+  <textarea id="alignmentFolderDescription" aria-label="Folder description" rows="2" placeholder="A little description..."></textarea>
+  <div class="alignment-dialog-tools"><span id="alignmentFolderCount">0 notes</span><button class="small-button" type="button" id="alignmentFolderNew">+ note</button></div>
+  <div id="alignmentFolderNotes" class="alignment-folder-notes"></div>
+</dialog>
+</div>
+</body></html>

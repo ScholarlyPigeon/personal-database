@@ -1,0 +1,223 @@
+/* Alignment V21.3 · built from the existing Longform theme tokens and panels. */
+html.alignment-page-html,
+html.alignment-page-html body{min-width:0;}
+.alignment-page{width:calc(100% - 24px);max-width:2400px;min-width:0;margin:0 auto;min-height:0;}
+.alignment-header .pi-mark{font-size:22px;}
+.alignment-workspace{
+  display:grid;grid-template-columns:minmax(310px,2fr) minmax(0,3fr);
+  gap:12px;min-height:0;height:calc(100dvh - 105px);
+}
+.alignment-workspace > *, .alignment-writing-column > *{min-width:0;min-height:0;}
+.alignment-library,.alignment-tiles,.alignment-composer{
+  min-width:0;min-height:0;border:1px solid var(--border);border-radius:var(--radius,12px);
+  background:var(--panel);box-shadow:var(--shadow);overflow:hidden;
+}
+.alignment-library{display:flex;flex-direction:column;}
+.alignment-library-head,.alignment-tiles-head,.alignment-composer-head{
+  min-height:58px;flex:0 0 auto;box-sizing:border-box;
+  display:flex!important;flex-direction:row;align-items:center!important;
+  justify-content:space-between;gap:10px;padding:12px 14px!important;
+  border-bottom:1px solid var(--border);background:var(--panel-light);
+}
+.alignment-library-head .longform-section-title,
+.alignment-tiles-head .longform-section-title,
+.alignment-composer-head .longform-section-title{font-size:17px;line-height:1.3;}
+.alignment-header-controls,.alignment-compose-controls{display:flex;align-items:center;gap:7px;min-width:0;}
+.alignment-header-controls .alignment-count{font-size:11px;color:var(--muted);min-width:18px;text-align:center;}
+.alignment-library-list{flex:1;min-height:0;overflow:auto;padding:10px;scrollbar-width:thin;}
+.alignment-list-zone{border:1px solid var(--border);border-radius:11px;overflow:hidden;margin-bottom:9px;background:var(--panel-light);}
+.alignment-list-section-head{padding:8px 10px;display:flex;align-items:center;gap:7px;min-height:37px;background:color-mix(in srgb,var(--panel) 75%,var(--plum) 25%);border-bottom:1px solid var(--border);}
+.alignment-list-section-name{font:700 12px/1.35 'Trebuchet MS','Segoe UI',sans-serif;min-width:0;flex:1;overflow-wrap:anywhere;}
+.alignment-count{font-size:10px;background:color-mix(in srgb,var(--plum) 20%,var(--panel));border-radius:50px;padding:3px 7px;}
+.alignment-list-section-body{padding:7px;min-height:46px;}
+.alignment-empty{font-size:11px;line-height:1.5;color:var(--muted);text-align:center;margin:0;padding:16px 8px;}
+.alignment-writing-column{display:grid;grid-template-rows:auto minmax(0,1fr);gap:12px;overflow:hidden;}
+.alignment-tiles{display:flex;flex-direction:column;max-height:250px;min-height:0;}
+.alignment-tiles.is-collapsed{max-height:none!important;min-height:0!important;align-self:start;height:auto!important;}
+.alignment-tiles.is-collapsed > .alignment-tiles-body{display:none!important;}
+.alignment-tiles-body{
+  min-width:0;min-height:130px;max-height:190px;overflow-x:auto;overflow-y:hidden;
+  padding:12px;display:flex;gap:10px;align-items:stretch;
+  scrollbar-width:thin;scroll-snap-type:x proximity;
+  background:color-mix(in srgb,var(--panel) 92%,var(--bg));
+}
+.alignment-shelf-empty{flex:1;min-height:110px;display:grid;place-content:center;font-size:12px;color:var(--faint);border:1px dashed var(--border);border-radius:10px;text-align:center;padding:18px;}
+.alignment-tile{
+  flex:0 0 clamp(165px,19vw,245px);min-width:0;min-height:128px;
+  border:1px solid var(--border);border-radius:11px;scroll-snap-align:start;
+  background:var(--panel-light);overflow:hidden;position:relative;
+  display:flex;flex-direction:column;
+}
+.alignment-tile:nth-child(5n+1){background:color-mix(in srgb,var(--panel-light) 83%,var(--teal) 17%);}
+.alignment-tile:nth-child(5n+2){background:color-mix(in srgb,var(--panel-light) 82%,var(--plum) 18%);}
+.alignment-tile:nth-child(5n+3){background:color-mix(in srgb,var(--panel-light) 85%,var(--rose-soft) 15%);}
+.alignment-tile:nth-child(5n+4){background:color-mix(in srgb,var(--panel-light) 82%,var(--blue-soft) 18%);}
+.alignment-tile:nth-child(5n+5){background:color-mix(in srgb,var(--panel-light) 85%,var(--green-soft) 15%);}
+.alignment-folder{padding:8px;}
+.alignment-tile-handle{position:absolute;top:8px;left:8px;z-index:2;}
+.alignment-folder-controls{position:absolute;right:8px;top:8px;z-index:2;}
+.alignment-folder-center{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;text-align:center;gap:5px;cursor:pointer;min-width:0;padding:14px 10px 0;}
+.alignment-folder-center:hover .alignment-folder-title{text-decoration:underline;text-decoration-thickness:1px;}
+.alignment-folder-center:focus-visible{outline:2px solid var(--teal-soft);outline-offset:-3px;border-radius:9px;}
+.alignment-folder-symbol{font-size:20px;color:var(--teal-soft);line-height:1;}
+.alignment-folder-title{font:800 14px/1.3 'Trebuchet MS','Segoe UI',sans-serif;overflow-wrap:anywhere;}
+.alignment-folder-description{font-size:11px;line-height:1.35;color:var(--muted);margin:0;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow-wrap:anywhere;}
+.alignment-folder-count{font-size:10px;text-align:center;color:var(--muted);margin:3px 0 2px;}
+.alignment-note{border:1px solid var(--border);border-left:3px solid color-mix(in srgb,var(--teal) 65%,var(--border));border-radius:8px;background:var(--panel-light);overflow:hidden;margin-bottom:7px;min-width:0;}
+.alignment-note.selected{outline:2px solid var(--teal-soft);}
+.alignment-note-head{display:flex;align-items:center;gap:5px;padding:7px;min-height:30px;}
+.alignment-note-title{flex:1;min-width:0;font:700 12px/1.35 'Trebuchet MS','Segoe UI',sans-serif;overflow-wrap:anywhere;cursor:pointer;}
+.alignment-note-title:hover{text-decoration:underline;text-decoration-thickness:1px;}
+.alignment-note-date{color:var(--faint);font-size:10px;padding:0 9px 6px 37px;}
+.alignment-icon{
+  flex:0 0 27px;width:27px;height:27px;display:grid;place-items:center;
+  color:var(--muted);background:color-mix(in srgb,var(--panel) 70%,transparent);
+  border:1px solid var(--border);border-radius:7px;font-size:15px;line-height:1;cursor:pointer;padding:0;
+}
+.alignment-icon:hover,.alignment-icon:focus-visible{color:var(--text);border-color:var(--teal-soft);}
+.alignment-note-content{min-height:45px;max-height:330px;overflow:auto;outline:none;padding:12px;border-top:1px solid var(--border);font-size:13px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere;}
+.alignment-note-content:focus{box-shadow:inset 0 0 0 1px var(--teal);}
+.alignment-note-foot{font-size:10px;color:var(--faint);padding:4px 10px 9px;text-align:right;}
+.alignment-tile.alignment-note{margin:0;display:flex;flex-direction:column;}
+.alignment-tile.alignment-note .alignment-note-title{font-size:12px;}
+.alignment-tile.alignment-note .alignment-note-content{flex:1;min-height:0;overflow:auto;}
+.alignment-attachment-image{max-width:100%;max-height:180px;object-fit:contain;display:block;margin:6px auto;}
+.alignment-attachment-link{font-size:11px;margin:6px 10px;display:inline-block;color:var(--teal-soft);}
+.alignment-menu{position:relative;}
+.alignment-menu > summary{list-style:none;display:grid;place-items:center;width:29px;height:29px;color:var(--text);border:1px solid var(--border);border-radius:7px;background:var(--panel-light);font-size:18px;cursor:pointer;}
+.alignment-menu > summary::-webkit-details-marker{display:none;}
+.alignment-menu-panel{position:absolute;z-index:100;right:0;top:33px;min-width:130px;background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:5px;box-shadow:var(--shadow);}
+.alignment-menu:not([open]) .alignment-menu-panel{display:none;}
+.alignment-menu-panel button{display:block;width:100%;text-align:left;padding:8px 10px;border:0;border-radius:6px;background:transparent;color:var(--text);cursor:pointer;white-space:nowrap;}
+.alignment-menu-panel button:hover{background:var(--panel-light);}
+.alignment-floating-menu{position:fixed;z-index:99999;max-width:min(300px,90vw);max-height:65vh;overflow-y:auto;min-width:185px;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:9px;padding:5px;box-shadow:0 14px 40px #0006;}
+.alignment-menu-option{display:block;text-align:left;width:100%;padding:8px;border:0;border-radius:6px;background:transparent;color:var(--text);font:600 11px/1.35 'Segoe UI',sans-serif;cursor:pointer;overflow-wrap:anywhere;}
+.alignment-menu-option:hover{background:var(--panel-light);}
+.alignment-menu-divider{height:1px;background:var(--border);margin:5px 3px;}
+.alignment-composer{display:grid;grid-template-rows:auto auto minmax(0,1fr) auto auto;height:100%;min-height:0;}
+.alignment-compose-controls{justify-content:flex-end;flex-wrap:nowrap;}
+.alignment-compose-controls select,.alignment-compose-controls input{height:31px;max-width:100%;border:1px solid var(--border);border-radius:7px;background:var(--bg-soft);color:var(--text);font-size:11px;padding:3px 7px;}
+.alignment-compose-controls select{width:clamp(150px,16vw,235px);}
+.alignment-compose-controls input{width:124px;}
+.alignment-sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);}
+.alignment-composer .longform-title-input{width:calc(100% - 28px);box-sizing:border-box;}
+.alignment-composer .longform-input{margin-top:10px;min-height:130px;height:auto;overflow-y:auto;}
+.alignment-save-row{display:flex;gap:8px;align-items:center;padding:0 14px 12px;margin:0;min-height:47px;}
+.alignment-save-row .longform-submit-note{flex:1;min-width:0;}
+.alignment-save-row > button{flex:0 0 auto;}
+.alignment-drop-ready{outline:2px dashed var(--teal-soft)!important;outline-offset:-3px!important;}
+.alignment-dialog{width:min(720px,95vw);max-height:min(88dvh,900px);min-height:250px;border:1px solid var(--border);border-radius:14px;background:var(--panel);color:var(--text);padding:16px;box-shadow:0 20px 65px #0008;}
+.alignment-dialog::backdrop{background:#000b;backdrop-filter:blur(3px);}
+.alignment-dialog[open]{display:flex;flex-direction:column;gap:10px;}
+.alignment-dialog-heading{display:flex;align-items:center;gap:12px;}
+.alignment-dialog-label{display:flex;align-items:center;flex:1;gap:8px;min-width:0;}
+.alignment-dialog-icon{font-size:21px;color:var(--teal-soft);}
+.alignment-dialog input,.alignment-dialog textarea{min-width:0;box-sizing:border-box;background:var(--bg-soft);color:var(--text);border:1px solid var(--border);border-radius:8px;outline:none;padding:9px 11px;font:inherit;}
+.alignment-dialog input{width:100%;font-weight:800;font-size:17px;}
+.alignment-dialog textarea{width:100%;resize:vertical;font-size:12px;line-height:1.5;}
+.alignment-dialog-tools{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:11px;gap:10px;}
+.alignment-folder-notes{min-height:100px;overflow:auto;flex:1;padding:8px;border:1px solid var(--border);border-radius:9px;background:var(--bg-soft);}
+.alignment-tiles.is-collapsed .alignment-tiles-head{border-bottom:0;}
+@media (max-width:1000px){
+  .alignment-workspace{grid-template-columns:minmax(240px,1fr) minmax(0,1.35fr);}
+  .alignment-tiles-body{min-height:110px;}
+}
+@media (max-width:760px){
+  html.alignment-page-html,html.alignment-page-html body{max-width:100%;overflow-x:hidden;}
+  .alignment-page{width:calc(100% - 12px);}
+  .alignment-workspace{height:auto;min-height:0;display:flex;flex-direction:column;gap:9px;}
+  .alignment-writing-column{order:0;display:flex;flex-direction:column;overflow:visible;gap:9px;}
+  .alignment-library{order:1;min-height:230px;max-height:none;}
+  .alignment-library-list{max-height:550px;}
+  .alignment-tiles{max-height:230px;flex:0 0 auto;}
+  .alignment-tiles-body{min-height:110px;max-height:175px;}
+  .alignment-tile{flex-basis:min(66vw,230px);}
+  .alignment-composer{height:auto;min-height:460px;display:flex;flex-direction:column;}
+  .alignment-composer .longform-input{min-height:270px;flex:1;}
+  .alignment-composer-head{align-items:flex-start!important;flex-wrap:wrap;}
+  .alignment-compose-controls{width:100%;justify-content:flex-start;}
+  .alignment-compose-controls select{width:min(52vw,230px);}
+  .alignment-compose-controls input{width:min(32vw,145px);}
+  .alignment-save-row{flex-wrap:wrap;}
+  .alignment-save-row .longform-submit-note{flex-basis:100%;}
+}
+/* The Longform primitives carry named grid-area assignments intended for its
+   two-column grid. Alignment uses a nested 60/40 grid instead. */
+html.alignment-page-html .alignment-workspace{
+  grid-template-areas:"library writing" !important;
+}
+html.alignment-page-html .alignment-library{
+  grid-area:library !important;
+  display:flex !important;
+  flex-direction:column !important;
+  padding:0 !important;
+  gap:0 !important;
+  height:100% !important;
+}
+html.alignment-page-html .alignment-writing-column{
+  grid-area:writing !important;
+  min-height:0 !important;
+  width:100% !important;
+}
+html.alignment-page-html .alignment-writing-column > .alignment-composer{
+  grid-area:auto !important;
+  display:grid !important;
+  width:100% !important;
+  height:100% !important;
+  min-height:0 !important;
+}
+html.alignment-page-html .alignment-writing-column > .alignment-tiles{
+  grid-area:auto !important;
+  width:100% !important;
+}
+@media(max-width:760px){
+  html.alignment-page-html .alignment-workspace{grid-template-areas:none !important;}
+  html.alignment-page-html .alignment-library,
+  html.alignment-page-html .alignment-writing-column{grid-area:auto !important;}
+  html.alignment-page-html .alignment-writing-column > .alignment-composer{height:auto !important;display:flex !important;}
+}
+/* Restore the same calm input surface as Longform's original title editor. */
+html.alignment-page-html .alignment-composer .longform-title-input{
+  height:42px!important;flex:0 0 42px;min-height:42px;
+  margin:10px 14px 0!important;padding:9px 12px!important;
+  border:1px solid var(--border)!important;border-radius:8px!important;
+  background:var(--bg-soft)!important;color:var(--text)!important;
+  font:700 14px/1.3 'Trebuchet MS','Segoe UI',sans-serif!important;
+  outline:none!important;
+}
+html.alignment-page-html .alignment-composer .longform-title-input:focus{border-color:var(--teal-soft)!important;}
+html.alignment-page-html .alignment-composer .longform-title-input::placeholder{color:var(--faint)!important;}
+@media(max-width:760px){
+  html.alignment-page-html body{height:auto!important;min-height:100dvh!important;overflow-y:auto!important;}
+  html.alignment-page-html .alignment-page{
+    display:flex!important;flex-direction:column!important;
+    height:auto!important;min-height:100dvh!important;max-height:none!important;
+    overflow:visible!important;
+  }
+  html.alignment-page-html .alignment-workspace{
+    display:flex!important;flex-direction:column!important;
+    height:auto!important;min-height:0!important;overflow:visible!important;
+  }
+  html.alignment-page-html .alignment-library{
+    height:auto!important;min-height:260px!important;max-height:none!important;
+    flex:0 0 auto!important;
+  }
+  html.alignment-page-html .alignment-writing-column{
+    flex:0 0 auto!important;min-height:0!important;overflow:visible!important;
+  }
+  html.alignment-page-html .alignment-composer{
+    flex:0 0 auto!important;min-height:460px!important;height:auto!important;
+    overflow:visible!important;
+  }
+  html.alignment-page-html .alignment-composer .longform-input{
+    flex:0 0 auto!important;min-height:300px!important;
+  }
+}
+/* Keep Alignment's identity instead of showing Longform's pencil or the
+   theme icon, and suppress decorative raw emoji outside the mark. */
+html.alignment-page-html .alignment-header .pi-mark{font-size:0!important;}
+html.alignment-page-html .alignment-header .pi-mark::before{
+  content:"✨"!important;
+  font-family:'Segoe UI Emoji',sans-serif!important;
+  font-size:20px!important;
+}

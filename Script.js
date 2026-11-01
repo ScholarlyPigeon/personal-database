@@ -7454,6 +7454,7 @@ if (document.getElementById("neopetsApp")) {
         home: { role: "FOCUS", note: "Go directly to your most useful page.", href: "Database.html", label: "Home", icon: "⌂" },
         database: { role: "FOCUS", note: "See what needs attention and where things currently stand.", href: "Database.html", label: "Home", icon: "⌂" },
         aquarium: { role: "CAPTURE", note: "Catch something before deciding what it needs to become.", href: "Aquarium.html", label: "Aquarium", icon: "🪼" },
+        alignment: { role: "ALIGN", note: "Readings, rituals, affirmations, and scripts in one reflective place.", href: "Alignment.html", label: "Alignment", icon: "✨" },
         longform: { role: "THINK", note: "Give a thought enough room to become coherent.", href: "Longform.html", label: "Longform", icon: "✎" },
         archive: { role: "REVIEW", note: "Day archive, stored items, and a history of changes.", href: "Patterns.html", label: "Archive", icon: "🧭" },
         almanac: { role: "REFLECT", note: "Timeline, thoughtful writing, and organized notes.", href: "Almanac.html", label: "Timeline & Notes", icon: "◷" },
@@ -7496,6 +7497,7 @@ if (document.getElementById("neopetsApp")) {
         if (document.body.dataset.planner) return document.body.dataset.planner;
         if (document.getElementById("piHomeApp")) return "home";
         if (document.getElementById("aquariumApp")) return "aquarium";
+        if (document.getElementById("alignmentApp")) return "alignment";
         if (document.getElementById("longformApp")) return "longform";
         if (document.getElementById("archiveApp") || document.getElementById("patternsApp")) return "archive";
         if (document.getElementById("almanacApp")) return "almanac";
@@ -8299,6 +8301,9 @@ if (document.getElementById("neopetsApp")) {
         const aquarium = readAquarium();
         aquarium.cards.forEach(card => addDoc(docs, "aquarium", card.zone === "inbox" ? "Inbox" : (card.zone || "Aquarium"), objectHumanText(card)));
 
+        const alignment = jsonRead("pi-alignment-v1", {entries:[],folders:[],sections:[]});
+        (Array.isArray(alignment.entries)?alignment.entries:[]).forEach(entry => addDoc(docs,"alignment","Alignment",[entry.title,entry.text].filter(Boolean).join(" · ")));
+        (Array.isArray(alignment.folders)?alignment.folders:[]).forEach(folder => addDoc(docs,"alignment","Folder",[folder.name,folder.description].filter(Boolean).join(" · ")));
         const longform = jsonRead(PI_KEYS.longformKey, { entries: [] });
         const titles = jsonRead(PI_KEYS.longformTitlesKey, {});
         (Array.isArray(longform?.entries) ? longform.entries : []).forEach(entry => addDoc(docs, "longform", "Saved thought", [titles?.[entry.id], entry.text].filter(Boolean).join(" · ")));
@@ -8519,6 +8524,9 @@ if (document.getElementById("neopetsApp")) {
 
     function refreshHomeCounts() {
         const aquarium = readAquarium();
+        const alignment = jsonRead("pi-alignment-v1", {entries:[],folders:[],sections:[]});
+        (Array.isArray(alignment.entries)?alignment.entries:[]).forEach(entry => addDoc(docs,"alignment","Alignment",[entry.title,entry.text].filter(Boolean).join(" · ")));
+        (Array.isArray(alignment.folders)?alignment.folders:[]).forEach(folder => addDoc(docs,"alignment","Folder",[folder.name,folder.description].filter(Boolean).join(" · ")));
         const longform = jsonRead(PI_KEYS.longformKey, { entries: [] });
         const archive = humanArray(PI_KEYS.archiveWorkspaceKey);
         const radar = humanArray(PI_KEYS.radarKey);

@@ -31,7 +31,7 @@ function safeHtml(html){
  return tpl.innerHTML;
 }
 const ACT_KEY='pi-activity-v1',ARCHIVE_KEY='pi-archive-v1',LEGACY_KEY='pi-archive-workspace-v1',NOTES_KEY='pi-reflections-notes-v1';
-const routes={home:'Database.html',database:'Database.html',aquarium:'Aquarium.html',week:'Week.html',month:'Month.html',archive:'Patterns.html',almanac:'Almanac.html',compass:'Compass.html',longform:'Longform.html',neopets:'neopets.html'};
+const routes={home:'Database.html',database:'Database.html',aquarium:'Aquarium.html',week:'Week.html',month:'Month.html',archive:'Patterns.html',almanac:'Almanac.html',compass:'Compass.html',alignment:'Alignment.html',longform:'Longform.html',neopets:'neopets.html'};
 function initArchive(){
  if(!$('archiveApp'))return;
  const dayList=$('dayArchiveList'), itemList=$('itemArchiveList'), recentList=$('piRecentActivityList');

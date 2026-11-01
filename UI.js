@@ -340,6 +340,7 @@
     if (document.getElementById('piDatabaseFocusList')) return 'home';
     if (document.getElementById('aquariumApp')) return 'aquarium';
     if (document.getElementById('piCompass')) return 'compass';
+    if (document.getElementById('alignmentApp')) return 'alignment';
     if (document.getElementById('piReflections')) return 'timeline';
     if (document.getElementById('longformApp')) return 'longform';
     if (document.getElementById('plannerNotes')) return document.body.dataset.planner==='next-month' ? 'next-month' : document.body.dataset.planner==='month' ? 'month' : 'week';

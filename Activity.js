@@ -7,7 +7,7 @@
   const LOG = 'pi-activity-v1';
   const NOTE_COLLECTIONS = new Set([
     'pi-database-notes-v1', 'pi-aquarium-state-v3',
-    'pi-longform-state-v1', 'pi-archive-workspace-v1',
+    'pi-longform-state-v1', 'pi-alignment-v1', 'pi-archive-workspace-v1',
     'pi-planner-week-notes-v1', 'pi-reflections-notes-v1', 'pi-compass-v1',
     'pi-almanac-state-v1', 'pi-strain-journal-v1'
   ]);
@@ -27,7 +27,7 @@
     if (/^pi-planner-month-\d{4}-\d{2}$/.test(key)) return true;
     return [
       'pi-database-radar-v1','pi-database-near-radar-v1','pi-database-notes-v1',
-      'pi-aquarium-state-v3','pi-longform-state-v1','pi-longform-titles-v1',
+      'pi-aquarium-state-v3','pi-longform-state-v1','pi-alignment-v1','pi-longform-titles-v1',
       'pi-archive-v1','pi-archive-workspace-v1','pi-planner-week-notes-v1',
       'pi-neopets-state-v3','pi-almanac-state-v1','pi-strain-journal-v1',
       'pi-reflections-notes-v1','pi-compass-v1'
@@ -39,6 +39,7 @@
     if (key.startsWith('pi-planner-month')) return 'month';
     if (key.includes('aquarium')) return 'aquarium';
     if (key.includes('longform')) return 'longform';
+    if (key.includes('alignment')) return 'alignment';
     if (key === 'pi-archive-workspace-v1' || key === 'pi-reflections-notes-v1') return 'almanac';
     if (key === 'pi-compass-v1') return 'compass';
     if (key === 'pi-archive-v1') return 'archive';
@@ -54,6 +55,7 @@
     if (key.includes('planner-month')) return 'Month notes';
     if (key.includes('aquarium')) return 'Aquarium';
     if (key.includes('longform')) return 'Longform';
+    if (key.includes('alignment')) return 'Alignment';
     if (key.includes('archive-workspace')) return 'Timeline & Notes';
     if (key.includes('reflections')) return 'Timeline & Notes';
     if (key.includes('compass')) return 'Compass';

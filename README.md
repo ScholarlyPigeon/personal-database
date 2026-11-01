@@ -178,3 +178,11 @@ were changed. V20.4 fixes otherwise remain in place.
 - Compass and Timeline pop-out icons are positioned beside their header actions, with section controls grouped on the right.
 - Timeline note headers show milestone dates; Timeline notes are automatically ordered newest to oldest within their column/section. Manual drag handles are hidden for Timeline notes and sections, but menu movement to other columns remains available.
 - This is a targeted change; no existing storage keys were renamed.
+
+
+## V21.3 · Alignment page (first draft)
+- New `Alignment.html`, `Alignment.js`, and `Alignment.css`. Added immediately after Compass in all page menus.
+- `pi-alignment-v1` contains notes, folders, and Readings & Rituals sections; `pi-alignment-draft-v1` stores the editable draft. These `pi-*` keys use the existing backup and Safe Sync conventions.
+- Left: Readings & Rituals list, unsorted notes and optional sections. Right: collapsible Affirmations & Scripts tiles (including folders) over a 60%-width Longform-style rich-text composer.
+- Notes can be dragged between lists, shelf, folders; folders can be reordered on the shelf and clicked to open a modal list. Three-dot menus provide folder creation and note actions; destination selects provide keyboard-accessible moving.
+- **First-draft boundary:** Folders stay on the tile shelf; notes move between folders/sections. No automatic import from Longform or other pages, to protect their existing records.
