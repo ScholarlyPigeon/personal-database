@@ -169,3 +169,12 @@ were changed. V20.4 fixes otherwise remain in place.
 - Drag handles live on the left; expand/tools controls live on the right.
 - Saved thoughts offer **Edit in composer**, which updates the existing entry ID and its title rather than creating a duplicate.
 - Draft HTML is retained in `pi-longform-draft-v1` and safely restored on return.
+
+
+## V21.2 — Archive month notes, Longform color, Timeline ordering (November 1, 2026)
+
+- Archived monthly calendars keep their day snapshots read-only. The Notes panel now reads and saves the normal `pi-planner-month-YYYY-MM` key and retains its draft key, allowing retrospective notes. The original snapshots remain preserved.
+- Each saved Longform thought now has Theme default plus five theme-relative color choices in its ⋮ menu. Its optional `accentOverride` is stored inside the existing `pi-longform-state-v1` entry; category/section metadata remains available for compatibility.
+- Compass and Timeline pop-out icons are positioned beside their header actions, with section controls grouped on the right.
+- Timeline note headers show milestone dates; Timeline notes are automatically ordered newest to oldest within their column/section. Manual drag handles are hidden for Timeline notes and sections, but menu movement to other columns remains available.
+- This is a targeted change; no existing storage keys were renamed.

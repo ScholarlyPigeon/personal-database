@@ -378,9 +378,9 @@
  }
  function renderNotes(){
    const container=$('plannerNotes');container.replaceChildren();
-   const items=historical?(snapshot?.notes||[]):read(noteKey());
+   const items=read(noteKey());
    if(!items.length)container.append(el('p','planner-empty',historical?'No notes saved.':'A clear space for what matters.'));
-   sortedEntries(items.map((item,index)=>({item,index}))).forEach(({item,index})=>container.append(row(item,index,noteKey(),!!historical)));
+   sortedEntries(items.map((item,index)=>({item,index}))).forEach(({item,index})=>container.append(row(item,index,noteKey(),false)));
  }
  function makeDayForm(date){
    const form=el('form','planner-day-form is-open');const input=el('textarea','planner-day-input');input.rows=2;input.dataset.date=date;input.setAttribute('aria-label','Add item for '+date);input.placeholder='Write an item…';input.value=drafts.get(date)??localStorage.getItem('pi-planner-day-draft-'+date)??'';
@@ -421,7 +421,7 @@
      $('plannerHint').textContent='Today + 7 days';
    }else{
      dates=datesOfMonth(historical||currentMonth);$('plannerRange').textContent=labelMonth(historical||currentMonth);
-     $('plannerHint').textContent=historical?'Archived month · read only':kind==='next-month'?'Upcoming month · shared with calendar':'Shared with Database';
+     $('plannerHint').textContent=historical?'Archived month · calendar read only · notes editable':kind==='next-month'?'Upcoming month · shared with calendar':'Shared with Database';
      if(historical){const a=el('a','small-button','Current month');a.href='Month.html';$('plannerHint').append(' · ',a);}
      ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(d=>grid.append(el('div','planner-weekday',d)));
      const offset=new Date(dates[0]+'T12:00:00').getDay();
@@ -454,11 +454,11 @@
    if(kind!=='week'){while((grid.children.length-7)%7)grid.append(el('div','planner-blank'));grid.style.setProperty('--month-weeks',(grid.children.length-7)/7);}
  }
  function restoreDraft(){
-   const raw=historical?(snapshot?.draft||''):localStorage.getItem(draftKey())||'';
+   const raw=localStorage.getItem(draftKey())||'';
    const looksHtml=/<(?:strong|b|em|i|u|s|strike|br|p|div|ul|ol|li|blockquote)(?:\s|>)/i.test(raw);
    $('plannerNoteInput').innerHTML=window.PIInlineRich?.cleanHTML(looksHtml?raw:window.PIInlineRich.legacyHTML(raw)) || '';
  }
- $('plannerComposer').hidden=!!historical;
+ $('plannerComposer').hidden=false; // Historical calendar days stay read-only; month notes remain writable.
  $('plannerNoteInput').oninput=()=>safe(()=>localStorage.setItem(draftKey(),window.PIInlineRich?.cleanHTML($('plannerNoteInput').innerHTML) || ''));
  $('plannerComposer').onsubmit=e=>{e.preventDefault();safe(()=>{
    const field=$('plannerNoteInput'),text=field.innerText.trim();if(!text)return;

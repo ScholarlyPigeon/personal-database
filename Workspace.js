@@ -154,6 +154,9 @@ function initUnifiedWorkspace(mode){
  function persist(){save(KEY,state);}
  function sideOf(id){ if(id===MAIN)return compass?'current':'notes';if(id===GOALS)return 'goals';if(id===GROUNDING)return 'grounding';if(id===TIMELINE)return 'timeline';return state.sections.find(s=>s.id===id)?.side||cols[0].id; }
  function isLine(n){return n.noteType==='line';}
+ function inTimeline(n){return !compass && sideOf(n.sectionId)==='timeline';}
+ function timelineDate(n){return String(n.date||n.createdAt||'9999-12-31').slice(0,10);}
+ function byTimelineDate(a,b){return timelineDate(b).localeCompare(timelineDate(a));} // Newest first, oldest last.
  function isExpanded(n){return n.wsExpanded!==undefined?Boolean(n.wsExpanded):(compass&&n.sectionId===MAIN?Boolean(n.currentExpanded):Boolean(n.expanded));}
  function setExpanded(n,x,legacy){n.wsExpanded=x;n.currentExpanded=x;n.expanded=x;commit(n,legacy);renderAll();}
  function created(n){return n.createdAt||n.date||iso();}
@@ -322,11 +325,19 @@ function initUnifiedWorkspace(mode){
    head.dataset.piCrossReady='true';
    const moveBtn=btn('⠿','Move note: drag or click, then choose a destination',()=>{selected=selected===movingId(n,legacy)?null:movingId(n,legacy);renderAll();},'pi-mini-icon pi-move-handle');
    moveBtn.draggable=true;moveBtn.addEventListener('dragstart',e=>{dragging={n,legacy};dragSub=null;e.dataTransfer.setData('text/plain',n.id);e.dataTransfer.effectAllowed='move';});moveBtn.addEventListener('dragend',()=>{dragging=null;});
-   head.append(moveBtn);
+   // Timeline is chronological rather than manually reorderable. Movement to
+   // another column is still available under ⋮.
+   if(!inTimeline(n))head.append(moveBtn);
    if(line){const check=el('input');check.type='checkbox';check.checked=Boolean(n.done);check.setAttribute('aria-label','Complete '+(n.title||'checklist note'));
      check.onchange=()=>{n.done=check.checked;n.completedAt=check.checked?new Date().toISOString():null;commit(n,legacy);renderAll();};head.append(check);card.classList.toggle('is-done',Boolean(n.done));
    }
    head.append(editableTitle(n,legacy));
+   if(inTimeline(n)){
+     const stamp=el('time','pi-ws-header-date',shortDate(n.date||n.createdAt));
+     stamp.dateTime=timelineDate(n);
+     stamp.title='Milestone date';
+     head.append(stamp);
+   }
    const fold=btn(open?'▾':'▸',open?'Collapse note':'Expand note',()=>{if(isCurrent){n.currentExpanded=!open;commit(n,legacy);renderAll();}else setExpanded(n,!open,legacy);},'pi-mini-icon pi-ws-note-toggle');
    fold.setAttribute('aria-expanded',String(open));
    const menuItems=[...destinations().filter(d=>d.id!==n.sectionId).map(d=>['Move to '+d.label,()=>move(n,legacy,d.id)]),null,
@@ -370,15 +381,18 @@ function initUnifiedWorkspace(mode){
      ...cols.filter(c=>c.id!==s.side).map(c=>['Move section to '+c.title,()=>moveSection(s,c.id)]),null,
      ['Delete section',()=>{const entries=state.entries.filter(x=>x.sectionId===s.id);if(entries.length&&!confirm('Move the notes to the main column and remove this section?'))return;
        entries.forEach(n=>n.sectionId=compass?MAIN:s.side==='timeline'?TIMELINE:MAIN);state.sections=state.sections.filter(x=>x.id!==s.id);persist();renderAll();}]],'Section options');
+   if(s.side==='timeline'){drag.draggable=false;drag.removeAttribute('title');drag.style.display='none';}
    head.append(drag,title,count,fold,menu);
    head.onclick=e=>{if(e.target.closest('button,input,[contenteditable],summary,details'))return;s.collapsed=!s.collapsed;persist();renderAll();};
    const body=el('div','pi-notes-section-body pi-ws-section-body');body.hidden=!!s.collapsed;
-   if(!s.collapsed){state.entries.filter(n=>n.sectionId===s.id).forEach(n=>body.append(makeNote(n)));
+   if(!s.collapsed){const sectionNotes=state.entries.filter(n=>n.sectionId===s.id);
+     if(s.side==='timeline')sectionNotes.sort(byTimelineDate);
+     sectionNotes.forEach(n=>body.append(makeNote(n)));
      if(!body.children.length)body.append(el('p','pi-muted','Move a note here or add one from the menu.'));
    }
    attachDrop(body,s.id);attachDrop(head,s.id);
-   head.addEventListener('dragover',e=>{if(dragSection&&dragSection!==s){e.preventDefault();e.stopPropagation();head.classList.add('pi-drop-ready');}});
-   head.addEventListener('drop',e=>{if(dragSection&&dragSection!==s){e.preventDefault();e.stopPropagation();dragSection.side=s.side;const from=state.sections.indexOf(dragSection);state.sections.splice(from,1);state.sections.splice(state.sections.indexOf(s),0,dragSection);dragSection=null;persist();renderAll();}});
+   head.addEventListener('dragover',e=>{if(dragSection&&dragSection!==s&&s.side!=='timeline'){e.preventDefault();e.stopPropagation();head.classList.add('pi-drop-ready');}});
+   head.addEventListener('drop',e=>{if(dragSection&&dragSection!==s&&s.side!=='timeline'){e.preventDefault();e.stopPropagation();dragSection.side=s.side;const from=state.sections.indexOf(dragSection);state.sections.splice(from,1);state.sections.splice(state.sections.indexOf(s),0,dragSection);dragSection=null;persist();renderAll();}});
    wrap.append(head,body);return wrap;
  }
  function addBlank(dest,kind){
@@ -390,8 +404,11 @@ function initUnifiedWorkspace(mode){
    const main=compass?(c.id==='goals'?GOALS:GROUNDING):(c.id==='timeline'?TIMELINE:MAIN);
    if(main){
      const rows=state.entries.filter(x=>x.sectionId===main);
-     rows.forEach(n=>root.append(makeNote(n)));
-     if(c.id==='timeline')legacyItems().forEach(n=>root.append(makeNote(n,true)));
+     if(c.id==='timeline'){
+       [...rows.map(n=>({n,legacy:false})),...legacyItems().map(n=>({n,legacy:true}))]
+         .sort((a,b)=>byTimelineDate(a.n,b.n))
+         .forEach(({n,legacy})=>root.append(makeNote(n,legacy)));
+     }else rows.forEach(n=>root.append(makeNote(n)));
    }
    state.sections.filter(s=>s.side===c.id).forEach(s=>root.append(makeSection(s)));
    if(!root.children.length)root.append(el('p','pi-muted','Add a note or move one into this column.'));

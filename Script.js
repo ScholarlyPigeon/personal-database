@@ -5786,7 +5786,8 @@ if (document.getElementById("longformApp")) {
                     createdAt: typeof entry.createdAt === "string" ? entry.createdAt : new Date().toISOString(),
                     imageUrl: typeof entry.imageUrl === "string" ? entry.imageUrl : "",
                     linkUrl: typeof entry.linkUrl === "string" ? entry.linkUrl : "",
-                    pinned: Boolean(entry.pinned)
+                    pinned: Boolean(entry.pinned),
+                    accentOverride: ['teal','rose','plum','blue','green'].includes(entry.accentOverride) ? entry.accentOverride : ''
                 }))
         };
     }
@@ -5973,7 +5974,8 @@ if (document.getElementById("longformApp")) {
             const expanded = expandedLongformIds.has(entry.id);
             card.className = `longform-entry${entry.done ? " done" : ""}${expanded ? " expanded" : ""}`;
             card.dataset.category = entry.category;
-            card.dataset.accent = longformCategoryAccent(entry.category);
+            card.dataset.accent = entry.accentOverride || longformCategoryAccent(entry.category);
+            card.dataset.manualAccent = entry.accentOverride ? 'true' : 'false';
             card.dataset.entryId = entry.id;
             card.classList.toggle("pinned", Boolean(entry.pinned));
             card.classList.toggle("pi-move-selected", selectedLongformEntry === entry.id);
@@ -6036,6 +6038,33 @@ if (document.getElementById("longformApp")) {
                 renderLongformEntries();
                 showSaved();
             });
+
+            // Per-thought color is separate from the retired category UI.
+            // The five options use each active theme's existing accent tokens.
+            const colorRow = document.createElement('label');
+            colorRow.className = 'longform-note-color-row';
+            const colorLabel = document.createElement('span');
+            colorLabel.textContent = 'Note color';
+            const colorPicker = document.createElement('select');
+            colorPicker.className = 'longform-note-color-picker';
+            colorPicker.setAttribute('aria-label', 'Color for this saved thought');
+            [['','Theme default'],['teal','Teal'],['rose','Rose'],['plum','Plum'],['blue','Blue'],['green','Green']].forEach(([value,label])=>{
+                const option = document.createElement('option');
+                option.value = value;
+                option.textContent = label;
+                colorPicker.appendChild(option);
+            });
+            colorPicker.value = entry.accentOverride || '';
+            colorPicker.addEventListener('change', event => {
+                event.stopPropagation();
+                entry.accentOverride = colorPicker.value;
+                saveLongformState(false);
+                // Repaint just the live card so the open ⋮ doesn't jump.
+                card.dataset.accent = entry.accentOverride || longformCategoryAccent(entry.category);
+                card.dataset.manualAccent = entry.accentOverride ? 'true' : 'false';
+                showSaved();
+            });
+            colorRow.append(colorLabel, colorPicker);
 
             const mediaEdit = document.createElement("button");
             mediaEdit.type = "button";
@@ -6106,7 +6135,7 @@ if (document.getElementById("longformApp")) {
                 tools.open=false;
             });
             const sectionMove = makeLongformSectionSelect(entry);
-            toolsPanel.append(editInComposer, sectionMove, pinButton, doneButton, mediaEdit, archive, remove);
+            toolsPanel.append(editInComposer, sectionMove, colorRow, pinButton, doneButton, mediaEdit, archive, remove);
             tools.append(toolsSummary, toolsPanel);
 
             const expand = document.createElement("button");
