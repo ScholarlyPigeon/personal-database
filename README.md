@@ -121,3 +121,9 @@ Saved Notes column, outside any named section. They can be dragged into a
 section, or dragged back to the main-column drop area. Existing notes with
 `sectionId: "__current__" remain visible. No local-storage or cloud-sync keys
 were changed. V20.4 fixes otherwise remain in place.
+
+
+## V20.6 alignment pass
+- Aquarium section + and × actions share one centered control rail. Section names and records are unchanged.
+- Longform Write it out and Saved thoughts headers match in desktop height. Category management is labeled “Edit categories,” positioned before the category and date inputs; visible category/date captions removed, accessible labels retained.
+- Changes are presentation/markup-only; data keys and cloud-sync behavior are unchanged.

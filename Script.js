@@ -4418,7 +4418,12 @@ if (document.getElementById("aquariumApp")) {
                 saveCollapsedAquariumSections(); saveAquariumState(); renderAquarium();
             });
             removeSection.addEventListener("keydown", event => event.stopPropagation());
-            divider.append(addSection, removeSection);
+            // One shared control rail prevents the add/remove icons from
+            // inheriting different grid placement and vertical alignment.
+            const sectionActions = document.createElement("div");
+            sectionActions.className = "aq-section-actions";
+            sectionActions.append(addSection, removeSection);
+            divider.appendChild(sectionActions);
 
             function toggleSection() {
                 if (collapsedAquariumSections.has(section.id)) collapsedAquariumSections.delete(section.id);

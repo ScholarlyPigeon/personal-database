@@ -599,3 +599,168 @@ html.almanac-page-html .pi-notes-unsectioned.pi-drop-ready {
   border-color:var(--teal-soft);
   background:color-mix(in srgb,var(--teal) 8%,transparent);
 }
+
+
+/* ===== V20.6: matched Aquarium section buttons and aligned Longform toolbars ===== */
+html.aquarium-page .aq-section-divider {
+  grid-template-columns: 18px minmax(0, 1fr) max-content !important;
+  align-items: center !important;
+  column-gap: 7px !important;
+}
+html.aquarium-page .aq-section-divider > .aq-section-toggle {
+  grid-column: 1 !important;
+  align-self: center !important;
+}
+html.aquarium-page .aq-section-divider > .aq-section-label {
+  grid-column: 2 !important;
+  align-self: center !important;
+}
+html.aquarium-page .aq-section-divider > .aq-section-actions {
+  grid-column: 3 !important;
+  justify-self: end !important;
+  align-self: center !important;
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  line-height: 1 !important;
+}
+html.aquarium-page .aq-section-divider > .aq-section-actions > :is(.aq-section-add, .aq-section-remove) {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 20px !important;
+  align-self: center !important;
+  justify-self: center !important;
+  grid-column: auto !important;
+  box-sizing: border-box !important;
+  width: 20px !important;
+  min-width: 20px !important;
+  max-width: 20px !important;
+  height: 20px !important;
+  min-height: 20px !important;
+  max-height: 20px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  font: 600 13px/1 'Segoe UI', Arial, sans-serif !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 6px !important;
+  color: var(--muted) !important;
+  background: var(--panel-light) !important;
+  vertical-align: middle !important;
+  cursor: pointer;
+}
+html.aquarium-page .aq-section-divider > .aq-section-actions > :is(.aq-section-add, .aq-section-remove):hover,
+html.aquarium-page .aq-section-divider > .aq-section-actions > :is(.aq-section-add, .aq-section-remove):focus-visible {
+  border-color: var(--teal) !important;
+  color: var(--text) !important;
+}
+html.aquarium-page .aq-section-divider > .aq-section-actions > .aq-section-remove:disabled {
+  opacity: .4 !important;
+  cursor: default !important;
+}
+/* Both Longform top bars have exactly the same desktop height. */
+html.longform-page-html .longform-library-head,
+html.longform-page-html .longform-composer-head {
+  box-sizing: border-box !important;
+  min-height: 60px !important;
+  height: 60px !important;
+  max-height: 60px !important;
+  padding: 8px 12px !important;
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 9px !important;
+}
+html.longform-page-html .longform-library-head > :first-child,
+html.longform-page-html .longform-composer-head > :first-child {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+}
+html.longform-page-html .longform-library-head .longform-library-controls,
+html.longform-page-html .longform-composer-head .longform-compose-meta {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  flex: 0 1 auto !important;
+  min-width: 0 !important;
+  width: auto !important;
+  gap: 7px !important;
+  margin: 0 0 0 auto !important;
+  padding: 0 !important;
+}
+html.longform-page-html .longform-composer-head .longform-inline-field {
+  display: block !important;
+  flex: 0 1 auto !important;
+  min-width: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  line-height: 1 !important;
+}
+html.longform-page-html .longform-composer-head :is(#longformCategory,#longformDate) {
+  display: block !important;
+  box-sizing: border-box !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  margin: 0 !important;
+  font-size: 11px !important;
+}
+html.longform-page-html .longform-composer-head #longformCategory { width: 120px !important; max-width: 120px !important; }
+html.longform-page-html .longform-composer-head #longformDate { width: 128px !important; max-width: 128px !important; }
+html.longform-page-html .longform-composer-head #manageLongformCategories {
+  display: inline-flex !important;
+  flex: 0 0 auto !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-sizing: border-box !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 4px 9px !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 7px !important;
+  background: var(--panel-light) !important;
+  color: var(--text) !important;
+  font: 600 11px/1 'Segoe UI',Arial,sans-serif !important;
+  text-decoration: none !important;
+  white-space: nowrap !important;
+}
+html.longform-page-html .longform-composer-head #manageLongformCategories:hover,
+html.longform-page-html .longform-composer-head #manageLongformCategories:focus-visible {
+  border-color: var(--teal) !important;
+}
+html.longform-page-html :is(.longform-library-head,.longform-composer-head) > :is(.pi-popout-button,.panel-collapse-toggle) {
+  flex: 0 0 auto !important;
+  align-self: center !important;
+  margin: 0 !important;
+}
+.pi-visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0,0,0,0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+/* At narrow widths the actions can wrap without clipping or horizontal overflow. */
+@media (max-width: 1100px) {
+  html.longform-page-html .longform-library-head,
+  html.longform-page-html .longform-composer-head {
+    height: auto !important;
+    max-height: none !important;
+    min-height: 60px !important;
+    flex-wrap: wrap !important;
+  }
+  html.longform-page-html .longform-composer-head .longform-compose-meta {
+    flex-wrap: wrap !important;
+  }
+}

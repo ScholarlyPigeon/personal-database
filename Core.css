@@ -14645,7 +14645,7 @@ body[data-theme="clarity-dark"] :is(.pi-home-inbox-list,.pi-recent-list,.pi-focu
 .aq-section-remove:hover{color:var(--rose-soft)}
 .aq-direct-section-zone{display:flex!important;flex-wrap:wrap;align-content:start;gap:10px;min-height:110px;padding:10px}
 .aq-direct-section-zone>.aq-card{flex:1 1 245px;max-width:100%}
-.aq-section-add{align-self:start}
+.aq-section-add{align-self:center}
 .aq-card-focus{background:transparent;border:0;color:var(--muted);cursor:pointer;font-size:17px;min-width:25px}
 .pi-aq-focus-dialog{color:var(--text);background:var(--panel);border:1px solid var(--border);border-radius:14px;width:min(760px,95vw);height:min(75dvh,780px);max-height:95dvh;padding:0;overflow:hidden}
 .pi-aq-focus-dialog::backdrop{background:rgba(0,0,0,.73)}
