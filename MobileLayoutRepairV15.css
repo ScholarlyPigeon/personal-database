@@ -1,0 +1,209 @@
+/* V15 MOBILE REPAIR: Home mobile rows and calendar cards.
+   Keep all saved data, scripts, and desktop rules unchanged. */
+@media (max-width: 900px) {
+  /* Give the horizontally scrolling day cards a genuine scrollable middle track. */
+  html body .database-page.page > .home-upcoming-panel:not(.is-collapsed) {
+    height:clamp(310px, 43dvh, 420px) !important;
+    min-height:310px !important;
+    max-height:420px !important;
+    flex:0 0 clamp(310px, 43dvh, 420px) !important;
+    grid-template-rows:40px minmax(0,1fr) !important;
+  }
+  html body .database-page .home-upcoming-panel > .day-rail {
+    min-height:0 !important;
+    height:100% !important;
+    max-height:100% !important;
+    overflow-x:auto !important;
+    overflow-y:hidden !important;
+    align-items:stretch !important;
+    scroll-snap-type:x proximity !important;
+  }
+  html body .database-page .home-upcoming-panel .day-card:not(.pi-panel-popout) {
+    box-sizing:border-box !important;
+    height:100% !important;
+    min-height:0 !important;
+    max-height:100% !important;
+    overflow:hidden !important;
+    display:grid !important;
+    grid-template-rows:auto minmax(0,1fr) auto !important;
+    align-content:stretch !important;
+  }
+  html body .database-page .home-upcoming-panel .day-card .day-list {
+    box-sizing:border-box !important;
+    min-height:0 !important;
+    height:100% !important;
+    max-height:100% !important;
+    overflow-y:auto !important;
+    overflow-x:hidden !important;
+    overscroll-behavior-y:contain !important;
+    -webkit-overflow-scrolling:touch;
+    align-items:stretch !important;
+    align-content:start !important;
+  }
+  /* Expansion may add details and nested tasks: never clip them to row height. */
+  html body .database-page .home-upcoming-panel .day-card .day-list > .checklist-item,
+  html body .database-page .home-upcoming-panel .day-card .day-list > .checklist-item.pi-category-note {
+    height:auto !important;
+    max-height:none !important;
+    min-height:34px !important;
+    flex:0 0 auto !important;
+    contain:none !important;
+    transform:none !important;
+    overflow:visible !important;
+    align-content:start !important;
+    align-items:start !important;
+  }
+  html body .database-page .home-upcoming-panel .day-card .day-list > .checklist-item.pi-category-note {
+    display:grid !important;
+    grid-template-columns:12px minmax(0,1fr) auto !important;
+    grid-template-rows:auto auto !important;
+    gap:5px !important;
+  }
+  html body .database-page .home-upcoming-panel .day-card .day-list > .checklist-item.pi-category-note > .task-text {
+    min-width:0 !important;
+    width:100% !important;
+    max-width:none !important;
+    overflow:visible !important;
+    line-height:1.35 !important;
+    white-space:pre-wrap !important;
+    overflow-wrap:break-word !important;
+  }
+  html body .database-page .home-upcoming-panel .day-card .day-list > .checklist-item.pi-category-note > .item-row-actions {
+    align-self:start !important;
+    flex-wrap:nowrap !important;
+    min-width:0 !important;
+  }
+  html body .database-page .home-upcoming-panel .day-card .day-list > .checklist-item.pi-category-note > .pi-category-note-content {
+    box-sizing:border-box !important;
+    grid-column:1 / -1 !important;
+    grid-row:2 !important;
+    max-height:none !important;
+    min-height:0 !important;
+    height:auto !important;
+    overflow:visible !important;
+    padding:5px 2px !important;
+    margin:0 !important;
+  }
+  html body .database-page .home-upcoming-panel .day-card .pi-category-note-editor {
+    box-sizing:border-box !important;
+    min-height:48px !important;
+    max-height:120px !important;
+    overflow-y:auto !important;
+  }
+  html body .database-page .home-upcoming-panel .day-entry-row {
+    flex:0 0 auto !important;
+    align-self:stretch !important;
+    margin-top:4px !important;
+  }
+
+  /* Normal Home Notes: rows should measure multiline content, not use stale paint clipping. */
+  html body .database-page .database-notes-list > .pi-compact-item {
+    box-sizing:border-box !important;
+    display:grid !important;
+    flex:0 0 auto !important; /* Prevent the capped notes scroller from shrinking rows */
+    min-width:0 !important;
+    height:auto !important;
+    min-height:54px !important;
+    max-height:none !important;
+    padding:7px 7px !important;
+    overflow:visible !important;
+    contain:none !important;
+    transform:none !important;
+    backface-visibility:visible !important;
+    align-content:center !important;
+    align-items:center !important;
+    grid-auto-rows:auto !important;
+    column-gap:5px !important;
+    row-gap:6px !important;
+  }
+  html body .database-page .database-notes-list > .pi-compact-item:not(.pi-category-note) {
+    grid-template-columns:13px 24px minmax(0,1fr) 76px 25px !important;
+  }
+  html body .database-page .database-notes-list > .pi-category-note.pi-compact-item {
+    grid-template-columns:13px 22px minmax(0,1fr) auto !important;
+    grid-template-rows:auto auto !important;
+  }
+  html body .database-page .database-notes-list > .pi-compact-item > .task-text {
+    position:static !important;
+    box-sizing:border-box !important;
+    display:block !important;
+    min-width:0 !important;
+    width:100% !important;
+    max-width:none !important;
+    min-height:0 !important;
+    height:auto !important;
+    max-height:none !important;
+    align-self:center !important;
+    overflow:visible !important;
+    line-height:1.4 !important;
+    white-space:pre-wrap !important;
+    overflow-wrap:break-word !important;
+    word-break:normal !important;
+  }
+  html body .database-page .database-notes-list > .pi-compact-item > .item-row-actions {
+    align-self:center !important;
+    justify-self:end !important;
+    margin:0 !important;
+    min-width:0 !important;
+    height:auto !important;
+  }
+  html body .database-page .database-notes-list > .pi-compact-item:not(.pi-category-note) > .pi-item-date {
+    box-sizing:border-box !important;
+    width:76px !important;
+    min-width:0 !important;
+    font-size:11px !important;
+    align-self:center !important;
+  }
+  html body .database-page .database-notes-list > .pi-category-note > .pi-category-heading-aligner {
+    grid-column:2 !important;
+    grid-row:1 !important;
+    width:22px !important;
+  }
+  html body .database-page .database-notes-list > .pi-category-note > .task-text {
+    grid-column:3 !important;
+    grid-row:1 !important;
+    font-weight:700 !important;
+  }
+  html body .database-page .database-notes-list > .pi-category-note > .item-row-actions {
+    grid-column:4 !important;
+    grid-row:1 !important;
+    gap:4px !important;
+  }
+  html body .database-page .database-notes-list > .pi-category-note > .pi-category-note-content {
+    grid-column:1/-1 !important;
+    grid-row:2 !important;
+    min-width:0 !important;
+    max-height:none !important;
+    overflow:visible !important;
+  }
+  /* On narrow phones category actions can drop beneath the title rather than crush it. */
+  @media (max-width:420px) {
+    html body .database-page .database-notes-list > .pi-category-note.pi-compact-item {
+      grid-template-columns:13px 22px minmax(0,1fr) !important;
+      grid-template-rows:auto auto auto !important;
+    }
+    html body .database-page .database-notes-list > .pi-category-note > .item-row-actions {
+      grid-column:3 !important;
+      grid-row:2 !important;
+      justify-self:end !important;
+    }
+    html body .database-page .database-notes-list > .pi-category-note > .pi-category-note-content {
+      grid-row:3 !important;
+    }
+  }
+  /* Keep the Notes popout usable without forcing the composer atop content. */
+  html body .database-page .database-notes-panel.pi-panel-popout .database-notes-body {
+    display:grid !important;
+    grid-template-rows:minmax(0,1fr) auto auto !important;
+    min-height:0 !important;
+    max-height:100% !important;
+    height:100% !important;
+    overflow:hidden !important;
+  }
+  html body .database-page .database-notes-panel.pi-panel-popout .database-notes-list {
+    min-height:0 !important;
+    max-height:none !important;
+    height:100% !important;
+    overflow-y:auto !important;
+  }
+}

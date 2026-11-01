@@ -1,3 +1,18 @@
+# V20.1 Loading-order repair (recommended over V20)
+
+V20 accidentally removed the `defer` attribute from all local application scripts while consolidating HTML file imports. The Supabase CDN script was still deferred, so the local cloud-sync script could run before the Supabase library was available; the other scripts also ran before the page body existed. This prevented dynamic Home notes, calendars, theme selectors and other page content from appearing. **V20.1 restores `defer` on every application page** and uses new URL version tags to refresh browser caches. No user-data keys, stored records, Supabase code, layout markup, or code bundles are changed relative to V20.
+
+## Deploy the repair
+
+1. Close all intranet tabs and **do not use Archive All Completed or reset stored data** in the faulty V20 deployment.
+2. In the existing GitHub repository, upload the files *inside* this ZIP's `CURRENT/` folder, replacing same-named files. You do not need to delete/recreate the repository or remove files again.
+3. After GitHub Pages deploys, open a fresh page (or hard-refresh with Ctrl+Shift+R), confirm that notes and calendars render, and check cloud login/synced status. Existing content should appear once the scripts and cloud sync initialize. If not, keep your backups and do not force a cloud restore or clear storage.
+4. Only after loading successfully, test a nonessential edit and syncing on another device.
+
+The underlying JavaScript and CSS are exactly the same as the previous V20 release. This is a focused boot-order hotfix, not a redesign. Static checks are done; full interactive browser testing was not available in this environment.
+
+---
+
 # Personal Intranet | Clean release (V20)
 
 A focused file/maintenance cleanup of V19, **not a data migration or feature redesign**.

@@ -1,0 +1,605 @@
+/* PERSONAL INTRANET V6 • shared cleanup, no changes to stored notes */
+:root { --pi-dock-space: 0px !important; }
+#piUniversalDock, .pi-universal-dock, .pi-home-capture-center,
+.pi-home-capture, [data-pi-open-inbox], .pi-home-inbox-nav {
+  display:none !important;
+}
+/* Reserve the space only once, even while sync messages change. */
+header #saveStatus.sync-status {
+  box-sizing:border-box !important;
+  width:112px !important; min-width:112px !important; max-width:112px !important;
+  flex:0 0 112px !important;
+  white-space:nowrap !important; overflow:hidden !important;
+  text-overflow:ellipsis !important;
+  text-align:center !important;
+  display:inline-block !important;
+  line-height:25px !important;
+  padding:0 7px !important;
+}
+@media(max-width:650px) {
+  header #saveStatus.sync-status {
+    width:87px !important; min-width:87px !important; max-width:87px !important;
+    flex-basis:87px !important;
+  }
+}
+/* Shorter pages after retiring the bottom dock; preserve normal content scrolling. */
+body.pi-shell-active :is(.database-page.page,.longform-page) {
+  height:100dvh !important; max-height:100dvh !important;
+}
+@media(max-width:900px) {
+  body.pi-shell-active :is(.database-page.page,.longform-page) {
+    height:auto !important; max-height:none !important;
+  }
+}
+/* Reclaim navigation space for content, without hiding any meaningful features. */
+header :is(.header-right,.aq-header-actions,.almanac-header-actions,.patterns-header-actions,.longform-header-actions,.neo-header-tools) {
+  gap:8px !important;
+}
+
+/* HOME layout: larger, reliably scrollable day cards. */
+@media(min-width:901px) {
+  html body .database-page.page.pi-focus-layout {
+    grid-template-rows:auto clamp(246px,31vh,300px) minmax(0,1fr) !important;
+  }
+}
+html body .database-page .home-upcoming-panel .day-card {
+  padding:7px !important; display:grid !important;
+  grid-template-rows:auto minmax(0,1fr) auto !important;
+  align-items:stretch !important;
+}
+html body .database-page .home-upcoming-panel .day-card .day-list {
+  display:flex !important; flex-direction:column !important;
+  flex:1 1 auto !important;
+  min-height:0 !important; max-height:none !important;
+  overflow-y:auto !important; overflow-x:hidden !important;
+  gap:5px !important;
+}
+html body .database-page .home-upcoming-panel .day-card .day-list > .checklist-item:not(.pi-category-note) {
+  display:grid !important;
+  grid-template-columns:13px 17px minmax(0,1fr) 65px auto !important;
+  width:100% !important; min-width:0 !important; max-width:none !important;
+  height:auto !important; min-height:38px !important;
+  align-items:center !important; gap:4px !important; padding:5px !important;
+}
+html body .database-page .home-upcoming-panel .day-card .day-list > .checklist-item.pi-category-note {
+  display:grid !important;
+  grid-template-columns:13px minmax(0,1fr) auto !important;
+  grid-template-rows:auto auto !important;
+  min-width:0 !important; width:100% !important;
+  align-items:center !important; padding:6px !important;
+}
+html body .database-page .home-upcoming-panel .day-card .day-list .task-text {
+  min-width:0 !important; overflow-wrap:anywhere !important;
+  font-size:13.5px !important; line-height:1.4 !important;
+}
+html body .database-page .home-upcoming-panel .day-card .day-list > .pi-category-note .pi-category-note-content {
+  grid-column:1/-1 !important; min-width:0 !important;
+  max-height:200px !important; overflow-y:auto !important;
+}
+html body .database-page .home-upcoming-panel .day-card .day-entry-row {
+  display:flex !important; width:100% !important; min-width:0 !important;
+  align-items:stretch !important; gap:6px !important;
+}
+html body .database-page .home-upcoming-panel .day-card .day-entry-row .day-input {
+  min-width:0 !important; flex:1 1 auto !important; width:auto !important;
+}
+@media(max-width:900px) {
+  html body .database-page.page > .home-upcoming-panel:not(.is-collapsed) {
+    height:270px !important; max-height:270px !important; min-height:270px !important;
+    flex:0 0 270px !important;
+  }
+  html body .database-page.page > .home-upcoming-panel.is-collapsed {
+    height:36px !important; max-height:36px !important; min-height:36px !important;
+    flex:0 0 36px !important;
+  }
+}
+/* Uniform header placement: expand first, collapse last. */
+html body .database-page :is(.pi-focus-head,.home-upcoming-panel>.panel-header,.database-notes-panel>.panel-header) {
+  display:flex !important; align-items:center !important; gap:5px !important;
+}
+html body .database-page :is(.pi-focus-head,.home-upcoming-panel>.panel-header,.database-notes-panel>.panel-header) > :is(.pi-popout-button,.pi-focus-collapse,.panel-collapse-toggle) {
+  flex:0 0 27px !important;
+  width:27px !important; height:27px !important;
+  min-width:27px !important; min-height:27px !important;
+  border:1px solid var(--border) !important;
+  border-radius:7px !important;
+  background:var(--panel-light) !important;
+  color:var(--text) !important;
+  display:inline-grid !important; place-items:center !important;
+  font-size:16px !important; padding:0 !important; margin:0 !important;
+  line-height:1 !important; cursor:pointer !important;
+}
+html body .database-page .pi-focus-head > .pi-popout-button { margin-left:auto !important; order:98 !important; }
+html body .database-page .pi-focus-head > .pi-focus-collapse { order:99 !important; }
+html body .database-page :is(.home-upcoming-panel>.panel-header,.database-notes-panel>.panel-header) > .pi-popout-button {
+  margin-left:auto !important; order:98 !important;
+}
+html body .database-page :is(.home-upcoming-panel>.panel-header,.database-notes-panel>.panel-header) > .panel-collapse-toggle {
+  order:99 !important;
+}
+html body .database-page .home-upcoming-panel .home-rail-hint {display:none!important;}
+/* Compact nested checklists, while preserving multiline auto-height and dates. */
+html body .database-page .pi-nested-checklist {gap:3px !important;}
+html body .database-page .pi-nested-line {
+  padding:2px 3px !important; row-gap:2px !important;
+  min-height:29px !important; height:auto !important;
+  align-items:center !important;
+}
+html body .database-page .pi-nested-line .pi-nested-text {
+  padding:2px 3px !important; min-height:25px !important;
+  font-size:14px !important; line-height:1.35 !important;
+  height:auto; max-height:none !important; overflow:hidden !important;
+}
+html body .database-page .pi-nested-line .pi-nested-date {
+  align-self:center !important; font-size:10px !important;
+}
+html body .database-page .pi-nested-line input[type="checkbox"] {margin-top:0!important;}
+html body .database-page .pi-nested-compose {margin-top:3px !important;}
+/* Nested item moves: unobtrusive on the line itself, full labels in menus. */
+html body .database-page .pi-nested-move-select {
+  box-sizing:border-box !important; width:62px !important; min-width:62px !important;
+  max-width:62px !important; height:24px !important;
+  font:500 10px/1.2 'Segoe UI',Arial,sans-serif !important;
+  background:var(--panel-light) !important; color:var(--text) !important;
+  border:1px solid var(--border) !important; border-radius:5px !important;
+  cursor:pointer !important; padding:1px !important;
+}
+html body .database-page .pi-category-route-select {
+  color:var(--text) !important; background:var(--panel-light) !important;
+  font:500 12px/1.3 'Segoe UI',Arial,sans-serif !important;
+  max-width:210px !important; min-width:125px !important;
+  border:1px solid var(--border) !important; border-radius:5px !important;
+  padding:5px 4px !important;
+}
+html body .database-page .pi-category-drop-target {outline:2px dashed var(--teal)!important;outline-offset:-3px;}
+/* Keep v5 popout contents comfortable even at the new panel dimensions. */
+html body .database-page .home-upcoming-panel.pi-panel-popout .day-rail {max-height:100%!important;}
+
+html body .database-page #piDatabaseFocus .pi-focus-head > .pi-focus-title {
+  flex:1 1 auto !important; min-width:0 !important;
+}
+html body .database-page #piDatabaseFocus .pi-focus-head > .pi-focus-warning[hidden] {
+  display:none !important;
+}
+html body .database-page #piDatabaseFocus .pi-focus-head > .pi-popout-button,
+html body .database-page #piDatabaseFocus .pi-focus-head > .pi-focus-collapse {
+  margin-left:0 !important;
+  flex:0 0 27px !important;
+}
+
+/* The category popout is a document-level dialog, outside the Home wrapper. */
+dialog.pi-category-dialog .pi-nested-move-select {
+  box-sizing:border-box; min-width:62px; width:62px; max-width:62px;
+  height:29px; border:1px solid var(--border); border-radius:5px;
+  background:var(--panel-light); color:var(--text);
+  font:500 11px/1.2 'Segoe UI',Arial,sans-serif;
+  cursor:pointer;
+}
+
+
+/* V7 follow-up: roomier days, cleaner radar rows, tighter nested items. */
+@media(min-width:901px) {
+  html body .database-page.page.pi-focus-layout {
+    grid-template-rows:auto clamp(278px,36vh,370px) minmax(0,1fr) !important;
+  }
+  html body .database-page.page > .home-upcoming-panel .day-rail {
+    grid-auto-columns:minmax(320px, calc((100% - 24px) / 4)) !important;
+  }
+}
+html body .database-page #piDatabaseFocus .pi-focus-item:not(.pi-category-note) {
+  grid-template-columns:12px 18px minmax(0,1fr) auto !important;
+  align-items:center !important;
+}
+html body .database-page #piDatabaseFocus .pi-focus-item:not(.pi-category-note) .pi-focus-main {
+  display:flex !important; align-items:center !important; min-width:0 !important;
+}
+html body .database-page #piDatabaseFocus .pi-focus-item:not(.pi-category-note) .pi-focus-headline {
+  width:100% !important; align-items:center !important;
+}
+html body .database-page #piDatabaseFocus .pi-focus-item:not(.pi-category-note) .pi-focus-actions {
+  display:flex !important; flex-direction:row !important; align-items:center !important;
+  justify-content:flex-end !important; gap:6px !important;
+  min-width:max-content !important; width:auto !important;
+}
+html body .database-page #piDatabaseFocus .pi-focus-item:not(.pi-category-note) .pi-focus-date {
+  order:1 !important; display:inline-block !important; margin:0 !important;
+  align-self:center !important; font-size:11px !important; line-height:1 !important;
+}
+html body .database-page #piDatabaseFocus .pi-focus-item:not(.pi-category-note) .pi-item-tools,
+html body .database-page #piDatabaseFocus .pi-focus-item:not(.pi-category-note) .pi-focus-tools {
+  order:2 !important; margin:0 !important;
+}
+html body .database-page #piDatabaseFocus .pi-focus-item:not(.pi-category-note) .pi-item-tools > summary,
+html body .database-page #piDatabaseFocus .pi-focus-item:not(.pi-category-note) .pi-focus-tools > summary {
+  margin:0 !important;
+}
+
+html body .database-page :is(#piDatabaseFocus,.database-notes-list,.home-upcoming-panel .day-card,.home-upcoming-panel .day-card.pi-panel-popout) .pi-category-note-content {
+  margin-left:0 !important; padding-left:4px !important; padding-right:4px !important;
+}
+html body .database-page :is(#piDatabaseFocus,.database-notes-list,.home-upcoming-panel .day-card,.home-upcoming-panel .day-card.pi-panel-popout) .pi-nested-checklist {
+  gap:2px !important; padding-top:4px !important;
+}
+html body .database-page :is(#piDatabaseFocus,.database-notes-list,.home-upcoming-panel .day-card,.home-upcoming-panel .day-card.pi-panel-popout) .pi-nested-line {
+  grid-template-columns:12px 16px minmax(0,1fr) auto !important;
+  column-gap:4px !important; row-gap:1px !important;
+  padding:1px 0 !important; min-height:24px !important; align-items:center !important;
+}
+html body .database-page :is(#piDatabaseFocus,.database-notes-list,.home-upcoming-panel .day-card,.home-upcoming-panel .day-card.pi-panel-popout) .pi-nested-drag {
+  padding:0 !important; align-self:center !important;
+}
+html body .database-page :is(#piDatabaseFocus,.database-notes-list,.home-upcoming-panel .day-card,.home-upcoming-panel .day-card.pi-panel-popout) .pi-nested-line input[type="checkbox"] {
+  margin:0 !important; align-self:center !important;
+}
+html body .database-page :is(#piDatabaseFocus,.database-notes-list,.home-upcoming-panel .day-card,.home-upcoming-panel .day-card.pi-panel-popout) .pi-nested-line .pi-nested-text {
+  padding:1px 2px !important; min-height:0 !important; line-height:1.3 !important; align-self:center !important;
+}
+html body .database-page :is(#piDatabaseFocus,.database-notes-list,.home-upcoming-panel .day-card,.home-upcoming-panel .day-card.pi-panel-popout) .pi-nested-actions {
+  display:flex !important; align-items:center !important; gap:4px !important;
+}
+html body .database-page .pi-nested-move-select,
+dialog.pi-category-dialog .pi-nested-move-select {
+  display:none !important;
+}
+html body .database-page .home-upcoming-panel .day-card .day-list > .pi-category-note .pi-category-note-content {
+  max-height:none !important;
+}
+html body .database-page .home-upcoming-panel .day-card.pi-panel-popout .day-list > .checklist-item.pi-category-note {
+  padding:4px 6px !important;
+}
+
+
+/* V8 follow-up: wider day cards, cleaner radar alignment, inline remove buttons. */
+@media(min-width:901px) {
+  html body .database-page.page > .home-upcoming-panel .day-rail {
+    grid-auto-columns:minmax(360px, calc((100% - 30px) / 4)) !important;
+    padding-bottom:12px !important;
+    scrollbar-gutter: stable both-edges;
+  }
+}
+
+html body .database-page #piDatabaseFocus .pi-focus-list {
+  gap:6px !important;
+}
+html body .database-page #piDatabaseFocus .pi-focus-item {
+  grid-template-columns:12px 16px minmax(0,1fr) auto !important;
+  column-gap:6px !important;
+  align-items:center !important;
+}
+html body .database-page #piDatabaseFocus .pi-focus-item .pi-focus-main,
+html body .database-page #piDatabaseFocus .pi-focus-item .pi-focus-headline {
+  min-width:0 !important;
+  display:flex !important;
+  align-items:center !important;
+}
+html body .database-page #piDatabaseFocus .pi-focus-item .pi-focus-text {
+  min-width:0 !important;
+}
+html body .database-page #piDatabaseFocus .pi-focus-item .pi-focus-actions {
+  display:flex !important;
+  flex-direction:row !important;
+  align-items:center !important;
+  justify-content:flex-end !important;
+  gap:6px !important;
+  min-width:max-content !important;
+}
+html body .database-page #piDatabaseFocus .pi-focus-item .pi-focus-date {
+  margin:0 !important;
+  order:1 !important;
+  align-self:center !important;
+  white-space:nowrap !important;
+}
+html body .database-page #piDatabaseFocus .pi-focus-item .pi-item-tools,
+html body .database-page #piDatabaseFocus .pi-focus-item .pi-focus-tools {
+  order:2 !important;
+  margin:0 !important;
+  align-self:center !important;
+}
+html body .database-page #piDatabaseFocus .pi-focus-item .pi-item-tools > summary,
+html body .database-page #piDatabaseFocus .pi-focus-item .pi-focus-tools > summary {
+  display:inline-grid !important;
+  place-items:center !important;
+  margin:0 !important;
+}
+html body .database-page #piDatabaseFocus .pi-focus-item.pi-category-note .pi-focus-headline {
+  gap:4px !important;
+}
+html body .database-page #piDatabaseFocus .pi-focus-item.pi-category-note .pi-focus-main {
+  overflow:hidden !important;
+}
+
+html body .database-page :is(#piDatabaseFocus,.database-notes-list,.home-upcoming-panel .day-card,.home-upcoming-panel .day-card.pi-panel-popout) .pi-nested-line {
+  grid-template-columns:12px 16px minmax(0,1fr) auto auto !important;
+  align-items:center !important;
+}
+html body .database-page :is(#piDatabaseFocus,.database-notes-list,.home-upcoming-panel .day-card,.home-upcoming-panel .day-card.pi-panel-popout) .pi-nested-date {
+  white-space:nowrap !important;
+  align-self:center !important;
+  justify-self:end !important;
+  margin:0 !important;
+}
+html body .database-page :is(#piDatabaseFocus,.database-notes-list,.home-upcoming-panel .day-card,.home-upcoming-panel .day-card.pi-panel-popout) .pi-nested-actions {
+  display:flex !important;
+  align-items:center !important;
+  justify-content:flex-end !important;
+  gap:0 !important;
+  align-self:center !important;
+}
+html body .database-page :is(#piDatabaseFocus,.database-notes-list,.home-upcoming-panel .day-card,.home-upcoming-panel .day-card.pi-panel-popout) .pi-nested-remove {
+  align-self:center !important;
+  justify-self:end !important;
+  margin:0 !important;
+  padding:0 0 0 4px !important;
+  line-height:1 !important;
+}
+
+/* Match the same compact alignment inside category popout dialogs. */
+dialog.pi-category-dialog .pi-nested-line {
+  grid-template-columns:14px 18px minmax(0,1fr) auto auto !important;
+  align-items:center !important;
+  row-gap:1px !important;
+}
+dialog.pi-category-dialog .pi-nested-date {
+  white-space:nowrap !important;
+  align-self:center !important;
+  justify-self:end !important;
+}
+dialog.pi-category-dialog .pi-nested-actions {
+  display:flex !important;
+  align-items:center !important;
+  justify-content:flex-end !important;
+  gap:0 !important;
+}
+dialog.pi-category-dialog .pi-nested-remove {
+  margin:0 !important;
+  padding-left:4px !important;
+  line-height:1 !important;
+}
+
+
+/* V9 follow-up: restore stacked category rows, align left starts, polish collapsed panels. */
+html body .database-page #piDatabaseFocus .pi-focus-item,
+html body .database-page .database-notes-list .pi-compact-item {
+  padding-left:10px !important;
+}
+html body .database-page #piDatabaseFocus .pi-focus-item .pi-focus-drag,
+html body .database-page .database-notes-list .pi-compact-item .drag-handle {
+  justify-self:start !important;
+}
+
+/* Radar category notes should keep the title on its own row and nested items beneath it. */
+html body .database-page #piDatabaseFocus .pi-focus-item.pi-category-note {
+  grid-template-columns:12px 16px minmax(0,1fr) auto !important;
+  grid-template-rows:auto auto !important;
+  align-items:start !important;
+}
+html body .database-page #piDatabaseFocus .pi-focus-item.pi-category-note > .pi-focus-main {
+  grid-column:3 !important;
+  grid-row:1 !important;
+  display:block !important;
+  min-width:0 !important;
+}
+html body .database-page #piDatabaseFocus .pi-focus-item.pi-category-note > .pi-focus-actions {
+  grid-column:4 !important;
+  grid-row:1 !important;
+  align-self:start !important;
+}
+html body .database-page #piDatabaseFocus .pi-focus-item.pi-category-note .pi-focus-detail {
+  display:block !important;
+  margin-top:6px !important;
+}
+html body .database-page #piDatabaseFocus .pi-focus-item.pi-category-note .pi-focus-headline {
+  display:flex !important;
+  align-items:center !important;
+  gap:4px !important;
+}
+
+/* Give Radar the same themed header treatment as the other Home panels. */
+html body .database-page #piDatabaseFocus {
+  border-radius:10px !important;
+  overflow:hidden !important;
+}
+html body .database-page #piDatabaseFocus > .pi-focus-head {
+  min-height:40px !important;
+  padding:7px 10px !important;
+  border-bottom:1px solid var(--border) !important;
+}
+
+/* Collapsed panel bodies should leave a touch of space beneath the header controls. */
+
+
+/* V10: markup-backed category stacking, matching themed headers, visible collapsed footer. */
+/* Full-width category contents are their own row, never a side column. */
+html body .database-page .home-main-columns #piDatabaseFocus .pi-focus-item.pi-category-note {
+  display:grid !important;
+  grid-template-columns:12px 17px minmax(0,1fr) auto !important;
+  grid-template-rows:auto auto !important;
+  align-items:center !important;
+  gap:5px !important;
+}
+html body .database-page .home-main-columns #piDatabaseFocus .pi-focus-item.pi-category-note > .pi-focus-drag {
+  grid-row:1 !important; grid-column:1 !important; align-self:center !important;
+}
+html body .database-page .home-main-columns #piDatabaseFocus .pi-focus-item.pi-category-note > .pi-focus-expand {
+  grid-row:1 !important; grid-column:2 !important;
+  padding:0 !important; margin:0 !important; width:17px !important;
+  justify-self:center !important; align-self:center !important;
+}
+html body .database-page .home-main-columns #piDatabaseFocus .pi-focus-item.pi-category-note > .pi-focus-main {
+  grid-row:1 !important; grid-column:3 !important;
+  min-width:0 !important; display:block !important; overflow:visible !important;
+}
+html body .database-page .home-main-columns #piDatabaseFocus .pi-focus-item.pi-category-note > .pi-focus-actions {
+  grid-row:1 !important; grid-column:4 !important; align-self:center !important;
+  display:flex !important; align-items:center !important; justify-content:flex-end !important;
+}
+html body .database-page .home-main-columns #piDatabaseFocus .pi-focus-item.pi-category-note > .pi-focus-detail {
+  grid-row:2 !important; grid-column:1/-1 !important;
+  margin:4px 0 0 !important; padding:7px 0 0 !important;
+  border-top:1px solid var(--border) !important;
+  min-width:0 !important; width:100% !important;
+}
+html body .database-page .home-main-columns #piDatabaseFocus .pi-focus-item.pi-category-note .pi-nested-checklist {
+  width:100% !important; min-width:0 !important;
+}
+/* Notes headings get an invisible checkbox-sized slot, matching standalone text baselines. */
+html body .database-page .database-notes-list > .pi-category-note.pi-compact-item {
+  grid-template-columns:12px 16px minmax(0,1fr) auto !important;
+  grid-template-rows:auto auto !important;
+}
+html body .database-page .database-notes-list > .pi-category-note > .pi-category-heading-aligner {
+  width:16px !important; height:16px !important;
+}
+html body .database-page .database-notes-list > .pi-category-note > .pi-category-note-content {
+  grid-column:1/-1 !important; grid-row:2 !important;
+}
+/* The normal theme already knows how to paint .panel-header; don't override its gradient. */
+html body .database-page #piDatabaseFocus > .pi-focus-head.panel-header {
+  height:40px !important; min-height:40px !important; max-height:40px !important;
+  padding:5px 9px !important;
+}
+html body .database-page #piDatabaseFocus > .pi-focus-head.panel-header .pi-focus-title strong,
+html body .database-page #piDatabaseFocus > .pi-focus-head.panel-header .pi-focus-title .pi-focus-count {
+  color:inherit !important;
+}
+/* Collapsed controls should have an 8px painted ledge beneath them, not a clipped padding. */
+@media (min-width:901px) {
+  html body .database-page.page.pi-focus-layout:has(> .home-upcoming-panel.is-collapsed) {
+    grid-template-rows:auto 48px minmax(0,1fr) !important;
+  }
+}
+html body .database-page.page > .home-upcoming-panel.is-collapsed,
+html body .database-page .home-main-columns > #piDatabaseFocus.pi-focus-collapsed,
+html body .database-page .home-main-columns > .center-workspace > .database-notes-panel.is-collapsed {
+  box-sizing:border-box !important;
+  height:48px !important; min-height:48px !important; max-height:48px !important;
+  grid-template-rows:40px !important;
+  padding-bottom:8px !important;
+  align-self:start !important;
+}
+html body .database-page.page > .home-upcoming-panel.is-collapsed > .day-rail,
+html body .database-page .home-main-columns > #piDatabaseFocus.pi-focus-collapsed > .pi-focus-body,
+html body .database-page .home-main-columns > .center-workspace > .database-notes-panel.is-collapsed > .database-notes-body {
+  display:none !important;
+}
+@media(max-width:900px) {
+  html body .database-page.page > .home-upcoming-panel.is-collapsed,
+  html body .database-page .home-main-columns > #piDatabaseFocus.pi-focus-collapsed,
+  html body .database-page .home-main-columns > .center-workspace > .database-notes-panel.is-collapsed {
+    flex:0 0 48px !important;
+  }
+}
+
+
+/* V11 readability and category-control cleanup. */
+html body, html body button, html body input, html body select, html body textarea {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Clarity-like larger standard headings across pages/themes. */
+html body :is(.page-header h1, .panel-title, .panel-title strong, .panel-header .panel-title, .pi-focus-title, .pi-focus-title strong, .longform-page h2, .page h2.section-title) {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif !important;
+  font-size: 1.12rem !important;
+  line-height: 1.25 !important;
+  letter-spacing: 0 !important;
+}
+
+/* Larger, cleaner note/category text across the intranet. */
+html body :is(.checklist-item, .task-text, .pi-focus-text, .pi-focus-note-body, .pi-nested-text, .pi-category-note-editor, .checklist-input, .board-tile, .day-card, .longform-entry, .timeline-card, .note-card, .almanac-card, .calendar-note) {
+  font-size: 15px !important;
+  line-height: 1.4 !important;
+}
+html body :is(.page-subtitle, .panel-subtitle, .pi-focus-date, .pi-item-date, .pi-nested-date, .timeline-date, .meta, .muted) {
+  font-size: 11px !important;
+}
+
+/* Hide nested checklist label row entirely. */
+html body .pi-nested-title {
+  display: none !important;
+}
+html body .pi-nested-checklist {
+  padding-top: 2px !important;
+}
+
+/* Category-note toggles on Home Notes should live on the right and match header controls. */
+html body .database-page .database-notes-list .pi-category-note .item-row-actions {
+  display:flex !important;
+  align-items:center !important;
+  justify-content:flex-end !important;
+  gap:6px !important;
+}
+html body .database-page .database-notes-list .pi-category-note .pi-note-open,
+html body .database-page #piDatabaseFocus .pi-focus-expand {
+  display:inline-grid !important;
+  place-items:center !important;
+  width:27px !important;
+  height:27px !important;
+  min-width:27px !important;
+  min-height:27px !important;
+  padding:0 !important;
+  border:1px solid color-mix(in srgb, var(--border) 90%, transparent) !important;
+  border-radius:7px !important;
+  background:color-mix(in srgb, var(--panel-light) 78%, transparent) !important;
+  color:var(--text) !important;
+  font-weight:800 !important;
+  font-size:18px !important;
+  line-height:1 !important;
+  cursor:pointer !important;
+}
+html body .database-page .database-notes-list .pi-category-note .pi-note-open:hover,
+html body .database-page .database-notes-list .pi-category-note .pi-note-open:focus-visible,
+html body .database-page #piDatabaseFocus .pi-focus-expand:hover,
+html body .database-page #piDatabaseFocus .pi-focus-expand:focus-visible {
+  color:var(--text) !important;
+  border-color:var(--teal) !important;
+  background:color-mix(in srgb,var(--teal) 12%,var(--panel)) !important;
+  outline:none !important;
+}
+
+/* Radar count hidden and title row stays clean. */
+html body .database-page .pi-focus-count[hidden] {
+  display:none !important;
+}
+
+/* Radar category collapse button belongs on the right; keep left column aligned with standalone rows. */
+html body .database-page #piDatabaseFocus .pi-focus-control-spacer {
+  display:block !important;
+  width:16px !important;
+  height:16px !important;
+}
+html body .database-page #piDatabaseFocus .pi-focus-item.pi-category-note {
+  grid-template-columns:12px 18px minmax(0,1fr) auto !important;
+}
+html body .database-page #piDatabaseFocus .pi-focus-item.pi-category-note > .pi-focus-main {
+  grid-column:3 !important;
+  grid-row:1 !important;
+}
+html body .database-page #piDatabaseFocus .pi-focus-item.pi-category-note > .pi-focus-actions {
+  grid-column:4 !important;
+  grid-row:1 !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:flex-end !important;
+  gap:6px !important;
+}
+html body .database-page #piDatabaseFocus .pi-focus-item.pi-category-note > .pi-focus-detail {
+  grid-column:1 / -1 !important;
+  grid-row:2 !important;
+}
+
+/* On My Radar header spacing and standard theme header treatment. */
+html body .database-page #piDatabaseFocus > .pi-focus-head {
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  gap:10px !important;
+}
+
+/* Collapsed panels need a little breathing room below the button line. */
+html body .database-page :is(.home-upcoming-panel,.database-notes-panel,#piDatabaseFocus).is-collapsed {
+  min-height: 48px !important;
+  padding-bottom: 8px !important;
+}
+html body .database-page :is(.home-upcoming-panel,.database-notes-panel,#piDatabaseFocus).is-collapsed > :is(.panel-header,.pi-focus-head) {
+  margin-bottom: 6px !important;
+}

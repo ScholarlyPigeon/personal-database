@@ -1,0 +1,124 @@
+/* V13: responsive paired nav, compact Home tools, stable outer headings. */
+html body header .ecosystem-menu.pi-balanced-nav,
+html body header .pi-theme-menu.pi-balanced-nav {
+  width:var(--pi-balanced-nav-width, 222px) !important;
+  min-width:var(--pi-balanced-nav-width, 222px) !important;
+  max-width:var(--pi-balanced-nav-width, 222px) !important;
+  flex:0 0 var(--pi-balanced-nav-width, 222px) !important;
+}
+html body header .pi-balanced-nav > summary {
+  width:100% !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  box-sizing:border-box !important;
+  gap:8px !important;
+  padding:5px 10px !important;
+  font-family:"Segoe UI",Tahoma,Arial,sans-serif !important;
+  font-size:13px !important;
+  font-weight:650 !important;
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+}
+html body header .pi-balanced-nav > summary::after {
+  content:'▾' !important;
+  display:inline-grid !important;
+  place-items:center !important;
+  width:20px !important;
+  height:20px !important;
+  flex:0 0 20px !important;
+  font-family:Arial,sans-serif !important;
+  font-size:18px !important;
+  font-weight:800 !important;
+  line-height:1 !important;
+  border-radius:5px !important;
+  background:color-mix(in srgb,var(--teal) 13%,transparent) !important;
+  color:var(--text) !important;
+  transform:none !important;
+}
+html body header .pi-balanced-nav[open] > summary::after { content:'▴' !important; }
+@media(max-width:600px){
+  html body header .ecosystem-menu.pi-balanced-nav,
+  html body header .pi-theme-menu.pi-balanced-nav {
+    max-width:min(var(--pi-balanced-nav-width,222px), calc(100vw - 24px)) !important;
+    min-width:0 !important;
+    flex:0 1 var(--pi-balanced-nav-width,222px) !important;
+  }
+}
+/* Restore full main-panel headings; only inner saved notes remain editable. */
+html body :is(.database-header,.aq-header,.longform-header,.neo-header,.almanac-header,.patterns-header) h1,
+html body .database-page :is(.home-upcoming-panel,.database-notes-panel) > .panel-header :is(.panel-title,span),
+html body .database-page #piDatabaseFocus > .pi-focus-head .pi-focus-title {
+  width:auto !important;
+  max-width:none !important;
+  flex:1 1 auto !important;
+  min-width:0 !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+  white-space:normal !important;
+}
+/* Remove the focus count and "shelf is getting noisy" message without editing saved Radar data. */
+html body .database-page #piDatabaseFocus :is(.pi-focus-count,.pi-focus-warning) { display:none !important; }
+/* Tidy three-dot menu actions. Link/date/move groups below remain functional. */
+html body .database-page .pi-item-quick-actions {
+  display:flex !important;
+  flex-direction:row !important;
+  flex-wrap:nowrap !important;
+  align-items:stretch !important;
+  width:100% !important;
+  gap:5px !important;
+  margin:0 0 8px !important;
+}
+html body .database-page .pi-item-quick-actions > button {
+  box-sizing:border-box !important;
+  height:32px !important;
+  min-height:32px !important;
+  width:32px !important;
+  min-width:32px !important;
+  flex:0 0 32px !important;
+  display:inline-grid !important;
+  place-items:center !important;
+  border:1px solid var(--border) !important;
+  border-radius:7px !important;
+  padding:3px !important;
+  line-height:1 !important;
+  font:600 18px/1 "Segoe UI",Arial,sans-serif !important;
+  background:var(--panel-light) !important;
+  color:var(--text) !important;
+  cursor:pointer !important;
+}
+html body .database-page .pi-item-quick-actions > .pi-category-visibility-action {
+  flex:1 1 auto !important;
+  width:auto !important;
+  min-width:95px !important;
+  font-size:12px !important;
+  font-weight:600 !important;
+  padding:3px 8px !important;
+}
+html body .database-page .pi-item-quick-actions > button:hover,
+html body .database-page .pi-item-quick-actions > button:focus-visible {
+  border-color:var(--teal) !important;
+  outline-offset:2px !important;
+}
+html body .database-page .pi-item-tools-panel:has(.pi-item-quick-actions) {
+  min-width:215px !important;
+}
+
+/* Main panel icons and labels stay together on the left, not spread across the header. */
+html body .database-page :is(.home-upcoming-panel,.database-notes-panel) > .panel-header .panel-title {
+  display:flex !important;
+  justify-content:flex-start !important;
+  align-items:center !important;
+  gap:7px !important;
+  flex:1 1 auto !important;
+  white-space:nowrap !important;
+  text-align:left !important;
+}
+html body .database-page :is(.home-upcoming-panel,.database-notes-panel) > .panel-header .panel-title > span {
+  flex:0 0 auto !important;
+  width:auto !important;
+  max-width:none !important;
+  white-space:nowrap !important;
+  text-align:left !important;
+}

@@ -1,0 +1,267 @@
+/* Personal Intranet: mobile usability refinements (October 10, 2026).
+   Loaded after Style/Planner/Workspace to override historic mobile rules.
+   No stored record formats, desktop boards or shared sync logic are changed. */
+
+@media (max-width: 900px), (pointer: coarse) {
+  /* One page-wide viewport: all columns and their children must be shrinkable.
+     Keep horizontal swipes *within* intended rails, not on the entire page. */
+  html, body { max-width: 100% !important; overflow-x: clip !important; }
+  .planner-page, .planner-layout, .planner-calendar, .planner-notes,
+  .planner-heading, .planner-grid, .planner-day {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  body.planner-body .planner-page {
+    width: 100% !important;
+    max-width: 100vw !important;
+    margin: 0 auto !important;
+    padding: 10px 9px calc(var(--pi-dock-space, 80px) + 24px) !important;
+    overflow-x: clip !important;
+  }
+  body.planner-body .planner-layout {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 12px !important;
+    width: 100% !important;
+    overflow-x: clip !important;
+  }
+  body.planner-body .planner-grid:not(.is-month) {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    grid-template-rows: auto !important;
+    grid-auto-rows: minmax(205px, auto) !important;
+    width: 100% !important;
+    gap: 8px !important;
+  }
+  body.planner-body .planner-grid.is-month {
+    display: grid !important;
+    grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+    width: 100% !important;
+    gap: 3px !important;
+  }
+  body.planner-body .planner-day {
+    min-width: 0 !important;
+    width: auto !important;
+    overflow: hidden !important;
+  }
+  body.planner-body .planner-day-items { min-width: 0 !important; }
+  body.planner-body .planner-preview-item .planner-item-text {
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+  body.planner-body .planner-heading > * { min-width: 0; }
+  body.planner-body .planner-heading { flex-wrap: wrap !important; }
+  /* The calendar header should not ask for four controls on one unbreakable row. */
+  body.planner-body .database-header {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    overflow: visible !important;
+    gap: 7px !important;
+  }
+  body.planner-body .database-header .header-right {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    gap: 6px !important;
+    overflow: visible !important;
+  }
+
+  /* Give every room the SAME flexible navigation deck. The old Aquarium grid
+     placed both native menus in the 'pages' cell, hiding the Pages control. */
+  :is(.aq-header-actions,.almanac-header-actions,.patterns-header-actions,
+      .longform-header-actions,.neo-header-tools,.database-header .header-right) {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    grid-template-areas: none !important;
+    grid-template-columns: none !important;
+    overflow: visible !important;
+    gap: 6px !important;
+  }
+  html.aquarium-page .aq-header-actions {
+    display: flex !important;
+    grid-template: none !important;
+  }
+  header :is(.aq-header-actions,.almanac-header-actions,.patterns-header-actions,
+    .longform-header-actions,.neo-header-tools,.header-right) > .sync-status {
+    grid-area: auto !important;
+    order: 0 !important;
+    flex: 0 0 auto !important;
+    width: max-content !important;
+    max-width: 100% !important;
+  }
+  header :is(.aq-header-actions,.almanac-header-actions,.patterns-header-actions,
+    .longform-header-actions,.neo-header-tools,.header-right) > .ecosystem-menu:not(.pi-tools-menu) {
+    grid-area: auto !important;
+    display: block !important;
+    visibility: visible !important;
+    order: 1 !important;
+    flex: 0 0 auto !important;
+    width: auto !important;
+    min-width: 64px !important;
+    max-width: calc(100vw - 24px) !important;
+  }
+  header :is(.aq-header-actions,.almanac-header-actions,.patterns-header-actions,
+    .longform-header-actions,.neo-header-tools,.header-right) > .theme-select {
+    grid-area: auto !important;
+    display: block !important;
+    order: 2 !important;
+    flex: 1 1 132px !important;
+    width: auto !important;
+    min-width: 120px !important;
+    max-width: 210px !important;
+  }
+  header :is(.aq-header-actions,.almanac-header-actions,.patterns-header-actions,
+    .longform-header-actions,.neo-header-tools,.header-right) > .pi-tools-menu {
+    grid-area: auto !important;
+    display: block !important;
+    order: 3 !important;
+    flex: 0 0 auto !important;
+    width: auto !important;
+    min-width: 64px !important;
+  }
+  /* Backup remains visible to the right of Tools on Home. */
+  .database-header .header-right > #localBackupButton { order: 4 !important; }
+  header .ecosystem-menu, header .ecosystem-menu > summary {
+    min-width: 0 !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+  header .ecosystem-menu > summary { width: 100% !important; min-width: 64px !important; }
+  /* Popovers float relative to the phone, not to an offscreen header cell.
+     MobilePolish.js sets viewport-safe position below the trigger. */
+  header .ecosystem-menu[open] { z-index: 11000 !important; }
+  header .ecosystem-menu[open] > .ecosystem-menu-popover,
+  header .pi-tools-menu[open] > .pi-tools-popover {
+    position: fixed !important;
+    left: 10px !important;
+    right: auto !important;
+    top: 105px !important;
+    bottom: auto !important;
+    width: min(300px, calc(100vw - 20px)) !important;
+    min-width: 0 !important;
+    max-width: calc(100vw - 20px) !important;
+    max-height: min(62dvh, 470px) !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    z-index: 12000 !important;
+    box-sizing: border-box !important;
+  }
+  header .pi-tools-menu:not([open]) > .pi-tools-popover { display: none !important; }
+
+  /* Aquarium Links: on phones, the section is a small single-line drawer.
+     Its existing chips and add button are not changed or deleted. */
+  html.aquarium-page .aq-page > .link-strip {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    min-width: 0 !important;
+    width: 100% !important;
+    gap: 7px !important;
+    padding: 8px 10px !important;
+  }
+  html.aquarium-page .aq-page > .link-strip > .link-strip-label {
+    order: 0 !important;
+    min-width: 0 !important;
+    flex: 1 1 auto !important;
+  }
+  html.aquarium-page .aq-page > .link-strip > .pi-links-toggle {
+    display: inline-grid !important;
+    order: 1 !important;
+    place-items: center !important;
+    flex: 0 0 auto !important;
+    height: 33px !important;
+    width: 38px !important;
+    padding: 0 !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 8px !important;
+    background: var(--panel-light) !important;
+    color: var(--text) !important;
+    cursor: pointer !important;
+  }
+  html.aquarium-page .aq-page > .link-strip > .link-add-button {
+    order: 2 !important;
+    margin-left: 0 !important;
+    flex: 0 0 auto !important;
+  }
+  html.aquarium-page .aq-page > .link-strip > .links-container {
+    order: 3 !important;
+    flex: 1 1 100% !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    gap: 7px !important;
+    flex-wrap: wrap !important;
+    overflow-x: hidden !important;
+  }
+  html.aquarium-page .aq-page > .link-strip.pi-links-collapsed > .links-container,
+  html.aquarium-page .aq-page > .link-strip.pi-links-collapsed > .link-add-button {
+    display: none !important;
+  }
+
+  /* New rounded shells were showing square-edged header backgrounds through
+     an old mobile overflow:visible override. Clip only the panel chrome. */
+  .pi-archive-board > .pi-archive-column,
+  .pi-reflections-grid > .pi-workspace-panel {
+    border-radius: var(--radius, 14px) !important;
+    overflow: hidden !important;
+    background-clip: padding-box !important;
+    isolation: isolate;
+  }
+  .pi-archive-column > .panel-header,
+  .pi-reflections-grid > .pi-workspace-panel > .pi-workspace-head {
+    border-radius: 0 !important;
+  }
+  /* Keep the existing inner scroll panes working after clipping the shell. */
+  .pi-archive-board > .pi-archive-column > .pi-archive-scroll,
+  .pi-reflections-grid > .pi-workspace-panel > .pi-workspace-scroll {
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  /* Compact dock copy stays one line, even with a larger text setting. */
+  .pi-universal-dock {
+    max-width: calc(100vw - 12px) !important;
+    grid-template-columns: 34px minmax(0, 1fr) 62px !important;
+    gap: 6px !important;
+    align-items: center !important;
+  }
+  .pi-universal-dock .pi-dock-tool { display: none !important; }
+  .pi-universal-dock #piDockCapture {
+    min-width: 0 !important;
+    height: 38px !important;
+    min-height: 38px !important;
+    max-height: 70px !important;
+    overflow: auto !important;
+    resize: none !important;
+    font-size: 16px !important;
+    line-height: 1.4 !important;
+    padding: 7px 9px !important;
+  }
+  .pi-universal-dock .pi-dock-home,
+  .pi-universal-dock .pi-dock-primary { min-height: 38px !important; height: 38px !important; }
+  .pi-universal-dock .pi-dock-home { padding: 0 !important; }
+  .pi-universal-dock .pi-dock-primary { padding: 0 7px !important; }
+}
+
+@media (max-width: 360px) {
+  body.planner-body .planner-grid:not(.is-month) { gap: 6px !important; }
+  body.planner-body .planner-day { padding: 8px !important; }
+  header .theme-select { max-width: min(170px, 48vw) !important; }
+}
+@media (min-width: 901px) and (pointer: fine) {
+  html.aquarium-page .pi-links-toggle { display: none !important; }
+}
