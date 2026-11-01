@@ -366,7 +366,21 @@
     });
     document.querySelectorAll('.aq-card').forEach(row=>{
       const actions=row.querySelector('.aq-card-actions');
-      if (actions) addMenus(row,actions);
+      if (!actions) return;
+      addMenus(row,actions);
+      // The Aquarium already has a cross-page ⋮ menu. Put the *real*,
+      // working Archive/Delete buttons inside it instead of leaving two
+      // duplicates in each card header. Nothing about the save code changes.
+      const panel=actions.querySelector(':scope > .pi-cross-menu > .pi-cross-panel');
+      const archive=actions.querySelector(':scope > .aq-card-archive');
+      const remove=actions.querySelector(':scope > .aq-card-delete');
+      if(panel && archive && remove){
+        const group=document.createElement('div');
+        group.className='pi-aq-menu-actions';
+        archive.textContent='Archive';remove.textContent='Delete';
+        group.append(archive,remove);
+        panel.prepend(group);
+      }
     });
     document.querySelectorAll('.pi-note-card').forEach(row=>{
       const head=row.querySelector('.pi-note-card-head');if(head)addMenus(row,head);

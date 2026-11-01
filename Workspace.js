@@ -150,7 +150,11 @@ function initReflections(){
    const d=el('input','pi-card-date');d.type='date';d.value=item.date||iso();d.title='Milestone date';d.addEventListener('change',()=>{updateTimeline(item.id,x=>{x.date=d.value;});renderTimeline();});
    const del=btn('×','Delete timeline entry',()=>{if(!confirm('Delete this timeline entry?'))return;save(LEGACY_KEY,read(LEGACY_KEY,[]).filter(x=>x.id!==item.id));renderTimeline();},'pi-mini-icon');
    head.append(toggle,title,d,del);card.append(head);
-   if(item.expanded){card.append(makeEditable(item.html||escHtml(item.text||''),value=>updateTimeline(item.id,x=>Object.assign(x,value)),'pi-note-card-body','Add details…',true));}
+   if(item.expanded){
+    card.append(makeEditable(item.html||escHtml(item.text||''),value=>updateTimeline(item.id,x=>Object.assign(x,value)),'pi-note-card-body','Add details…',true));
+    if(item.imageUrl&&/^https?:\/\//i.test(item.imageUrl)){const image=el('img','pi-note-image');image.src=item.imageUrl;image.alt=item.title||'Timeline image';image.loading='lazy';card.append(image);}
+    if(item.linkUrl&&/^https?:\/\//i.test(item.linkUrl)){const link=el('a','pi-note-link','open link ↗');link.href=item.linkUrl;link.target='_blank';link.rel='noopener noreferrer';card.append(link);}
+   }
    timelineEl.append(card);
   });
  }
@@ -240,11 +244,18 @@ function initReflections(){
   store();name.value='';editor.innerHTML='';$('piNoteImageUrl').value='';$('piNoteLinkUrl').value='';renderNotes();name.focus();
  }
  function addSection(){const id=uid('section');state.sections.push({id,name:'New section',collapsed:false});store();renderNotes();notesEl.querySelectorAll('.pi-section-name')[state.sections.length-1]?.focus();}
- function addTimeline(){
-  const title=$('piTimelineTitle').value.trim();const body=$('piTimelineBody').value.trim();if(!title&&!body){$('piTimelineTitle').focus();return;}
-  const rows=read(LEGACY_KEY,[]);if(!Array.isArray(rows))return;
-  rows.unshift({id:uid('milestone'),zone:'timeline',title:title||body.slice(0,90),text:body,html:escHtml(body),date:$('piTimelineDate').value||iso(),createdAt:new Date().toISOString(),expanded:!!body});
-  save(LEGACY_KEY,rows);$('piTimelineTitle').value='';$('piTimelineBody').value='';renderTimeline();
+ // Both destinations use the same center composer. Timeline records keep the
+ // original Timeline storage key so past milestones and cloud sync survive.
+ function moveEditorToTimeline(){
+  const title=name.value.trim(),html=safeHtml(editor.innerHTML),text=editor.innerText.trim();
+  if(!title&&!text){name.focus();return;}
+  const rows=read(LEGACY_KEY,[]);
+  if(!Array.isArray(rows)){alert('Timeline storage is unavailable. Nothing has been moved.');return;}
+  const entry={id:uid('milestone'),zone:'timeline',title:title||text.slice(0,90)||'Untitled',text,html,date:date.value||iso(),createdAt:new Date().toISOString(),expanded:!!text,imageUrl:$('piNoteImageUrl').value.trim(),linkUrl:$('piNoteLinkUrl').value.trim()};
+  try{save(LEGACY_KEY,[entry,...rows]);}
+  catch(error){console.error(error);alert('Could not save your Timeline milestone. Your draft is still here.');return;}
+  name.value='';editor.innerHTML='';$('piNoteImageUrl').value='';$('piNoteLinkUrl').value='';
+  renderTimeline();name.focus();
  }
  async function recoverTimeline(file){
   const data=JSON.parse(await file.text());const rows=read(LEGACY_KEY,[]);if(!Array.isArray(rows))return;
@@ -256,8 +267,8 @@ function initReflections(){
  $('piSaveNote').addEventListener('click',addNote);
  editor.addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();addNote();}});
  $('piAddNoteSection').addEventListener('click',addSection);
- $('piAddTimeline').addEventListener('click',addTimeline);
- $('piTimelineDate').value=iso();date.value=iso();
+ $('piMoveToTimeline').addEventListener('click',moveEditorToTimeline);
+ date.value=iso();
  $('piRecoverTimeline').addEventListener('click',()=>$('piTimelineBackupInput').click());
  $('piTimelineBackupInput').addEventListener('change',async e=>{const file=e.target.files?.[0];if(!file)return;try{await recoverTimeline(file);}catch(err){console.error(err);alert('Could not read that backup.');}e.target.value='';});
  window.addEventListener('storage',e=>{if(e.key===LEGACY_KEY){importLegacy();renderTimeline();renderNotes();}if(e.key===NOTES_KEY){state=normalizeState(read(NOTES_KEY,null));importLegacy();renderNotes();}});

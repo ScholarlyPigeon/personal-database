@@ -287,35 +287,84 @@
  }
  function row(item,index,key,readonly=false,mode='full'){
    const r=el('div','planner-item'+(item.done?' is-done':''));
+   if(item.id)r.dataset.piItemId=item.id;
    if(mode==='preview'){
      r.classList.add('planner-preview-item');
      r.append(el('span','planner-item-text',item.text));
      return r;
    }
    if(item.kind==='note')return categoryRow(item,index,key,readonly);
-   if(item.checkable!==false){const c=el('input');c.type='checkbox';c.checked=!!item.done;c.disabled=readonly;c.setAttribute('aria-label','Complete: '+item.text);c.onchange=()=>safe(()=>updateList(key,index,a=>{window.PISetCompletedV14(a[index],c.checked);}));r.append(c);}
-   const content=el('div','planner-item-text',item.text);r.append(content);
+   if(!readonly){
+     // Only the grip can initiate drag: selecting or clicking note text never moves it.
+     const grip=el('span','planner-item-drag','⋮⋮');
+     grip.draggable=true;grip.tabIndex=0;
+     grip.title='Drag to reorder';grip.setAttribute('aria-label','Drag item to reorder');
+     grip.ondragstart=e=>{
+       drag={key,id:item.id,index,done:!!item.done};
+       e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',item.id||'planner-item');
+       r.classList.add('planner-dragging');
+     };
+     grip.ondragend=()=>{drag=null;r.classList.remove('planner-dragging');};
+     r.append(grip);
+   }
+   if(item.checkable!==false){
+     const c=el('input');c.type='checkbox';c.checked=!!item.done;c.disabled=readonly;
+     c.setAttribute('aria-label','Complete: '+item.text);
+     c.onchange=()=>safe(()=>updateList(key,index,a=>{window.PISetCompletedV14(a[index],c.checked);}));
+     r.append(c);
+   }
+   const content=el('div','planner-item-text',item.text);
+   if(!readonly){
+     content.contentEditable='true';content.spellcheck=true;
+     content.setAttribute('role','textbox');content.setAttribute('aria-label','Edit item text directly');
+     content.title='Click to edit; Enter to save, Shift+Enter for a new line';
+     content.addEventListener('keydown',e=>{
+       if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();content.blur();}
+       if(e.key==='Escape'){e.preventDefault();content.textContent=item.text||'';content.blur();}
+     });
+     content.addEventListener('blur',()=>safe(()=>{
+       const fresh=content.innerText.trim();
+       if(!fresh){content.textContent=item.text||'';return;}
+       if(fresh===(item.text||''))return;
+       // Update the canonical saved record without rebuilding the active editor.
+       const list=read(key),actual=list.find(x=>x.id===item.id);
+       if(!actual){content.textContent=item.text||'';return;}
+       actual.text=fresh;item.text=fresh;write(key,list);
+       if(key.startsWith('pi-calendar-day-'))renderDays();
+       if(typeof showSaved==='function')showSaved();
+     }));
+   }
+   r.append(content);
    if(item.done&&item.completedAt){
      const meta=el('span','planner-v14-dates',`${stamp(item)||'—'} · ✓ ${stamp({createdAt:item.completedAt})}`);
      meta.title='Created date · completed date';r.append(meta);
    }
    if(readonly)return r;
-   const more=button('⋮','Item options',()=>{const was=r.classList.contains('actions-open');closeActionMenus();r.classList.toggle('actions-open',!was);});more.classList.add('planner-more');more.setAttribute('aria-haspopup','true');r.append(more);
+   const more=button('⋮','Item options',()=>{const was=r.classList.contains('actions-open');closeActionMenus();r.classList.toggle('actions-open',!was);});
+   more.classList.add('planner-more');more.setAttribute('aria-haspopup','true');r.append(more);
    const actions=el('div','planner-item-actions');
    const addAction=(label,title,fn)=>{const b=button(label,title,()=>{closeActionMenus();fn();});actions.append(b);};
-   addAction('Edit','Edit item',()=>{
-     const field=el('textarea','planner-edit');field.value=item.text;content.replaceWith(field);more.hidden=true;actions.replaceChildren();r.classList.add('actions-open','is-editing');
-     actions.append(button('Save','Save edit',()=>{if(!field.value.trim())return;updateList(key,index,a=>{a[index].text=field.value.trim();});}),button('Cancel','Cancel edit',()=>{renderNotes();renderDays();if(dayDialog.open)fillDayDialog();}));field.focus();
-   });
-   for(const [label,delta] of [['↑','-1'],['↓','1']])addAction(label,delta==='-1'?'Move item up':'Move item down',()=>{
-     const step=Number(delta);updateList(key,index,a=>{const group=a.map((v,i)=>({v,i})).filter(x=>!!x.v.done===!!a[index].done);const at=group.findIndex(x=>x.i===index),next=group[at+step];if(next)[a[index],a[next.i]]=[a[next.i],a[index]];});
-   });
    addAction('Delete','Delete item',()=>{if(confirm('Delete this item?'))updateList(key,index,a=>a.splice(index,1));});
-   r.append(actions);r.draggable=true;
-   r.ondragstart=e=>{if(e.target.closest('textarea,input,button')){e.preventDefault();return;}drag={key,index,done:!!item.done};e.dataTransfer.setData('text/plain','planner-item');};
-   r.ondragend=()=>{drag=null;};
-   r.ondragover=e=>{if(drag?.key===key&&drag.done===!!item.done)e.preventDefault();};
-   r.ondrop=e=>{if(drag?.key!==key||drag.done!==!!item.done)return;e.preventDefault();const from=drag.index;drag=null;safe(()=>updateList(key,index,a=>{const [v]=a.splice(from,1);a.splice(index,0,v);}));};
+   r.append(actions);
+   r.ondragover=e=>{
+     if(drag?.key===key&&drag.id!==item.id&&drag.done===!!item.done){e.preventDefault();e.dataTransfer.dropEffect='move';r.classList.add('planner-drop-target');}
+   };
+   r.ondragleave=()=>r.classList.remove('planner-drop-target');
+   r.ondrop=e=>{
+     r.classList.remove('planner-drop-target');
+     if(drag?.key!==key||drag.id===item.id||drag.done!==!!item.done)return;
+     e.preventDefault();e.stopPropagation();
+     const source=drag;drag=null;
+     const after=e.clientY>r.getBoundingClientRect().top+r.getBoundingClientRect().height/2;
+     safe(()=>{
+       const list=read(key),from=list.findIndex(x=>x.id===source.id),to=list.findIndex(x=>x.id===item.id);
+       if(from<0||to<0||!!list[from].done!==!!list[to].done)return;
+       const [entry]=list.splice(from,1);
+       const dest=list.findIndex(x=>x.id===item.id);
+       list.splice(dest+(after?1:0),0,entry);
+       write(key,list);renderNotes();renderDays();if(dayDialog.open)fillDayDialog();showSaved();
+     });
+   };
    return r;
  }
  function renderNotes(){

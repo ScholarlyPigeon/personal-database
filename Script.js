@@ -2744,6 +2744,8 @@ if (document.getElementById("tileGrid")) {
                 }
                 archive.title = 'Archive this note';
                 del.title = 'Delete this note';
+                archive.textContent = 'Archive';
+                del.textContent = 'Delete';
                 quickActions.append(archive,del);
                 toolsPanel.append(quickActions, moveMenu, focusShortcut);
                 toolsMenu.append(toolsSummary, toolsPanel);
@@ -7445,6 +7447,7 @@ if (document.getElementById("neopetsApp")) {
         removeQuick.type='button'; removeQuick.className='pi-quick-delete'; removeQuick.textContent='×';
         removeQuick.title='Remove item'; removeQuick.setAttribute('aria-label','Remove item');
         removeQuick.addEventListener('click',()=>remove.click());
+        archiveQuick.textContent='Archive';removeQuick.textContent='Delete';
         quickActions.append(archiveQuick,removeQuick);
         tools.append(quickActions,dateLabel, move);
         menu.append(summary, tools); actions.append(menu);
