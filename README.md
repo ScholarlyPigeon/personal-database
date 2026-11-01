@@ -1,3 +1,14 @@
+# V20.9 Shared Notes and Compass Priority Views
+
+- **Compass:** ``Currently...`` remains a horizontal rail of lightly accented tiles on the page, but becomes a vertically stacked list **only when popped out**. The existing separate panel collapse toggle and per-note details toggles are supported. Closed notes show their header only; date, optional details and nested checklists appear when opened.
+- **Compass and Timeline:** Shared category notes (editable details plus nested checklist lines) and standalone checklist notes, with completion timestamps and creation dates, drag/tap movement, column main-list destinations, sections and action menus.
+- **Timeline:** no Currently panel. Timeline and Saved Notes retain their two outside columns around the editor; existing legacy milestone records are read from their original key. Moving a legacy milestone into a destination creates a compatible copied record then removes the old record, with rollback on write failure.
+- **Compatibility:** existing ``pi-compass-v1``, ``pi-reflections-notes-v1`` and ``pi-archive-workspace-v1`` storage keys are retained. Legacy note fields are preserved; optional ``noteType``, ``subtasks``, ``done``, ``completedAt``, ``currentExpanded`` and ``showDetails`` fields are added only when users modify/create notes. Older notes without a note type are treated as category notes.
+- **Deployment safety:** download a fresh JSON backup and close other intranet tabs before deploying. Upload the **contents** of ``CURRENT/`` to the existing GitHub Pages repository, replacing matching files. Hard refresh and test a harmless note first, then verify cloud sync across devices before resuming normal editing. Do not clear localStorage or restore JSON just because a page fails to render.
+- **Testing:** browser tests of Compass and Timeline used isolated mock storage rather than your live Supabase; tested existing note rendering, panel collapse, pop-out layout, moving category notes with children intact, detaching completed checklist items with dates, creating lines, moving a legacy milestone, and mobile layout. This is not a full deployed sync test.
+
+---
+
 # V20.2 Theme retirement
 
 Removed four unused themes: **Night Ledger**, **Midnight Observatory**, **Clarity Light**, and **Study**. Their menu catalog entries and their dedicated CSS rules have been deleted, including the optional Study botanical override. Shared Clarity Dark styles were retained, and cross-theme rules were narrowed to kept themes only.

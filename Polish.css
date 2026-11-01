@@ -1020,3 +1020,138 @@ html body.pi-compass-body .pi-current-tile-details .pi-note-link {
     grid-auto-columns:minmax(220px,80%) !important;
   }
 }
+
+
+/* ==== V20.9: Compass + Timeline shared Home-style note UI ==== */
+html body .pi-ws-note,
+html body .pi-ws-section {box-sizing:border-box;min-width:0;}
+html body .pi-ws-note {background:var(--panel-light);border:1px solid var(--border);
+  border-radius:9px;overflow:visible; margin:0 0 7px;}
+html body .pi-ws-note-head {display:flex;align-items:center;gap:6px;min-height:35px;
+  padding:5px 7px;cursor:pointer;flex-wrap:nowrap;}
+html body .pi-ws-note-head .pi-ws-title {flex:1 1 auto;min-width:0;overflow-wrap:anywhere;
+  font:700 12px/1.4 'Segoe UI',Arial,sans-serif;color:var(--text);cursor:text;}
+html body .pi-ws-note-head .pi-mini-icon {box-sizing:border-box;flex:0 0 26px;
+  width:26px;min-width:26px;height:26px;min-height:26px;padding:0;display:grid;place-items:center;
+  border:1px solid var(--border);border-radius:7px;background:var(--panel-light);
+  color:var(--text);font-size:15px;line-height:1;text-align:center;}
+html body .pi-ws-note-head .pi-ws-note-toggle {font-size:17px;}
+html body .pi-ws-note-head .pi-move-handle {cursor:grab;color:var(--muted);}
+html body .pi-ws-note-head input[type="checkbox"] {flex:0 0 16px;width:16px;height:16px;margin:0;accent-color:var(--teal);cursor:pointer;}
+html body .pi-ws-line.is-done > .pi-ws-note-head .pi-ws-title {opacity:.63;text-decoration:line-through;}
+html body .pi-ws-note-body {border-top:1px solid var(--border);padding:8px 9px 9px;
+  min-width:0;display:flex;flex-direction:column;gap:7px;}
+html body .pi-ws-note-body[hidden] {display:none!important;}
+html body .pi-ws-meta {display:flex;flex-wrap:wrap;align-items:center;gap:12px;font-size:10px;color:var(--muted);}
+html body .pi-ws-note-body .pi-ws-details {min-height:37px;padding:8px;
+  border:1px solid color-mix(in srgb,var(--border) 80%,transparent);border-radius:7px;
+  background:var(--bg-soft);outline:none;}
+html body .pi-ws-note-body .pi-ws-details:focus {border-color:var(--teal);}
+html body .pi-ws-subtasks {display:flex;flex-direction:column;gap:5px;}
+html body .pi-ws-subrow {display:flex;align-items:center;gap:5px;min-width:0;padding:4px;
+  border-radius:7px;background:color-mix(in srgb,var(--panel) 67%,transparent);}
+html body .pi-ws-subrow .pi-move-handle {flex:0 0 22px;padding:0;min-width:22px;
+  height:22px;border:0;background:transparent;cursor:grab;}
+html body .pi-ws-subrow input[type="checkbox"] {width:15px;height:15px;flex:0 0 15px;accent-color:var(--teal);margin:0;}
+html body .pi-ws-subtext {flex:1 1 auto;min-width:30px;width:100%;color:var(--text);
+  border:0!important;outline:none;background:transparent!important;font-size:12px;padding:4px!important;}
+html body .pi-ws-subrow.is-done .pi-ws-subtext {opacity:.65;text-decoration:line-through;}
+html body .pi-ws-stamp {font-size:9px;color:var(--muted);white-space:nowrap;flex:0 0 auto;}
+html body .pi-ws-addsub {display:flex;gap:5px;min-width:0;}
+html body .pi-ws-addsub > input {flex:1;min-width:0;background:var(--bg-soft);color:var(--text);
+  border:1px solid var(--border);border-radius:7px;padding:7px;font-size:12px;}
+html body .pi-ws-addsub > button {flex:0 0 30px;}
+html body .pi-ws-menu {position:relative;flex:0 0 auto;min-width:26px;}
+html body .pi-ws-menu > summary {display:grid;place-items:center;list-style:none;
+  box-sizing:border-box;width:26px;height:26px;min-width:26px;
+  border:1px solid var(--border);border-radius:7px;background:var(--panel-light);
+  color:var(--text);cursor:pointer;font:700 17px/1 'Segoe UI',Arial,sans-serif;}
+html body .pi-ws-menu > summary::-webkit-details-marker {display:none;}
+html body .pi-ws-menu-panel {position:absolute;z-index:2500;right:0;top:calc(100% + 4px);
+  width:min(235px,80vw);max-height:min(330px,65vh);overflow:auto;
+  border:1px solid var(--border);border-radius:9px;background:var(--panel);
+  padding:5px;box-shadow:0 10px 28px #0004;}
+html body .pi-ws-menu:not([open]) > .pi-ws-menu-panel {display:none!important;}
+html body .pi-ws-menu-panel .pi-ws-action {display:block;width:100%;box-sizing:border-box;
+  border:0;border-radius:6px;background:transparent;color:var(--text);
+  font-size:11px;font-weight:600;text-align:left;padding:7px 9px;cursor:pointer;}
+html body .pi-ws-menu-panel .pi-ws-action:hover,
+html body .pi-ws-menu-panel .pi-ws-action:focus-visible {background:var(--panel-light);}
+html body .pi-ws-menu-divider {height:1px;margin:4px;background:var(--border);}
+html body .pi-ws-section {border:1px solid var(--border);border-radius:10px;margin-bottom:8px;overflow:visible;}
+html body .pi-ws-section-head {display:flex!important;align-items:center!important;min-height:34px;
+  gap:6px;padding:5px 7px;cursor:pointer;}
+html body .pi-ws-section-head .pi-section-name {flex:1 1 auto;min-width:0;}
+html body .pi-ws-section-head .pi-ws-menu {margin-left:0;}
+html body .pi-ws-section-body {padding:7px;min-width:0;}
+html body .pi-ws-section-body[hidden] {display:none!important;}
+html body .pi-ws-column {min-height:0;overflow-y:auto;}
+html body .pi-ws-three-fields {grid-template-columns:minmax(0,.85fr) minmax(0,1.25fr) minmax(0,1fr);}
+html body .pi-drop-ready {outline:2px dashed var(--teal)!important;outline-offset:-2px;}
+
+/* Currently panel: Home-week-style tiles in place, a stacked list in popout. */
+html body.pi-compass-body section.pi-current-panel {height:auto!important;
+  min-height:0!important;background:var(--panel)!important;border:1px solid var(--border)!important;}
+html body.pi-compass-body section.pi-current-panel > .pi-workspace-head {background:var(--panel-light)!important;}
+html body.pi-compass-body section.pi-current-panel > .pi-current-rail.pi-ws-current-rail {
+  display:grid!important;grid-auto-flow:column!important;
+  grid-auto-columns:clamp(205px,calc((100% - 30px)/4),390px)!important;
+  gap:8px!important;align-items:start!important;min-height:0!important;
+  max-height:none!important;overflow-x:auto!important;overflow-y:hidden!important;
+  box-sizing:border-box!important;margin:0!important;width:100%!important;
+  padding:9px!important;border:0!important;border-radius:0!important;
+  background:var(--panel)!important;box-shadow:none!important;
+}
+html body.pi-compass-body .pi-ws-current-tile.pi-current-tile {
+  display:block!important;box-sizing:border-box!important;min-width:0!important;
+  min-height:0!important;margin:0!important;padding:0!important;
+  border:1px solid var(--border)!important;border-left:3px solid var(--teal)!important;
+  border-radius:9px!important;background:var(--panel-light)!important;box-shadow:none!important;
+  align-self:start!important;overflow:visible!important;}
+html body.pi-compass-body .pi-ws-current-tile.pi-current-tile:nth-child(4n+2) {border-left-color:var(--rose-soft)!important;
+  background:color-mix(in srgb,var(--rose-soft) 7%,var(--panel-light))!important;}
+html body.pi-compass-body .pi-ws-current-tile.pi-current-tile:nth-child(4n+3) {border-left-color:var(--blue-soft)!important;
+  background:color-mix(in srgb,var(--blue-soft) 7%,var(--panel-light))!important;}
+html body.pi-compass-body .pi-ws-current-tile.pi-current-tile:nth-child(4n+4) {border-left-color:var(--green-soft)!important;
+  background:color-mix(in srgb,var(--green-soft) 7%,var(--panel-light))!important;}
+html body.pi-compass-body .pi-ws-current-tile.pi-current-tile > .pi-ws-note-head {
+  display:flex!important;grid-template-columns:none!important;min-height:34px!important;
+  align-items:center!important;padding:6px!important;}
+html body.pi-compass-body .pi-ws-current-tile.pi-current-tile .pi-ws-note-toggle {
+  display:grid!important;place-items:center!important;line-height:1!important;
+  width:26px!important;min-width:26px!important;height:26px!important;
+  margin:0!important;padding:0!important;transform:none!important;}
+html body.pi-compass-body .pi-ws-current-tile.pi-current-tile .pi-ws-note-body {
+  display:flex!important;flex-direction:column!important;gap:6px!important;
+  height:auto!important;min-height:0!important;max-height:220px!important;
+  overflow-y:auto!important;margin:0!important;padding:9px!important;}
+html body.pi-compass-body section.pi-current-panel.is-collapsed > div.pi-current-rail,
+html body.pi-compass-body section.pi-current-panel > div.pi-current-rail[hidden] {
+  display:none!important;min-height:0!important;max-height:0!important;padding:0!important;margin:0!important;}
+html body.pi-compass-body section.pi-current-panel.is-collapsed > .pi-workspace-head {border-bottom:0!important;}
+html body.pi-compass-body section.pi-current-panel.pi-panel-popout {display:flex!important;flex-direction:column!important;
+  height:95dvh!important;max-height:95dvh!important;}
+html body.pi-compass-body section.pi-current-panel.pi-panel-popout > .pi-current-rail.pi-ws-current-rail {
+  display:flex!important;flex-direction:column!important;flex:1 1 auto!important;
+  overflow-y:auto!important;overflow-x:hidden!important;align-items:stretch!important;
+  gap:7px!important;max-height:none!important;padding:12px!important;}
+html body.pi-compass-body section.pi-current-panel.pi-panel-popout.is-collapsed > .pi-current-rail.pi-ws-current-rail {display:none!important;}
+html body.pi-compass-body section.pi-current-panel.pi-panel-popout .pi-ws-current-tile {
+  flex:0 0 auto!important;min-width:0!important;width:100%!important;max-width:none!important;
+  padding:0!important;margin:0!important;}
+@media(max-width:1080px){
+  html body.pi-compass-body section.pi-current-panel > .pi-current-rail.pi-ws-current-rail {
+    grid-auto-columns:clamp(205px, min(78vw,320px),390px)!important;}
+  html body .pi-ws-three-fields {grid-template-columns:minmax(0,1fr) minmax(0,1.5fr) minmax(0,1fr);}
+}
+@media(max-width:580px){
+  html body .pi-ws-three-fields {grid-template-columns:1fr!important;}
+  html body .pi-ws-subrow .pi-ws-stamp {font-size:8px;}
+}
+
+/* Keep section actions flush right, even under older grid/flex layout rules. */
+html body :is(.pi-compass-page,.pi-reflections-page) .pi-ws-section-head {display:flex!important;flex-wrap:nowrap!important;}
+html body :is(.pi-compass-page,.pi-reflections-page) .pi-ws-section-head > .pi-section-name {
+  flex:1 1 0%!important; width:auto!important; margin-right:auto!important;min-width:0!important;
+}
+html body :is(.pi-compass-page,.pi-reflections-page) .pi-ws-section-head > .pi-ws-menu {margin-left:0!important;}
