@@ -314,7 +314,7 @@
   // dedicated guidance, rather than becoming ambiguous.
   function tuneHints(root = document) {
     $$('textarea, input[type="text"], [contenteditable="true"][data-placeholder]',root).forEach(el => {
-      if (el.closest('.pi-v16-rich-dialog, .pi-overlay, .link-editor, .neo-link-editor')) return;
+      if (el.closest('.pi-overlay, .link-editor, .neo-link-editor')) return;
       const label = `${el.id} ${el.getAttribute('aria-label') || ''} ${el.getAttribute('placeholder') || ''}`;
       if (/url|link|https|icon|date|filter|search|name of|category|title of new|\bsection\b|hex|\bid\b/i.test(label) && el.tagName==='INPUT') return;
       if(el.matches('input')) {
@@ -324,120 +324,120 @@
     });
   }
 
-  // Lightweight rich-text composer: the app's existing synced plain-string fields
-  // store basic inline markup. A separate editor avoids invasive schema changes.
-  let lastField=null, richDialog=null;
-  const escapeHtml = text => String(text).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
-  function toMarkupHtml(value) {
-    let text = escapeHtml(value || '');
-    // Strip only the formatting delimiters this editor creates; no user HTML executes.
-    text=text.replace(/\*\*([^*\n]+)\*\*/g,'<strong>$1</strong>')
-      .replace(/\*([^*\n]+)\*/g,'<em>$1</em>')
-      .replace(/\+\+([^+\n]+)\+\+/g,'<u>$1</u>')
-      .replace(/~~([^~\n]+)~~/g,'<s>$1</s>');
-    return text.replace(/\n/g,'<br>');
-  }
-  function fromRichHtml(root) {
-    function travel(node) {
-      if(node.nodeType===Node.TEXT_NODE)return node.nodeValue || '';
-      if(node.nodeType!==Node.ELEMENT_NODE)return '';
-      const tag=node.tagName.toLowerCase();
-      if(tag==='br')return '\n';
-      const inner=[...node.childNodes].map(travel).join('');
-      if(['strong','b'].includes(tag)) return `**${inner}**`;
-      if(['em','i'].includes(tag)) return `*${inner}*`;
-      if(tag==='u')return `++${inner}++`;
-      if(['s','strike','del'].includes(tag))return `~~${inner}~~`;
-      if(tag==='li')return '• '+inner+'\n';
-      if(['div','p'].includes(tag))return inner+'\n';
-      return inner;
-    }
-    return [...root.childNodes].map(travel).join('').replace(/\u00a0/g,' ').replace(/\n{3,}/g,'\n\n').replace(/\n$/,'');
-  }
-  function isTextField(el) {
-    if(!el || el.closest('.pi-v16-rich-dialog, .pi-overlay, header, .link-editor, .neo-link-editor'))return false;
-    if(el.matches('textarea')) return true;
-    if(el.matches('input[type="text"]')) return !/url|link|icon|search|filter|id|date|color/i.test(`${el.id} ${el.getAttribute('aria-label')||''}`);
-    if(el.matches('[contenteditable="true"], [contenteditable=""]')) return true;
-    return false;
-  }
-  function getText(el){return el.matches('input,textarea')?el.value:el.innerText;}
-  function openRichEditor(el) {
-    if (!el?.isConnected || !isTextField(el))return;
-    if (!richDialog) {
-      richDialog=document.createElement('dialog');richDialog.className='pi-v16-rich-dialog';
-      richDialog.innerHTML=`<div class="pi-v16-rich-head"><strong>Format text</strong><button type="button" data-dismiss aria-label="Close">×</button></div>
-        <div class="pi-v16-rich-toolbar" role="toolbar" aria-label="Text formatting">
-          <button type="button" data-command="bold" title="Bold (Ctrl+B)"><b>B</b></button>
-          <button type="button" data-command="italic" title="Italic (Ctrl+I)"><i>I</i></button>
-          <button type="button" data-command="underline" title="Underline (Ctrl+U)"><u>U</u></button>
-          <button type="button" data-command="strikeThrough" title="Strikethrough"><s>S</s></button>
-          <button type="button" data-command="insertUnorderedList" title="Bulleted list">☷</button>
-        </div>
-        <div class="pi-v16-rich-input" contenteditable="true" spellcheck="true" role="textbox" aria-label="Formatted text editor"></div>
-        <div class="pi-v16-rich-foot"><span>Formatting is stored with your existing notes.</span><button type="button" data-dismiss>Cancel</button><button type="button" data-save>Apply text</button></div>`;
-      document.body.append(richDialog);
-      richDialog.addEventListener('click', e => {if(e.target===richDialog || e.target.closest('[data-dismiss]'))richDialog.close();});
-      $$('[data-command]',richDialog).forEach(button=>{
-        button.addEventListener('pointerdown',e=>e.preventDefault());
-        button.addEventListener('click',()=>{
-          const editor=richDialog.querySelector('.pi-v16-rich-input');editor.focus();
-          document.execCommand(button.dataset.command,false,null);
-        });
-      });
-      richDialog.querySelector('[data-save]').addEventListener('click',()=>{
-        const target=richDialog.piSource;
-        if (!target?.isConnected) {richDialog.close();return;}
-        const result=fromRichHtml(richDialog.querySelector('.pi-v16-rich-input'));
-        richDialog.close();
-        if(target.matches('input,textarea'))target.value=result;
-        else target.textContent=result;
-        target.dispatchEvent(new Event('input',{bubbles:true}));
-        target.dispatchEvent(new Event('change',{bubbles:true}));
-        // The field remains normal and independently editable afterward.
-        target.blur();
-      });
-    }
-    richDialog.piSource=el;
-    richDialog.querySelector('.pi-v16-rich-input').innerHTML=toMarkupHtml(getText(el));
-    richDialog.showModal();
-    richDialog.querySelector('.pi-v16-rich-input').focus();
-  }
+  // V21: Edit rich text where it lives. The old modal and markup-only
+  // editor are retired. Plain checklist labels/titles stay plain text.
+  const {cleanHTML,legacyHTML}=window.PIInlineRich;
+
+  // All body/composer surfaces below persist HTML in the same existing notes
+  // objects. We deliberately do not turn one-line headings and checklists
+  // into rich editors, since their canonical fields are plain strings.
+  const richSurfaceSelector=[
+    '.pi-note-editor[contenteditable="true"]',
+    '.pi-note-card-body[contenteditable="true"]',
+    '.pi-category-note-editor[contenteditable="true"]',
+    '.planner-details-input[contenteditable="true"]',
+    '.planner-rich-note-input[contenteditable="true"]',
+    '.planner-item-text[contenteditable="true"]',
+    '.aq-card-text[contenteditable="true"]',
+    '.aq-capture-rich-input[contenteditable="true"]',
+    '.longform-input[contenteditable="true"]',
+    '.longform-entry-text[contenteditable="true"]'
+  ].join(',');
+
   function enableFormatting() {
-    const trigger=document.createElement('button');
-    trigger.className='pi-v16-format-trigger';trigger.type='button';
-    trigger.textContent='B I U';trigger.title='Format this text (bold, italic, underline, strikethrough or list)';
-    trigger.hidden=true;document.body.append(trigger);
-    trigger.addEventListener('pointerdown',e=>e.preventDefault());
-    trigger.addEventListener('click',()=>{if(lastField)openRichEditor(lastField);});
+    const toolbar=document.createElement('div');
+    toolbar.className='pi-inline-format-toolbar';toolbar.hidden=true;
+    toolbar.setAttribute('role','toolbar');toolbar.setAttribute('aria-label','Format text in this field');
+    const commands=[['bold','B','Bold (Ctrl+B)'],['italic','I','Italic (Ctrl+I)'],
+      ['underline','U','Underline (Ctrl+U)'],['strikeThrough','S','Strikethrough (Ctrl+Shift+X)'],
+      ['insertUnorderedList','•','Bulleted list']];
+    let current=null;
+    for(const [command,label,title] of commands){
+      const button=document.createElement('button');button.type='button';
+      button.className='pi-inline-format-button';button.dataset.command=command;
+      button.title=title;button.setAttribute('aria-label',title);
+      const tag={bold:'b',italic:'i',underline:'u',strikeThrough:'s'}[command];
+      if(tag){const format=document.createElement(tag);format.textContent=label;button.append(format);}
+      else button.textContent=label;
+      button.addEventListener('pointerdown',e=>e.preventDefault());
+      button.addEventListener('click',e=>{
+        e.preventDefault();
+        if(!current?.isConnected)return;
+        current.focus();
+        document.execCommand(command,false,null);
+        current.dispatchEvent(new Event('input',{bubbles:true}));
+      });
+      toolbar.append(button);
+    }
+    document.body.append(toolbar);
+    function place(){
+      if(!current?.isConnected){toolbar.hidden=true;current=null;return;}
+      const r=current.getBoundingClientRect();
+      if(r.bottom<0||r.top>innerHeight){toolbar.hidden=true;return;}
+      toolbar.hidden=false;
+      const width=toolbar.offsetWidth||208;
+      toolbar.style.left=Math.max(8,Math.min(innerWidth-width-8,r.left+8))+'px';
+      toolbar.style.top=(r.top>48?Math.max(6,r.top-39):Math.min(innerHeight-40,r.bottom+5))+'px';
+    }
     document.addEventListener('focusin',event=>{
-      if(isTextField(event.target)){lastField=event.target;trigger.hidden=false;}
-      else if(!event.target.closest('.pi-v16-format-trigger,.pi-v16-rich-dialog')){trigger.hidden=true;}
+      const field=event.target.closest?.(richSurfaceSelector);
+      if(!field)return;
+      current=field;
+      if(!field.dataset.piRichPrepared){
+        field.dataset.piRichPrepared='1';
+        // Render old ** / ++ / ~~ content as real inline styling, once.
+        if(!field.querySelector('strong,b,em,i,u,s,li') && /\*\*[^*\n]+\*\*|\+\+[^+\n]+\+\+|~~[^~\n]+~~/.test(field.innerText||'')){
+          field.innerHTML=legacyHTML(field.innerText);
+        }
+      }
+      requestAnimationFrame(place);
+    });
+    document.addEventListener('focusout',event=>{
+      if(event.target!==current)return;
+      queueMicrotask(()=>{
+        if(document.activeElement!==current && !toolbar.contains(document.activeElement)){
+          toolbar.hidden=true;current=null;
+        }
+      });
     });
     document.addEventListener('pointerdown',event=>{
-      if(!event.target.closest('.pi-v16-format-trigger,.pi-v16-rich-dialog')&&!isTextField(event.target))trigger.hidden=true;
+      if(!event.target.closest(richSurfaceSelector+',.pi-inline-format-toolbar')){
+        toolbar.hidden=true;current=null;
+      }
     });
     document.addEventListener('keydown',event=>{
-      if(!event.ctrlKey&&!event.metaKey)return;
-      if(!['b','i','u'].includes(event.key.toLowerCase()))return;
-      if(isTextField(event.target)) {event.preventDefault();openRichEditor(event.target);}
-    },true);
-    // Inline style preview for read-only output only. Editing text still uses
-    // the native textarea/contenteditable storage, never unsafe persisted HTML.
+      if(event.key==='Escape' && current){toolbar.hidden=true;current=null;}
+    });
+    document.addEventListener('paste',event=>{
+      const field=event.target.closest?.(richSurfaceSelector);
+      if(!field)return;
+      const text=event.clipboardData?.getData('text/plain');
+      if(typeof text!=='string')return;
+      event.preventDefault();
+      document.execCommand('insertText',false,text);
+    });
+    window.addEventListener('scroll',()=>{if(current)requestAnimationFrame(place);},true);
+    window.addEventListener('resize',()=>{if(current)requestAnimationFrame(place);});
+
+    // Older saved strings created by the modal used markup markers; display
+    // those read-only previews as styling too, without modifying the record.
     let queued=false;
     const applyPreviews=()=>{
       queued=false;
-      const selectors='.pi-focus-note-body, .planner-item-text:not([contenteditable]), .pi-search-text, .planner-preview-item, .pi-recent-item-text';
+      const selectors='.pi-focus-note-body, .planner-preview-item .planner-item-text, .pi-search-text, .pi-recent-item-text';
       $$(selectors).forEach(el=>{
-        if(el.closest('[contenteditable="true"],.pi-v16-rich-dialog'))return;
-        const text=el.textContent;
-        if(!/(\*\*.+\*\*|\+\+.+\+\+|~~.+~~|\*[^*]+\*)/s.test(text))return;
-        if(el.dataset.piV16Rendered==='1')return;
-        el.dataset.piV16Rendered='1';
-        el.innerHTML=toMarkupHtml(text);
+        if(el.isContentEditable || el.dataset.piInlineRendered==='1')return;
+        const txt=el.textContent;
+        if(!/\*\*[^*]+\*\*|\+\+[^+]+\+\+|~~[^~]+~~/.test(txt))return;
+        el.dataset.piInlineRendered='1';
+        el.innerHTML=legacyHTML(txt);
       });
     };
-    new MutationObserver(()=>{if(!queued){queued=true;requestAnimationFrame(applyPreviews);}}).observe(document.body,{childList:true,subtree:true});
+    new MutationObserver(mutations=>{
+      if(!queued&&mutations.some(m=>m.addedNodes.length)){
+        queued=true;requestAnimationFrame(applyPreviews);
+      }
+    }).observe(document.body,{childList:true,subtree:true});
     applyPreviews();
   }
   function init() {

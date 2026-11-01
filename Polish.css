@@ -66,36 +66,35 @@ body.neopets-page .neo-reference-head .neo-reference-add{font-size:11px!importan
   body.neopets-page .neo-panel-heading>.neo-panel-title{font-size:19px!important;}
 }
 /* Explicit, opt-in formatting: the little button appears only while editing. */
-.pi-v16-format-trigger{
-  position:fixed!important;bottom:max(14px,env(safe-area-inset-bottom))!important;
-  right:14px!important;z-index:4000!important;min-height:36px!important;
-  padding:7px 12px!important;background:var(--panel)!important;
-  color:var(--text)!important;border:1px solid var(--teal-soft)!important;
-  border-radius:10px!important;box-shadow:0 7px 25px #0007!important;
-  font-size:12px!important;font-weight:700!important;cursor:pointer!important;
+/* Inline formatting works directly in the note surface. No secondary editor. */
+.pi-inline-format-toolbar {
+  position:fixed; z-index:1800;
+  display:flex; align-items:center; gap:4px;
+  padding:4px 5px; border:1px solid var(--border);
+  border-radius:8px; background:var(--panel);
+  color:var(--text);box-shadow:0 5px 18px #0003;
+  max-width:calc(100vw - 16px);box-sizing:border-box;
 }
-.pi-v16-format-trigger[hidden]{display:none!important;}
-.pi-v16-rich-dialog{
-  position:fixed;inset:0;margin:auto;max-width:calc(100vw - 18px);width:min(700px,94vw);
-  max-height:87dvh;box-sizing:border-box;border:1px solid var(--teal-soft);
-  border-radius:12px;background:var(--panel);color:var(--text);padding:16px;
-  box-shadow:0 20px 65px #0008;overflow-y:auto;
+.pi-inline-format-toolbar[hidden]{display:none!important;}
+.pi-inline-format-button{
+  display:grid;place-items:center;min-width:30px;height:29px;
+  border:1px solid transparent;border-radius:5px;
+  background:var(--panel-light);color:var(--text);
+  font:700 13px/1 'Segoe UI',Arial,sans-serif;cursor:pointer;
 }
-.pi-v16-rich-dialog::backdrop{background:#080b12be;backdrop-filter:blur(4px);}
-.pi-v16-rich-head,.pi-v16-rich-foot,.pi-v16-rich-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
-.pi-v16-rich-head{justify-content:space-between;margin-bottom:12px;font-size:17px;}
-.pi-v16-rich-dialog button{cursor:pointer;color:var(--text);background:var(--panel-light);border:1px solid var(--border);padding:6px 10px;border-radius:6px;}
-.pi-v16-rich-toolbar{margin-bottom:8px;}
-.pi-v16-rich-toolbar button{min-width:35px;min-height:35px;font-size:14px;}
-.pi-v16-rich-toolbar button:hover,.pi-v16-rich-toolbar button:focus-visible{border-color:var(--teal-soft);}
-.pi-v16-rich-input{min-height:165px;max-height:45dvh;overflow:auto;border:1px solid var(--border);border-radius:8px;
-  background:var(--bg-soft);color:var(--text);white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.55;
-  padding:12px;outline:none;font:inherit;font-size:15px;}
-.pi-v16-rich-input:focus{border-color:var(--teal-soft);}
-.pi-v16-rich-foot{justify-content:flex-end;margin-top:12px;}
-.pi-v16-rich-foot span{margin-right:auto;font-size:11px;color:var(--muted);}
-.pi-v16-rich-foot [data-save]{border-color:var(--teal-soft);font-weight:700;}
-
+.pi-inline-format-button:hover,.pi-inline-format-button:focus-visible{
+  border-color:var(--teal-soft);outline-offset:1px;
+}
+:where(.pi-note-editor,.pi-note-card-body,.pi-category-note-editor,
+  .planner-details-input,.planner-rich-note-input,.longform-input,
+  .longform-entry-text,.aq-card-text,.aq-capture-rich-input)[contenteditable="true"]:focus{
+  outline:1px solid var(--teal-soft);outline-offset:0;
+}
+.planner-details-input[contenteditable]{height:auto!important;overflow-y:auto!important;
+  resize:vertical!important;white-space:pre-wrap;overflow-wrap:anywhere;}
+.planner-details-input[contenteditable]:empty::before{
+  content:attr(data-placeholder);color:var(--muted);pointer-events:none;
+}
 /* V17: category checklist rows show a single ⋮ action.
    Archive and Delete share the existing dropdown on Home and in calendars. */
 html body .database-page .pi-nested-tools-menu > button,
@@ -1155,3 +1154,18 @@ html body :is(.pi-compass-page,.pi-reflections-page) .pi-ws-section-head > .pi-s
   flex:1 1 0%!important; width:auto!important; margin-right:auto!important;min-width:0!important;
 }
 html body :is(.pi-compass-page,.pi-reflections-page) .pi-ws-section-head > .pi-ws-menu {margin-left:0!important;}
+
+/* The Week/Month/Next Month freeform notes field is now a real rich-text input. */
+.planner-composer .planner-rich-note-input {
+  width:100%;min-width:0;box-sizing:border-box;
+  min-height:200px;max-height:340px;overflow-y:auto;
+  padding:10px;background:var(--bg-soft);color:var(--text);
+  border:1px solid var(--border);border-radius:8px;
+  font:400 15px/1.5 'Segoe UI',Arial,sans-serif;
+  white-space:pre-wrap;overflow-wrap:anywhere;
+}
+.planner-composer .planner-rich-note-input:empty::before {
+  content:attr(data-placeholder);color:var(--faint);pointer-events:none;
+}
+@media(max-width:1100px){body[data-planner="month"] .planner-composer .planner-rich-note-input{min-height:160px;}}
+@media(max-width:700px){.planner-composer .planner-rich-note-input{font-size:16px;}}

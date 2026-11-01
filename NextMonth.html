@@ -5,32 +5,32 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Next Month</title>
-<link rel="stylesheet" href="Core.css?v=20261101-v20-9"/>
+<link rel="stylesheet" href="Core.css?v=20261101-v21-0"/>
 <script defer="" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script defer src="CloudSync.js?v=20261101-v20-9"></script>
-<script defer src="Activity.js?v=20261101-v20-9"></script>
-<script defer src="Script.js?v=20261101-v20-9"></script>
+<script defer src="CloudSync.js?v=20261101-v21-0"></script>
+<script defer src="Activity.js?v=20261101-v21-0"></script>
+<script defer src="Script.js?v=20261101-v21-0"></script>
 
-<script defer src="Planner.js?v=20261101-v20-9"></script>
+<script defer src="Planner.js?v=20261101-v21-0"></script>
 
-<script defer src="Workspace.js?v=20261101-v20-9"></script>
+<script defer src="Workspace.js?v=20261101-v21-0"></script>
 
-<script defer src="UI.js?v=20261101-v20-9"></script>
-
-
-
-
-<link rel="stylesheet" href="Navigation.css?v=20261101-v20-9"/>
-<link rel="stylesheet" href="Panels.css?v=20261101-v20-9"/>
-
-
-<link rel="stylesheet" href="CalendarNotes.css?v=20261101-v20-9"/>
-<script defer src="Features.js?v=20261101-v20-9"></script>
-<link rel="stylesheet" href="Interface.css?v=20261101-v20-9"/>
+<script defer src="UI.js?v=20261101-v21-0"></script>
 
 
 
-<link rel="stylesheet" href="Polish.css?v=20261101-v20-9"/>
+
+<link rel="stylesheet" href="Navigation.css?v=20261101-v21-0"/>
+<link rel="stylesheet" href="Panels.css?v=20261101-v21-0"/>
+
+
+<link rel="stylesheet" href="CalendarNotes.css?v=20261101-v21-0"/>
+<script defer src="Features.js?v=20261101-v21-0"></script>
+<link rel="stylesheet" href="Interface.css?v=20261101-v21-0"/>
+
+
+
+<link rel="stylesheet" href="Polish.css?v=20261101-v21-0"/>
 
 
 
@@ -61,7 +61,7 @@
 <div class="planner-note-list" id="plannerNotes"></div>
 <form class="planner-composer" id="plannerComposer">
 <label for="plannerNoteInput">Room to think</label>
-<textarea id="plannerNoteInput" placeholder="Write something to keep in view…" rows="7"></textarea>
+<div id="plannerNoteInput" class="planner-rich-note-input" contenteditable="true" role="textbox" aria-label="Room to think" aria-multiline="true" data-placeholder=". . ." spellcheck="true"></div>
 <div class="planner-compose-actions"><label><input checked="" id="plannerCheckable" type="checkbox"/> Checklist item</label><button class="small-button" type="submit">Save note ↑</button></div>
 </form>
 </aside>

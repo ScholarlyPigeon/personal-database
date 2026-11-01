@@ -1,5 +1,42 @@
 /* ===== Original module: Script.js ===== */
 /* Home category notes: multi-line, dated and reorderable nested checklist. */
+/* Inline rich-text conversion and sanitization are initialized here so the
+   Home and Planner scripts can use them before DOMContentLoaded. */
+window.PIInlineRich=(()=>{
+  const htmlEscape = s => String(s??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  function legacyHTML(value) {
+    let source=htmlEscape(value||'');
+    source=source.replace(/\*\*([^*\n]+)\*\*/g,'<strong>$1</strong>')
+      .replace(/\+\+([^+\n]+)\+\+/g,'<u>$1</u>')
+      .replace(/~~([^~\n]+)~~/g,'<s>$1</s>')
+      .replace(/\*([^*\n]+)\*/g,'<em>$1</em>');
+    return source.replace(/\n/g,'<br>');
+  }
+  function cleanHTML(html) {
+    const fragment=document.createElement('template');fragment.innerHTML=String(html||'');
+    const allowed=new Set(['STRONG','B','EM','I','U','S','STRIKE','DEL','BR','P','DIV','UL','OL','LI','BLOCKQUOTE']);
+    const sanitize=node=>{
+      [...node.childNodes].forEach(child=>{
+        if(child.nodeType===8){child.remove();return;}
+        if(child.nodeType!==1)return;
+        if(!allowed.has(child.tagName)){
+          if(['SCRIPT','STYLE','IFRAME','OBJECT','SVG','MATH','IMG','VIDEO'].includes(child.tagName))child.remove();
+          else {const frag=document.createDocumentFragment();while(child.firstChild)frag.append(child.firstChild);child.replaceWith(frag);sanitize(node);}
+          return;
+        }
+        [...child.attributes].forEach(a=>child.removeAttribute(a.name));
+        sanitize(child);
+      });
+    };
+    sanitize(fragment.content);
+    return fragment.innerHTML;
+  }
+
+
+  return {cleanHTML,legacyHTML};
+})();
+
+
 window.PIHomeAddedDate = function(record) {
     if (!record) return '';
     if (record.createdAt) {
@@ -2399,7 +2436,7 @@ if (document.getElementById("tileGrid")) {
             details.className = 'pi-category-note-editor';
             details.contentEditable = 'true'; details.spellcheck = true;
             details.dataset.placeholder = 'Add details to this category…';
-            details.textContent = item.details || '';
+            details.innerHTML = window.PIInlineRich?.cleanHTML(item.detailsHtml || window.PIInlineRich.legacyHTML(item.details || '')) || '';
             const foldInner = document.createElement('div');
             foldInner.className = 'pi-category-details-inner';
             foldInner.hidden = !isOpen;
@@ -2416,6 +2453,7 @@ if (document.getElementById("tileGrid")) {
             details.addEventListener('input', () => {
                 if (!isFresh()) return;
                 item.details = details.innerText;
+                item.detailsHtml = window.PIInlineRich?.cleanHTML(details.innerHTML) || '';
                 manager.save(true,'before-edit');
             });
             foldInner.append(details);
@@ -7491,7 +7529,8 @@ if (document.getElementById("neopetsApp")) {
             const body = document.createElement('div'); body.className = 'pi-focus-detail';
             if (item.details && item.showDetails !== false) {
                 const details = document.createElement('div');
-                details.className = 'pi-focus-note-body'; details.textContent = item.details;
+                details.className = 'pi-focus-note-body';
+                details.innerHTML = window.PIInlineRich?.cleanHTML(item.detailsHtml || window.PIInlineRich.legacyHTML(item.details || '')) || '';
                 body.append(details);
             }
             body.append(window.PIHomeNestedChecklist(item, update));

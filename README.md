@@ -146,3 +146,14 @@ were changed. V20.4 fixes otherwise remain in place.
 - Its notes remain in the original `pi-compass-v1` records. Each highlighted tile now has its own disclosure for editable details, with expansion saved as an optional `currentExpanded` property. No existing note data is migrated or removed.
 - The horizontal rail now has a distinct framed background, similar to Home's day cards, with restrained theme-aware color variation.
 - Reload after deployment (Ctrl+Shift+R). Always make a JSON backup before testing editing, moving, or deleting.
+
+
+## V21.0 · Direct inline text formatting (November 2026)
+
+- Removed the separate rich-text dialog and its Apply/Cancel workflow.
+- Real-time formatting controls (B, I, U, strikethrough, bullet lists) appear beside the active rich-note body; changes appear directly in the writing area. Keyboard shortcuts remain Ctrl/Cmd+B, I, U and Ctrl/Cmd+Shift+X.
+- Home category details and calendar day category details now store their safe formatted HTML as optional `detailsHtml` **beside** the original plain `details` field. Existing records without `detailsHtml` still display and edit normally.
+- This Week, This Month and Next Month's **Room to think** note composer now supports native formatted HTML; freeform planner notes retain their plain `text` for search and compatibility and optional `html` for visual formatting.
+- The earlier `**bold**`, `++underline++` and `~~strike~~` text can be displayed as inline formatting on supported note bodies without altering the original stored text.
+- Single-line titles, URLs and checklist labels remain intentionally plain text. Their existing keyboard, drag-and-drop and editing behavior is unchanged.
+- Existing localStorage and cloud-sync record keys are unchanged. As always, back up your JSON before replacing deployed code.
