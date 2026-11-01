@@ -1169,3 +1169,88 @@ html body :is(.pi-compass-page,.pi-reflections-page) .pi-ws-section-head > .pi-w
 }
 @media(max-width:1100px){body[data-planner="month"] .planner-composer .planner-rich-note-input{min-height:160px;}}
 @media(max-width:700px){.planner-composer .planner-rich-note-input{font-size:16px;}}
+
+
+/* V21.1 | Longform: one section system, drag-left / dropdown-right, floating menus. */
+html.longform-page-html #longformFilters[hidden],
+html.longform-page-html #longformCategory[hidden] { display:none !important; }
+html.longform-page-html .longform-library-controls { align-items:center !important; }
+html.longform-page-html .longform-section-choice-field { min-width:0 !important; }
+html.longform-page-html #longformSectionChoice {
+  width:clamp(152px,18vw,245px) !important; max-width:100% !important;
+  min-width:0 !important; font-size:12px !important; height:32px !important;
+}
+html.longform-page-html .longform-entry-top {
+  display:grid !important;
+  grid-template-columns:25px minmax(0,1fr) auto auto !important;
+  grid-template-rows:auto !important;
+  align-items:center !important;
+  gap:5px !important;
+}
+html.longform-page-html .longform-entry-top > .longform-entry-move {
+  grid-column:1 !important; grid-row:1 !important; justify-self:start !important;
+  margin:0 !important; width:24px !important;height:28px !important;
+}
+html.longform-page-html .longform-entry-top > .longform-entry-title {
+  grid-column:2 !important; grid-row:1 !important; min-width:0 !important;
+}
+html.longform-page-html .longform-entry-top > .longform-entry-meta {
+  grid-column:3 !important;grid-row:1 !important; margin-left:0 !important;
+}
+html.longform-page-html .longform-entry-top > .longform-entry-actions {
+  grid-column:4 !important;grid-row:1 !important;
+}
+html.longform-page-html .longform-section-head-actions { margin-left:auto !important; }
+html.longform-page-html .longform-saved-section-head {
+  display:grid !important;grid-template-columns:26px minmax(0,1fr) auto !important;
+  align-items:center !important;
+}
+html.longform-page-html .longform-saved-section-head > .pi-tap-move-handle {
+  grid-column:1 !important;grid-row:1 !important;place-self:center !important;
+}
+html.longform-page-html .longform-saved-section-head > .longform-section-name {
+  grid-column:2 !important;grid-row:1 !important;
+}
+html.longform-page-html .longform-saved-section-head > .longform-section-head-actions {
+  grid-column:3 !important;grid-row:1 !important; justify-self:end !important;
+}
+html.longform-page-html .longform-unsorted-zone {
+  flex:0 0 auto;min-width:0;margin-bottom:9px;
+  border:1px solid var(--border);border-radius:10px;overflow:hidden;
+  background:var(--panel);
+}
+html.longform-page-html .longform-unsorted-head {
+  display:flex;align-items:center;gap:8px;min-height:34px;padding:6px 10px;
+  border-bottom:1px solid var(--border);background:var(--panel-light);
+  color:var(--text);font-size:12px;
+}
+html.longform-page-html .longform-unsorted-zone .longform-saved-section-body {min-height:40px;}
+html.longform-page-html .longform-card-tool-panel:popover-open {
+  position:fixed !important;inset:auto !important;z-index:2147483600 !important;
+  width:min(254px,calc(100vw - 16px)) !important;
+  max-height:min(75vh,530px) !important;
+  overflow-y:auto !important;overscroll-behavior:contain !important;
+  margin:0 !important;box-sizing:border-box !important;
+  background:var(--panel) !important;color:var(--text) !important;
+  box-shadow:0 14px 35px rgba(0,0,0,.33) !important;
+}
+html.longform-page-html .longform-card-tools:not([open]) > .longform-card-tool-panel:not(:popover-open) {
+  display:none !important;
+}
+@media(max-width:760px) {
+ html.longform-page-html .longform-entry-top {grid-template-columns:25px minmax(0,1fr) auto !important;grid-template-rows:auto auto !important;}
+ html.longform-page-html .longform-entry-top > .longform-entry-move {grid-column:1 !important;grid-row:1 !important;}
+ html.longform-page-html .longform-entry-top > .longform-entry-title {grid-column:2 !important;grid-row:1 !important;}
+ html.longform-page-html .longform-entry-top > .longform-entry-actions {grid-column:3 !important;grid-row:1 !important;}
+ html.longform-page-html .longform-entry-top > .longform-entry-meta {grid-column:2/-1 !important;grid-row:2 !important;justify-self:end !important;}
+ html.longform-page-html #longformSectionChoice {width:min(56vw,235px) !important;}
+}
+
+/* Pop-out is the far-right section action and never occupies another grid row. */
+html.longform-page-html .longform-saved-section-head {
+  grid-template-columns:26px minmax(0,1fr) auto 27px !important;
+}
+html.longform-page-html .longform-saved-section-head > .pi-popout-button {
+  grid-column:4 !important;grid-row:1 !important;justify-self:end !important;
+  margin:0 !important;
+}

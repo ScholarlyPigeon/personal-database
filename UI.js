@@ -691,7 +691,7 @@
       const legacySummary=row.querySelector('.longform-card-tools > summary');
       if(legacySummary && legacySummary.textContent!=='⋮') { legacySummary.textContent='⋮';legacySummary.title='Item options and move'; }
       const existing=row.querySelector('.longform-card-tool-panel');
-      if (existing) addMenus(row,existing,true);
+      if (existing) { addMenus(row,existing,true); attachFloatingMenu(existing.closest('.longform-card-tools'),existing); }
     });
     document.querySelectorAll('#plannerNotes .planner-item').forEach(row=>{
       const actions=row.querySelector('.planner-item-actions');

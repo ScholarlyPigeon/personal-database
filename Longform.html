@@ -5,11 +5,11 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Longform Notes</title>
-<link rel="stylesheet" href="Core.css?v=20261101-v21-0"/>
+<link rel="stylesheet" href="Core.css?v=20261101-v21-1"/>
 <script defer="" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script defer src="CloudSync.js?v=20261101-v21-0"></script>
-<script defer src="Activity.js?v=20261101-v21-0"></script>
-<script defer src="Script.js?v=20261101-v21-0"></script>
+<script defer src="CloudSync.js?v=20261101-v21-1"></script>
+<script defer src="Activity.js?v=20261101-v21-1"></script>
+<script defer src="Script.js?v=20261101-v21-1"></script>
 <style>
         /* =========================================================
            LONGFORM V7 — NOTE TITLES + MOBILE CONTAINMENT
@@ -230,25 +230,25 @@
         }
     </style>
 
-<script defer src="Planner.js?v=20261101-v21-0"></script>
+<script defer src="Planner.js?v=20261101-v21-1"></script>
 
-<script defer src="Workspace.js?v=20261101-v21-0"></script>
+<script defer src="Workspace.js?v=20261101-v21-1"></script>
 
-<script defer src="UI.js?v=20261101-v21-0"></script>
-
-
-
-
-<link rel="stylesheet" href="Navigation.css?v=20261101-v21-0"/>
-<link rel="stylesheet" href="Panels.css?v=20261101-v21-0"/>
-
-
-<script defer src="Features.js?v=20261101-v21-0"></script>
-<link rel="stylesheet" href="Interface.css?v=20261101-v21-0"/>
+<script defer src="UI.js?v=20261101-v21-1"></script>
 
 
 
-<link rel="stylesheet" href="Polish.css?v=20261101-v21-0"/>
+
+<link rel="stylesheet" href="Navigation.css?v=20261101-v21-1"/>
+<link rel="stylesheet" href="Panels.css?v=20261101-v21-1"/>
+
+
+<script defer src="Features.js?v=20261101-v21-1"></script>
+<link rel="stylesheet" href="Interface.css?v=20261101-v21-1"/>
+
+
+
+<link rel="stylesheet" href="Polish.css?v=20261101-v21-1"/>
 
 
 
@@ -287,12 +287,8 @@
 </div>
 <div class="longform-library-controls">
 <button class="small-button longform-add-section" id="addLongformSection" type="button">+ section</button>
-<label class="longform-filter-dropdown">
-<span>show</span>
-<select aria-label="Filter saved thoughts" id="longformFilters">
-<option value="all">All categories</option>
-</select>
-</label>
+<!-- Previous category filter retained invisibly for older saved data compatibility. -->
+<select id="longformFilters" hidden aria-hidden="true" tabindex="-1"><option value="all">All categories</option></select>
 </div>
 </div>
 <div class="longform-list" data-collapse-body="" id="longformList"></div>
@@ -304,15 +300,12 @@
 <div class="longform-section-note editable-ui longform-ui-edit" contenteditable="true" data-longform-ui="composer-note">give it a title, then let the text box hold the whole thought</div>
 </div>
 <div class="longform-compose-meta">
-<button class="longform-manage-categories small-button" id="manageLongformCategories" type="button" title="Edit available categories">Edit categories</button>
-<label class="longform-inline-field longform-category-field">
-<span class="pi-visually-hidden">Category</span>
-<select aria-label="Category" id="longformCategory">
-<option value="important">Important</option>
-<option selected="" value="database">Home</option>
-<option value="misc">Misc.</option>
-</select>
+<label class="longform-inline-field longform-section-choice-field">
+<span class="pi-visually-hidden">Destination section</span>
+<select aria-label="Save note in section" id="longformSectionChoice"><option value="__unsorted__">Unsorted · Saved thoughts</option></select>
 </label>
+<!-- Hidden legacy category selection preserves existing entry schema and sync. -->
+<select id="longformCategory" hidden aria-hidden="true" tabindex="-1"><option selected value="database">Home</option></select>
 <label class="longform-inline-field longform-date-field">
 <span class="pi-visually-hidden">Date</span>
 <input aria-label="Date" id="longformDate" type="date"/>
@@ -335,8 +328,8 @@
 </div>
 </details>
 <div class="longform-submit-row" data-collapse-body="">
-<div class="longform-submit-note">Ctrl/Cmd + Enter saves · plain Enter stays in the thought</div>
-<button class="longform-save-button" id="saveLongformEntry" type="button">save thought</button>
+<div class="longform-submit-note">Enter creates a new line · click Save thought when ready</div>
+<button class="longform-save-button" id="saveLongformEntry" type="button">Save thought</button>
 </div>
 </section>
 </main>
@@ -446,8 +439,12 @@ document.addEventListener("DOMContentLoaded", () => {
             // Shared compact note header: drag handle, title, date and controls
             // sit on one quiet rail, consistent with Compass and Saved Notes.
             const compactHeader = card.querySelector(":scope > .longform-entry-top");
-            if (compactHeader && heading.parentElement !== compactHeader) {
-                compactHeader.insertBefore(heading, compactHeader.firstChild);
+            if (compactHeader) {
+                const handle = compactHeader.querySelector(':scope > .longform-entry-move');
+                const anchor = handle?.nextSibling || compactHeader.firstChild;
+                if (heading.parentElement !== compactHeader || heading.previousElementSibling !== handle) {
+                    compactHeader.insertBefore(heading, anchor);
+                }
             }
 
             if (document.activeElement !== heading) {
@@ -583,20 +580,10 @@ document.addEventListener("DOMContentLoaded", () => {
         pendingSave = null;
     }
 
-    saveButton.addEventListener("click", armTitleForSave, true);
+    saveButton.addEventListener("click", () => { if (!bodyInput.dataset.longformEditingId) armTitleForSave(); }, true);
     saveButton.addEventListener("click", () => {
         setTimeout(finishTitleSave, 0);
     });
-
-    bodyInput.addEventListener("keydown", event => {
-        if (
-            event.key === "Enter" &&
-            (event.ctrlKey || event.metaKey)
-        ) {
-            armTitleForSave();
-            setTimeout(finishTitleSave, 0);
-        }
-    }, true);
 
     titleInput.addEventListener("keydown", event => {
         if (event.key !== "Enter") return;

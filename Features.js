@@ -114,7 +114,7 @@
     '#databaseNotesInput','.day-entry-row .day-input',
     '.pi-nested-compose textarea','.planner-category-add textarea',
     '.planner-day-form textarea','#plannerNoteInput',
-    '#captureInput','#aqCaptureTitle','#longformInput','#longformTitleInput',
+    '#captureInput','#aqCaptureTitle',
     '#piTimelineTitle','#piTimelineBody','#patternInput','#timelineMarkerInput',
     '.pi-timeline-add textarea'
   ].join(',');
@@ -127,7 +127,6 @@
     if(node.matches('#databaseNotesInput'))btn=document.getElementById('addDatabaseNote');
     else if(node.matches('.day-entry-row .day-input'))btn=node.closest('.day-entry-row')?.querySelector('button');
     else if(node.matches('#captureInput,#aqCaptureTitle'))btn=document.getElementById('captureBtn');
-    else if(node.matches('#longformInput,#longformTitleInput'))btn=document.getElementById('saveLongformEntry');
     else if(node.matches('#piTimelineTitle,#piTimelineBody,.pi-timeline-add textarea'))btn=document.getElementById('piAddTimeline');
     else if(node.matches('#patternInput'))btn=document.getElementById('addPattern');
     else if(node.matches('#timelineMarkerInput'))btn=document.getElementById('addTimelineMarker');
@@ -144,7 +143,7 @@
   // These save hints describe the same keyboard behavior across all editors.
   const labelChanges={
     '.aq-shortcut':'Enter saves · Shift+Enter adds a line',
-    '.longform-submit-note':'Enter saves · Shift+Enter adds a line'
+    '.longform-submit-note':'Enter creates a new line · click Save thought when ready'
   };
   const repaint=()=>Object.entries(labelChanges).forEach(([selector,value])=>{
     const el=document.querySelector(selector);if(el&&el.textContent!==value)el.textContent=value;
@@ -344,6 +343,28 @@
     '.longform-entry-text[contenteditable="true"]'
   ].join(',');
 
+  function normalizePastedRichHTML(html){
+    const template=document.createElement('template');template.innerHTML=String(html||'');
+    // Word, Docs, and browser copy often use inline-styled spans instead of
+    // semantic tags; preserve emphasis, not arbitrary styles or event handlers.
+    const spanList=[...template.content.querySelectorAll('span')].reverse();
+    for(const span of spanList){
+      const style=span.getAttribute('style')||'';
+      const wraps=[];
+      if(/font-weight\s*:\s*(bold|[6-9]00)/i.test(style))wraps.push('strong');
+      if(/font-style\s*:\s*italic/i.test(style))wraps.push('em');
+      if(/text-decoration(?:-line)?\s*:[^;]*underline/i.test(style))wraps.push('u');
+      if(/text-decoration(?:-line)?\s*:[^;]*line-through/i.test(style))wraps.push('s');
+      if(!wraps.length)continue;
+      const nodes=document.createDocumentFragment();
+      while(span.firstChild)nodes.append(span.firstChild);
+      let current=nodes;
+      for(const tag of wraps){const wrapped=document.createElement(tag);wrapped.append(current);current=wrapped;}
+      span.replaceWith(current);
+    }
+    return template.innerHTML;
+  }
+
   function enableFormatting() {
     const toolbar=document.createElement('div');
     toolbar.className='pi-inline-format-toolbar';toolbar.hidden=true;
@@ -411,6 +432,19 @@
     document.addEventListener('paste',event=>{
       const field=event.target.closest?.(richSurfaceSelector);
       if(!field)return;
+      // Longform is a writing surface, not a plain-text checklist.
+      // Preserve semantic formatting while stripping unsafe pasted markup.
+      if(field.matches('.longform-input,.longform-entry-text')){
+        const rich=event.clipboardData?.getData('text/html') || '';
+        const plain=event.clipboardData?.getData('text/plain') || '';
+        if(!rich && !plain)return;
+        event.preventDefault();
+        const safe=rich ? cleanHTML(normalizePastedRichHTML(rich))
+          : cleanHTML(plain.split(/\r?\n/).map(line=>line.replace(/[&<>]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[ch]))).join('<br>'));
+        document.execCommand('insertHTML',false,safe);
+        field.dispatchEvent(new Event('input',{bubbles:true}));
+        return;
+      }
       const text=event.clipboardData?.getData('text/plain');
       if(typeof text!=='string')return;
       event.preventDefault();

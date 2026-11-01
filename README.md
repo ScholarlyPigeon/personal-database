@@ -157,3 +157,15 @@ were changed. V20.4 fixes otherwise remain in place.
 - The earlier `**bold**`, `++underline++` and `~~strike~~` text can be displayed as inline formatting on supported note bodies without altering the original stored text.
 - Single-line titles, URLs and checklist labels remain intentionally plain text. Their existing keyboard, drag-and-drop and editing behavior is unchanged.
 - Existing localStorage and cloud-sync record keys are unchanged. As always, back up your JSON before replacing deployed code.
+
+
+## V21.1 Longform writing/organization refinements (2026-11-01)
+- Longform editor saves only on explicit Save thought/Update thought clicks; Enter inserts paragraphs/bullets.
+- Paste formatted bold/italic/underline/strikethrough and lists into the editor; unsafe HTML and unsupported styles are stripped.
+- Composer destination is now a section picker, including **Unsorted**.
+- Existing category metadata and category keys remain for backward compatibility, but category controls are hidden.
+- New unsorted notes stay directly in Saved thoughts; notes can be moved to/from sections with the normal move controls. Existing notes without a section assignment still appear in their legacy default section.
+- Saved thought menus are positioned in the top layer to avoid being clipped by scroll panes.
+- Drag handles live on the left; expand/tools controls live on the right.
+- Saved thoughts offer **Edit in composer**, which updates the existing entry ID and its title rather than creating a duplicate.
+- Draft HTML is retained in `pi-longform-draft-v1` and safely restored on return.

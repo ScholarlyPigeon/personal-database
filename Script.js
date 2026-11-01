@@ -5622,9 +5622,12 @@ if (document.getElementById("longformApp")) {
         if (show) showSaved();
     }
 
+    const LONGFORM_UNSORTED = "__unsorted__";
     function longformSectionForEntry(entryId) {
         const assigned = longformSections.assignments?.[entryId];
+        if (assigned === LONGFORM_UNSORTED) return LONGFORM_UNSORTED;
         if (longformSections.sections.some(section => section.id === assigned)) return assigned;
+        // Legacy notes lacking assignments stay in their original first section.
         return longformSections.sections[0]?.id || "general";
     }
 
@@ -5641,6 +5644,10 @@ if (document.getElementById("longformApp")) {
         caption.textContent = "section";
         const select = document.createElement("select");
         select.setAttribute("aria-label", "Move thought to section");
+        const unsorted = document.createElement("option");
+        unsorted.value = LONGFORM_UNSORTED;
+        unsorted.textContent = "Unsorted · Saved thoughts";
+        select.appendChild(unsorted);
         longformSections.sections.forEach(section => {
             const option = document.createElement("option");
             option.value = section.id;
@@ -5663,6 +5670,7 @@ if (document.getElementById("longformApp")) {
         const id = `section-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
         longformSections.sections.push({ id, name: "New section", collapsed: false });
         saveLongformSections(false);
+        populateLongformSectionChoice();
         renderLongformEntries();
         showSaved();
         requestAnimationFrame(() => {
@@ -5680,6 +5688,17 @@ if (document.getElementById("longformApp")) {
     const longformList = document.getElementById("longformList");
     const longformInput = document.getElementById("longformInput");
     const longformCategory = document.getElementById("longformCategory");
+    const longformSectionChoice = document.getElementById("longformSectionChoice");
+    let editingLongformEntryId = null;
+    function populateLongformSectionChoice(keepSelection=true) {
+        if (!longformSectionChoice) return;
+        const selected = keepSelection ? longformSectionChoice.value : LONGFORM_UNSORTED;
+        longformSectionChoice.replaceChildren();
+        const loose = new Option("Unsorted · Saved thoughts", LONGFORM_UNSORTED);
+        longformSectionChoice.add(loose);
+        longformSections.sections.forEach(section => longformSectionChoice.add(new Option(section.name, section.id)));
+        longformSectionChoice.value = [...longformSectionChoice.options].some(o=>o.value===selected) ? selected : LONGFORM_UNSORTED;
+    }
     const longformDate = document.getElementById("longformDate");
     const longformImageUrl = document.getElementById("longformImageUrl");
     const longformLinkUrl = document.getElementById("longformLinkUrl");
@@ -5976,7 +5995,7 @@ if (document.getElementById("longformApp")) {
                 entry.date = date.value;
                 saveLongformState();
             });
-            meta.append(category, date);
+            meta.append(date);
 
             const actions = document.createElement("div");
             actions.className = "longform-entry-actions";
@@ -6066,8 +6085,28 @@ if (document.getElementById("longformApp")) {
                 showSaved();
             });
 
+            const editInComposer = document.createElement("button");
+            editInComposer.type = "button";
+            editInComposer.className = "longform-tool-button";
+            editInComposer.textContent = "✎ Edit in composer";
+            editInComposer.addEventListener("click", event=>{
+                event.stopPropagation();
+                editingLongformEntryId=entry.id;
+                longformInput.dataset.longformEditingId=entry.id;
+                const titles=JSON.parse(localStorage.getItem('pi-longform-titles-v1')||'{}');
+                const titleField=document.getElementById('longformTitleInput');
+                titleField.value=titles[entry.id]||'';
+                longformInput.innerHTML=window.PIInlineRich?.cleanHTML(entry.html||longformPlainTextToHtml(entry.text))||'';
+                longformDate.value=entry.date;
+                longformImageUrl.value=entry.imageUrl||'';
+                longformLinkUrl.value=entry.linkUrl||'';
+                longformSectionChoice.value=longformSectionForEntry(entry.id);
+                saveLongformEntry.textContent='Update thought';
+                longformInput.focus();
+                tools.open=false;
+            });
             const sectionMove = makeLongformSectionSelect(entry);
-            toolsPanel.append(sectionMove, pinButton, doneButton, mediaEdit, archive, remove);
+            toolsPanel.append(editInComposer, sectionMove, pinButton, doneButton, mediaEdit, archive, remove);
             tools.append(toolsSummary, toolsPanel);
 
             const expand = document.createElement("button");
@@ -6095,8 +6134,9 @@ if (document.getElementById("longformApp")) {
                 selectedLongformSection = null;
                 renderLongformEntries();
             });
-            actions.append(moveTap, tools, expand);
-            top.append(meta, actions);
+            moveTap.classList.add('longform-entry-move');
+            actions.append(tools, expand);
+            top.append(moveTap, meta, actions);
 
             const summary = document.createElement("button");
             summary.type = "button";
@@ -6179,6 +6219,35 @@ if (document.getElementById("longformApp")) {
         saveLongformSections(false); saveLongformState(); renderLongformEntries();
     }
 
+    function bindLongformCardMovement(card, entry, sectionId) {
+        card.draggable = true;
+        card.addEventListener("dragstart", event => {
+            if (event.target.closest('button:not(.pi-tap-move-handle),input,select,textarea,[contenteditable]')){event.preventDefault();return;}
+            event.dataTransfer.setData('text/pi-longform-entry',entry.id);
+        });
+        card.addEventListener("dragover", event => {if(event.dataTransfer.types.includes('text/pi-longform-entry'))event.preventDefault();});
+        card.addEventListener("drop", event => {const id=event.dataTransfer.getData('text/pi-longform-entry');if(!id||id===entry.id)return;event.preventDefault();moveLongformEntry(id,sectionId,entry.id);});
+        card.addEventListener("click", event => {
+            if (!selectedLongformEntry || selectedLongformEntry === entry.id) return;
+            if (event.target.closest("button, select, input, textarea, a, [contenteditable]")) return;
+            moveLongformEntry(selectedLongformEntry,sectionId,entry.id);
+        });
+    }
+    function wireLongformDropzone(body,sectionId){
+        body.addEventListener("dragover", event => {
+            if(event.dataTransfer.types.includes("text/pi-longform-entry"))event.preventDefault();
+        });
+        body.addEventListener("drop", event => {
+            if(event.target.closest('.longform-entry'))return;
+            const entryId=event.dataTransfer.getData('text/pi-longform-entry');
+            if(!entryId)return;
+            event.preventDefault();moveLongformEntry(entryId,sectionId);
+        });
+        body.addEventListener('click',event=>{
+            if(selectedLongformEntry&&!event.target.closest('.longform-entry,button,input,select,[contenteditable]'))moveLongformEntry(selectedLongformEntry,sectionId);
+        });
+    }
+
     function makeLongformSectionShell(section, entries) {
         const shell = document.createElement("section");
         shell.className = `longform-saved-section${section.collapsed ? " collapsed" : ""}`;
@@ -6227,6 +6296,7 @@ if (document.getElementById("longformApp")) {
         });
         name.addEventListener("blur", () => {
             name.textContent = section.name || "Section";
+            populateLongformSectionChoice();
             showSaved();
         });
 
@@ -6271,17 +6341,19 @@ if (document.getElementById("longformApp")) {
         removeSection.type = "button";
         removeSection.className = "longform-section-remove";
         removeSection.textContent = "×";
-        removeSection.title = "Remove section and move its notes to the first remaining section";
-        removeSection.disabled = longformSections.sections.length <= 1;
+        removeSection.title = "Remove section and move its notes to Unsorted";
+        removeSection.disabled = false;
         removeSection.addEventListener("click", () => {
-            if (longformSections.sections.length <= 1) return;
-            const fallback = longformSections.sections.find(candidate => candidate.id !== section.id);
-            Object.keys(longformSections.assignments).forEach(entryId => {
-                if (longformSections.assignments[entryId] === section.id) {
-                    longformSections.assignments[entryId] = fallback.id;
+            if(!confirm("Remove this section? Its notes will move to Unsorted."))return;
+            // Resolve legacy entries without explicit assignments before removing the section.
+            longformState.entries.forEach(entry=>{
+                if(longformSectionForEntry(entry.id)===section.id){
+                    longformSections.assignments[entry.id]=LONGFORM_UNSORTED;
                 }
             });
             longformSections.sections = longformSections.sections.filter(candidate => candidate.id !== section.id);
+            if(!longformSections.sections.length){longformSections.sections.push({id:'general',name:'General',collapsed:false});}
+            populateLongformSectionChoice();
             saveLongformSections(false);
             renderLongformEntries();
             showSaved();
@@ -6289,8 +6361,8 @@ if (document.getElementById("longformApp")) {
 
         const headActions = document.createElement("div");
         headActions.className = "longform-section-head-actions";
-        headActions.append(count, moveSection, removeSection);
-        head.append(toggle, name, headActions);
+        headActions.append(count, toggle, removeSection);
+        head.append(moveSection, name, headActions);
 
         const body = document.createElement("div");
         body.className = "longform-saved-section-body";
@@ -6307,30 +6379,12 @@ if (document.getElementById("longformApp")) {
         } else {
             entries.forEach(entry => {
                 const card = makeLongformEntryCard(entry);
-                card.draggable = true;
-                card.addEventListener("dragstart", event => {if(event.target.closest('button:not(.pi-tap-move-handle),input,select,textarea,[contenteditable]')){event.preventDefault();return;} event.dataTransfer.setData('text/pi-longform-entry',entry.id);});
-                card.addEventListener("dragover", event => {if(event.dataTransfer.types.includes('text/pi-longform-entry'))event.preventDefault();});
-                card.addEventListener("drop", event => {const id=event.dataTransfer.getData('text/pi-longform-entry');if(!id||id===entry.id)return;event.preventDefault();moveLongformEntry(id,section.id,entry.id);});
-                card.addEventListener("click", event => {
-                    if (!selectedLongformEntry || selectedLongformEntry === entry.id) return;
-                    if (event.target.closest("button, select, input, textarea, a, [contenteditable]")) return;
-                    const moving = selectedLongformEntry;
-                    selectedLongformEntry = null;
-                    moveLongformEntry(moving, section.id, entry.id);
-                });
+                bindLongformCardMovement(card, entry, section.id);
                 body.appendChild(card);
             });
         }
 
-        body.addEventListener("dragover", event => {
-            if (event.dataTransfer.types.includes("text/pi-longform-entry")) event.preventDefault();
-        });
-        body.addEventListener("drop", event => {
-            if (event.target.closest(".longform-entry")) return;
-            const entryId = event.dataTransfer.getData("text/pi-longform-entry");
-            if (!entryId) return;
-            event.preventDefault(); moveLongformEntry(entryId, section.id);
-        });
+        wireLongformDropzone(body,section.id);
         shell.classList.toggle("pi-move-selected", selectedLongformSection === section.id);
         shell.append(head, body);
         return shell;
@@ -6355,14 +6409,37 @@ if (document.getElementById("longformApp")) {
             ))
             .sort((a, b) => Number(Boolean(b.pinned)) - Number(Boolean(a.pinned)));
 
-        if (!visible.length && activeLongformFilter !== "all") {
-            const empty = document.createElement("div");
-            empty.className = "longform-empty";
-            empty.innerHTML = `<strong>No ${categoryLabel(activeLongformFilter).toLowerCase()} thoughts here.</strong><span>Nothing is being hidden except by your current filter.</span>`;
-            longformList.appendChild(empty);
-            return;
+        const unsortedEntries = visible.filter(entry => longformSectionForEntry(entry.id) === LONGFORM_UNSORTED);
+        const unsorted = document.createElement("section");
+        unsorted.className = "longform-unsorted-zone";
+        unsorted.dataset.longformSectionId = LONGFORM_UNSORTED;
+        const unsortedHead = document.createElement("div");
+        unsortedHead.className = "longform-unsorted-head";
+        const unsortedTitle = document.createElement("strong");
+        unsortedTitle.textContent = "Unsorted";
+        const unsortedCount = document.createElement("span");
+        unsortedCount.className = "longform-section-count";
+        unsortedCount.textContent = String(unsortedEntries.length);
+        unsortedHead.append(unsortedTitle,unsortedCount);
+        const unsortedBody = document.createElement("div");
+        unsortedBody.className = "longform-saved-section-body longform-unsorted-body";
+        if(!unsortedEntries.length) {
+            const empty = document.createElement("p");
+            empty.className = "longform-section-empty";
+            empty.textContent = "Save thoughts here before sorting them into sections.";
+            unsortedBody.append(empty);
         }
-
+        unsortedEntries.forEach(entry => {
+            const card = makeLongformEntryCard(entry);
+            bindLongformCardMovement(card, entry, LONGFORM_UNSORTED);
+            unsortedBody.append(card);
+        });
+        wireLongformDropzone(unsortedBody,LONGFORM_UNSORTED);
+        unsortedHead.addEventListener('click',event=>{
+            if(selectedLongformEntry && !event.target.closest('button,input,select,[contenteditable]'))moveLongformEntry(selectedLongformEntry,LONGFORM_UNSORTED);
+        });
+        unsorted.append(unsortedHead,unsortedBody);
+        longformList.append(unsorted);
         longformSections.sections.forEach(section => {
             const entries = visible.filter(entry => longformSectionForEntry(entry.id) === section.id);
             longformList.appendChild(makeLongformSectionShell(section, entries));
@@ -6371,48 +6448,50 @@ if (document.getElementById("longformApp")) {
 
     function submitLongformEntry() {
         const text = longformInput.innerText.trim();
-        const html = longformInput.innerHTML.trim();
-        if (!text) {
-            longformInput.focus();
-            return;
+        const html = window.PIInlineRich?.cleanHTML(longformInput.innerHTML.trim())||longformInput.innerHTML.trim();
+        if (!text) { longformInput.focus(); return; }
+        const dest=longformSectionChoice?.value||LONGFORM_UNSORTED;
+        const safeDest=dest===LONGFORM_UNSORTED || longformSections.sections.some(section=>section.id===dest)
+            ? dest : LONGFORM_UNSORTED;
+        const editing=editingLongformEntryId && longformState.entries.find(item=>item.id===editingLongformEntryId);
+        if(editing){
+            Object.assign(editing,{text,html,date:longformDate.value||makeLocalIsoDate(),imageUrl:longformImageUrl.value.trim(),linkUrl:longformLinkUrl.value.trim()});
+            longformSections.assignments[editing.id]=safeDest;
+            const titleField=document.getElementById('longformTitleInput');
+            const titles=JSON.parse(localStorage.getItem('pi-longform-titles-v1')||'{}');
+            if(titleField.value.trim())titles[editing.id]=titleField.value.trim();
+            else delete titles[editing.id];
+            localStorage.setItem('pi-longform-titles-v1',JSON.stringify(titles));
+        } else {
+            const id=longformId();
+            longformState.entries.unshift({
+                id, text, html,
+                category: longformCategories.some(item=>item.id===longformCategory.value)
+                    ?longformCategory.value:(longformCategories[0]?.id||'misc'),
+                date:longformDate.value||makeLocalIsoDate(),done:false,createdAt:new Date().toISOString(),
+                imageUrl:longformImageUrl.value.trim(),linkUrl:longformLinkUrl.value.trim(),pinned:false
+            });
+            longformSections.assignments[id]=safeDest;
         }
-
-        longformState.entries.unshift({
-            id: longformId(),
-            text,
-            html,
-            category: longformCategories.some(item => item.id === longformCategory.value)
-                ? longformCategory.value
-                : (longformCategories[0]?.id || "misc"),
-            date: longformDate.value || makeLocalIsoDate(),
-            done: false,
-            createdAt: new Date().toISOString(),
-            imageUrl: longformImageUrl.value.trim(),
-            linkUrl: longformLinkUrl.value.trim(),
-            pinned: false
-        });
-
-        longformInput.innerHTML = "";
-        longformImageUrl.value = "";
-        longformLinkUrl.value = "";
-        longformDate.value = makeLocalIsoDate();
+        editingLongformEntryId=null;
+        delete longformInput.dataset.longformEditingId;
+        saveLongformEntry.textContent='Save thought';
+        longformInput.innerHTML='';
+        longformImageUrl.value='';longformLinkUrl.value='';
+        document.getElementById('longformTitleInput').value='';
+        longformDate.value=makeLocalIsoDate();
+        longformSectionChoice.value=LONGFORM_UNSORTED;
+        saveLongformSections(false);
         saveLongformState(false);
-        renderLongformEntries();
-        showSaved();
-        longformInput.focus();
+        localStorage.removeItem('pi-longform-draft-v1');
+        renderLongformEntries();showSaved();longformInput.focus();
     }
 
     populateLongformCategoryUi();
-    if (manageLongformCategories) manageLongformCategories.addEventListener("click", openLongformCategoryManager);
+    populateLongformSectionChoice(false);
     if (addLongformSectionButton) addLongformSectionButton.addEventListener("click", addLongformSection);
     longformDate.value = makeLocalIsoDate();
     saveLongformEntry.addEventListener("click", submitLongformEntry);
-    longformInput.addEventListener("keydown", event => {
-        if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
-            event.preventDefault();
-            submitLongformEntry();
-        }
-    });
 
     longformFilters.addEventListener("change", () => {
         activeLongformFilter = longformFilters.value || "all";
@@ -6428,6 +6507,7 @@ if (document.getElementById("longformApp")) {
         }
         if (event.key === LONGFORM_SECTIONS_KEY) {
             longformSections = readLongformSections();
+            populateLongformSectionChoice();
             renderLongformEntries();
         }
     });
@@ -6442,7 +6522,7 @@ if (document.getElementById("longformApp")) {
         const categoryChanged = JSON.stringify(latestCategories) !== JSON.stringify(longformCategories);
 
         if (stateChanged) longformState = latestState;
-        if (sectionChanged) longformSections = latestSections;
+        if (sectionChanged) {longformSections = latestSections;populateLongformSectionChoice();}
         if (categoryChanged) {
             longformCategories = latestCategories;
             if (!longformCategories.some(item => item.id === activeLongformFilter)) activeLongformFilter = "all";
@@ -8446,6 +8526,7 @@ if (document.getElementById("neopetsApp")) {
         const title = document.getElementById("longformTitleInput");
         const body = document.getElementById("longformInput");
         const category = document.getElementById("longformCategory");
+        const section = document.getElementById("longformSectionChoice");
         const date = document.getElementById("longformDate");
         const image = document.getElementById("longformImageUrl");
         const link = document.getElementById("longformLinkUrl");
@@ -8462,6 +8543,7 @@ if (document.getElementById("neopetsApp")) {
             if (!title.value && draft.title) title.value = draft.title;
             if (!body.innerText.trim() && draft.html) body.innerHTML = draft.html;
             if (category && draft.category && [...category.options].some(option => option.value === draft.category)) category.value = draft.category;
+            if (section && draft.section && [...section.options].some(option=>option.value===draft.section)) section.value=draft.section;
             if (date && draft.date) date.value = draft.date;
             if (image && draft.imageUrl) image.value = draft.imageUrl;
             if (link && draft.linkUrl) link.value = draft.linkUrl;
@@ -8477,6 +8559,7 @@ if (document.getElementById("neopetsApp")) {
                     text: body.innerText,
                     html: body.innerHTML,
                     category: category?.value || "",
+                    section: section?.value || "__unsorted__",
                     date: date?.value || localIsoDate(),
                     imageUrl: image?.value || "",
                     linkUrl: link?.value || "",
@@ -8491,23 +8574,23 @@ if (document.getElementById("neopetsApp")) {
                 status.textContent = "draft autosaved ✓";
             }, 220);
         };
-        [title, body, category, date, image, link].filter(Boolean).forEach(field => {
+        [title, body, category, section, date, image, link].filter(Boolean).forEach(field => {
             field.addEventListener(field.tagName === "SELECT" || field.type === "date" ? "change" : "input", writeDraft);
         });
 
         const clearAfterSuccessfulSave = () => {
-            if (!body.innerText.trim()) return;
+            // Native Save handler clears a successfully saved draft; do not
+            // wipe the stored draft merely because the user clicked an empty Save.
+            if(!body.innerText.trim())return;
             clearTimeout(timer);
-            setTimeout(() => {
-                clearTimeout(timer);
-                localStorage.removeItem(PI_KEYS.draftKey);
-                status.textContent = "draft cleared after save ✓";
-            }, 20);
+            setTimeout(()=>{
+                if(!body.innerText.trim()) {
+                    localStorage.removeItem(PI_KEYS.draftKey);
+                    status.textContent="draft cleared after save ✓";
+                }
+            },20);
         };
         save.addEventListener("click", clearAfterSuccessfulSave, true);
-        body.addEventListener("keydown", event => {
-            if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) clearAfterSuccessfulSave();
-        }, true);
     }
 
     function reorderNeopets() {
