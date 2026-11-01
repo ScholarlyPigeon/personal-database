@@ -1,3 +1,19 @@
+/* ===== Original module: HomeLayoutV5.js ===== */
+/* Ensure popping out a collapsed Home panel opens its full contents. */
+(() => {
+  document.addEventListener('click', event => {
+    const trigger = event.target?.closest?.('.database-page .pi-popout-button');
+    if (!trigger) return;
+    const panel = trigger.closest('.home-upcoming-panel, .database-notes-panel, #piDatabaseFocus');
+    if (!panel || panel.classList.contains('pi-panel-popout')) return;
+    if (panel.classList.contains('is-collapsed') || panel.classList.contains('pi-focus-collapsed')) {
+      panel.querySelector('.panel-collapse-toggle, .pi-focus-collapse')?.click();
+    }
+  }, true);
+})();
+;
+
+/* ===== Original module: HomeCategoryMovesV6.js ===== */
 /* V6: reversible moves between standalone Home/Radar notes and nested categories.
    The live list writer lives in Script.js so sync and safety snapshots are respected. */
 (() => {
@@ -212,3 +228,27 @@
     queueMicrotask(()=>{queued=false;paint();});
   }).observe(document.body,{childList:true,subtree:true});
 })();
+;
+
+/* ===== Original module: HomePolishV6.js ===== */
+/* V6: stabilize Home controls without changing saved collapse state. */
+(() => {
+  if (!document.querySelector('.database-page')) return;
+  function align() {
+    for (const head of document.querySelectorAll('.database-page .pi-focus-head, .database-page .home-upcoming-panel > .panel-header, .database-page .database-notes-panel > .panel-header')) {
+      const pop=head.querySelector(':scope > .pi-popout-button');
+      const collapse=head.querySelector(':scope > .pi-focus-collapse, :scope > .panel-collapse-toggle');
+      if (pop && collapse && pop.nextElementSibling!==collapse) {
+        head.append(pop,collapse);
+      }
+    }
+  }
+  align();
+  let queued=false;
+  new MutationObserver(()=>{
+    if (queued) return;
+    queued=true;
+    queueMicrotask(()=>{queued=false;align();});
+  }).observe(document.body,{childList:true,subtree:true});
+})();
+;

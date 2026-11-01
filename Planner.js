@@ -1,3 +1,4 @@
+/* ===== Original module: Planner.js ===== */
 /* Date dashboards. Calendar records deliberately share Database's canonical keys. */
 (() => {
  'use strict';
@@ -458,3 +459,4 @@
  window.addEventListener('storage',e=>{if(e.key&&(e.key.startsWith('pi-calendar-day-')||e.key===noteKey()||e.key===ARCHIVE_STORAGE_KEY))safe(()=>{if(document.activeElement?.matches('textarea'))return;renderNotes();renderDays();});});
  safe(()=>{restoreDraft();renderNotes();renderDays();});
 })();
+;

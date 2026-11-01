@@ -1,3 +1,4 @@
+/* ===== Original module: Workspace.js ===== */
 /* Personal Intranet · clean Archive and Timeline + Notes.
    Existing archive, timeline and retired Almanac keys are never deleted. */
 (() => {
@@ -449,3 +450,4 @@ function initCompass(){
 
 document.addEventListener('DOMContentLoaded',()=>{initArchive();initReflections();initCompass();});
 })();
+;

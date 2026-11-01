@@ -1,3 +1,302 @@
+/* ===== Original module: MobilePolish.js ===== */
+/* October 10, 2026: UI-only mobile polish.
+   No cloud, note, archive, or calendar storage formats are modified. */
+(() => {
+  'use strict';
+  const mobile = () => window.matchMedia('(max-width: 900px), (pointer: coarse)').matches;
+
+  function setupLinks() {
+    const strip = document.querySelector('html.aquarium-page .aq-page > .link-strip');
+    if (!strip || strip.querySelector('.pi-links-toggle')) return;
+    const label = strip.querySelector('.link-strip-label');
+    const list = strip.querySelector('#linksContainer');
+    if (!label || !list) return;
+    const key = 'pi-aquarium-mobile-links-collapsed-v1';
+    const toggle = document.createElement('button');
+    toggle.type = 'button';
+    toggle.className = 'pi-links-toggle';
+    toggle.setAttribute('aria-label', 'Expand Aquarium links');
+    toggle.setAttribute('aria-controls', 'linksContainer');
+    label.insertAdjacentElement('afterend', toggle);
+    let collapsed = true;
+    try { collapsed = localStorage.getItem(key) !== 'false'; } catch {}
+    function render() {
+      const closed = mobile() && collapsed;
+      strip.classList.toggle('pi-links-collapsed', closed);
+      toggle.textContent = closed ? '▸' : '▾';
+      toggle.setAttribute('aria-expanded', String(!closed));
+      toggle.setAttribute('aria-label', closed ? 'Expand Aquarium links' : 'Collapse Aquarium links');
+      toggle.title = closed ? 'Show links' : 'Hide links';
+    }
+    toggle.addEventListener('click', () => {
+      collapsed = !collapsed;
+      try { localStorage.setItem(key, String(collapsed)); } catch {}
+      render();
+    });
+    window.addEventListener('resize', render, { passive: true });
+    render();
+  }
+
+  // Keep each native Details dropdown, but position its panel in the viewport,
+  // so headers near the right edge never hide half the destinations.
+  function setupMenus() {
+    const menus = [...document.querySelectorAll('header .ecosystem-menu')];
+    function place(menu) {
+      if (!mobile() || !menu.open) return;
+      const panel = menu.querySelector(':scope > .ecosystem-menu-popover, :scope > .pi-tools-popover');
+      if (!panel) return;
+      const trigger = menu.querySelector(':scope > summary');
+      if (!trigger) return;
+      const r = trigger.getBoundingClientRect();
+      const vw = document.documentElement.clientWidth;
+      const vh = window.innerHeight;
+      const gap = 8;
+      const width = Math.min(302, vw - gap * 2);
+      const left = Math.max(gap, Math.min(r.left, vw - width - gap));
+      const maxHeight = Math.min(Math.floor(vh * .62), 470);
+      const below = vh - r.bottom - gap * 2;
+      const above = r.top - gap * 2;
+      const openAbove = below < 200 && above > below;
+      const available = Math.max(125, openAbove ? above : below);
+      const height = Math.min(maxHeight, available);
+      const top = openAbove ? Math.max(gap, r.top - height - gap) : Math.min(r.bottom + gap, vh - height - gap);
+      panel.style.setProperty('width', `${width}px`, 'important');
+      panel.style.setProperty('left', `${left}px`, 'important');
+      panel.style.setProperty('top', `${Math.max(gap, top)}px`, 'important');
+      panel.style.setProperty('max-height', `${height}px`, 'important');
+    }
+    const reposition = () => menus.forEach(place);
+    menus.forEach(menu => {
+      menu.addEventListener('toggle', () => { if (menu.open) requestAnimationFrame(() => place(menu)); });
+      menu.querySelector(':scope > summary')?.addEventListener('click', () => {
+        requestAnimationFrame(() => place(menu));
+      });
+    });
+    window.addEventListener('resize', reposition, { passive: true });
+    window.addEventListener('scroll', reposition, { passive: true });
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape') menus.forEach(menu => { menu.open = false; });
+    });
+  }
+
+  function simplifyDock() {
+    const field = document.getElementById('piDockCapture');
+    if (field) field.placeholder = 'Quick capture…';
+    else {
+      const observer = new MutationObserver(() => {
+        const next = document.getElementById('piDockCapture');
+        if (!next) return;
+        next.placeholder = 'Quick capture…';
+        observer.disconnect();
+      });
+      observer.observe(document.body, { childList: true });
+    }
+  }
+
+  function tidyLabels() {
+    const hint = document.getElementById('plannerHint');
+    if (hint?.textContent.trim() === 'Shared with Database') hint.textContent = 'Shared with Home';
+  }
+
+  function init() {
+    tidyLabels();
+    setupLinks();
+    setupMenus();
+    simplifyDock();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true });
+  else init();
+})();
+;
+
+/* ===== Original module: Refresh.js ===== */
+/* Universal live panel popouts, no localStorage keys or cloned form state. */
+(() => {
+  'use strict';
+  const selector = [
+    '.database-page .checklist-panel', '.database-page .database-notes-panel',
+    '.database-page .right-date-rail', '.database-page .day-card',
+    '.database-page .pi-focus-panel',
+    '.pi-workspace-panel', '.pi-notes-section', '.pi-archive-column',
+    '.longform-library', '.longform-composer', '.longform-saved-section',
+    '.planner-notes', '.planner-calendar', '.aq-panel', '.aq-category-zone',
+    '.neo-card'
+  ].join(',');
+  const headers = '.panel-header, .date-rail-header, .day-card-top, .pi-workspace-head, .pi-notes-section-head, .planner-heading, .longform-library-head, .longform-composer-head, .longform-saved-section-head, .aq-panel-head, .aq-category-head, .neo-panel-heading, .neo-dailies-head, .pi-focus-head';
+  let opened = null;
+  let backdrop = null;
+  const close = () => {
+    if (!opened) return;
+    const panel = opened;
+    opened = null;
+    // Browser top layer keeps the live panel above its backdrop even when
+    // page themes introduce transformed/isolated stacking contexts.
+    try { if (panel.matches(':popover-open')) panel.hidePopover(); } catch {}
+    // Critical: leaving `popover` on a regular panel makes the browser hide it
+    // when closed. Restore the original DOM state so it occupies its grid slot.
+    if (panel.dataset.piHadPopover !== 'true') panel.removeAttribute('popover');
+    delete panel.dataset.piHadPopover;
+    panel.classList.remove('pi-panel-popout');
+    panel.querySelector(':scope > .panel-header > .pi-popout-button, :scope > .pi-workspace-head > .pi-popout-button, :scope > .day-card-top > .pi-popout-button, :scope > .pi-notes-section-head > .pi-popout-button, :scope > .longform-saved-section-head > .pi-popout-button')?.setAttribute('aria-label','Pop out this panel');
+    backdrop?.remove(); backdrop = null;
+    document.body.classList.remove('pi-popout-open');
+  };
+  const toggle = (panel, control) => {
+    if (opened === panel) { close(); return; }
+    close();
+    opened = panel;
+    backdrop = document.createElement('div');
+    backdrop.className = 'pi-popout-backdrop';
+    backdrop.addEventListener('click', close);
+    document.body.append(backdrop);
+    panel.dataset.piHadPopover = String(panel.hasAttribute('popover'));
+    panel.classList.add('pi-panel-popout');
+    if (typeof panel.showPopover === 'function') {
+      panel.setAttribute('popover', 'manual');
+      panel.showPopover();
+    } else {
+      // Older browsers: keep panel's own stacking context above the backdrop.
+      backdrop.style.zIndex = '1500';
+    }
+    document.body.classList.add('pi-popout-open');
+    control.setAttribute('aria-label', 'Close expanded panel');
+    control.title = 'Close expanded panel (Esc)';
+  };
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && opened && !document.querySelector('dialog[open]')) {
+      event.preventDefault(); close();
+    }
+  });
+  const install = () => {
+    document.querySelectorAll(selector).forEach(panel => {
+      const header = [...panel.children].find(child => child.matches?.(headers))
+        || panel.querySelector(':scope > .pi-workspace-head, :scope > .panel-header, :scope > .day-card-top');
+      if (!header || header.querySelector(':scope > .pi-popout-button')) return;
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'pi-popout-button';
+      button.textContent = '⤢';
+      button.title = 'Expand this table';
+      button.setAttribute('aria-label','Pop out this panel');
+      button.addEventListener('click', event => { event.stopPropagation(); toggle(panel,button); });
+      header.append(button);
+    });
+    if (opened && !opened.isConnected) close();
+  };
+  window.PICompactDate = value => {
+    const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(value || ''));
+    return match ? `${match[2]}/${match[3]}/${match[1].slice(2)}` : '';
+  };
+  // These are *display* wrappers. Native input listeners and ISO values stay
+  // untouched; the browser's real date picker opens when the date is clicked.
+  const compactDates = () => {
+    document.querySelectorAll('input[type="date"].pi-item-date, input[type="date"].pi-card-date, input[type="date"].longform-card-date, input[type="date"].tracker-date-input').forEach(input => {
+      if (input.dataset.piCompactDate === 'true') return;
+      input.dataset.piCompactDate = 'true';
+      const shell = document.createElement('span');
+      shell.className = 'pi-compact-date-view';
+      const button = document.createElement('button');
+      button.type = 'button'; button.className = 'pi-compact-date-button';
+      const paint = () => {
+        button.textContent = window.PICompactDate(input.value) || 'mm/dd/yy';
+        button.title = 'Edit date';
+        button.setAttribute('aria-label', `Edit date ${button.textContent}`);
+      };
+      paint();
+      input.before(shell);
+      shell.append(button, input);
+      input.classList.add('pi-compact-date-native');
+      input.addEventListener('change', paint);
+      button.addEventListener('click', () => {
+        try { input.showPicker(); }
+        catch { input.focus(); input.click(); }
+      });
+    });
+  };
+  install(); compactDates();
+
+  // Keep exactly one compact Focus menu open. Clicking outside dismisses it.
+  document.addEventListener('pointerdown', event => {
+    document.querySelectorAll('.database-page .pi-focus-tools[open]').forEach(menu => {
+      if (!menu.contains(event.target) && !menu.querySelector('.pi-focus-tools-panel')?.contains(event.target)) {
+        menu.open = false;
+      }
+    });
+  }, true);
+
+  // One movement affordance on desktop: drag any Home line into Focus,
+  // or drag a Focus card into Notes, Radar, or a dated list.
+  // The transfer APIs live in Script.js and preserve the existing safeguards.
+  document.addEventListener('dragstart', event => {
+    const source = event.target.closest?.('.database-page .check-drag, .database-page .pi-focus-drag');
+    if (!source || !event.dataTransfer) return;
+    const focusRow = source.closest('.pi-focus-item');
+    if (focusRow?.dataset.focusId) {
+      event.dataTransfer.setData('application/x-pi-focus', focusRow.dataset.focusId);
+      event.dataTransfer.effectAllowed = 'move';
+      return;
+    }
+    const itemRow = source.closest('.checklist-item');
+    const list = itemRow?.closest('.checklist-list, .day-list');
+    if (!itemRow?.dataset.itemId || !list?.dataset.storageKey) return;
+    event.dataTransfer.setData('application/x-pi-home', JSON.stringify({
+      sourceKey: list.dataset.storageKey, itemId: itemRow.dataset.itemId
+    }));
+    event.dataTransfer.effectAllowed = 'move';
+  }, true);
+  document.addEventListener('dragover', event => {
+    const target = event.target.closest?.('.database-page .pi-focus-panel, .database-page .checklist-list, .database-page .day-list');
+    if (!target) return;
+    const transfer = event.dataTransfer?.types;
+    const accept = target.closest('.pi-focus-panel')
+      ? transfer?.includes('application/x-pi-home')
+      : transfer?.includes('application/x-pi-focus');
+    if (!accept) return;
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+    target.classList.add('pi-focus-drop-target');
+  }, true);
+  document.addEventListener('dragleave', event => {
+    if (!event.target.closest?.('.pi-focus-drop-target')) return;
+    if (!event.currentTarget.contains(event.relatedTarget)) {
+      document.querySelectorAll('.pi-focus-drop-target').forEach(el => el.classList.remove('pi-focus-drop-target'));
+    }
+  }, true);
+  document.addEventListener('drop', event => {
+    // V6 category-to-category moves are handled by the dedicated category transfer layer.
+    if (event.dataTransfer?.types?.includes('application/x-pi-home-transfer') &&
+        event.target.closest?.('.database-page .pi-category-note, .database-page #databaseNotesList, .database-page #piDatabaseFocusList')) return;
+    const focus = event.target.closest?.('.database-page .pi-focus-panel');
+    const list = event.target.closest?.('.database-page .checklist-list, .database-page .day-list');
+    if (!focus && !list) return;
+    if (focus && event.dataTransfer?.types?.includes('application/x-pi-home')) {
+      event.preventDefault(); event.stopImmediatePropagation();
+      try {
+        const {sourceKey,itemId} = JSON.parse(event.dataTransfer.getData('application/x-pi-home'));
+        if (!window.PIHomeMoveToFocus?.(sourceKey,itemId)) alert('Move not completed. The original item was kept.');
+      } catch { alert('Could not complete that move. Your original item was kept.'); }
+    } else if (list?.dataset.storageKey && event.dataTransfer?.types?.includes('application/x-pi-focus')) {
+      event.preventDefault(); event.stopImmediatePropagation();
+      const focusId = event.dataTransfer.getData('application/x-pi-focus');
+      if (!window.PIHomeMoveFromFocus?.(focusId,list.dataset.storageKey)) alert('Move not completed. The item remains in Focus.');
+    }
+    document.querySelectorAll('.pi-focus-drop-target').forEach(el => el.classList.remove('pi-focus-drop-target'));
+  }, true);
+  document.addEventListener('dragend', () => {
+    document.querySelectorAll('.pi-focus-drop-target').forEach(el => el.classList.remove('pi-focus-drop-target'));
+  }, true);
+
+  let queued = false;
+  const observer = new MutationObserver(() => {
+    if (queued) return;
+    queued = true;
+    queueMicrotask(() => { queued = false; install(); compactDates(); });
+  });
+  observer.observe(document.body,{childList:true,subtree:true});
+})();
+;
+
+/* ===== Original module: Finishing.js ===== */
 /* Personal Intranet · Oct 18 polish and main-notes-only cross-page moving.
    Reuses existing storage keys. Destination is committed before source removal.
    No hidden cloud keys, no schema migrations, and no background writes. */
@@ -461,3 +760,71 @@
     window.addEventListener('resize',()=>{queue();polishHomeDays();},{passive:true});
   });
 })();
+;
+
+/* ===== Original module: HeaderPolish.js ===== */
+/* Same dropdown presentation as Pages, with existing select and sync state left intact. */
+(() => {
+  const makeMenu = () => {
+    const select = document.getElementById('themeSelect');
+    if (!select || document.querySelector('header .pi-theme-menu')) return;
+    const menu = document.createElement('details');
+    menu.className = 'ecosystem-menu pi-theme-menu';
+    const summary = document.createElement('summary');
+    summary.setAttribute('aria-label','Choose theme');
+    summary.title = 'Choose a theme';
+    const choices = document.createElement('div');
+    choices.className = 'ecosystem-menu-popover pi-theme-options';
+    choices.setAttribute('role','group');
+    choices.setAttribute('aria-label','Themes');
+    menu.append(summary,choices);
+    select.classList.add('pi-nav-source-select');
+    select.insertAdjacentElement('afterend',menu);
+
+    function redraw() {
+      const selected = select.selectedOptions?.[0];
+      summary.textContent = selected?.textContent?.trim() || 'themes';
+      choices.replaceChildren();
+      const groups = Array.from(select.children);
+      groups.forEach(group => {
+        if (group.tagName === 'OPTGROUP') {
+          const heading = document.createElement('div');
+          heading.className='pi-theme-group-heading';
+          heading.textContent=group.label;
+          choices.append(heading);
+        }
+        const options = group.tagName === 'OPTGROUP' ? Array.from(group.children) : group.tagName === 'OPTION' ? [group] : [];
+        options.forEach(option => {
+          const button = document.createElement('button');
+          button.type='button'; button.className='pi-theme-choice';
+          button.textContent=option.textContent;
+          button.dataset.theme=option.value;
+          if (option.value === select.value) button.setAttribute('aria-current','true');
+          button.addEventListener('click', () => {
+            select.value=option.value;
+            select.dispatchEvent(new Event('change',{bubbles:true}));
+            menu.open=false;
+            redraw();
+          });
+          choices.append(button);
+        });
+      });
+    }
+    let queued=false;
+    const schedule=()=>{
+      if (queued) return;
+      queued=true;
+      queueMicrotask(()=>{queued=false;redraw();});
+    };
+    new MutationObserver(schedule).observe(select,{childList:true,subtree:true,attributes:true,attributeFilter:['selected']});
+    select.addEventListener('change',schedule);
+    window.addEventListener('storage', event => {if(event.key==='pi-theme')schedule();});
+    document.addEventListener('pointerdown', event => {
+      if(menu.open && !menu.contains(event.target))menu.open=false;
+    },true);
+    redraw();
+  };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded',makeMenu);
+  else makeMenu();
+})();
+;

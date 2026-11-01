@@ -1,3 +1,4 @@
+/* ===== Original module: CloudSync.js ===== */
 /* =========================================================
    PERSONAL INTRANET CLOUD MODULE
    Isolated scope prevents cloud-internal migration helpers from colliding
@@ -1731,3 +1732,4 @@ document.addEventListener("DOMContentLoaded", async () => {
     };
 });
 })();
+;

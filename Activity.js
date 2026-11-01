@@ -1,3 +1,4 @@
+/* ===== Original module: Activity.js ===== */
 /* Personal Intranet: meaningful, local user-edit activity trail.
    Records additions and content edits, not drafts, layout, filtering,
    sync echoes, checkbox toggles, or each keystroke as a separate event. */
@@ -124,3 +125,4 @@
     return result;
   };
 })();
+;

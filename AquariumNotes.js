@@ -1,3 +1,4 @@
+/* ===== Original module: AquariumHeaderV19.js ===== */
 /* Aquarium note headers toggle via existing collapse buttons. Preserve
    direct title editing, drag handles, menu buttons and selections. */
 (() => {
@@ -51,3 +52,4 @@
     queueMicrotask(()=>{queued=false;bindHeaders();});
   }).observe(document.documentElement,{subtree:true,childList:true});
 })();
+;

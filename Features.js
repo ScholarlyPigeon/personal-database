@@ -1,3 +1,159 @@
+/* ===== Original module: ClickableHeadersV12.js ===== */
+/* V12: tap empty space on a collapsible header to toggle its existing button.
+   Editing titles, popouts, menus, and drag handles remain independent. */
+(() => {
+  const headerSelector = [
+    '.panel-header', '.pi-focus-head', '.aq-category-head', '.aq-panel-head',
+    '.longform-saved-section-head','.pi-notes-section-head',
+    '.longform-library-head','.longform-composer-head',
+    '.neo-panel-heading','.neo-dailies-head','.almanac-panel-head',
+    '.archive-v2-panel-head','.pi-category-note', '.planner-category-head'
+  ].join(',');
+  const exclude = 'button,input,textarea,select,a,summary,details,[contenteditable="true"],[contenteditable=""],[role="textbox"],[draggable="true"],label,.pi-category-note-content,.pi-focus-detail,.planner-category-content,.item-row-actions,.pi-focus-actions';
+  const targetToggle = (head, from) => {
+    if (head.matches('.planner-category-head')) return head.querySelector('.planner-category-toggle');
+    if (head.matches('.pi-category-note')) {
+      if(from.closest('.pi-category-note-content,.pi-focus-detail'))return null;
+      return head.querySelector(':scope > .item-row-actions > .pi-note-open, :scope > .pi-focus-actions > .pi-focus-expand');
+    }
+    if(head.matches('.aq-category-head'))return head.querySelector('.aq-category-collapse');
+    if(head.matches('.longform-saved-section-head'))return head.querySelector('.longform-section-toggle');
+    return head.querySelector(':scope > .panel-collapse-toggle, :scope > .pi-focus-collapse, :scope > .aq-panel-collapse, :scope > .pi-notes-section-toggle, :scope > .longform-section-toggle');
+  };
+  function resolve(event){
+    const head=event.target.closest?.(headerSelector);
+    if(!head)return null;
+    const toggle=targetToggle(head,event.target);
+    if(!toggle)return null;
+    if(event.target!==head && event.target.closest(exclude))return null;
+    return {head,toggle};
+  }
+  document.addEventListener('click',event=>{
+    const hit=resolve(event);
+    if(!hit)return;
+    event.preventDefault();hit.toggle.click();
+  });
+  document.addEventListener('keydown',event=>{
+    if(!['Enter',' '].includes(event.key)||event.target!==event.target.closest?.(headerSelector))return;
+    const hit=resolve(event);
+    if(!hit)return;
+    event.preventDefault();hit.toggle.click();
+  });
+  // Dynamically generated headers also get keyboard access. Never replace
+  // existing click listeners or turn a container with embedded buttons into a button.
+  function bind(){
+    document.querySelectorAll(headerSelector).forEach(head=>{
+      if(!head.dataset.piHeaderClickBound && targetToggle(head,head)){
+        head.dataset.piHeaderClickBound='1';
+        if(!head.hasAttribute('tabindex'))head.tabIndex=0;
+        head.title ||= 'Click empty header space to expand or collapse';
+      }
+    });
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind);
+  else bind();
+  let queued=false;
+  new MutationObserver(()=>{if(queued)return;queued=true;queueMicrotask(()=>{queued=false;bind();});}).observe(document.documentElement,{subtree:true,childList:true});
+})();
+;
+
+/* ===== Original module: IntranetFixV13.js ===== */
+/* V13: equal-sized theme/page selectors and current-page labels.
+   Leave native theme select and persisted theme values untouched. */
+(() => {
+  'use strict';
+  const ready = () => {
+    const theme = document.querySelector('header .pi-theme-menu');
+    const pages = document.querySelector('header .ecosystem-menu:not(.pi-theme-menu):not(.pi-tools-menu)');
+    if (!theme || !pages) return;
+    const themeSummary = theme.querySelector(':scope > summary');
+    const pagesSummary = pages.querySelector(':scope > summary');
+    const choices = theme.querySelector('.pi-theme-options');
+    const links = [...pages.querySelectorAll('.ecosystem-menu-popover a')];
+    const selected = links.find(a => a.getAttribute('aria-current') === 'page') ||
+      links.find(a => a.getAttribute('href') === location.pathname.split('/').pop());
+    if (selected && pagesSummary) {
+      pagesSummary.textContent = selected.textContent.trim();
+      pagesSummary.setAttribute('aria-label','Current page: ' + selected.textContent.trim());
+    }
+    [theme, pages].forEach(menu => menu.classList.add('pi-balanced-nav'));
+
+    function sizeMenus() {
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      if (!context) return;
+      const font = getComputedStyle(themeSummary);
+      context.font = `650 ${font.fontSize || '13px'} ${font.fontFamily || 'Arial'}`;
+      const labels = [
+        ...[...choices?.querySelectorAll('.pi-theme-choice') || []].map(node=>node.textContent.trim()),
+        ...links.map(node=>node.textContent.trim())
+      ];
+      const width = Math.min(285, Math.max(186, Math.ceil(Math.max(0,...labels.map(label=>context.measureText(label).width)) + 51)));
+      document.documentElement.style.setProperty('--pi-balanced-nav-width', width + 'px');
+    }
+    sizeMenus();
+    if (choices) {
+      let scheduled=false;
+      new MutationObserver(()=>{
+        if (scheduled) return;
+        scheduled=true;
+        queueMicrotask(()=>{scheduled=false;sizeMenus();});
+      }).observe(choices,{childList:true,subtree:true,characterData:true});
+    }
+  };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded',ready,{once:true});
+  else ready();
+})();
+;
+
+/* ===== Original module: IntranetRefinementV14.js ===== */
+/* V14: consistent compose shortcuts and safe, nonintrusive editor behavior. */
+(() => {
+  'use strict';
+  const newEntrySelector = [
+    '#databaseNotesInput','.day-entry-row .day-input',
+    '.pi-nested-compose textarea','.planner-category-add textarea',
+    '.planner-day-form textarea','#plannerNoteInput',
+    '#captureInput','#aqCaptureTitle','#longformInput','#longformTitleInput',
+    '#piTimelineTitle','#piTimelineBody','#patternInput','#timelineMarkerInput',
+    '.pi-timeline-add textarea'
+  ].join(',');
+  const submit = node => {
+    if(node.closest('form')) {
+      const form=node.closest('form');
+      if(form.querySelector('[type="submit"]')) {form.requestSubmit();return true;}
+    }
+    let btn;
+    if(node.matches('#databaseNotesInput'))btn=document.getElementById('addDatabaseNote');
+    else if(node.matches('.day-entry-row .day-input'))btn=node.closest('.day-entry-row')?.querySelector('button');
+    else if(node.matches('#captureInput,#aqCaptureTitle'))btn=document.getElementById('captureBtn');
+    else if(node.matches('#longformInput,#longformTitleInput'))btn=document.getElementById('saveLongformEntry');
+    else if(node.matches('#piTimelineTitle,#piTimelineBody,.pi-timeline-add textarea'))btn=document.getElementById('piAddTimeline');
+    else if(node.matches('#patternInput'))btn=document.getElementById('addPattern');
+    else if(node.matches('#timelineMarkerInput'))btn=document.getElementById('addTimelineMarker');
+    if(btn){btn.click();return true;}return false;
+  };
+  document.addEventListener('keydown',event=>{
+    if(event.key!=='Enter'||event.shiftKey||event.isComposing||event.altKey)return;
+    const node=event.target.closest?.(newEntrySelector);
+    if(!node)return;
+    if(submit(node)){
+      event.preventDefault();event.stopImmediatePropagation();
+    }
+  },true);
+  // These save hints describe the same keyboard behavior across all editors.
+  const labelChanges={
+    '.aq-shortcut':'Enter saves · Shift+Enter adds a line',
+    '.longform-submit-note':'Enter saves · Shift+Enter adds a line'
+  };
+  const repaint=()=>Object.entries(labelChanges).forEach(([selector,value])=>{
+    const el=document.querySelector(selector);if(el&&el.textContent!==value)el.textContent=value;
+  });
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',repaint,{once:true});else repaint();
+})();
+;
+
+/* ===== Original module: IntranetToolsV16.js ===== */
 /* V16: common Tools actions, conservative bulk archive, consistent entry hints,
    and opt-in formatted text editing. Existing storage and cloud sync are reused. */
 (() => {
@@ -294,3 +450,4 @@
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
+;

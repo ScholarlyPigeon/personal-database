@@ -1,0 +1,85 @@
+# Personal Intranet | Clean release (V20)
+
+A focused file/maintenance cleanup of V19, **not a data migration or feature redesign**.
+
+## Safest deployment
+
+1. While the current site is working, open **Tools → Download backup** and store the JSON in a safe place.
+2. Close other intranet tabs/devices. Extract this ZIP and upload the files **inside `CURRENT/`** to your GitHub Pages repository root, preserving exact spelling and capitalization.
+3. **Important:** GitHub's Upload Files action does not remove old files. Once the updated pages load correctly, delete the **old** CSS, JavaScript, and individual README files named in the Legacy files list below; don't delete `CloudSync.js`, `Activity.js`, `Script.js`, `Planner.js`, `Workspace.js`, or any HTML page.
+4. Open a fresh tab and test each page, create/edit/archive/drag one harmless test item, the page/theme menus, mobile layout, backup download, cloud synced status, and another device after closing the first one.
+5. If something looks wrong, keep the JSON backup and restore the previous ZIP. Do not restore JSON unless actual data has been lost.
+
+**No changes** to localStorage key names, Supabase config, cloud synchronization code, existing saved notes, original page body markup, or the older record formats. The original code has been copied into named bundles in its prior execution order. Only duplicate resource imports and one identical shadowed CSS rule were removed, plus a very small shared keyboard-focus/control-consistency CSS rule set.
+
+## Active file map
+
+| Filename | Purpose |
+| --- | --- |
+| `Database.html`, `Aquarium.html`, `Longform.html`, `Compass.html`, `Week.html`, `Month.html`, `NextMonth.html`, `Almanac.html`, `Patterns.html`, `neopets.html`, `index.html` | Original pages and Home redirect |
+| `CloudSync.js` | Cloud sync and migration compatibility (preserved) |
+| `Activity.js` | Activity history (preserved) |
+| `Script.js` | Core intranet, storage and rendering (preserved) |
+| `Planner.js` | Calendar and planner (preserved) |
+| `Workspace.js` | Archive and timeline (preserved) |
+| `UI.js` | Mobile usability, pop-out UI, action finishing and theme/navigation polish |
+| `Home.js` | Home panel behavior and category-note movement |
+| `Features.js` | Clickable headers, shared navigation, writing tools and backup actions |
+| `AquariumNotes.js` | Aquarium note heading behavior |
+| `Core.css` | Main theme and base UI, planner/workspace/mobile, refresh and finishing rules |
+| `HomeGrid.css` | Home grids and panel sizing |
+| `Navigation.css` | Header/navigation styling |
+| `HomeCards.css` | Home calendar-card styles |
+| `Panels.css` | Shared panels and clickable-header styles |
+| `CalendarNotes.css` | Week/Month category notes |
+| `Interface.css` | Shared selector and editor refinements |
+| `HomeMobile.css` | Home-specific responsive repairs |
+| `Polish.css` | Recent tools, V18/V19 visual fixes, Study theme, and shared keyboard-focus treatment |
+| `README.md` | This guide and condensed release notes |
+
+### Why there are still multiple CSS/JS files
+
+To avoid CSS override bugs and JavaScript dependency changes, the bundles preserve the **original load order of every distinct resource** on each page. The explicit Home and calendar CSS still sits in its old relative position. Joining everything into one giant stylesheet or one engine script would create significant regression risk for little practical benefit. In-page data storage and cloud behavior remain unchanged.
+
+### Shared design conventions
+
+- Page headers keep their own title and theme, with a consistent Pages / Themes / Tools pattern.
+- Header titles are primary; collapse, expand/pop-out, add, and three-dot actions should be secondary and consistent.
+- Clicking empty expandable heading space should open or close the section without intercepting edit and drag controls.
+- Active notes and calendar entries should retain direct editing, item movement, consistent prompts, and archive/menu behavior.
+- Interactive controls now share minimum menu-target height, rounded corners and visible keyboard-focus outlines while inheriting each theme's colors.
+- This is a baseline for future UI refinements, **not** a claim that every legacy UI component is now identical. The untested mobile/hosted behavior still needs checking.
+
+## Architecture and safety notes
+
+- Core record keys use the original `pi-*` conventions. Calendar date records share the original `pi-calendar-day-YYYY-MM-DD` keys across Home / Week / Month / Next Month; **do not** split them into page-specific keys.
+- Next Month is a view onto the appropriate calendar month, not a second database.
+- Old / retired features can still hold archived or prior-generation user content. Don't remove storage readers, save handlers, or migrations just because a control is hidden.
+- Cloud sync must not be rebuilt or mixed with rendering code merely to reduce file count. Keep its conflict and migration protections.
+- Cloud status and JSON backup must remain usable on every page. Test a deploy in a single tab before opening additional devices.
+- The existing Study theme keeps the botanical palette: `#0A3323`, `#839958`, `#F7F4D5`, `#D3968C`, `#105666`.
+- On Aquarium, hidden action menus still use the original save/archive/delete handlers and must remain non-destructive until the user chooses an action.
+
+## Condensed version history
+
+- **Oct 10–11:** Mobile polish, Compass, themes, navigation, archive activity and cloud integration refinements.
+- **Oct 17–19:** Home calendar/notes refresh, pop-out stacking fixes, Focus/On My Radar layout repair, day header styling, cross-page moving and menu improvements.
+- **Oct 24:** Home restructuring, category details, date labels, collapsible calendars, theme/page navigation, removal of the old quick-capture dock (saved Inbox values preserved).
+- **Oct 25–26:** Calendar category notes, Next Month, navigation sizing, completion timestamps, keyboard entry behavior, mobile fixes.
+- **Oct 31 / V17:** Shared Tools search, download backup and archive completed; richer editing and note/action menus.
+- **Nov 1 / V18:** Calendar click-to-edit and drag handles; Aquarium action menus; Neopets status restoration; Timeline central composer.
+- **Nov 1 / V19:** Neopets layout corrections, Aquarium click-to-collapse, higher contrast section headings and botanical Study theme.
+- **V20:** Documentation merge, logical CSS/JS bundles, removal of repeated imports, one redundant CSS declaration, and a small shared focus/control styling pass. No data migration.
+
+## Legacy files to remove **after successful deployment**
+
+These are replaced by the new bundle names. This list is for cleaning up the GitHub repository; keeping them during the initial smoke test is harmless because no new page links to them.
+
+
+**Old CSS**: `ClickableHeadersV12.css`, `Finishing.css`, `HeaderPolish.css`, `HomeLayoutV5.css`, `HomeTuning.css`, `IntranetFixV13.css`, `IntranetPolishV19.css`, `IntranetPolishV6.css`, `IntranetRefinementV14.css`, `IntranetRepairV18.css`, `IntranetToolsV16.css`, `MobileLayoutRepairV15.css`, `MobilePolish.css`, `Planner.css`, `PlannerCategoryV12.css`, `Refresh.css`, `Style.css`, `Workspace.css`.
+
+**Old JS**: `AquariumHeaderV19.js`, `ClickableHeadersV12.js`, `Finishing.js`, `HeaderPolish.js`, `HomeCategoryMovesV6.js`, `HomeLayoutV5.js`, `HomePolishV6.js`, `IntranetFixV13.js`, `IntranetRefinementV14.js`, `IntranetToolsV16.js`, `MobilePolish.js`, `Refresh.js`.
+
+**Old documentation**: `README-DAY-HEADER-REVERT.txt`, `README-FOCUS-COLLAPSE-HOTFIX.txt`, `README-FOCUS-POPOUT-FIX.txt`, `README-FOCUS-THREE-ROW-REPAIR.txt`, `README-HOME-REFRESH.txt`, `README-HOME-V10.txt`, `README-HOME-V11.txt`, `README-HOME-V12.txt`, `README-HOME-V13.txt`, `README-HOME-V5.txt`, `README-HOME-V6.txt`, `README-INTRANET-V14.txt`, `README-MOBILE-V15.txt`, `README-NESTED-FOCUS-REFINEMENT.txt`, `README-NOV01-V18.txt`, `README-NOV01-V19.txt`, `README-OCT18-FINISHING.txt`, `README-OCT19-HOME-MENU-HOTFIX.txt`, `README-OCT19-NIGHT-POLISH.txt`, `README-OCT24-HOME-CATEGORY-PASS.txt`, `README-OCT24-HOME-GRID-REPAIR.txt`, `README-OCT31-V17.txt`, `README-RETIRED-QUICK-CAPTURE.txt`, `README.txt`.
+
+All old release-specific `README-*.txt` files and `README.txt` have been summarized here. Prior one-off patch installation instructions are intentionally not repeated because this ZIP replaces the whole site asset set.

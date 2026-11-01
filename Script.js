@@ -1,3 +1,4 @@
+/* ===== Original module: Script.js ===== */
 /* Home category notes: multi-line, dated and reorderable nested checklist. */
 window.PIHomeAddedDate = function(record) {
     if (!record) return '';
@@ -8615,3 +8616,4 @@ if (document.getElementById("linksContainer")) {
 
 
 }
+;
