@@ -16,11 +16,8 @@
     }
     const categoryHead = target.closest?.('.aq-category-head');
     if (!categoryHead || target.closest(excluded)) return null;
-    // Expanded titles remain editable, while collapsed titles can reopen a tile.
     if (target.closest('.aq-category-name') &&
         !categoryHead.closest('.aq-category')?.classList.contains('collapsed')) return null;
-    // V12 already handles category header clicks outside editable names.
-    if (!target.closest('.aq-category-name')) return null;
     return categoryHead.querySelector('.aq-category-collapse');
   }
   document.addEventListener('click', event => {

@@ -495,3 +495,107 @@ html.aquarium-page .aq-category-head:focus-visible {outline:2px solid var(--teal
     transition:none !important;
   }
 }
+
+
+/* ===== V20.4: home menus, Aquarium controls, Compass/Timeline alignment ===== */
+html body .planner-nested-options {
+  min-width:136px !important;
+  display:grid !important;
+  gap:4px !important;
+  box-sizing:border-box !important;
+}
+html body .planner-nested-options > button {
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  width:100% !important;
+  min-width:0 !important;
+  text-align:center !important;
+  white-space:nowrap !important;
+  margin:0 !important;
+}
+
+html.aquarium-page .aq-section-add,
+html.aquarium-page .aq-section-remove {
+  color:var(--muted) !important;
+  border-color:var(--border) !important;
+}
+html.aquarium-page .aq-card-actions {
+  gap:4px !important;
+}
+html.aquarium-page .aq-card-actions > .aq-card-collapse {order:1 !important;}
+html.aquarium-page .aq-card-actions > .pi-cross-menu {order:2 !important;margin:0 !important;}
+html.aquarium-page .aq-card-actions > .pi-cross-menu > summary,
+html.aquarium-page .aq-category-actions > .pi-cross-menu > summary {
+  display:grid !important;place-items:center !important;
+  width:29px !important;height:31px !important;min-width:29px !important;min-height:31px !important;
+  padding:0 !important;border-radius:7px !important;
+  background:var(--panel-light) !important;border:1px solid var(--border) !important;
+  color:color-mix(in srgb,var(--text) 78%,transparent) !important;
+  font-size:17px !important;line-height:1 !important;
+}
+html.aquarium-page .aq-card-actions > .pi-cross-menu > summary:hover,
+html.aquarium-page .aq-category-actions > .pi-cross-menu > summary:hover,
+html.aquarium-page .aq-card-actions > .pi-cross-menu > summary:focus-visible,
+html.aquarium-page .aq-category-actions > .pi-cross-menu > summary:focus-visible {
+  color:var(--text) !important;border-color:var(--teal) !important;
+}
+html.aquarium-page .aq-category-actions {
+  display:flex !important;align-items:center !important;justify-content:flex-end !important;gap:4px !important;
+}
+html.aquarium-page .aq-card-actions .pi-cross-panel .pi-aq-menu-actions,
+html.aquarium-page .aq-category-actions .pi-cross-panel.pi-aq-menu-actions {
+  display:flex !important;flex-direction:column !important;gap:4px !important;
+}
+html.aquarium-page .aq-card-actions .pi-cross-panel .aq-menu-button,
+html.aquarium-page .aq-category-actions .pi-cross-panel .aq-menu-button {
+  width:100% !important;min-width:126px !important;
+  padding:7px 10px !important;border-radius:6px !important;
+  border:1px solid var(--border) !important;background:var(--panel-light) !important;color:var(--text) !important;
+  text-align:left !important;font:600 12px/1.3 'Segoe UI',Arial,sans-serif !important;
+}
+html.aquarium-page .aq-card-actions .pi-cross-panel .aq-menu-button:hover,
+html.aquarium-page .aq-category-actions .pi-cross-panel .aq-menu-button:hover { border-color:var(--teal) !important; }
+html.aquarium-page .aq-category-head { cursor:pointer !important; }
+html.aquarium-page .aq-category-head .aq-category-name { cursor:text !important; }
+
+.pi-compass-layout,
+.pi-reflections-layout {
+  display:grid !important;
+  grid-template-rows:auto minmax(0,1fr) !important;
+  gap:10px !important;
+  height:calc(100dvh - var(--pi-dock-space,80px) - 92px) !important;
+  min-height:520px !important;
+  overflow:hidden !important;
+}
+.pi-current-panel { min-height:0 !important; overflow:hidden !important; }
+.pi-current-panel > .pi-workspace-scroll { min-height:0 !important; max-height:190px !important; }
+html body.pi-reflections-body .pi-reflections-grid { grid-template-columns:minmax(0,1fr) minmax(0,1.18fr) minmax(0,1fr) !important; }
+@media (max-width:960px) {
+  .pi-compass-layout,
+  .pi-reflections-layout { height:auto !important; min-height:0 !important; overflow:visible !important; }
+  .pi-current-panel > .pi-workspace-scroll { max-height:none !important; }
+}
+
+
+/* V20.5: unsectioned Timeline notes remain in the Saved Notes column.
+   Compass alone retains a full-width, collapsible Currently panel. */
+html.almanac-page-html .pi-notes-unsectioned {
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+  min-height:38px;
+  padding:7px;
+  margin-bottom:8px;
+  border:1px dashed color-mix(in srgb,var(--border) 76%,transparent);
+  border-radius:9px;
+}
+html.almanac-page-html .pi-notes-unsectioned > .pi-muted {
+  margin:0;
+  padding:6px 3px;
+  font-size:11px;
+}
+html.almanac-page-html .pi-notes-unsectioned.pi-drop-ready {
+  border-color:var(--teal-soft);
+  background:color-mix(in srgb,var(--teal) 8%,transparent);
+}

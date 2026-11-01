@@ -673,10 +673,13 @@
       const panel=actions.querySelector(':scope > .pi-cross-menu > .pi-cross-panel');
       const archive=actions.querySelector(':scope > .aq-card-archive');
       const remove=actions.querySelector(':scope > .aq-card-delete');
+      const focus=actions.querySelector(':scope > .aq-card-focus');
       if(panel && archive && remove){
         const group=document.createElement('div');
         group.className='pi-aq-menu-actions';
+        if(focus){ focus.textContent='Pop out note'; focus.classList.add('aq-menu-button'); group.append(focus); }
         archive.textContent='Archive';remove.textContent='Delete';
+        archive.classList.add('aq-menu-button');remove.classList.add('aq-menu-button');
         group.append(archive,remove);
         panel.prepend(group);
       }

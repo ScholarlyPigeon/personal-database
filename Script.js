@@ -3869,13 +3869,24 @@ if (document.getElementById("aquariumApp")) {
             showSaved();
         });
 
+        const focus = document.createElement("button");
+        focus.className = "aq-card-focus";
+        focus.type = "button";
+        focus.textContent = "⤢";
+        focus.title = "Open this note in focus view";
+        focus.setAttribute("aria-label", focus.title);
+        focus.addEventListener("click", event => {
+            event.stopPropagation();
+            openFocusedAquariumCard(card.id);
+        });
+
         const selector = makeSelectionControl(selectionKey("aq-card", card.id), `Select this ${aquariumKindName(card.kind)}`);
         const meta = document.createElement("div");
         meta.className = "aq-card-meta";
         meta.append(kindSelect, created);
         const actions = document.createElement("div");
         actions.className = "aq-card-actions";
-        actions.append(selector, archive, remove, collapse);
+        actions.append(selector, archive, remove, focus, collapse);
         header.append(drag, title, actions);
 
         const body = document.createElement("div");
@@ -4113,6 +4124,58 @@ if (document.getElementById("aquariumApp")) {
         dialog.showModal();
     }
 
+
+    let activeAquariumCardFocus = null;
+
+    function refreshFocusedAquariumCard() {
+        const focus = activeAquariumCardFocus;
+        if (!focus) return;
+        const card = aquariumState.cards.find(item => item.id === focus.cardId);
+        if (!card) {
+            if (focus.dialog.open) focus.dialog.close();
+            return;
+        }
+        const scrollTop = focus.holder.scrollTop;
+        focus.heading.textContent = cleanAquariumTitle(card.title) || "Aquarium note";
+        focus.holder.replaceChildren(makeAquariumCard(card));
+        focus.holder.scrollTop = scrollTop;
+    }
+
+    function openFocusedAquariumCard(cardId) {
+        if (activeAquariumCardFocus) activeAquariumCardFocus.dialog.close();
+        const card = aquariumState.cards.find(item => item.id === cardId);
+        if (!card) return;
+        const dialog = document.createElement("dialog");
+        dialog.className = "pi-aq-tile-dialog pi-aq-card-dialog";
+        dialog.setAttribute("aria-label", "Focused Aquarium note: " + (cleanAquariumTitle(card.title) || "Aquarium note"));
+        const top = document.createElement("div");
+        top.className = "pi-aq-tile-dialog-top";
+        const heading = document.createElement("strong");
+        const close = document.createElement("button");
+        close.type = "button";
+        close.textContent = "×";
+        close.className = "small-button";
+        close.setAttribute("aria-label", "Close focused note");
+        close.addEventListener("click", () => dialog.close());
+        top.append(heading, close);
+        const holder = document.createElement("div");
+        holder.className = "pi-aq-tile-dialog-content";
+        dialog.append(top, holder);
+        document.body.appendChild(dialog);
+        const focus = { cardId, dialog, holder, heading };
+        activeAquariumCardFocus = focus;
+        refreshFocusedAquariumCard();
+        dialog.addEventListener("close", () => {
+            if (activeAquariumCardFocus === focus) {
+                activeAquariumCardFocus = null;
+                renderAquariumCategories();
+            }
+            dialog.remove();
+        }, { once: true });
+        dialog.addEventListener("click", event => { if (event.target === dialog) dialog.close(); });
+        dialog.showModal();
+    }
+
     function makeAquariumCategoryShell(category, inFocus = false) {
         const shell = document.createElement("section");
         shell.className = "aq-category";
@@ -4187,17 +4250,43 @@ if (document.getElementById("aquariumApp")) {
             renderAquariumCategories();
         });
 
+        const menu = document.createElement("details");
+        menu.className = "aq-card-menu pi-cross-menu aq-category-menu";
+        const summary = document.createElement("summary");
+        summary.textContent = "⋮";
+        summary.title = "Category options";
+        summary.setAttribute("aria-label", "Category options");
+        const panel = document.createElement("div");
+        panel.className = "pi-cross-panel pi-aq-menu-actions";
+
         const add = document.createElement("button");
-        add.className = "aq-mini-button";
-        add.textContent = "+";
+        add.className = "aq-menu-button";
+        add.type = "button";
+        add.textContent = "Add note";
         add.title = "Add blank thought";
-        add.addEventListener("click", () => addBlankAquariumCard(category.id, aquariumState.kinds[0]?.id || "thought"));
+        add.addEventListener("click", event => {
+            event.stopPropagation();
+            addBlankAquariumCard(category.id, aquariumState.kinds[0]?.id || "thought");
+        });
+
+        const focusTile = document.createElement("button");
+        focusTile.type = "button";
+        focusTile.className = "aq-menu-button";
+        focusTile.textContent = "Pop out tile";
+        focusTile.title = "Open the entire tile in focus view";
+        focusTile.setAttribute("aria-label", "Focus tile " + category.name);
+        focusTile.addEventListener("click", event => {
+            event.stopPropagation();
+            openFocusedAquariumTile(category.id);
+        });
 
         const remove = document.createElement("button");
-        remove.className = "aq-mini-button";
-        remove.textContent = "×";
+        remove.className = "aq-menu-button";
+        remove.type = "button";
+        remove.textContent = "Delete tile";
         remove.title = "Delete category";
-        remove.addEventListener("click", () => {
+        remove.addEventListener("click", event => {
+            event.stopPropagation();
             aquariumState.cards.forEach(card => {
                 if (card.zone === category.id) card.zone = "inbox";
             });
@@ -4208,18 +4297,11 @@ if (document.getElementById("aquariumApp")) {
             renderAquarium();
         });
 
-        const focusTile = document.createElement("button");
-        focusTile.type = "button";
-        focusTile.className = "aq-mini-button aq-tile-focus";
-        focusTile.textContent = "⤢";
-        focusTile.title = "Open the entire tile in focus view";
-        focusTile.setAttribute("aria-label", "Focus tile " + category.name);
-        focusTile.addEventListener("click", event => {
-            event.stopPropagation();
-            openFocusedAquariumTile(category.id);
-        });
-        if (!inFocus) actions.appendChild(focusTile);
-        actions.append(collapse, add, remove);
+        panel.append(add);
+        if (!inFocus) panel.append(focusTile);
+        panel.append(remove);
+        menu.append(summary, panel);
+        actions.append(collapse, menu);
         head.append(handle, name, actions);
 
         const zone = document.createElement("div");
@@ -4401,8 +4483,9 @@ if (document.getElementById("aquariumApp")) {
             band.append(divider, grid);
             board.appendChild(band);
         });
-        // Any note/collapse/add action must refresh the focused tile too.
+        // Any note/collapse/add action must refresh focus surfaces too.
         refreshFocusedAquariumTile();
+        refreshFocusedAquariumCard();
     }
 
     function renderAquarium() {

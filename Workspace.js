@@ -107,13 +107,17 @@ function initArchive(){
  window.addEventListener('pi-activity-updated',renderActivity);
  renderArchive();renderActivity();
 }
+
 function initReflections(){
  if(!$('piReflections'))return;
+ const CURRENT_ID='__current__';
  const timelineEl=$('piTimelineList'),notesEl=$('piSavedNoteList'),name=$('piNoteTitle'),editor=$('piNoteEditor'),date=$('piNoteDate'),sectionSelect=$('piNoteSection');
  const blank=()=>({sections:[{id:'general',name:'General',collapsed:false},{id:'patterns',name:'Patterns',collapsed:false}],entries:[]});
  function normalizeState(data){
   if(!data || !Array.isArray(data.sections)||!Array.isArray(data.entries))data=blank();
   if(!data.sections.length)data.sections=blank().sections;
+  data.sections=data.sections.map(section=>({collapsed:false,...section}));
+  data.entries=data.entries.map(entry=>({expanded:true,...entry,sectionId:entry.sectionId||'general'}));
   return data;
  }
  let state=normalizeState(read(NOTES_KEY,null));
@@ -150,7 +154,7 @@ function initReflections(){
    const toggle=btn(item.expanded?'▾':'▸',item.expanded?'Collapse milestone':'Expand milestone',()=>{updateTimeline(item.id,x=>{x.expanded=!x.expanded;});renderTimeline();},'pi-mini-icon');
    const d=el('input','pi-card-date');d.type='date';d.value=item.date||iso();d.title='Milestone date';d.addEventListener('change',()=>{updateTimeline(item.id,x=>{x.date=d.value;});renderTimeline();});
    const del=btn('×','Delete timeline entry',()=>{if(!confirm('Delete this timeline entry?'))return;save(LEGACY_KEY,read(LEGACY_KEY,[]).filter(x=>x.id!==item.id));renderTimeline();},'pi-mini-icon');
-   head.append(toggle,title,d,del);card.append(head);
+   head.append(title,d,toggle,del);card.append(head);
    if(item.expanded){
     card.append(makeEditable(item.html||escHtml(item.text||''),value=>updateTimeline(item.id,x=>Object.assign(x,value)),'pi-note-card-body','Add details…',true));
     if(item.imageUrl&&/^https?:\/\//i.test(item.imageUrl)){const image=el('img','pi-note-image');image.src=item.imageUrl;image.alt=item.title||'Timeline image';image.loading='lazy';card.append(image);}
@@ -159,36 +163,47 @@ function initReflections(){
    timelineEl.append(card);
   });
  }
- function renderSectionSelect(){const want=sectionSelect.value;sectionSelect.replaceChildren();state.sections.forEach(s=>{const opt=el('option','',s.name);opt.value=s.id;sectionSelect.append(opt);});sectionSelect.value=state.sections.some(s=>s.id===want)?want:state.sections[0].id;}
+ function renderSectionSelect(){
+  const want=sectionSelect.value;sectionSelect.replaceChildren();
+  const mainGroup=document.createElement('optgroup');mainGroup.label='Main column';
+  const mainOpt=el('option','','Saved Notes (main column)');mainOpt.value=CURRENT_ID;mainGroup.append(mainOpt);sectionSelect.append(mainGroup);
+  const group=document.createElement('optgroup');group.label='Saved note sections';
+  state.sections.forEach(s=>{const opt=el('option','',s.name);opt.value=s.id;group.append(opt);});
+  sectionSelect.append(group);
+  const valid=[CURRENT_ID,...state.sections.map(s=>s.id)];
+  sectionSelect.value=valid.includes(want)?want:CURRENT_ID;
+ }
  function reorderEntry(id,targetId=null,targetSectionId=null){
   const from=state.entries.findIndex(x=>x.id===id);if(from<0)return;
   const [item]=state.entries.splice(from,1);
   if(targetSectionId)item.sectionId=targetSectionId;
   let at=targetId?state.entries.findIndex(x=>x.id===targetId):-1;
   if(at<0)at=state.entries.length;
-  state.entries.splice(at,0,item);selectedItem=null;dragItem=null;store();renderNotes();
+  state.entries.splice(at,0,item);selectedItem=null;dragItem=null;store();renderAll();
  }
  function reorderSection(id,before=null){
   const from=state.sections.findIndex(x=>x.id===id);if(from<0)return;
   const [s]=state.sections.splice(from,1);let to=before?state.sections.findIndex(x=>x.id===before):-1;
   if(to<0)to=state.sections.length;state.sections.splice(to,0,s);
-  selectedSection=null;dragSection=null;store();renderNotes();
+  selectedSection=null;dragSection=null;store();renderAll();
  }
  function makeNoteCard(item){
   const card=el('article','pi-note-card');card.dataset.itemId=item.id;
   if(selectedItem===item.id)card.classList.add('pi-move-selected');
   const head=el('div','pi-note-card-head');
-  const move=btn('⠿','Tap to move this note, then tap another note or section',()=>{selectedItem=selectedItem===item.id?null:item.id;selectedSection=null;renderNotes();},'pi-mini-icon pi-move-handle');
+  const move=btn('⠿','Tap to move this note, then tap another note or section',()=>{selectedItem=selectedItem===item.id?null:item.id;selectedSection=null;renderAll();},'pi-mini-icon pi-move-handle');
   move.draggable=true;move.addEventListener('dragstart',event=>{dragItem=item.id;event.dataTransfer.setData('text/plain',item.id);event.dataTransfer.effectAllowed='move';});move.addEventListener('dragend',()=>{dragItem=null;});
   const title=makeEditable(item.title||'Untitled',value=>{Object.assign(item,value);store();},'pi-card-title','Title');
-  const toggle=btn(item.expanded?'▾':'▸',item.expanded?'Collapse note':'Expand note',()=>{item.expanded=!item.expanded;store();renderNotes();},'pi-mini-icon');
-  const del=btn('×','Delete saved note',()=>{if(!confirm('Delete this saved note?'))return;state.entries=state.entries.filter(x=>x.id!==item.id);store();renderNotes();},'pi-mini-icon');
+  const toggle=btn(item.expanded?'▾':'▸',item.expanded?'Collapse note':'Expand note',()=>{item.expanded=!item.expanded;store();renderAll();},'pi-mini-icon');
+  const del=btn('×','Delete saved note',()=>{if(!confirm('Delete this saved note?'))return;state.entries=state.entries.filter(x=>x.id!==item.id);store();renderAll();},'pi-mini-icon');
   head.append(move,title,toggle,del);card.append(head);
-  const sub=el('div','pi-note-subrow');
   const dateInput=el('input','pi-card-date');dateInput.type='date';dateInput.value=item.date||iso();dateInput.setAttribute('aria-label','Note date');dateInput.addEventListener('change',()=>{item.date=dateInput.value;store();});
-  const select=el('select','pi-card-section-select');select.setAttribute('aria-label','Move note to section');state.sections.forEach(s=>{const opt=el('option','',s.name);opt.value=s.id;select.append(opt);});select.value=item.sectionId;select.addEventListener('change',()=>reorderEntry(item.id,null,select.value));
   head.insertBefore(dateInput,toggle);
-  if(item.expanded){card.append(makeEditable(item.html||escHtml(item.text||''),values=>{Object.assign(item,values);store();},'pi-note-card-body','Add details…',true));if(item.imageUrl&&/^https?:\/\//.test(item.imageUrl)){const image=el('img','pi-note-image');image.src=item.imageUrl;image.alt=item.title||'Attached image';image.loading='lazy';card.append(image);}if(item.linkUrl&&/^https?:\/\//.test(item.linkUrl)){const link=el('a','pi-note-link','open link ↗');link.href=item.linkUrl;link.target='_blank';link.rel='noopener noreferrer';card.append(link);}}
+  if(item.expanded){
+    card.append(makeEditable(item.html||escHtml(item.text||''),values=>{Object.assign(item,values);store();},'pi-note-card-body','Add details…',true));
+    if(item.imageUrl&&/^https?:\/\//.test(item.imageUrl)){const image=el('img','pi-note-image');image.src=item.imageUrl;image.alt=item.title||'Attached image';image.loading='lazy';card.append(image);} 
+    if(item.linkUrl&&/^https?:\/\//.test(item.linkUrl)){const link=el('a','pi-note-link','open link ↗');link.href=item.linkUrl;link.target='_blank';link.rel='noopener noreferrer';card.append(link);}
+  }
   card.addEventListener('dragover',event=>{if(dragItem&&dragItem!==item.id){event.preventDefault();card.classList.add('pi-drop-ready');}});
   card.addEventListener('dragleave',()=>card.classList.remove('pi-drop-ready'));
   card.addEventListener('drop',event=>{if(!dragItem||dragItem===item.id)return;event.preventDefault();reorderEntry(dragItem,item.id,item.sectionId);});
@@ -198,23 +213,33 @@ function initReflections(){
  function renderNotes(){
   notesEl.replaceChildren();renderSectionSelect();
   $('piNoteCount').textContent=String(state.entries.length);
+  // Keep unsectioned notes in the Saved Notes column, not in a second top bar.
+  // __current__ is retained for compatibility with notes made in V20.4.
+  const mainNotes=el('div','pi-notes-unsectioned');
+  mainNotes.setAttribute('aria-label','Notes outside sections');
+  const independent=state.entries.filter(entry=>entry.sectionId===CURRENT_ID);
+  if(!independent.length)mainNotes.append(el('p','pi-muted','Drop a note here to keep it outside sections.'));
+  independent.forEach(entry=>mainNotes.append(makeNoteCard(entry)));
+  mainNotes.ondragover=event=>{if(dragItem){event.preventDefault();mainNotes.classList.add('pi-drop-ready');}};
+  mainNotes.ondragleave=()=>mainNotes.classList.remove('pi-drop-ready');
+  mainNotes.ondrop=event=>{if(!dragItem)return;event.preventDefault();event.stopPropagation();reorderEntry(dragItem,null,CURRENT_ID);};
+  mainNotes.onclick=event=>{if(selectedItem && !event.target.closest('button,input,select,[contenteditable="true"],.pi-note-card'))reorderEntry(selectedItem,null,CURRENT_ID);};
+  notesEl.append(mainNotes);
   state.sections.forEach((section,index)=>{
-   const sectionBox=el('section','pi-notes-section');if(selectedSection===section.id)sectionBox.classList.add('pi-move-selected');
+   const sectionBox=el('section','pi-notes-section');sectionBox.dataset.sectionId=section.id;if(selectedSection===section.id)sectionBox.classList.add('pi-move-selected');
    const head=el('div','pi-notes-section-head');
-   const move=btn('⠿','Move section: drag or tap, then choose another section',()=>{selectedSection=selectedSection===section.id?null:section.id;selectedItem=null;renderNotes();},'pi-mini-icon pi-move-handle');
+   const move=btn('⠿','Move section: drag or tap, then choose another section',()=>{selectedSection=selectedSection===section.id?null:section.id;selectedItem=null;renderAll();},'pi-mini-icon pi-move-handle');
    move.draggable=true;move.addEventListener('dragstart',event=>{dragSection=section.id;event.dataTransfer.setData('text/plain',section.id);event.dataTransfer.effectAllowed='move';});move.addEventListener('dragend',()=>{dragSection=null;});
    const title=makeEditable(section.name,value=>{section.name=value.title||'Section';store();renderSectionSelect();},'pi-section-name','Section name');
    const count=el('small','pi-muted',String(state.entries.filter(x=>x.sectionId===section.id).length));
-   const up=btn('↑','Move section up',()=>{if(index>0)reorderSection(section.id,state.sections[index-1].id);},'pi-mini-icon');
-   const down=btn('↓','Move section down',()=>{if(index<state.sections.length-1)reorderSection(section.id,state.sections[index+2]?.id||null);},'pi-mini-icon');
-   const fold=btn(section.collapsed?'▸':'▾',section.collapsed?'Expand section':'Collapse section',()=>{section.collapsed=!section.collapsed;store();renderNotes();},'pi-mini-icon');
+   const fold=btn(section.collapsed?'▸':'▾',section.collapsed?'Expand section':'Collapse section',()=>{section.collapsed=!section.collapsed;store();renderAll();},'pi-mini-icon');
    const del=btn('×','Remove empty section',()=>{
     if(state.sections.length===1){alert('Keep at least one section.');return;}
     if(state.entries.some(x=>x.sectionId===section.id)){
-     if(!confirm('Move this section’s notes into the first remaining section?'))return;
-     const target=state.sections.find(s=>s.id!==section.id);state.entries.forEach(x=>{if(x.sectionId===section.id)x.sectionId=target.id;});
+     if(!confirm('Move this section’s notes into the main Saved Notes column?'))return;
+     state.entries.forEach(x=>{if(x.sectionId===section.id)x.sectionId=CURRENT_ID;});
     }
-    state.sections=state.sections.filter(s=>s.id!==section.id);store();renderNotes();
+    state.sections=state.sections.filter(s=>s.id!==section.id);store();renderAll();
    },'pi-mini-icon');
    head.append(move,title,count,fold,del);sectionBox.append(head);
    head.addEventListener('dragover',event=>{if(dragSection&&dragSection!==section.id){event.preventDefault();head.classList.add('pi-drop-ready');}});
@@ -241,12 +266,10 @@ function initReflections(){
  }
  function addNote(){
   const title=name.value.trim();const html=safeHtml(editor.innerHTML);const text=editor.innerText.trim();if(!title&&!text){name.focus();return;}
-  state.entries.unshift({id:uid('ref'),title:title||text.slice(0,90)||'Untitled',text,html,sectionId:sectionSelect.value||state.sections[0].id,date:date.value||iso(),createdAt:new Date().toISOString(),expanded:true,imageUrl:$('piNoteImageUrl').value.trim(),linkUrl:$('piNoteLinkUrl').value.trim()});
-  store();name.value='';editor.innerHTML='';$('piNoteImageUrl').value='';$('piNoteLinkUrl').value='';renderNotes();name.focus();
+  state.entries.unshift({id:uid('ref'),title:title||text.slice(0,90)||'Untitled',text,html,sectionId:sectionSelect.value||CURRENT_ID,date:date.value||iso(),createdAt:new Date().toISOString(),expanded:true,imageUrl:$('piNoteImageUrl').value.trim(),linkUrl:$('piNoteLinkUrl').value.trim()});
+  store();name.value='';editor.innerHTML='';$('piNoteImageUrl').value='';$('piNoteLinkUrl').value='';renderAll();name.focus();
  }
- function addSection(){const id=uid('section');state.sections.push({id,name:'New section',collapsed:false});store();renderNotes();notesEl.querySelectorAll('.pi-section-name')[state.sections.length-1]?.focus();}
- // Both destinations use the same center composer. Timeline records keep the
- // original Timeline storage key so past milestones and cloud sync survive.
+ function addSection(){const id=uid('section');state.sections.push({id,name:'New section',collapsed:false});store();renderAll();notesEl.querySelectorAll('.pi-section-name')[state.sections.length-1]?.focus();}
  function moveEditorToTimeline(){
   const title=name.value.trim(),html=safeHtml(editor.innerHTML),text=editor.innerText.trim();
   if(!title&&!text){name.focus();return;}
@@ -265,22 +288,25 @@ function initReflections(){
   let found=0;for(const item of sources){if(!item||typeof item!=='object')continue;const id=item.id||uid('recovered');if(rows.some(x=>x.id===id))continue;rows.push({...item,id,zone:'timeline',title:item.title||item.text||'Milestone',text:item.text||'',html:item.html||escHtml(item.text||''),date:item.date||iso(),expanded:!!item.expanded});found++;}
   if(found)save(LEGACY_KEY,rows);renderTimeline();alert(found?`${found} missing Timeline item${found===1?'':'s'} recovered.`:'No missing Timeline entries were found in that backup.');
  }
+ function renderAll(){renderTimeline();renderNotes();}
  $('piSaveNote').addEventListener('click',addNote);
  editor.addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();addNote();}});
  $('piAddNoteSection').addEventListener('click',addSection);
+ $('piAddTimelineSection')?.addEventListener('click',addSection);
  $('piMoveToTimeline').addEventListener('click',moveEditorToTimeline);
  date.value=iso();
- $('piRecoverTimeline').addEventListener('click',()=>$('piTimelineBackupInput').click());
- $('piTimelineBackupInput').addEventListener('change',async e=>{const file=e.target.files?.[0];if(!file)return;try{await recoverTimeline(file);}catch(err){console.error(err);alert('Could not read that backup.');}e.target.value='';});
- window.addEventListener('storage',e=>{if(e.key===LEGACY_KEY){importLegacy();renderTimeline();renderNotes();}if(e.key===NOTES_KEY){state=normalizeState(read(NOTES_KEY,null));importLegacy();renderNotes();}});
- window.addEventListener('focus',()=>{importLegacy();renderTimeline();renderNotes();});
- importLegacy();renderTimeline();renderNotes();
+ $('piTimelineBackupInput')?.addEventListener('change',async e=>{const file=e.target.files?.[0];if(!file)return;try{await recoverTimeline(file);}catch(err){console.error(err);alert('Could not read that backup.');}e.target.value='';});
+ window.addEventListener('storage',e=>{if(e.key===LEGACY_KEY){importLegacy();renderAll();}if(e.key===NOTES_KEY){state=normalizeState(read(NOTES_KEY,null));importLegacy();renderAll();}});
+ window.addEventListener('focus',()=>{importLegacy();state=normalizeState(read(NOTES_KEY,null));renderAll();});
+ importLegacy();renderAll();
 }
+
 
 function initCompass(){
  if(!$('piCompass'))return;
  const STORAGE_KEY='pi-compass-v1';
- const listGoals=$('piCompassGoalsList'), listGrounding=$('piCompassGroundingList'), name=$('piCompassTitle'), editor=$('piCompassEditor'), date=$('piCompassDate'), sectionSelect=$('piCompassSection');
+ const CURRENT_ID='__current__';
+ const listCurrent=$('piCompassCurrentList'), listGoals=$('piCompassGoalsList'), listGrounding=$('piCompassGroundingList'), name=$('piCompassTitle'), editor=$('piCompassEditor'), date=$('piCompassDate'), sectionSelect=$('piCompassSection');
  const blank=()=>({sections:[
   {id:'goals-core',name:'Core Goals',side:'goals',collapsed:false},
   {id:'grounding-everyday',name:'Everyday Joy',side:'grounding',collapsed:false}
@@ -288,7 +314,7 @@ function initCompass(){
  const normalizeState=data=>{
   if(!data || !Array.isArray(data.sections) || !Array.isArray(data.entries))data=blank();
   data.sections=data.sections.map(section=>({collapsed:false,side:'goals',...section,side:section.side==='grounding'?'grounding':'goals'}));
-  data.entries=data.entries.map(entry=>({expanded:true,...entry}));
+  data.entries=data.entries.map(entry=>({expanded:true,...entry,sectionId:entry.sectionId||'goals-core'}));
   if(!data.sections.length)data.sections=blank().sections;
   return data;
  };
@@ -297,18 +323,19 @@ function initCompass(){
  const store=()=>save(STORAGE_KEY,state);
  const entriesFor=sectionId=>state.entries.filter(entry=>entry.sectionId===sectionId);
  const sectionById=id=>state.sections.find(section=>section.id===id);
- const sectionSide=id=>sectionById(id)?.side || 'goals';
+ const sectionSide=id=>id===CURRENT_ID?'current':(sectionById(id)?.side || 'goals');
  function renderSectionSelect(){
   const current=sectionSelect.value;
   sectionSelect.replaceChildren();
+  const currentGroup=document.createElement('optgroup');currentGroup.label='Currently...';
+  const currentOption=el('option','','Currently...');currentOption.value=CURRENT_ID;currentGroup.append(currentOption);sectionSelect.append(currentGroup);
   [['goals','Goals'],['grounding','Grounding']].forEach(([side,label])=>{
    const group=document.createElement('optgroup');group.label=label;
-   state.sections.filter(section=>section.side===side).forEach(section=>{
-    const option=el('option','',section.name);option.value=section.id;group.append(option);
-   });
+   state.sections.filter(section=>section.side===side).forEach(section=>{const option=el('option','',section.name);option.value=section.id;group.append(option);});
    if(group.children.length)sectionSelect.append(group);
   });
-  sectionSelect.value=state.sections.some(section=>section.id===current)?current:(state.sections[0]?.id||'');
+  const valid=[CURRENT_ID,...state.sections.map(section=>section.id)];
+  sectionSelect.value=valid.includes(current)?current:(state.sections[0]?.id||CURRENT_ID);
  }
  function reorderEntry(itemId,beforeId,targetSectionId){
   const from=state.entries.findIndex(entry=>entry.id===itemId);if(from<0)return;
@@ -316,27 +343,20 @@ function initCompass(){
   if(targetSectionId)entry.sectionId=targetSectionId;
   let to=beforeId?state.entries.findIndex(x=>x.id===beforeId):-1;
   if(to<0)to=state.entries.length;
-  state.entries.splice(to,0,entry);store();renderAll();
+  state.entries.splice(to,0,entry);selectedItem=null;dragItem=null;store();renderAll();
  }
  function reorderSection(sectionId,beforeId){
   const from=state.sections.findIndex(section=>section.id===sectionId);if(from<0)return;
   const [section]=state.sections.splice(from,1);
   let to=beforeId?state.sections.findIndex(entry=>entry.id===beforeId):-1;
   if(to<0)to=state.sections.length;
-  state.sections.splice(to,0,section);store();renderAll();
- }
- function switchSectionSide(sectionId){
-  const section=sectionById(sectionId);if(!section)return;
-  section.side=section.side==='goals'?'grounding':'goals';store();renderAll();
+  state.sections.splice(to,0,section);selectedSection=null;dragSection=null;store();renderAll();
  }
  function addSection(side){
   const id=uid('compass-section');
   state.sections.push({id,name:side==='goals'?'New goal section':'New grounding section',side,collapsed:false});
   store();renderAll();
-  requestAnimationFrame(()=>{
-   const target=(side==='goals'?listGoals:listGrounding).querySelector(`.pi-notes-section[data-section-id="${id}"] .pi-section-name`);
-   target?.focus();
-  });
+  requestAnimationFrame(()=>{const target=(side==='goals'?listGoals:listGrounding).querySelector(`.pi-notes-section[data-section-id="${id}"] .pi-section-name`);target?.focus();});
  }
  function makeBodyEditor(item){
   const body=el('div','pi-note-card-body');body.contentEditable='true';body.spellcheck=true;body.dataset.placeholder='Add details…';body.innerHTML=safeHtml(item.html||escHtml(item.text||''));
@@ -356,15 +376,7 @@ function initCompass(){
   const toggle=btn(item.expanded?'▾':'▸',item.expanded?'Collapse note':'Expand note',()=>{item.expanded=!item.expanded;store();renderAll();},'pi-mini-icon');
   const del=btn('×','Delete saved note',()=>{if(!confirm('Delete this saved note?'))return;state.entries=state.entries.filter(entry=>entry.id!==item.id);store();renderAll();},'pi-mini-icon');
   head.append(move,title,toggle,del);card.append(head);
-  const sub=el('div','pi-note-subrow');
   const dateInput=el('input','pi-card-date');dateInput.type='date';dateInput.value=item.date||iso();dateInput.setAttribute('aria-label','Note date');dateInput.addEventListener('change',()=>{item.date=dateInput.value;store();});
-  const select=el('select','pi-card-section-select');select.setAttribute('aria-label','Move note to section');
-  [['goals','Goals'],['grounding','Grounding']].forEach(([side,label])=>{
-   const group=document.createElement('optgroup');group.label=label;
-   state.sections.filter(section=>section.side===side).forEach(section=>{const opt=el('option','',section.name);opt.value=section.id;group.append(opt);});
-   if(group.children.length)select.append(group);
-  });
-  select.value=item.sectionId;select.addEventListener('change',()=>reorderEntry(item.id,null,select.value));
   head.insertBefore(dateInput,toggle);
   if(item.expanded){
    card.append(makeBodyEditor(item));
@@ -376,6 +388,17 @@ function initCompass(){
   card.addEventListener('drop',event=>{if(!dragItem||dragItem===item.id)return;event.preventDefault();reorderEntry(dragItem,item.id,item.sectionId);});
   card.addEventListener('click',event=>{if(!selectedItem||selectedItem===item.id||event.target.closest('button,input,select,[contenteditable="true"],a'))return;event.preventDefault();reorderEntry(selectedItem,item.id,item.sectionId);});
   return card;
+ }
+ function renderCurrent(){
+  listCurrent?.replaceChildren();
+  const entries=state.entries.filter(entry=>entry.sectionId===CURRENT_ID);
+  $('piCompassCurrentCount').textContent=String(entries.length);
+  if(!entries.length)listCurrent.append(el('p','pi-muted','Use this for what is actively alive right now, regardless of which side it came from.'));
+  entries.forEach(entry=>listCurrent.append(makeNoteCard(entry)));
+  listCurrent.ondragover=event=>{if(dragItem){event.preventDefault();listCurrent.classList.add('pi-drop-ready');}};
+  listCurrent.ondragleave=()=>listCurrent.classList.remove('pi-drop-ready');
+  listCurrent.ondrop=event=>{if(!dragItem)return;event.preventDefault();reorderEntry(dragItem,null,CURRENT_ID);};
+  listCurrent.onclick=event=>{if(selectedItem && !event.target.closest('button,input,select,[contenteditable="true"],.pi-note-card'))reorderEntry(selectedItem,null,CURRENT_ID);};
  }
  function renderColumn(side,root){
   root.replaceChildren();
@@ -389,20 +412,13 @@ function initCompass(){
    title.addEventListener('blur',()=>{section.name=title.innerText.trim()||'Section';title.textContent=section.name;store();renderSectionSelect();});
    title.addEventListener('keydown',event=>{if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();title.blur();}});
    const count=el('small','pi-muted',String(entriesFor(section.id).length));
-   const swap=btn('⇄', side==='goals'?'Move this section to Grounding':'Move this section to Goals',()=>switchSectionSide(section.id),'pi-mini-icon');
-   const up=btn('↑','Move section up',()=>{if(index>0){const sibling=sections[index-1];reorderSection(section.id,sibling.id);}},'pi-mini-icon');
-   const down=btn('↓','Move section down',()=>{if(index<sections.length-1){const sibling=sections[index+1];reorderSection(section.id,sibling.id);}},'pi-mini-icon');
    const fold=btn(section.collapsed?'▸':'▾',section.collapsed?'Expand section':'Collapse section',()=>{section.collapsed=!section.collapsed;store();renderAll();},'pi-mini-icon');
    const del=btn('×','Remove empty section',()=>{
     if(state.sections.length===1){alert('Keep at least one section.');return;}
-    if(entriesFor(section.id).length){
-      const target=state.sections.find(entry=>entry.id!==section.id && entry.side===side) || state.sections.find(entry=>entry.id!==section.id);
-      if(!target || !confirm('Move this section’s notes into another section before deleting it?'))return;
-      state.entries.forEach(entry=>{if(entry.sectionId===section.id)entry.sectionId=target.id;});
-    }
+    if(entriesFor(section.id).length){ state.entries.forEach(entry=>{if(entry.sectionId===section.id)entry.sectionId=CURRENT_ID;}); }
     state.sections=state.sections.filter(entry=>entry.id!==section.id);store();renderAll();
    },'pi-mini-icon');
-   head.append(move,title,count,swap,fold,del);sectionBox.append(head);
+   head.append(move,title,count,fold,del);sectionBox.append(head);
    head.addEventListener('dragover',event=>{if(dragSection&&dragSection!==section.id){event.preventDefault();head.classList.add('pi-drop-ready');}});
    head.addEventListener('dragleave',()=>head.classList.remove('pi-drop-ready'));
    head.addEventListener('drop',event=>{if(dragSection&&dragSection!==section.id){event.preventDefault();reorderSection(dragSection,section.id);}});
@@ -427,6 +443,7 @@ function initCompass(){
  }
  function renderAll(){
   renderSectionSelect();
+  renderCurrent();
   renderColumn('goals',listGoals);
   renderColumn('grounding',listGrounding);
   $('piCompassGoalsCount').textContent=String(state.entries.filter(entry=>sectionSide(entry.sectionId)==='goals').length);
@@ -435,7 +452,7 @@ function initCompass(){
  function addNote(){
   const title=name.value.trim();const html=safeHtml(editor.innerHTML);const plainText=editor.innerText.trim();
   if(!title&&!plainText){name.focus();return;}
-  state.entries.unshift({id:uid('compass'),title:title||plainText.slice(0,90)||'Untitled',text:plainText,html,sectionId:sectionSelect.value||state.sections[0].id,date:date.value||iso(),createdAt:new Date().toISOString(),expanded:true,imageUrl:$('piCompassImageUrl').value.trim(),linkUrl:$('piCompassLinkUrl').value.trim()});
+  state.entries.unshift({id:uid('compass'),title:title||plainText.slice(0,90)||'Untitled',text:plainText,html,sectionId:sectionSelect.value||CURRENT_ID,date:date.value||iso(),createdAt:new Date().toISOString(),expanded:true,imageUrl:$('piCompassImageUrl').value.trim(),linkUrl:$('piCompassLinkUrl').value.trim()});
   store();name.value='';editor.innerHTML='';$('piCompassImageUrl').value='';$('piCompassLinkUrl').value='';renderAll();name.focus();
  }
  $('piCompassSave').addEventListener('click',addNote);

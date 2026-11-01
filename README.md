@@ -110,3 +110,14 @@ These are replaced by the new bundle names. This list is for cleaning up the Git
 **Old documentation**: `README-DAY-HEADER-REVERT.txt`, `README-FOCUS-COLLAPSE-HOTFIX.txt`, `README-FOCUS-POPOUT-FIX.txt`, `README-FOCUS-THREE-ROW-REPAIR.txt`, `README-HOME-REFRESH.txt`, `README-HOME-V10.txt`, `README-HOME-V11.txt`, `README-HOME-V12.txt`, `README-HOME-V13.txt`, `README-HOME-V5.txt`, `README-HOME-V6.txt`, `README-INTRANET-V14.txt`, `README-MOBILE-V15.txt`, `README-NESTED-FOCUS-REFINEMENT.txt`, `README-NOV01-V18.txt`, `README-NOV01-V19.txt`, `README-OCT18-FINISHING.txt`, `README-OCT19-HOME-MENU-HOTFIX.txt`, `README-OCT19-NIGHT-POLISH.txt`, `README-OCT24-HOME-CATEGORY-PASS.txt`, `README-OCT24-HOME-GRID-REPAIR.txt`, `README-OCT31-V17.txt`, `README-RETIRED-QUICK-CAPTURE.txt`, `README.txt`.
 
 All old release-specific `README-*.txt` files and `README.txt` have been summarized here. Prior one-off patch installation instructions are intentionally not repeated because this ZIP replaces the whole site asset set.
+
+
+## V20.5 — Timeline / Compass distinction
+
+Compass retains the full-width collapsible **Currently...** panel. Timeline is
+back to a straight three-column grid (Timeline / Write it Out / Saved Notes).
+Notes saved to **Saved Notes (main column)** appear at the beginning of the
+Saved Notes column, outside any named section. They can be dragged into a
+section, or dragged back to the main-column drop area. Existing notes with
+`sectionId: "__current__" remain visible. No local-storage or cloud-sync keys
+were changed. V20.4 fixes otherwise remain in place.
