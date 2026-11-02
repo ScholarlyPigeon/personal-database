@@ -138,7 +138,7 @@
       panel.dataset.piColorPanelId=page+':'+id;
       panel.dataset.piColorKey=key;
       apply(panel,key);
-      if(header.querySelector(':scope > .pi-color-panel-menu'))return;
+      if(header.querySelector('.pi-color-panel-menu'))return;
       const menu=document.createElement('details');menu.className='pi-color-panel-menu';
       const summary=document.createElement('summary');summary.textContent='🎨';
       summary.title='Change the whole panel color';summary.setAttribute('aria-label','Color for this panel');
@@ -164,7 +164,7 @@
     });
   }
   function scan(){
-    addAquariumCardMenus();
+    // V21.7: Aquarium color controls live in the existing combined action/move menu.
     addPanelMenus();
     document.querySelectorAll(MENU_PANELS).forEach(decorate);
     // Keep colors visible on the noneditable preview rows, too.

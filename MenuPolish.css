@@ -1,0 +1,83 @@
+/* V21.7 · shared menu & planner-header refinement. Additive CSS only. */
+:root { --pi-v17-menu-width: 300px; }
+html body :is(.pi-cross-panel,.pi-item-tools-panel,.longform-card-tool-panel,
+  .pi-ws-menu-panel,.pi-nested-tools-menu,.planner-category-menu-actions,.planner-nested-options,.pi-focus-tools-panel,.planner-item-actions,
+  .planner-category-menu-actions,.planner-nested-options,.alignment-floating-menu):has(.pi-personal-color-picker),
+html body .pi-v17-unified-menu {
+  box-sizing:border-box!important;
+  width:min(var(--pi-v17-menu-width),calc(100vw - 16px))!important;
+  min-width:0!important;
+  max-width:calc(100vw - 16px)!important;
+  padding:9px!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+}
+/* Keep every swatch visible without making menus unnecessarily huge. */
+html body .pi-personal-color-swatches {width:100%!important;max-width:100%!important;gap:clamp(3px,.4vw,7px)!important;box-sizing:border-box!important;justify-content:space-between!important;padding:3px 1px 5px!important;}
+html body .pi-personal-color-swatch {flex:0 0 21px!important;width:21px!important;height:21px!important;}
+html body .pi-personal-color-picker {padding:8px 2px!important;}
+/* All navigational groups use the whole menu width, not their old 230px cap. */
+html body :is(.pi-cross-panel,.pi-item-tools-panel,.pi-ws-menu-panel,.pi-v17-unified-menu,
+ .planner-item-actions,.longform-card-tool-panel) :is(.pi-move-scope,.pi-move-choices,.pi-move-scope>summary) {
+  display:block;box-sizing:border-box;width:100%!important;max-width:100%!important;min-width:0!important;
+}
+html body :is(.pi-cross-panel,.pi-item-tools-panel,.pi-ws-menu-panel,.pi-v17-unified-menu,
+ .planner-item-actions,.longform-card-tool-panel) .pi-move-choices button {
+  display:block;box-sizing:border-box;width:100%!important;text-align:left!important;
+  white-space:normal!important;overflow-wrap:anywhere;
+}
+html body .pi-aq-menu-actions {box-sizing:border-box!important;width:100%!important;max-width:100%!important;display:grid!important;grid-template-columns:1fr 1fr!important;gap:6px!important;}
+html body .pi-aq-menu-actions .aq-card-focus,html body .pi-aq-menu-actions > .pi-personal-color-picker {grid-column:1/-1!important;}
+html body .pi-aq-menu-actions .aq-menu-button {box-sizing:border-box!important;width:100%!important;margin:0!important;max-width:100%!important;min-width:0!important;}
+html body .pi-cross-panel:popover-open,
+html body .database-page .pi-item-tools-panel:popover-open,
+html body .longform-card-tool-panel:popover-open,
+html body .pi-ws-menu-panel:popover-open,
+html body .pi-nested-tools-menu:popover-open,
+html body .planner-category-menu-actions:popover-open,
+html body .planner-nested-options:popover-open,
+html body .pi-focus-tools-panel:popover-open,
+html body .planner-item-actions:popover-open {
+  position:fixed!important;inset:auto!important;margin:0!important;
+  box-sizing:border-box!important;
+  width:min(var(--pi-v17-menu-width),calc(100vw - 16px))!important;
+  max-width:calc(100vw - 16px)!important;
+  max-height:min(530px,calc(100dvh - 16px))!important;
+  overflow:auto!important;background:var(--panel)!important;color:var(--text)!important;
+  border:1px solid var(--border)!important;border-radius:10px!important;
+  box-shadow:0 12px 34px #0007!important;z-index:200000!important;
+}
+html body .pi-ws-menu-panel:popover-open,
+html body .pi-nested-tools-menu:popover-open,
+html body .planner-category-menu-actions:popover-open,
+html body .planner-nested-options:popover-open,
+html body .pi-focus-tools-panel:popover-open,
+html body .planner-item-actions:popover-open {display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:5px!important;}
+html body :is(.pi-ws-menu-panel,.pi-nested-tools-menu,.planner-item-actions):popover-open > button {
+  width:100%!important;max-width:100%!important;min-width:0!important;text-align:left!important;
+  white-space:normal!important;overflow-wrap:anywhere!important;
+}
+html body .pi-v17-unified-menu {
+  position:fixed!important;z-index:100000!important;max-height:min(550px,calc(100dvh - 16px))!important;
+  background:var(--panel)!important;border:1px solid var(--border)!important;
+  border-radius:10px!important;box-shadow:0 12px 34px #0008!important;
+}
+html body .pi-v17-unified-menu .alignment-menu-option {box-sizing:border-box!important;display:block!important;width:100%!important;text-align:left!important;padding:8px 10px!important;}
+html body .pi-v17-unified-menu .pi-move-scope {margin:5px 0!important;}
+/* On month / week headers, keep title and helper text together on the left,
+   palette and pop-out flush right. One layout for both views. */
+html body.planner-body :is(.planner-heading,.planner-notes>.panel-header) {
+  display:flex!important;flex-direction:row!important;align-items:center!important;
+  justify-content:flex-start!important;flex-wrap:wrap!important;gap:6px 9px!important;
+  box-sizing:border-box!important;min-width:0!important;
+}
+html body.planner-body .planner-heading>h2 {flex:0 1 auto!important;margin:0!important;min-width:0!important;}
+html body.planner-body .planner-heading>#plannerHint {flex:1 1 auto!important;min-width:0!important;margin:0!important;}
+html body.planner-body .planner-notes>.panel-header>h2 {flex:1 1 auto!important;min-width:0!important;margin:0!important;}
+html body.planner-body .pi-v17-header-actions {display:flex!important;gap:6px!important;align-items:center!important;justify-content:flex-end!important;flex:0 0 auto!important;margin-left:auto!important;}
+html body.planner-body .pi-v17-header-actions .pi-color-panel-menu {margin:0!important;}
+html body.planner-body .pi-v17-header-actions .pi-popout-button {margin:0!important;flex:0 0 28px!important;width:28px!important;height:27px!important;}
+@media(max-width:700px) {
+  html body.planner-body .planner-heading>#plannerHint {flex-basis:100%!important;order:3!important;}
+  html body.planner-body .planner-heading>.pi-v17-header-actions {order:2!important;}
+}

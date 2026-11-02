@@ -71,14 +71,38 @@
     save();resetComposer();render();
   }
   const menuItems=(trigger,items)=>{
-    closeMenu();const p=node('div','alignment-floating-menu');p.setAttribute('role','menu');
+    closeMenu();const p=node('div','alignment-floating-menu pi-v17-unified-menu');
+    p.setAttribute('role','group');p.setAttribute('aria-label','Note actions');
     items.forEach(item=>{
       if(item.sep){p.append(node('div','alignment-menu-divider'));return;}
+      if(item.type==='color'){
+        const region=node('div','pi-personal-color-picker');region.dataset.piColorFor=item.key;
+        region.setAttribute('role','group');region.setAttribute('aria-label','Color for this note');
+        region.append(node('span','pi-personal-color-label','Color'));
+        const choices=node('div','pi-personal-color-swatches');
+        [['','Default'],['plum','Violet'],['teal','Teal'],['blue','Blue'],['rose','Pink'],
+         ['green','Green'],['gold','Gold'],['coral','Coral'],['cyan','Ice blue']].forEach(([value,label])=>{
+          const dot=button(value?'':'×',label+' color',()=>{window.PIItemColors?.set(item.key,value);},'pi-personal-color-swatch');
+          dot.dataset.piColorChoice=value;if(value)dot.dataset.color=value;else dot.classList.add('is-default');
+          dot.setAttribute('aria-pressed',String((window.PIItemColors?.get(item.key)||'')===value));
+          choices.append(dot);
+        });region.append(choices);p.append(region);return;
+      }
+      if(item.type==='scope'){
+        const scope=node('details','pi-move-scope');const summary=node('summary','',item.label);
+        const choices=node('div','pi-move-choices');
+        (item.options||[]).forEach(option=>{
+          choices.append(button(option.label,option.label,()=>{closeMenu();option.run();}));
+        });
+        scope.append(summary,choices);p.append(scope);return;
+      }
       const b=button(item.label,item.label,()=>{closeMenu();item.run();},'alignment-menu-option');p.append(b);
     });document.body.append(p);menu=p;
-    const r=trigger.getBoundingClientRect(),w=p.offsetWidth||200,h=p.offsetHeight||230;
+    const r=trigger.getBoundingClientRect(),w=p.offsetWidth||296,h=p.offsetHeight||280;
     p.style.left=Math.max(8,Math.min(window.innerWidth-w-8,r.right-w))+'px';
-    p.style.top=Math.max(8,Math.min(window.innerHeight-h-8,window.innerHeight-r.bottom<h+8?r.top-h-4:r.bottom+4))+'px';
+    const below=r.bottom+5,above=r.top-h-5;
+    p.style.top=Math.max(8,Math.min(window.innerHeight-h-8,
+      below+h+8<=window.innerHeight?below:(above>=8?above:below)))+'px';
   };
   function closeMenu(){if(menu){menu.remove();menu=null;}}
   document.addEventListener('pointerdown',e=>{if(menu&&!menu.contains(e.target)&&!e.target.closest('[data-alignment-menu]'))closeMenu();});
@@ -92,16 +116,19 @@
     selectedMove=null;dragId=null;dragType=null;save();render();
   }
   function noteOptions(trigger,n){
+    const row=trigger.closest('.alignment-note');
+    const other=window.PICrossPageMoves?.destinations(row)||[];
     menuItems(trigger,[
       {label:'Edit in composer',run:()=>beginEdit(n.id)},
       {label:n.pinned?'Unpin note':'Pin to top',run:()=>{n.pinned=!n.pinned;save();render();}},
       {label:n.expanded?'Hide details':'Show details',run:()=>{n.expanded=!n.expanded;save();render();}},
       {sep:true},
-      ...[['','Default'],['plum','Violet'],['teal','Teal'],['blue','Blue'],['rose','Pink'],['green','Green'],['gold','Gold'],['coral','Coral'],['cyan','Ice blue']]
-        .map(([value,label])=>({label:(window.PIItemColors?.get('item:'+n.id)===value?'✓ ':'')+'Color · '+label,
-          run:()=>{window.PIItemColors?.set('item:'+n.id,value);render();}})),
+      {type:'color',key:'item:'+n.id},
       {sep:true},
-      ...allPlaces().filter(p=>p.value!==n.place).map(p=>({label:'Move → '+p.label,run:()=>moveNote(n.id,p.value)})),
+      {type:'scope',label:'Within Alignment ▾',options:allPlaces()
+        .filter(place=>place.value!==n.place).map(place=>({label:place.label,run:()=>moveNote(n.id,place.value)}))},
+      {type:'scope',label:'Other pages ▾',options:other.map(place=>({label:place.label,
+        run:()=>window.PICrossPageMoves?.move(row,place.id)}))},
       {sep:true},
       {label:'Archive thought',run:()=>archiveNote(n)},
       {label:'Delete thought',run:()=>{if(!confirm('Delete this thought?'))return;state.entries=state.entries.filter(x=>x.id!==n.id);save();render();}}

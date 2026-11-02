@@ -217,3 +217,11 @@ were changed. V20.4 fixes otherwise remain in place.
 - On Home phones (700px and under), the navigation controls use two equal, flexible columns: Theme / Pages, then Tools / Synced.
 - A Cloud account shortcut in Tools preserves access to the original Home cloud login button on mobile.
 - No note, theme, cloud-sync, or backup data was modified.
+
+
+## V21.7 — Unified menus and planner headers
+- MenuPolish.css / MenuPolish.js: consistent 300px maximum action/menu width, full-width move choices, menu top-layer for Workspace and planner, click-away and Escape closing.
+- Alignment note actions combine edit, pin, details, color swatches, within-page and cross-page destinations, archive/delete in a single menu. Cross-page moves call the existing UI.js rollback-safe transfer function.
+- Aquarium cards now use their existing combined move / color / archive / delete menu without an extra color-only three-dot menu.
+- Week/Month/Next Month headers arrange their palette and pop-out controls together on the right, preserving live pop-outs.
+- No storage keys, cloud sync formats, or saved note data were modified.

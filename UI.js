@@ -137,7 +137,7 @@
     if (panel.dataset.piHadPopover !== 'true') panel.removeAttribute('popover');
     delete panel.dataset.piHadPopover;
     panel.classList.remove('pi-panel-popout');
-    panel.querySelector(':scope > .panel-header > .pi-popout-button, :scope > .pi-workspace-head > .pi-popout-button, :scope > .day-card-top > .pi-popout-button, :scope > .pi-notes-section-head > .pi-popout-button, :scope > .longform-saved-section-head > .pi-popout-button')?.setAttribute('aria-label','Pop out this panel');
+    panel.querySelector('.pi-popout-button')?.setAttribute('aria-label','Pop out this panel');
     backdrop?.remove(); backdrop = null;
     document.body.classList.remove('pi-popout-open');
   };
@@ -171,7 +171,7 @@
     document.querySelectorAll(selector).forEach(panel => {
       const header = [...panel.children].find(child => child.matches?.(headers))
         || panel.querySelector(':scope > .pi-workspace-head, :scope > .panel-header, :scope > .day-card-top');
-      if (!header || header.querySelector(':scope > .pi-popout-button')) return;
+      if (!header || header.querySelector('.pi-popout-button')) return;
       const button = document.createElement('button');
       button.type = 'button';
       button.className = 'pi-popout-button';
@@ -550,6 +550,20 @@
       alert('Move not completed. Your original note was kept. '+error.message);
     }
   }
+  // Reuse the transaction-safe move implementation in the existing Alignment
+  // menu; no new destination writer or synchronization path is introduced.
+  window.PICrossPageMoves={
+    destinations:row=>{
+      const source=findSource(row);
+      return source?.id && !source.duplicate ? dests.filter(d=>d.id!==source.scope) .map(d=>({id:d.id,label:d.label})) : [];
+    },
+    move:(row,targetId)=>{
+      const source=findSource(row);
+      if(!source?.id || source.duplicate)return alert('Could not identify the note to move. The original was kept.');
+      if(!dests.some(d=>d.id===targetId&&d.id!==source.scope))return;
+      transfer(source,targetId);
+    }
+  };
   function scope(label, choices) {
     const group = document.createElement('details');group.className='pi-move-scope';
     const summary=document.createElement('summary');summary.textContent=label;
@@ -734,10 +748,8 @@
     document.querySelectorAll('.pi-note-card').forEach(row=>{
       const head=row.querySelector('.pi-note-card-head');if(head)addMenus(row,head);
     });
-    document.querySelectorAll('.alignment-note[data-entry-id]').forEach(row=>{
-      const head=row.querySelector('.alignment-note-head');
-      if(head)addMenus(row,head);
-    });
+    // Alignment V21.7: its existing ⋮ now includes the same cross-page
+    // destinations, rather than injecting a duplicate ⋮ beside it.
     document.querySelectorAll('.longform-entry').forEach(row=>{
       const legacySummary=row.querySelector('.longform-card-tools > summary');
       if(legacySummary && legacySummary.textContent!=='⋮') { legacySummary.textContent='⋮';legacySummary.title='Item options and move'; }
