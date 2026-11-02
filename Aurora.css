@@ -1,0 +1,219 @@
+/* ==============================================================
+   AURORA | Personal Intranet
+   New, self-contained dark theme. No markup, storage or app logic
+   changes; only active when body[data-theme="aurora"].
+   Palette: Aurora Green #5FBF9A, Polar Teal #2F8F9D,
+   Violet Glow #7B5EA7, Magenta Mist #B45E9A,
+   Starlight White #F2F7FF, Arctic Night #101B33.
+   ============================================================= */
+
+body[data-theme="aurora"] {
+  --bg: #080f22;
+  --bg-soft: #0b152c;
+  --panel: #101b33;
+  --panel-light: #1b2945;
+  --plum: #7b5ea7;
+  --plum-soft: #bca6e7;
+  --teal: #2f8f9d;
+  --teal-soft: #9ae4df;
+  --blue: #4689c7;
+  --blue-soft: #a4ceff;
+  --rose: #b45e9a;
+  --rose-soft: #efb6df;
+  --green: #5fbf9a;
+  --green-soft: #b0efd6;
+  --orange: #a65d9f; /* six-accent UI: use mauve, not yellow */
+  --orange-soft: #e8b4e4;
+  --text: #f2f7ff;
+  --muted: #d4ddec;
+  --faint: #a5b4cb;
+  --border: #445879;
+  --shadow: 0 10px 27px rgba(1,4,15,.42), inset 0 1px 0 rgba(255,255,255,.035);
+  --aurora-plum: #7b5ea7;
+  --aurora-teal: #5fbf9a;
+  --aurora-blue: #629ce4;
+  --aurora-rose: #b45e9a;
+  --aurora-ink: #070e20;
+  color: var(--text);
+  background-color: #050918;
+  background-image:
+    linear-gradient(180deg, rgba(1,4,14,.08), rgba(1,4,14,.20)),
+    url("assets/aurora-night.webp");
+  background-position: center center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  color-scheme: dark;
+}
+
+/* Text and its controls stay on solid, opaque surfaces, never the artwork. */
+body[data-theme="aurora"] :is(.page,.aq-page,.patterns-page,.neo-page,.longform-page,.alignment-page,.almanac-page) {
+  position: relative;
+  z-index: 1;
+}
+body[data-theme="aurora"] :is(.panel,.aq-panel,.neo-card,.link-strip,.current-strip,
+  .archive-section-block,.tracking-section-block,.pi-workspace-panel,
+  .pattern-panel,.almanac-panel,.calendar-panel) {
+  background: #101b33;
+  border-color: #4a648b;
+  box-shadow: var(--shadow);
+}
+body[data-theme="aurora"] :is(.panel-header,.pi-focus-head,.aq-panel-head,.aq-category-head,
+  .longform-library-head,.longform-composer-head,.pi-workspace-head) {
+  background: linear-gradient(105deg, #1a2c4b 0%, #252349 54%, #172b45 100%);
+  border-bottom-color: #50638d;
+}
+body[data-theme="aurora"] :is(h1,.panel-title,.pi-focus-title,.pi-focus-title strong,
+  .aq-panel-title,.aq-category-title,.longform-section-title,.date-label) {
+  color: #f2f7ff;
+}
+body[data-theme="aurora"] :is(.panel-title,.pi-focus-title,.longform-section-title) {
+  text-shadow: 0 1px 7px rgba(110,82,183,.18);
+}
+body[data-theme="aurora"] .pi-mark {
+  background: linear-gradient(145deg,#263763,#5d4389);
+  border: 1px solid #a5afe5;
+  box-shadow: 0 0 13px rgba(123,94,167,.28);
+}
+
+/* Universal Field Notes-inspired color zoning, with solid ink surfaces. */
+body[data-theme="aurora"] .database-page .home-upcoming-panel {border-color: #597cac;}
+body[data-theme="aurora"] .database-page #piDatabaseFocus {border-color: #9275c7;}
+body[data-theme="aurora"] .database-page .database-notes-panel {border-color: #519fae;}
+body[data-theme="aurora"] .database-page .home-upcoming-panel > .panel-header {
+  background: linear-gradient(90deg,#1a2c47,#2b2450 56%,#173944);
+}
+body[data-theme="aurora"] .database-page #piDatabaseFocus > .pi-focus-head {
+  background: linear-gradient(90deg,#2b244b,#222943);
+}
+body[data-theme="aurora"] .database-page .database-notes-panel > .panel-header {
+  background: linear-gradient(90deg,#173945,#25264b 72%,#1c2945);
+}
+
+/* The days each get a different muted, fully opaque ink color. */
+body[data-theme="aurora"] .day-card { 
+  --aurora-day: #7b5ea7;
+  background: #1b213b;
+  border: 1px solid var(--aurora-day);
+  box-shadow: inset 0 3px 0 var(--aurora-day);
+}
+body[data-theme="aurora"] .day-card.scroll-plum { --aurora-day:#a27ad3; background:#251e43; }
+body[data-theme="aurora"] .day-card.scroll-teal { --aurora-day:#5fbf9a; background:#102e39; }
+body[data-theme="aurora"] .day-card.scroll-blue { --aurora-day:#629ce4; background:#182b4b; }
+body[data-theme="aurora"] .day-card.scroll-rose { --aurora-day:#d782b9; background:#35213e; }
+body[data-theme="aurora"] .day-card.scroll-green { --aurora-day:#7bd8ba; background:#18373a; }
+body[data-theme="aurora"] .day-card.scroll-orange { --aurora-day:#c38ad0; background:#30233d; }
+body[data-theme="aurora"] .day-card.today-card {box-shadow:inset 4px 0 0 #5fbf9a, inset 0 3px 0 var(--aurora-day);}
+body[data-theme="aurora"] .day-card .date-label {color:#f2f7ff !important;}
+body[data-theme="aurora"] .today-badge {background:#5fbf9a; color:#080f22;}
+body[data-theme="aurora"] .day-card :is(.checklist-item,.pi-compact-item) {
+  background: #1d2b46;
+  border:1px solid #455779;
+  box-shadow: none;
+}
+
+/* Solid note and task rows throughout the intranet. */
+body[data-theme="aurora"] :is(.checklist-item,.pi-focus-item,.pi-compact-item,
+  .pi-category-note,.pi-nested-line,.board-tile,.tile-item-row,
+  .aq-card,.archive-card,.pattern-note,.timeline-marker,.strain-entry,
+  .priority-item-card,.neo-note,.neo-task,.alignment-note,.alignment-tile,
+  .calendar-item,.planner-item,.link-chip) {
+  background: #1c2945;
+  border-color: #465a7b;
+  color: #f2f7ff;
+}
+body[data-theme="aurora"] .database-page #piDatabaseFocus .pi-focus-item {
+  background: #27233f;
+  border-color: #675587;
+}
+body[data-theme="aurora"] .database-page :is(.database-notes-list,.pi-focus-list) .pi-category-note {
+  border-left: 3px solid #7b5ea7;
+}
+body[data-theme="aurora"] .board-tile[data-accent="plum"] { background:#282142; border-top-color:#bca6e7; }
+body[data-theme="aurora"] .board-tile[data-accent="teal"] { background:#152f3a; border-top-color:#5fbf9a; }
+body[data-theme="aurora"] .board-tile[data-accent="blue"] { background:#1b2c4a; border-top-color:#629ce4; }
+body[data-theme="aurora"] .board-tile[data-accent="rose"] { background:#32233f; border-top-color:#d782b9; }
+body[data-theme="aurora"] .board-tile[data-accent="green"] { background:#17383a; border-top-color:#7bd8ba; }
+body[data-theme="aurora"] .board-tile[data-accent="orange"] { background:#302440; border-top-color:#c38ad0; }
+
+/* Form surfaces remain opaque, with white lettering on midnight navy. */
+body[data-theme="aurora"] :is(input:not([type="checkbox"]):not([type="radio"]),textarea,select,
+  .day-input,.checklist-input,.tile-item-input,.aq-capture-input,
+  .pi-note-creation-options select,.link-editor input,.link-editor select) {
+  background: #111c34;
+  color: #f2f7ff;
+  border-color: #5b6d91;
+  caret-color: #b0efd6;
+}
+body[data-theme="aurora"] :is(input,textarea)::placeholder {color:#b7c3da; opacity:1;}
+body[data-theme="aurora"] :is(input,textarea,select,button):focus-visible,
+body[data-theme="aurora"] :is(.editable-ui,.task-text,.tile-text):focus-visible {
+  outline:2px solid #9ae4df;
+  outline-offset:2px;
+}
+body[data-theme="aurora"] input[type="checkbox"],
+body[data-theme="aurora"] input[type="radio"] {accent-color:#5fbf9a;}
+
+/* Navigation, action menus and popovers have solid contrasting backplates. */
+body[data-theme="aurora"] :is(.small-button,.theme-select,.link-add-button,
+  .pi-note-open,.panel-collapse-toggle,.pi-popout-button,.pi-category-popout-button,
+  .aq-filter-button,.aq-mini-button,.ecosystem-menu > summary,
+  .pi-theme-menu > summary,.pi-tools-menu > summary) {
+  background: #222e4a;
+  color: #f2f7ff;
+  border-color: #68789f;
+}
+body[data-theme="aurora"] :is(.ecosystem-menu-popover,.pi-tools-popover,
+  .pi-cross-menu-popover,.pi-item-menu-popover,.alignment-menu-panel,
+  .pi-calendar-popover,.link-editor,.pi-category-dialog) {
+  background: #111c34;
+  color: #f2f7ff;
+  border-color: #66769a;
+}
+body[data-theme="aurora"] :is(.ecosystem-menu-popover,.pi-tools-popover) :is(a,button) {color:#f2f7ff;}
+body[data-theme="aurora"] :is(.small-button,.pi-theme-choice,.ecosystem-menu > summary):hover {
+  background:#304063;
+  border-color:#9ae4df;
+}
+body[data-theme="aurora"] .theme-select :is(option,optgroup) {background:#111c34; color:#f2f7ff;}
+
+/* Friendly accents are applied to interactive color, not body copy. */
+body[data-theme="aurora"] :is(.mini-add,.checklist-add,.add-button,.tile-item-add,
+  .aq-primary-button,.pi-focus-entry button,#saveLinkEdit,
+  #addPattern,#addTimelineMarker,#addStrainEntry) {
+  background: #5fbf9a;
+  border-color: #9ae4df;
+  color: #081222;
+  font-weight: 700;
+}
+body[data-theme="aurora"] .day-card.scroll-plum .mini-add {background:#bca6e7; color:#081222;}
+body[data-theme="aurora"] .day-card.scroll-teal .mini-add {background:#5fbf9a; color:#081222;}
+body[data-theme="aurora"] .day-card.scroll-blue .mini-add {background:#89bdf6; color:#081222;}
+body[data-theme="aurora"] .day-card.scroll-rose .mini-add {background:#e6a0cb; color:#081222;}
+body[data-theme="aurora"] .day-card.scroll-green .mini-add {background:#7bd8ba; color:#081222;}
+body[data-theme="aurora"] .day-card.scroll-orange .mini-add {background:#cfa0db; color:#081222;}
+body[data-theme="aurora"] :is(.mini-add,.checklist-add,.add-button,.tile-item-add):hover {
+  filter:brightness(1.10);
+}
+
+/* Keep pop-out dialogs and longform editors opaque as well. */
+body[data-theme="aurora"] dialog,
+body[data-theme="aurora"] .pi-overlay-content,
+body[data-theme="aurora"] .pi-modal,
+body[data-theme="aurora"] .pi-category-dialog {background:#101b33;color:#f2f7ff;}
+body[data-theme="aurora"] .pi-category-dialog-head {background:#202b49;}
+body[data-theme="aurora"] :is(.neo-card,.neo-field-header,.neo-dream-card,.neo-dailies-card) {
+  border-color:#51668d;
+}
+body[data-theme="aurora"] .neo-field-header {background:#202744;}
+body[data-theme="aurora"] .neo-card::before {
+  background:repeating-linear-gradient(90deg,#bca6e7 0 12px,#5fbf9a 12px 24px,#629ce4 24px 36px,#d782b9 36px 48px);
+}
+
+@media (max-width: 900px) {
+  /* Mobile browsers can jump on fixed-attachment artwork when the URL bar moves. */
+  body[data-theme="aurora"] {background-attachment:scroll; background-position:37% center;}
+}
+@media (prefers-reduced-motion:reduce) {
+  body[data-theme="aurora"] * {scroll-behavior:auto;}
+}
