@@ -617,7 +617,7 @@
         try { panel.showPopover(); } catch {return;}
         const anchor = details.querySelector(':scope > summary') || details;
         const at = anchor.getBoundingClientRect();
-        const width = Math.min(254, innerWidth - 16);
+        const width = Math.min(panel.getBoundingClientRect().width || 254, innerWidth - 16);
         // The top-layer stylesheet uses !important positioning. Set the
         // coordinates at the same priority, or the browser falls back to 0,0.
         const left = Math.max(8,Math.min(innerWidth-width-8,at.right-width));

@@ -209,3 +209,11 @@ were changed. V20.4 fixes otherwise remain in place.
 - **Theme-aware choices:** Colors are stored as names in the synced `pi-personal-item-colors-v1` key, and every active theme resolves those names through its own `--plum`, `--teal`, `--blue`, `--rose`, and `--green` CSS variables. The selection follows an item when its stable ID moves between compatible Home/Radar/calendars. The result is an accent border and light wash; text and panels stay legible.
 - The new optional `ColorAccents.js` / `ColorAccents.css` files are used by each content page. Upload both with the rest of `CURRENT/`, preserving `assets/aurora-night.webp`.
 - **Testing:** JS syntax checks and a headless, isolated UI interaction test passed for color choices on Home, planner, nested notes, workspace, and Aquarium card menus. Full live intranet navigation/browser integration was not available in this environment; inspect desktop and mobile menus on your deployed site before relying on restored data.
+
+
+## V21.6: menu spacing and Home mobile header
+- The nine accent swatches (Default plus eight colors) now stay on one horizontal row inside the three-dot menus. The popovers grow to fit and are clamped to phone viewport width.
+- Home's palette actions and move sections have consistent room; top-layer popover positioning uses measured width to prevent menus sliding off the right edge.
+- On Home phones (700px and under), the navigation controls use two equal, flexible columns: Theme / Pages, then Tools / Synced.
+- A Cloud account shortcut in Tools preserves access to the original Home cloud login button on mobile.
+- No note, theme, cloud-sync, or backup data was modified.

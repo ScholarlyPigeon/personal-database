@@ -1,0 +1,172 @@
+/* Personal Intranet V21.6 | palette menus + Home mobile navigation.
+   UI-only changes. Existing themes, note formats, colors and sync keys unchanged. */
+
+/* Nine swatches, including Default, always share ONE horizontal row.
+   Label gets its own line so the colors never fight it for width. */
+html body .pi-personal-color-picker {
+  box-sizing:border-box !important;
+  width:100% !important;
+  max-width:100% !important;
+  min-width:0 !important;
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:flex-start !important;
+  justify-content:flex-start !important;
+  flex-wrap:nowrap !important;
+  gap:7px !important;
+  padding:9px 5px 8px !important;
+}
+html body .pi-personal-color-label {display:block !important;width:100% !important;line-height:1.2 !important;}
+html body .pi-personal-color-swatches {
+  display:flex !important;
+  flex-direction:row !important;
+  flex-wrap:nowrap !important;
+  align-items:center !important;
+  justify-content:flex-start !important;
+  width:auto !important;
+  max-width:100% !important;
+  min-width:0 !important;
+  gap:6px !important;
+  padding:3px 4px 4px !important; /* room for selected outlines */
+  box-sizing:border-box !important;
+}
+html body .pi-personal-color-swatch {
+  flex:0 0 21px !important;
+  width:21px !important;
+  min-width:21px !important;
+  max-width:21px !important;
+  height:21px !important;
+  min-height:21px !important;
+  max-height:21px !important;
+}
+
+/* Keep the entire 9-color picker and actions visible in each ⋮ menu.
+   The universal cross-page and Home menus use real top-layer popovers. */
+html body :is(.pi-cross-panel,.database-page .pi-item-tools-panel,
+  .pi-nested-tools-menu,.planner-item-actions,.planner-nested-options,
+  .planner-category-menu-actions,.pi-ws-menu-panel,.pi-aq-menu-actions,
+  .longform-card-tool-panel):has(.pi-personal-color-picker) {
+  box-sizing:border-box !important;
+  width:min(318px,calc(100vw - 16px)) !important;
+  max-width:calc(100vw - 16px) !important;
+  min-width:min(286px,calc(100vw - 16px)) !important;
+  overflow-x:hidden !important;
+  overflow-y:auto !important;
+  padding:9px !important;
+}
+html body :is(.pi-cross-panel,.database-page .pi-item-tools-panel,
+  .longform-card-tool-panel):has(.pi-personal-color-picker):popover-open {
+  width:min(318px,calc(100vw - 16px)) !important;
+  max-width:calc(100vw - 16px) !important;
+  min-width:min(286px,calc(100vw - 16px)) !important;
+  box-sizing:border-box !important;
+}
+/* Mobile side gutters shrink slightly on very narrow phones, not the swatches. */
+@media(max-width:330px) {
+  html body .pi-personal-color-swatches {gap:4px !important;padding-left:1px !important;padding-right:1px !important;}
+  html body .pi-personal-color-picker {padding-left:2px !important;padding-right:2px !important;}
+}
+/* Prevent crowded action rows from overflowing their menu. */
+html body .database-page .pi-item-tools-panel .pi-item-quick-actions {
+  box-sizing:border-box !important;
+  display:flex !important;
+  width:100% !important;
+  gap:6px !important;
+  flex-wrap:wrap !important;
+}
+html body .database-page .pi-item-quick-actions > :is(button,.check-archive,.check-delete,.pi-quick-archive,.pi-quick-delete) {
+  box-sizing:border-box !important;
+  flex:1 1 auto !important;
+  min-width:0 !important;
+  max-width:100% !important;
+  overflow-wrap:normal !important;
+  white-space:nowrap !important;
+}
+
+html body .database-page .pi-item-tools-panel .pi-item-quick-actions {
+  display:grid !important;
+  grid-template-columns:minmax(0,1.50fr) minmax(0,1fr) minmax(0,1fr) !important;
+  align-items:stretch !important;
+}
+html body .database-page .pi-item-tools-panel .pi-item-quick-actions > :is(button,.check-archive,.check-delete,.pi-quick-archive,.pi-quick-delete) {
+  width:100% !important;
+  min-width:0 !important;
+  padding:6px 5px !important;
+  font-size:11px !important;
+  text-align:center !important;
+  justify-content:center !important;
+  overflow:visible !important;
+}
+html body .pi-move-scope {width:100% !important;box-sizing:border-box !important;}
+
+/* HOME PHONE HEADER: row 1 Theme | Pages; row 2 Tools | Synced.
+   Grid tracks share available width, without forcing fixed button widths. */
+@media(max-width:700px) {
+  html body .database-page .database-header {
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:stretch !important;
+    gap:8px !important;
+    min-width:0 !important;
+    max-width:100% !important;
+    overflow:visible !important;
+  }
+  html body .database-page .database-header .brand {width:100% !important;min-width:0 !important;}
+  html body .database-page .database-header .header-right {
+    display:grid !important;
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important;
+    grid-template-rows:auto auto !important;
+    grid-auto-flow:row !important;
+    align-items:stretch !important;
+    justify-items:stretch !important;
+    column-gap:8px !important;
+    row-gap:7px !important;
+    width:100% !important;
+    max-width:100% !important;
+    min-width:0 !important;
+    margin:0 !important;
+    overflow:visible !important;
+  }
+  html body .database-page .database-header .header-right > .pi-theme-menu {
+    display:block !important;grid-area:1 / 1 !important;
+    order:0 !important;flex:none !important;
+    min-width:0 !important;max-width:100% !important;width:100% !important;
+    margin:0 !important;
+  }
+  html body .database-page .database-header .header-right > .ecosystem-menu:not(.pi-theme-menu):not(.pi-tools-menu) {
+    display:block !important;grid-area:1 / 2 !important;
+    order:0 !important;flex:none !important;
+    min-width:0 !important;max-width:100% !important;width:100% !important;
+    margin:0 !important;
+  }
+  html body .database-page .database-header .header-right > .pi-tools-menu {
+    display:block !important;grid-area:2 / 1 !important;
+    order:0 !important;flex:none !important;
+    min-width:0 !important;max-width:100% !important;width:100% !important;
+    margin:0 !important;
+  }
+  html body .database-page .database-header .header-right > #saveStatus.sync-status {
+    box-sizing:border-box !important;
+    display:flex !important;grid-area:2 / 2 !important;
+    order:0 !important;flex:none !important;
+    align-items:center !important;justify-content:center !important;
+    width:100% !important;max-width:100% !important;min-width:0 !important;
+    min-height:34px !important;margin:0 !important;padding:5px 7px !important;
+    text-align:center !important;white-space:nowrap !important;
+    overflow:hidden !important;text-overflow:ellipsis !important;
+  }
+  html body .database-page .database-header .header-right > :is(.pi-theme-menu,.ecosystem-menu) > summary {
+    box-sizing:border-box !important;
+    display:flex !important;align-items:center !important;
+    justify-content:space-between !important;
+    width:100% !important;height:36px !important;min-height:36px !important;
+    min-width:0 !important;max-width:100% !important;
+    margin:0 !important;padding:6px 9px !important;
+    overflow:hidden !important;text-overflow:ellipsis !important;
+    white-space:nowrap !important;font-size:12px !important;
+  }
+  /* The original cloud-login button remains functional via a Tools shortcut. */
+  html body .database-page .database-header .header-right > .pi-home-cloud-login {display:none !important;}
+  html body .database-page .database-header .header-right > .sync-tools:empty {display:none !important;}
+  html body .database-page .database-header .header-right > select.pi-nav-source-select {display:none !important;}
+}
