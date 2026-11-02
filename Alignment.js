@@ -97,7 +97,7 @@
       {label:n.pinned?'Unpin note':'Pin to top',run:()=>{n.pinned=!n.pinned;save();render();}},
       {label:n.expanded?'Hide details':'Show details',run:()=>{n.expanded=!n.expanded;save();render();}},
       {sep:true},
-      ...[['','Default'],['plum','Violet'],['teal','Teal'],['blue','Blue'],['rose','Pink'],['green','Green']]
+      ...[['','Default'],['plum','Violet'],['teal','Teal'],['blue','Blue'],['rose','Pink'],['green','Green'],['gold','Gold'],['coral','Coral'],['cyan','Ice blue']]
         .map(([value,label])=>({label:(window.PIItemColors?.get('item:'+n.id)===value?'✓ ':'')+'Color · '+label,
           run:()=>{window.PIItemColors?.set('item:'+n.id,value);render();}})),
       {sep:true},

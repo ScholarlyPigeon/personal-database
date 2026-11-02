@@ -1,3 +1,17 @@
+# V21.5 · Portable Notes + Color Everywhere (November 1, 2026)
+
+A focused pass on cross-page note movement and visual customization, based on V21.4 Aurora.
+
+**Cross-page notes:** The move formatter now separates a short preview heading from the full note body, keeping the full text even if a target has a compact title field. Long plain-text entries become expandable notes on Home and on the Week/Month note surfaces rather than disappearing into a clipped heading. Rich HTML is sanitized and retained where supported. Existing nested checklists, dates, completion state, and image/link fields are transferred in compatible destinations, with original transfer metadata retained for round trips. Alignment is now a cross-page move source/destination (initially lands under Readings & Rituals). The source is removed only after the destination commit; existing stored notes are not migrated or rewritten. A plain checklist line remains a checklist line.
+
+**Colors:** Aquarium item colors now tint the entire note; category colors tint the entire tile and heading. Added Gold, Coral, and Ice Blue to Violet, Teal, Blue, Pink, and Green. Major panel headers have a compact 🎨 palette control to tint their surfaces while keeping solid backgrounds and theme text contrast. Color choices follow moved notes; the same saved theme-aware color mapping is still used and synced. Alignment note menus have all eight options.
+
+**Scope:** This standardizes the *cross-page transfer payload* and long-title handling, not every legacy editor's toolbar, keyboard interaction, or data model. Existing note editors and page-specific note behavior are intentionally preserved. No cloud sync algorithm changes, no storage-key renames, and no automatic conversions of old notes.
+
+**Safety:** Before uploading, download a fresh JSON backup. Upload everything inside `CURRENT/` to your GitHub repo, including `assets/`. Close other tabs and deploy, then hard-refresh. Test a harmless long test note moving Week → Aquarium → Home → Alignment and its expansion/editing; try Aquarium tile/item/panel palettes under both light and dark themes, and verify sync on another device. If something acts incorrectly, keep the JSON snapshot and roll back the previous ZIP. The new transfer formatter and palette controls passed isolated runtime checks; a complete end-to-end hosted-site browser test was not possible in this environment.
+
+---
+
 # V20.9 Shared Notes and Compass Priority Views
 
 - **Compass:** ``Currently...`` remains a horizontal rail of lightly accented tiles on the page, but becomes a vertically stacked list **only when popped out**. The existing separate panel collapse toggle and per-note details toggles are supported. Closed notes show their header only; date, optional details and nested checklists appear when opened.

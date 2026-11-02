@@ -45,3 +45,87 @@ body :is(.pi-item-tools-panel,.pi-nested-tools-menu,.planner-item-actions,.plann
   max-height:min(370px,70vh);overflow-y:auto;overscroll-behavior:contain;
 }
 @media(max-width:700px){body .pi-personal-color-picker{gap:7px;padding:8px 4px;}}
+
+/* V21.5: expanded theme-aware color choices. All surfaces stay opaque and
+   preserve the current theme's text color for accessibility. */
+body .pi-personal-colored[data-pi-personal-color="gold"]  { --pi-personal-ink:var(--orange,#dda35b); }
+body .pi-personal-colored[data-pi-personal-color="coral"] { --pi-personal-ink:var(--coral,#df7e86); }
+body .pi-personal-colored[data-pi-personal-color="cyan"]  { --pi-personal-ink:var(--cyan,#78cbd9); }
+body .pi-personal-color-swatch[data-color="gold"] { --pi-swatch:var(--orange,#dda35b); }
+body .pi-personal-color-swatch[data-color="coral"] { --pi-swatch:var(--coral,#df7e86); }
+body .pi-personal-color-swatch[data-color="cyan"] { --pi-swatch:var(--cyan,#78cbd9); }
+/* Aquarium note: the whole note card, not just a narrow edge. */
+html body .aq-card.pi-personal-colored {
+  background:color-mix(in srgb,var(--pi-personal-ink) 22%,var(--panel-light)) !important;
+  border:1px solid color-mix(in srgb,var(--pi-personal-ink) 62%,var(--border)) !important;
+  border-left:4px solid var(--pi-personal-ink) !important;
+}
+html body .aq-card.pi-personal-colored .aq-card-body,
+html body .aq-card.pi-personal-colored .aq-card-header,
+html body .aq-card.pi-personal-colored .aq-card-main {
+  background:transparent !important;
+}
+/* Aquarium tile: tint the tile *and* its head/zone. Override per-theme
+   nth-child backgrounds only for explicitly selected tiles. */
+html body .aq-category.pi-personal-colored {
+  --aq-accent:var(--pi-personal-ink);
+  background:linear-gradient(160deg,
+    color-mix(in srgb,var(--pi-personal-ink) 29%,var(--panel)) 0%,
+    color-mix(in srgb,var(--pi-personal-ink) 16%,var(--panel)) 100%) !important;
+  border:1px solid color-mix(in srgb,var(--pi-personal-ink) 65%,var(--border)) !important;
+}
+html body .aq-category.pi-personal-colored > .aq-category-head {
+  background:color-mix(in srgb,var(--pi-personal-ink) 23%,var(--panel)) !important;
+  border-bottom:1px solid color-mix(in srgb,var(--pi-personal-ink) 55%,var(--border)) !important;
+}
+html body .aq-category.pi-personal-colored > .aq-category-head .aq-category-name {
+  color:var(--text) !important;
+  overflow-wrap:anywhere;
+}
+html body .aq-category.pi-personal-colored > .aq-category-zone { background:transparent !important; }
+/* Major panel color menus, tucked in among header actions. */
+html body :is(.panel,.pi-workspace-panel,.pi-notes-section,.planner-notes,.planner-calendar,
+ .aq-panel,.alignment-library,.alignment-tiles,.alignment-composer,.longform-library,.longform-composer,.longform-saved-section,.archive-v2-panel).pi-personal-colored[data-pi-color-panel-id] {
+  background:color-mix(in srgb,var(--pi-personal-ink) 17%,var(--panel)) !important;
+  border-color:color-mix(in srgb,var(--pi-personal-ink) 48%,var(--border)) !important;
+}
+html body :is(.panel,.pi-workspace-panel,.pi-notes-section,.planner-notes,.planner-calendar,
+ .aq-panel,.alignment-library,.alignment-tiles,.alignment-composer,.longform-library,.longform-composer,.longform-saved-section,.archive-v2-panel).pi-personal-colored[data-pi-color-panel-id] > :is(.panel-header,.pi-focus-head,.pi-workspace-head,.pi-notes-section-head,.planner-heading,.aq-panel-head,.longform-library-head,.longform-composer-head,.longform-saved-section-head,.archive-v2-panel-head) {
+  background:color-mix(in srgb,var(--pi-personal-ink) 25%,var(--panel)) !important;
+  color:var(--text) !important;
+}
+body .pi-color-panel-menu {position:relative;display:inline-block;margin-left:auto;flex:0 0 auto;z-index:5;}
+body .pi-color-panel-menu > summary {list-style:none;cursor:pointer;display:grid;place-items:center;
+  width:28px;height:27px;border:1px solid var(--border);border-radius:7px;background:var(--panel-light);
+  color:var(--text);font-size:13px;}
+body .pi-color-panel-menu > summary::-webkit-details-marker {display:none;}
+body .pi-color-panel-menu > summary:hover {border-color:var(--teal);}
+body .pi-color-panel-tray {position:absolute;right:0;top:calc(100% + 5px);width:min(282px,85vw);
+  max-height:70vh;overflow-y:auto;border:1px solid var(--border);border-radius:10px;
+  background:var(--panel);box-shadow:0 14px 35px #0005;z-index:99;padding:6px;}
+body .pi-color-panel-tray .pi-personal-color-picker {margin:0;border-top:0;padding:6px;}
+/* A heading is always fully recoverable in the actual editor, including
+   older imported notes that contained the whole note in their title. */
+html body .database-page .pi-category-note > .task-text,
+html body.aquarium-page .aq-card .aq-card-title,
+html body :is(.pi-note-card,.pi-ws-note) .pi-ws-title {
+  white-space:pre-wrap !important;overflow-wrap:anywhere !important;
+  text-overflow:clip !important;max-height:none !important;
+}
+@media(max-width:700px){body .pi-color-panel-tray{position:absolute;max-width:calc(100vw - 26px);}}
+/* A real popover stays above scroll panes and expands upward near screen bottom. */
+html body .pi-color-panel-tray[popover]:popover-open {
+  position:fixed !important;inset:auto !important;margin:0 !important;
+  padding:6px !important;max-width:calc(100vw - 16px) !important;
+  max-height:min(380px,65vh) !important;overflow:auto !important;
+  border:1px solid var(--border) !important;border-radius:10px !important;
+  background:var(--panel) !important;color:var(--text) !important;
+  box-shadow:0 14px 35px #0006 !important;
+}
+/* Alignment's native note menu remains unchanged; the adjacent arrow menu
+   is specifically for cross-page movement. */
+body .alignment-note-head > .pi-cross-menu {flex:0 0 auto;min-width:26px;position:relative;}
+body .alignment-note-head > .pi-cross-menu > summary {display:grid;place-items:center;
+  width:26px;min-height:26px;padding:0;border-radius:7px;border:1px solid var(--border);
+  background:var(--panel-light);font-size:15px;list-style:none;cursor:pointer;}
+body .alignment-note-head > .pi-cross-menu > summary::-webkit-details-marker {display:none;}

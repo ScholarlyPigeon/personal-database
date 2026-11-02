@@ -305,6 +305,7 @@
   const dests = [
     {id:'home', label:'Home Notes', key:'pi-database-notes-v1'},
     {id:'aquarium', label:'Aquarium Notes', key:'pi-aquarium-state-v3'},
+    {id:'alignment', label:'Alignment Notes', key:'pi-alignment-v1'},
     {id:'compass', label:'Compass Notes', key:'pi-compass-v1'},
     {id:'timeline', label:'Timeline Notes', key:'pi-reflections-notes-v1'},
     {id:'longform', label:'Longform Saved Thoughts', key:'pi-longform-state-v1'},
@@ -331,7 +332,8 @@
   const textOf = item => String(item.text || '').trim();
   const safeText = html => {
     const doc = document.createElement('div');
-    doc.innerHTML = String(html || '');
+    doc.innerHTML = String(html || '').replace(/<br\s*\/?>/gi,'\n')
+      .replace(/<\/(?:p|div|li)>/gi,'\n');
     return doc.textContent || '';
   };
   const esc = str => String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/\n/g,'<br>');
@@ -353,61 +355,86 @@
     if (Array.isArray(fallback) && !Array.isArray(value)) throw new Error('Unexpected saved list format in '+key);
     return value;
   }
-  // Rich payload travels intact wherever the destination model can represent it.
-  // Week/Month are flat by design, so their text includes the detail checklist.
+  // V21.5: One portable note shape for all cross-page moves. Nothing here
+  // rewrites existing records. We separate short, editable headings from the
+  // full text BEFORE a destination with a title field can truncate it.
+  const summaryTitle = input => {
+    const all=String(input||'').replace(/\s+/g,' ').trim();
+    if(all.length<=76)return all || 'Untitled note';
+    const first=all.slice(0,76);
+    const ending=first.search(/[.!?](?: |$)/);
+    const nearStop=ending>=25 ? first.slice(0,ending+1) : first.slice(0,72).replace(/\s+\S*$/,'');
+    return (nearStop||first.slice(0,72)).trim()+'…';
+  };
   function portable(sourceId, item) {
-    const title = String(item.title || item.text || 'Untitled note').trim();
-    let body = String(item.details || item.text || '').trim();
-    const displayTitle = item.title ? String(item.title).trim() : title;
-    const contentHtml = item.html || '';
-    const childLines = (Array.isArray(item.subtasks) ? item.subtasks : [])
-      .map(child => `${child.done ? '☑' : '☐'} ${String(child.text || '')}`).join('\n');
-    if (sourceId === 'aquarium' && item.title) body = String(item.text || safeText(item.html)).trim();
-    else if (item.title && item.html) body = safeText(item.html).trim();
-    else if (item.title && item.text) body = String(item.text).trim();
-    const combined = [displayTitle, body && body !== displayTitle ? body : '', childLines].filter(Boolean).join('\n\n');
+    const originalText=String(item.text||'').trim();
+    const explicitTitle=String(item.title||'').trim();
+    const details=String(item.details||'').trim();
+    const restorableHtml=!item.html && item.piTransferHtml &&
+      String(item.piTransferDetails||'').trim()===details ? item.piTransferHtml : '';
+    const rawHtml=window.PIInlineRich?.cleanHTML(item.html||restorableHtml||'')||'';
+    const htmlText=rawHtml?safeText(rawHtml).trim():'';
+    const freeform=!explicitTitle && (originalText.length>86 || originalText.includes('\n'));
+    const title=summaryTitle(explicitTitle || originalText || htmlText);
+    let body=explicitTitle ? (details||originalText||htmlText) :
+      freeform ? (originalText||htmlText) : (details||'');
+    // Cards from older releases sometimes hold their original body only in
+    // the transfer fields. Use that solely if no visible body remains.
+    if(!body && item.piTransferDetails && (item.title || item.kind==='note'))
+      body=String(item.piTransferDetails).trim();
+    const html=(rawHtml && (explicitTitle || freeform || !details)) ? rawHtml : esc(body);
+    const subtasks=Array.isArray(item.subtasks) && item.subtasks.length ?
+      item.subtasks.map(child=>({...child})) :
+      Array.isArray(item.piTransferSubtasks) ? item.piTransferSubtasks.map(child=>({...child})) : [];
+    const childLines=subtasks.map(child=>`${child.done?'☑':'☐'} ${String(child.text||'')}`).join('\n');
+    // For an un-titled block, keep the entire original text as the body;
+    // do not duplicate the preview heading inside full-text destinations.
+    const fullText=explicitTitle ? [title,body && body!==title?body:'',childLines].filter(Boolean).join('\n\n') :
+      [originalText||body||title,childLines].filter(Boolean).join('\n\n');
     return {
-      id: uid(), title: displayTitle, text: combined || title,
-      kind:item.piTransferKind || item.kind || (item.html || item.details ? 'note' : 'task'),
-      body, html: contentHtml || esc(body && body !== displayTitle ? body : ''),
-      details: String(item.details || ''), date: item.date || (item.createdAt && /^\d{4}-\d{2}-\d{2}/.test(item.createdAt) ? item.createdAt.slice(0,10) : localDate()),
-      done: Boolean(item.done), checkable:item.checkable !== false,
-      imageUrl:validUrl(item.imageUrl), linkUrl:validUrl(item.linkUrl),
-      subtasks:Array.isArray(item.subtasks) ? item.subtasks.map(child=>({...child})) : [],
-      createdAt:item.createdAt || new Date().toISOString(),
-      origin: sourceId
+      id:uid(),title,text:fullText,body,html,
+      kind:item.kind==='note' || freeform || body || rawHtml ? 'note' :
+        (item.piTransferKind || item.kind || 'task'),
+      details:body,date:item.date || (item.createdAt && /^\d{4}-\d{2}-\d{2}/.test(item.createdAt) ? item.createdAt.slice(0,10) : localDate()),
+      done:Boolean(item.done),checkable:item.checkable!==false,
+      imageUrl:validUrl(item.imageUrl),linkUrl:validUrl(item.linkUrl),
+      subtasks,createdAt:item.createdAt||new Date().toISOString(),origin:sourceId
     };
   }
-  function targetRecord(targetId, payload, state) {
-    const common = {id:payload.id, date:payload.date, done:payload.done, createdAt:payload.createdAt,
-      imageUrl:payload.imageUrl, linkUrl:payload.linkUrl};
-    if (targetId === 'aquarium') {
-      // A saved Aquarium card in the neutral Inbox; it can be placed in any tile later.
-      const extra = payload.subtasks.map(x => (x.done ? '☑ ' : '☐ ')+String(x.text || '')).join('\n');
-      const body = [payload.body && payload.body !== payload.title ? payload.body : '',extra].filter(Boolean).join('\n\n');
-      return {id:payload.id,title:payload.title,text:body,html:payload.subtasks.length ? esc(body) : (payload.html || esc(body)),
-        zone:'inbox',kind:payload.kind==='task' ? 'action' : 'thought',done:payload.done,
-        collapsed:true,createdAt:payload.createdAt,
-        piTransferKind:payload.kind,piTransferTitle:payload.title,
-        piTransferDetails:payload.body,piTransferHtml:payload.html,piTransferSubtasks:payload.subtasks};
-    }
-    if (targetId === 'home') return {...common, text:payload.title,
-      kind:payload.kind === 'note' || (payload.body && payload.body !== payload.title) || payload.subtasks.length || payload.imageUrl || payload.linkUrl ? 'note':'task',
-      expanded:false, details:payload.body && payload.body !== payload.title ? payload.body : '', subtasks:payload.subtasks};
-    if (targetId === 'compass' || targetId === 'timeline') {
-      const first = state.sections?.[0]?.id;
-      return {...common,title:payload.title,text:payload.body || '',
-        html:payload.html || esc(payload.body), expanded:false, sectionId:first || 'general',
-        piTransferKind:payload.kind, piTransferTitle:payload.title, piTransferDetails:payload.body,
-        piTransferHtml:payload.html, piTransferSubtasks:payload.subtasks};
-    }
-    if (targetId === 'longform') return {...common,text:payload.text,html:esc(payload.text),
-      category:'misc',pinned:false};
-    return {...common,text:payload.text,checkable:payload.checkable,
-      /* Future moves back out of Week/Month can restore nested structures. */
-      piTransferKind:payload.kind,piTransferDetails:payload.body,piTransferSubtasks:payload.subtasks,
-      piTransferTitle:payload.title,piTransferHtml:payload.html,
+  function targetRecord(targetId,payload,state) {
+    const common={id:payload.id,date:payload.date,done:payload.done,createdAt:payload.createdAt,
       imageUrl:payload.imageUrl,linkUrl:payload.linkUrl};
+    const transfer={piTransferKind:payload.kind,piTransferTitle:payload.title,
+      piTransferDetails:payload.body,piTransferHtml:payload.html,piTransferSubtasks:payload.subtasks};
+    if(targetId==='aquarium') {
+      const extras=payload.subtasks.map(x=>(x.done?'☑ ':'☐ ')+String(x.text||'')).join('\n');
+      const body=[payload.body&&payload.body!==payload.title?payload.body:'',extras].filter(Boolean).join('\n\n');
+      return {...common,...transfer,title:payload.title,text:body,
+        html:payload.html||esc(body),zone:'inbox',
+        kind:payload.kind==='task'?'action':'thought',collapsed:!body};
+    }
+    if(targetId==='home')return {...common,...transfer,text:payload.title,
+      kind:payload.kind==='note'||payload.body||payload.subtasks.length||payload.imageUrl||payload.linkUrl?'note':'task',
+      expanded:!!payload.body,showDetails:true,
+      details:payload.body&&payload.body!==payload.title?payload.body:'',
+      subtasks:payload.subtasks};
+    if(targetId==='alignment')return {...common,...transfer,title:payload.title,
+      text:payload.body||'',html:payload.html||esc(payload.body),
+      place:'readings',pinned:false,expanded:!!payload.body};
+    if(targetId==='compass'||targetId==='timeline'){
+      const first=state.sections?.[0]?.id;
+      return {...common,...transfer,title:payload.title,text:payload.body||'',
+        html:payload.html||esc(payload.body),expanded:!!payload.body,sectionId:first||'general'};
+    }
+    if(targetId==='longform')return {...common,...transfer,text:payload.text,
+      html:payload.html||esc(payload.text),category:'misc',pinned:false};
+    return {...common,...transfer,
+      text:payload.kind==='note'&&payload.body?payload.title:payload.text,
+      html:payload.html||esc(payload.text),
+      kind:payload.kind==='note'&&payload.body?'note':undefined,
+      // Calendar note rows support an expandable details area.
+      details:payload.body||'',expanded:true,subtasks:payload.subtasks,
+      checkable:payload.checkable};
   }
   function stageDestination(targetId, rawItem, sourceId) {
     const key = formKey(targetId);
@@ -415,7 +442,7 @@
     const before = storage(key);
     // Do not manufacture a partial Aquarium database: require its real initialized board.
     if (targetId === 'aquarium' && before === null) throw new Error('Open Aquarium once before moving notes into it.');
-    const root = getData(key,['compass','timeline','longform','aquarium'].includes(targetId)?null:[]);
+    const root = getData(key,['compass','timeline','longform','aquarium','alignment'].includes(targetId)?null:[]);
     let state,entries;
     if (targetId === 'compass' || targetId === 'timeline') {
       const defaultSections = targetId === 'compass'
@@ -424,6 +451,11 @@
       state = root || {sections:defaultSections,entries:[]};
       if (!Array.isArray(state.entries) || !Array.isArray(state.sections)) throw new Error('Unexpected saved note format.');
       if (!state.sections.length) state.sections = defaultSections;
+      entries=state.entries;
+    } else if (targetId === 'alignment') {
+      state=root||{version:1,entries:[],folders:[],sections:[]};
+      if(!Array.isArray(state.entries)||!Array.isArray(state.folders)||!Array.isArray(state.sections))
+        throw new Error('Unexpected Alignment notes format. Original note preserved.');
       entries=state.entries;
     } else if (targetId === 'aquarium') {
       state = root;
@@ -440,20 +472,31 @@
       state=entries;
     }
     const payload = portable(sourceId, rawItem);
-    if (rawItem.piTransferTitle) {
-      payload.kind = rawItem.piTransferKind || payload.kind;
-      payload.title = rawItem.piTransferTitle;
-      payload.body = rawItem.piTransferDetails || '';
-      payload.html = rawItem.piTransferHtml || '';
-      payload.subtasks = Array.isArray(rawItem.piTransferSubtasks) ? rawItem.piTransferSubtasks : [];
-      payload.text = [payload.title, payload.body, ...payload.subtasks.map(x => (x.done?'☑ ':'☐ ')+x.text)].filter(Boolean).join('\n\n');
-    }
+    // Preserve the CURRENT editor text rather than overwriting recent edits
+    // with stale transfer metadata from an earlier move.
     const item = targetRecord(targetId, payload,state);
     entries.unshift(item);
     if (targetId === 'home' && before !== null && !window.PIHomeNotesSafety?.remember?.(before,'before-move-from-page')) {
       throw new Error('Could not protect the Home Notes snapshot. Move cancelled.');
     }
     localStorage.setItem(key,JSON.stringify(state));
+    // Color selections follow the note into its new page. If the source or
+    // destination write fails, the corresponding color snapshot is restored.
+    const colorStorage='pi-personal-item-colors-v1';
+    const priorColors=storage(colorStorage);
+    let colorChanged=false;
+    try {
+      const map=JSON.parse(priorColors||'{}');
+      if(map && typeof map==='object' && !Array.isArray(map)){
+        const originalColor=map[(sourceId==='aquarium'?'aquarium:':'item:')+rawItem.id];
+        if(originalColor && ['plum','teal','blue','rose','green','gold','coral','cyan'].includes(originalColor)){
+          map[(targetId==='aquarium'?'aquarium:':'item:')+payload.id]=originalColor;
+          localStorage.setItem(colorStorage,JSON.stringify(map));colorChanged=true;
+        }
+      }
+    } catch(e) { // A failed accent write must not cause any loss of notes.
+      console.warn('The moved note kept its content, but its color could not be copied',e);
+    }
     // Saved Thoughts headings use a separate title map; the main text is still
     // stored on the entry so a missing title map cannot hide content.
     let titleKey = null, oldTitles = null;
@@ -464,11 +507,13 @@
         localStorage.setItem(titleKey,JSON.stringify(titles));
       } catch (error) {
         if (before === null) localStorage.removeItem(key); else localStorage.setItem(key,before);
+        if(colorChanged){if(priorColors===null)localStorage.removeItem(colorStorage);else localStorage.setItem(colorStorage,priorColors);}
         throw error;
       }
     }
     return () => {
       if (before === null) localStorage.removeItem(key);else localStorage.setItem(key,before);
+      if(colorChanged){if(priorColors===null)localStorage.removeItem(colorStorage);else localStorage.setItem(colorStorage,priorColors);}
       if (titleKey) {if (oldTitles===null) localStorage.removeItem(titleKey);else localStorage.setItem(titleKey,oldTitles);}
     };
   }
@@ -528,6 +573,7 @@
     if (row.matches('.aq-card')) return {scope:'aquarium',key:formKey('aquarium'),id:row.dataset.cardId};
     if (row.matches('.checklist-item')) return {scope:'home',key:row.closest('[data-storage-key]')?.dataset.storageKey,id:row.dataset.itemId};
     if (row.matches('.pi-note-card')) return {scope:page,key:formKey(page),id:row.dataset.itemId};
+    if (row.matches('.alignment-note')) return {scope:'alignment',key:formKey('alignment'),id:row.dataset.entryId};
     if (row.matches('.longform-entry')) return {scope:'longform',key:formKey('longform'),id:row.dataset.entryId};
     if (row.matches('.planner-item')) {
       const key=formKey(page); const rows=getData(key,[]);
@@ -687,6 +733,10 @@
     });
     document.querySelectorAll('.pi-note-card').forEach(row=>{
       const head=row.querySelector('.pi-note-card-head');if(head)addMenus(row,head);
+    });
+    document.querySelectorAll('.alignment-note[data-entry-id]').forEach(row=>{
+      const head=row.querySelector('.alignment-note-head');
+      if(head)addMenus(row,head);
     });
     document.querySelectorAll('.longform-entry').forEach(row=>{
       const legacySummary=row.querySelector('.longform-card-tools > summary');
