@@ -97,6 +97,10 @@
       {label:n.pinned?'Unpin note':'Pin to top',run:()=>{n.pinned=!n.pinned;save();render();}},
       {label:n.expanded?'Hide details':'Show details',run:()=>{n.expanded=!n.expanded;save();render();}},
       {sep:true},
+      ...[['','Default'],['plum','Violet'],['teal','Teal'],['blue','Blue'],['rose','Pink'],['green','Green']]
+        .map(([value,label])=>({label:(window.PIItemColors?.get('item:'+n.id)===value?'✓ ':'')+'Color · '+label,
+          run:()=>{window.PIItemColors?.set('item:'+n.id,value);render();}})),
+      {sep:true},
       ...allPlaces().filter(p=>p.value!==n.place).map(p=>({label:'Move → '+p.label,run:()=>moveNote(n.id,p.value)})),
       {sep:true},
       {label:'Archive thought',run:()=>archiveNote(n)},

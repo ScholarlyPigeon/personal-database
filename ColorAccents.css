@@ -1,0 +1,47 @@
+/* Named, portable accents resolve to the CURRENT theme's color variables. */
+body .pi-personal-colored[data-pi-personal-color="plum"] { --pi-personal-ink:var(--plum,#7b5ea7); }
+body .pi-personal-colored[data-pi-personal-color="teal"] { --pi-personal-ink:var(--teal,#2f8f9d); }
+body .pi-personal-colored[data-pi-personal-color="blue"] { --pi-personal-ink:var(--blue,#4689c7); }
+body .pi-personal-colored[data-pi-personal-color="rose"] { --pi-personal-ink:var(--rose,#b45e9a); }
+body .pi-personal-colored[data-pi-personal-color="green"] { --pi-personal-ink:var(--green,#5fbf9a); }
+/* Colored edges + a very restrained wash: no text or surface is made transparent. */
+body :is(.checklist-item,.pi-focus-item,.pi-nested-line,.planner-item,.planner-category,.planner-category-line,
+ .pi-ws-note,.pi-ws-subrow,.pi-ws-section,.aq-card,.aq-category,.alignment-note).pi-personal-colored {
+  border-left:3px solid var(--pi-personal-ink) !important;
+  background-image:linear-gradient(90deg,color-mix(in srgb,var(--pi-personal-ink) 14%,transparent),transparent 65%) !important;
+  background-repeat:no-repeat;
+}
+body .pi-personal-color-picker {
+  display:flex !important;flex-flow:row wrap;align-items:center;gap:8px;
+  width:100%;max-width:100%;min-width:0;box-sizing:border-box;
+  padding:8px 6px 5px;margin:5px 0 1px;
+  border-top:1px solid var(--border,#9ba2b6);
+  background:var(--panel,#fff);color:var(--text,#222);
+}
+body .pi-personal-color-label {font-size:11px;line-height:1.4;font-weight:700;white-space:nowrap;color:var(--text,#222);}
+body .pi-personal-color-swatches {display:flex;align-items:center;flex-wrap:wrap;gap:5px;}
+body .pi-personal-color-swatch {
+  appearance:none;display:grid!important;place-items:center;flex:0 0 21px;
+  width:21px!important;min-width:21px!important;max-width:21px!important;height:21px!important;
+  margin:0!important;padding:0!important;border:2px solid transparent!important;
+  border-radius:50%!important;line-height:1!important;font:700 16px/1 sans-serif!important;
+  cursor:pointer;background:var(--pi-swatch,#d0d4dc)!important;color:var(--text,#222)!important;
+  box-shadow:inset 0 0 0 1px #80808055;transition:transform .12s ease;
+}
+body .pi-personal-color-swatch.is-default {background:var(--panel-light,#e6e6e6)!important;}
+body .pi-personal-color-swatch[data-color="plum"] {--pi-swatch:var(--plum,#7b5ea7)}
+body .pi-personal-color-swatch[data-color="teal"] {--pi-swatch:var(--teal,#2f8f9d)}
+body .pi-personal-color-swatch[data-color="blue"] {--pi-swatch:var(--blue,#4689c7)}
+body .pi-personal-color-swatch[data-color="rose"] {--pi-swatch:var(--rose,#b45e9a)}
+body .pi-personal-color-swatch[data-color="green"] {--pi-swatch:var(--green,#5fbf9a)}
+body .pi-personal-color-swatch[aria-pressed="true"] {outline:2px solid var(--text,#222);outline-offset:2px;}
+body .pi-personal-color-swatch:hover {transform:scale(1.15);}
+body .pi-personal-color-swatch:focus-visible {outline:2px solid var(--text,#222);outline-offset:2px;}
+body .pi-personal-aq-menu {position:relative;}
+body .pi-personal-aq-menu .pi-ws-menu-panel {min-width:225px;}
+/* A menu that grows for the swatches should remain scrollable on smaller screens. */
+body :is(.pi-item-tools-panel,.pi-nested-tools-menu,.planner-item-actions,.planner-nested-options,
+ .planner-category-menu-actions,.pi-ws-menu-panel,.pi-aq-menu-actions):has(.pi-personal-color-picker) {
+  max-height:min(370px,70vh);overflow-y:auto;overscroll-behavior:contain;
+}
+@media(max-width:700px){body .pi-personal-color-picker{gap:7px;padding:8px 4px;}}

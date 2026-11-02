@@ -294,7 +294,7 @@ function initUnifiedWorkspace(mode){
  function makeChecklist(n,legacy){
    const zone=el('div','pi-ws-subtasks');
    (Array.isArray(n.subtasks)?n.subtasks:[]).forEach(sub=>{
-     const line=el('div','pi-ws-subrow');
+     const line=el('div','pi-ws-subrow');line.dataset.subtaskId=sub.id;
      const grip=btn('⠿','Drag to another category or column',()=>{},'pi-mini-icon pi-move-handle');
      grip.draggable=true;grip.addEventListener('dragstart',e=>{e.stopPropagation();dragSub={n,sub,legacy};dragging=null;e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',sub.id);});
      grip.addEventListener('dragend',()=>{dragSub=null;});

@@ -204,8 +204,65 @@
         else alert('Backup is not ready. Please reload and try again.');
       });
     }
+    action('↑ Upload JSON backup', 'piV16RestoreJson', restoreJsonBackup);
     action('↧ Archive all completed', 'piV16ArchiveCompleted', archivePageCompleted);
     $$('.pi-v16-tool-action, .backup-button', tray).forEach(button => button.title ||= button.textContent.trim());
+  }
+
+  /* User-initiated recovery from the matching flat JSON backup format.
+     Preview + separate automatic safety download before changing any data.
+     Missing keys are left alone, so a partial/older snapshot doesn't erase
+     newer app areas. Existing conflict-aware cloud sync remains authoritative. */
+  function restoreJsonBackup() {
+    const input = document.createElement('input');
+    input.type = 'file'; input.accept = '.json,application/json';
+    input.hidden = true;document.body.appendChild(input);
+    input.addEventListener('change', async () => {
+      const file=input.files?.[0];input.remove();if(!file)return;
+      if(file.size > 25 * 1024 * 1024){alert('This JSON file is larger than 25 MB. No changes made.');return;}
+      let parsed;
+      try { parsed=JSON.parse(await file.text()); }
+      catch(error){alert('The selected file is not valid JSON. Nothing was changed.');return;}
+      if(!parsed || typeof parsed !== 'object' || Array.isArray(parsed)){
+        alert('Expected a Personal Intranet backup JSON object. Nothing was changed.');return;
+      }
+      const entries=Object.entries(parsed).filter(([key,value]) =>
+        /^pi-[a-z0-9][a-z0-9-_]*$/i.test(key) && !key.startsWith('pi-share-') && typeof value==='string');
+      if(!entries.length){
+        alert('This file has no recognized Personal Intranet backup entries. Nothing was changed.');return;
+      }
+      const existing=entries.filter(([key])=>localStorage.getItem(key)!==null).length;
+      const changes=entries.filter(([key,value])=>localStorage.getItem(key)!==value).length;
+      if(!changes){alert('Everything in this backup already matches your current browser. No changes needed.');return;}
+      const approved=confirm(
+        `Restore ${entries.length} Personal Intranet data keys from ${file.name}?\n\n`+
+        `${changes} values will change, including up to ${existing} existing keys. `+
+        'Keys not in the backup will be preserved.\n\n' +
+        'This will replace matching local values, and those changes may also sync to your cloud and other devices. ' +
+        'A fresh JSON backup will be downloaded FIRST for recovery.\n\nProceed?'
+      );
+      if(!approved)return;
+      if(typeof window.PICloud?.backup!=='function'){
+        alert('Backup is not ready yet. Nothing was changed. Reload and try again.');return;
+      }
+      try{window.PICloud.backup();}
+      catch(error){alert('Could not create a safety backup. Nothing was changed.');return;}
+      const before=new Map(entries.map(([key])=>[key,localStorage.getItem(key)]));
+      try {
+        for(const [key,value] of entries)localStorage.setItem(key,value);
+      }catch(error){
+        for(const [key,previous] of before){
+          try{if(previous===null)localStorage.removeItem(key);else localStorage.setItem(key,previous);}catch(rollbackError){console.error('Restore rollback failure',key,rollbackError);}
+        }
+        console.error('JSON restore failed; original values were restored when possible',error);
+        alert('Restore failed due to browser storage limitations. Original values have been restored where possible.');
+        return;
+      }
+      alert(`Restored ${changes} changed values. The page will reload to show the imported data. Keep your pre-restore backup safe.`);
+      location.reload();
+    },{once:true});
+    input.addEventListener('cancel',()=>input.remove(),{once:true});
+    input.click();
   }
 
   const parseArray = key => {
