@@ -1,0 +1,186 @@
+/* ===============================================================
+   CANDY JURASSIC | Aurora Candy glass theme | November 2026
+   Isolated theme: activated only for body[data-theme="candy-jurassic"].
+   Original desktop/mobile art in assets/. No JS or storage changes.
+   =============================================================== */
+body[data-theme="candy-jurassic"] {
+  --bg: #101b58;
+  --bg-soft: #172762;
+  --panel: rgba(28,54,134,.89);
+  --panel-light: rgba(49,84,177,.86);
+  --plum: #a276f5;
+  --plum-soft: #dcc2ff;
+  --teal: #21cddd;
+  --teal-soft: #a4fbef;
+  --blue: #55a3ff;
+  --blue-soft: #c2e4ff;
+  --rose: #ef7bd8;
+  --rose-soft: #ffbdf1;
+  --green: #56e8c2;
+  --green-soft: #befcec;
+  --orange: #c783f6;
+  --orange-soft: #eed1ff;
+  --text: #f6f7ff;
+  --muted: #e1e8ff;
+  --faint: #becdf2;
+  --border: #77aaf0;
+  --shadow: 0 6px 22px rgba(6,9,57,.32), inset 0 1px 0 rgba(235,245,255,.12);
+  color:var(--text);
+  color-scheme:dark;
+  background-color:#101b58;
+  background-image:linear-gradient(180deg,rgba(8,13,63,.13),rgba(11,16,65,.12)),url("assets/candy-jurassic-desktop.webp");
+  background-position:center,center center;
+  background-size:cover,cover;
+  background-repeat:no-repeat,no-repeat;
+  background-attachment:fixed,fixed;
+}
+
+/* Preserve the scenery between panels, with colorful glass-like surfaces
+   rather than the bright white fills of Explorer. The text stays readable. */
+body[data-theme="candy-jurassic"] :is(
+  .panel,.aq-panel,.aq-category,.link-strip,.current-strip,.board-tile,
+  .pi-workspace-panel,.pi-notes-section,.pi-focus-panel,.planner-calendar,
+  .planner-notes,.planner-day,.calendar-panel,.pattern-panel,.almanac-panel,
+  .neo-card,.archive-section-block,.tracking-section-block,
+  .longform-library,.longform-composer,.longform-saved-section,
+  .alignment-library,.alignment-tiles,.alignment-composer,.archive-v2-panel
+) {
+  color:var(--text);
+  border-color:rgba(139,191,255,.69);
+  background:linear-gradient(135deg,rgba(110,131,255,.19),rgba(67,181,234,.09) 50%,rgba(141,78,219,.17)),rgba(25,50,132,.84);
+  box-shadow:var(--shadow);
+}
+body[data-theme="candy-jurassic"] :is(
+  .panel-header,.aq-panel-head,.aq-category-head,.pi-focus-head,
+  .pi-workspace-head,.pi-notes-section-head,.planner-heading,
+  .longform-library-head,.longform-composer-head,.longform-saved-section-head,
+  .archive-v2-panel-head,.neo-field-header,.almanac-panel-head,
+  .alignment-section-header
+) {
+  color:var(--text);
+  background:linear-gradient(105deg,rgba(85,122,229,.68),rgba(57,179,214,.34) 51%,rgba(154,96,220,.50));
+  border-bottom-color:rgba(170,210,255,.66);
+}
+body[data-theme="candy-jurassic"] :is(
+  .panel-title,.aq-panel-title,.aq-category-name,.pi-focus-title,
+  .longform-section-title,.pi-workspace-title,h1,h2,h3,
+  .day-card .date-label,.planner-heading h2
+) {color:#fbfaff;}
+body[data-theme="candy-jurassic"] :is(.subtitle,.panel-subtitle,.aq-panel-subtitle,.date-label,.aq-shortcut) {color:#e2edff;}
+body[data-theme="candy-jurassic"] .pi-mark {
+  background:linear-gradient(145deg,#a44af0,#39d8dd 65%,#326ff5);
+  border:1px solid #dbbaff;
+  box-shadow:0 0 18px rgba(165,79,248,.42);
+}
+
+/* Distinct pastel candy overlays are visible even when the dashboard is full. */
+body[data-theme="candy-jurassic"] .aq-category:nth-child(8n+1),
+body[data-theme="candy-jurassic"] .board-tile[data-accent="teal"] {background:linear-gradient(135deg,rgba(53,182,222,.30),rgba(36,65,160,.77)),rgba(23,48,128,.83);}
+body[data-theme="candy-jurassic"] .aq-category:nth-child(8n+2),
+body[data-theme="candy-jurassic"] .board-tile[data-accent="plum"] {background:linear-gradient(130deg,rgba(170,116,247,.35),rgba(40,58,153,.80)),rgba(28,42,128,.84);}
+body[data-theme="candy-jurassic"] .aq-category:nth-child(8n+3),
+body[data-theme="candy-jurassic"] .board-tile[data-accent="rose"] {background:linear-gradient(130deg,rgba(238,118,214,.27),rgba(54,61,167,.79)),rgba(32,48,136,.84);}
+body[data-theme="candy-jurassic"] .aq-category:nth-child(8n+4),
+body[data-theme="candy-jurassic"] .board-tile[data-accent="blue"] {background:linear-gradient(130deg,rgba(86,169,250,.28),rgba(34,62,151,.79)),rgba(28,48,130,.84);}
+body[data-theme="candy-jurassic"] .board-tile[data-accent="green"] {background:linear-gradient(130deg,rgba(62,222,197,.27),rgba(33,62,153,.83));}
+body[data-theme="candy-jurassic"] .board-tile[data-accent="orange"] {background:linear-gradient(130deg,rgba(173,110,237,.32),rgba(34,54,146,.84));}
+body[data-theme="candy-jurassic"] .aq-category-head {background:linear-gradient(90deg,rgba(107,187,235,.18),rgba(168,99,242,.16));}
+
+/* Note rows, planner cards and interactive content: soft, colored glass. */
+body[data-theme="candy-jurassic"] :is(
+  .aq-card,.day-card,.checklist-item,.pi-compact-item,.pi-focus-item,
+  .note,.archive-entry,.pattern-item,.calendar-item,.planner-item,
+  .link-chip,.pi-category-note,.neo-dream-card,.neo-dailies-card,
+  .longform-card,.pi-ws-note,.pi-focus-note,.aq-inbox-card,
+  .alignment-note,.almanac-item
+) {
+  background:linear-gradient(125deg,rgba(134,174,250,.12),rgba(95,116,220,.07)),rgba(42,76,163,.81);
+  border-color:rgba(138,197,251,.62);
+  color:var(--text);
+}
+body[data-theme="candy-jurassic"] .database-page #piDatabaseFocus .pi-focus-item {
+  background:rgba(81,71,170,.83);border-color:rgba(203,155,255,.70);
+}
+body[data-theme="candy-jurassic"] .day-card.scroll-plum {border-top-color:#c7a3ff;}
+body[data-theme="candy-jurassic"] .day-card.scroll-teal {border-top-color:#78f4f0;}
+body[data-theme="candy-jurassic"] .day-card.scroll-blue {border-top-color:#8cc9ff;}
+body[data-theme="candy-jurassic"] .day-card.scroll-rose {border-top-color:#ff9fdb;}
+body[data-theme="candy-jurassic"] .day-card.scroll-green {border-top-color:#88f3c8;}
+body[data-theme="candy-jurassic"] .day-card.scroll-orange {border-top-color:#dfa3ff;}
+
+/* Editing always has a dark-enough foundation regardless of the picture
+   behind a note; dropdown menus and dialogs use opaque ink for legibility. */
+body[data-theme="candy-jurassic"] :is(
+ input:not([type="checkbox"]):not([type="radio"]),textarea,select,
+ .day-input,.checklist-input,.tile-item-input,.aq-capture-input,
+ .aq-capture-rich-input,.link-editor input,.link-editor select,
+ [contenteditable="true"].aq-capture-rich-input
+) {
+  color:#fff;
+  background:rgba(18,35,107,.91);
+  border-color:rgba(140,192,255,.79);
+  caret-color:#93fff1;
+}
+body[data-theme="candy-jurassic"] :is(input,textarea)::placeholder,
+body[data-theme="candy-jurassic"] [contenteditable="true"][data-placeholder]:empty:before {color:#d2dfff;opacity:1;}
+body[data-theme="candy-jurassic"] input[type="checkbox"],
+body[data-theme="candy-jurassic"] input[type="radio"] {accent-color:#5ce7d8;}
+body[data-theme="candy-jurassic"] :is(input,textarea,select,button,[contenteditable="true"]):focus-visible {outline:2px solid #9bfff4;outline-offset:2px;}
+
+/* Menus stay highly readable over the busy art (and remain above panels). */
+body[data-theme="candy-jurassic"] :is(
+  .ecosystem-menu-popover,.pi-tools-popover,.pi-cross-panel,.pi-item-tools-panel,
+  .pi-ws-menu-panel,.planner-item-actions,.planner-nested-options,
+  .planner-category-menu-actions,.pi-focus-tools-panel,.pi-v17-unified-menu,
+  .pi-nested-tools-menu,.alignment-floating-menu,.longform-card-tool-panel,
+  .pi-category-dialog,.link-editor,.pi-overlay-content,.pi-modal,dialog
+) {background:#19296a;color:#f7f7ff;border-color:#86b2f7;}
+body[data-theme="candy-jurassic"] :is(
+  .small-button,.theme-select,.link-add-button,.link-chip,
+  .pi-note-open,.panel-collapse-toggle,.pi-popout-button,
+  .pi-category-popout-button,.aq-filter-button,.aq-mini-button,
+  .ecosystem-menu > summary,.pi-theme-menu > summary,
+  .pi-tools-menu > summary,.pi-color-panel-menu > summary
+) {color:#f8faff;background:rgba(51,92,185,.90);border-color:#8cb8f6;}
+body[data-theme="candy-jurassic"] :is(.small-button,.ecosystem-menu > summary,.pi-theme-choice,.link-add-button):hover {
+  background:#466bc5;border-color:#a4f9ed;
+}
+body[data-theme="candy-jurassic"] :is(.theme-select,.theme-select option,.theme-select optgroup) {color:#f8faff;background:#1b2d73;}
+body[data-theme="candy-jurassic"] :is(.ecosystem-menu-popover a,.pi-tools-popover button) {color:#f7f8ff;}
+body[data-theme="candy-jurassic"] :is(
+ .mini-add,.add-button,.checklist-add,.tile-item-add,.aq-primary-button,
+ .pi-focus-entry button,#saveLinkEdit,#addPattern,#addTimelineMarker
+) {color:#11245e;background:#63ede2;border-color:#9efff6;font-weight:700;}
+body[data-theme="candy-jurassic"] :is(.mini-add,.add-button,.checklist-add,.aq-primary-button):hover {background:#adfff4;}
+body[data-theme="candy-jurassic"] .pi-category-dialog-head {background:#354b9a;}
+body[data-theme="candy-jurassic"] .neo-card::before {
+  background:repeating-linear-gradient(90deg,#7ff8ec 0 12px,#66c9ff 12px 24px,#b38eff 24px 36px,#f58cdd 36px 48px);
+}
+body[data-theme="candy-jurassic"] :is(.sync-status,#saveStatus.saved) {color:var(--text);}
+
+/* Provide deliberately different compositions to wide and narrow devices. */
+@media (max-width:900px) and (orientation:portrait) {
+  body[data-theme="candy-jurassic"] {
+    background-image:linear-gradient(180deg,rgba(9,12,54,.14),rgba(12,17,66,.10)),url("assets/candy-jurassic-mobile.webp");
+    background-position:center top,center center;
+    background-attachment:scroll,scroll;
+  }
+}
+@media (max-width:600px) {
+  body[data-theme="candy-jurassic"] :is(.panel,.aq-panel,.aq-category,.board-tile,.pi-workspace-panel) {
+    background-color:rgba(24,49,128,.91);
+  }
+}
+
+/* V21.7 popovers set background with !important; ensure their backplate
+   remains opaque even though Candy Jurassic panels are translucent. */
+html body[data-theme="candy-jurassic"] :is(
+ .pi-cross-panel,.pi-item-tools-panel,.pi-ws-menu-panel,.pi-nested-tools-menu,
+ .planner-category-menu-actions,.planner-nested-options,.planner-item-actions,
+ .pi-focus-tools-panel,.longform-card-tool-panel
+):popover-open,
+html body[data-theme="candy-jurassic"] .pi-v17-unified-menu {
+  background:#19296a !important;
+  color:#f7f8ff !important;
+  border-color:#86b2f7 !important;
+}

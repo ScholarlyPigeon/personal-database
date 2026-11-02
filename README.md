@@ -1,3 +1,15 @@
+# V21.8 · Candy Jurassic theme (November 1, 2026)
+
+Adds **🦕 Candy Jurassic**, an Aurora Candy-inspired, glass-blue theme with cyan, mint, lavender, pink and indigo accents. It is listed with the **Light themes** in the theme selector, as requested, while using white lettering on mid-blue translucent panels to match the approved Aurora Candy Glass preview. There are **no bright-white content panels**. The theme loads its own wide desktop artwork (`assets/candy-jurassic-desktop.webp`, 1920×1080) and portrait mobile artwork (`assets/candy-jurassic-mobile.webp`, 1080×1920). The images are optimized WebP files and are part of this ZIP.
+
+**Files changed:** one theme option in `Script.js`; a new isolated `CandyJurassic.css` imported on all 11 actual application pages; two images in `assets/`; cache-version changes for `Script.js` in each page. `CloudSync.js`, record formats, note data, menus, and existing theme CSS were not modified. All previous themes remain available, and the selected theme still persists across pages and devices using the existing browser theme preference mechanism.
+
+**Deploy:** Make your usual fresh JSON backup, then upload the **contents** of `CURRENT/` into the GitHub repository root, with the `assets/` folder preserved. Overwrite matching files, hard-refresh on desktop/mobile, and select **🦕 Candy Jurassic** from the Themes menu. Test Aquarium/Home, the Week/Month pages and one existing note before resuming heavy edits. If GitHub's file upload interface does not accept folders, open `assets/` in GitHub first and upload the two new `.webp` images there, then upload the other updated files at the repository root.
+
+**Checks:** Static HTML references, image sizes, JS syntax and CSS parsing verified. Live hosted-browser and cloud-sync checks were not possible here; the application runtime and sync engine were intentionally left unchanged.
+
+---
+
 # V21.5 · Portable Notes + Color Everywhere (November 1, 2026)
 
 A focused pass on cross-page note movement and visual customization, based on V21.4 Aurora.

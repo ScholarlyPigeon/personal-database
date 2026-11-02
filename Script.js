@@ -458,6 +458,7 @@ const THEME_OPTIONS = [
     { value: "nightgarden", label: "🪻 Night Garden", mode: "dark" },
     { value: "fieldnotes", label: "📓 Universal Field Notes", mode: "dark" },
     { value: "aurora", label: "🌌 Aurora", mode: "dark" },
+    { value: "candy-jurassic", label: "🦕 Candy Jurassic", mode: "light" },
     { value: "y2k", label: "🖥️ Y2K Web Portal", mode: "dark" },
     { value: "fall2", label: "🍁 Fall 2", mode: "dark" },
     { value: "clarity-dark", label: "🧾 Clarity Dark", mode: "dark" },
