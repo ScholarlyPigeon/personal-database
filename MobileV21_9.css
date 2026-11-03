@@ -1,0 +1,178 @@
+/* V21.9 · consistent mobile navigation, Longform headers, Timeline, Compass folders.
+   All work is additive; core desktop layout and stored notes remain intact. */
+.pi-compass-page .pi-current-folder {
+  display:flex;flex-direction:column;box-sizing:border-box;min-width:0;min-height:100px;
+  padding:9px;border:1px solid var(--border);border-left:3px solid var(--plum-soft);
+  border-radius:10px;background:color-mix(in srgb,var(--panel-light) 85%,var(--plum) 15%);
+  box-shadow:none;overflow:visible;scroll-snap-align:start;
+}
+.pi-compass-page .pi-current-folder-head{display:flex;align-items:center;gap:5px;min-width:0;}
+.pi-compass-page .pi-current-folder-open{flex:1 1 auto;min-width:0;padding:5px 2px;text-align:left;
+  background:transparent;border:0;color:var(--text);font:700 12px/1.4 'Trebuchet MS','Segoe UI',sans-serif;
+  overflow-wrap:anywhere;cursor:pointer;}
+.pi-compass-page .pi-current-folder-open:hover{text-decoration:underline;}
+.pi-compass-page .pi-current-folder-description{flex:1 1 auto;margin:10px 4px 5px;font-size:11px;line-height:1.4;
+  color:var(--muted);overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.pi-compass-page .pi-current-folder-count{align-self:flex-end;margin:2px 4px 0;font-size:10px;color:var(--muted);}
+.pi-compass-folder-dialog{width:min(650px,calc(100vw - 24px));max-width:calc(100vw - 24px);
+  max-height:min(86dvh,850px);box-sizing:border-box;padding:14px;color:var(--text);background:var(--panel);
+  border:1px solid var(--border);border-radius:13px;box-shadow:0 20px 65px #0008;}
+.pi-compass-folder-dialog[open]{display:flex;flex-direction:column;gap:10px;}
+.pi-compass-folder-dialog::backdrop{background:rgba(0,0,0,.67);backdrop-filter:blur(3px);}
+.pi-compass-folder-dialog-top{display:flex;align-items:end;gap:9px;}
+.pi-compass-folder-dialog-top label{flex:1;min-width:0;}
+.pi-compass-folder-dialog label{font-size:11px;color:var(--muted);}
+.pi-compass-folder-dialog input,.pi-compass-folder-dialog textarea{box-sizing:border-box;display:block;width:100%;min-width:0;
+  border:1px solid var(--border);border-radius:8px;background:var(--bg-soft);color:var(--text);padding:8px 10px;
+  font:inherit;margin-top:4px;}
+.pi-compass-folder-dialog-top input{font-weight:700;font-size:16px;}
+.pi-compass-folder-dialog-tools{display:flex;align-items:center;justify-content:space-between;gap:8px;
+  color:var(--muted);font-size:12px;}
+.pi-compass-folder-note-list{min-height:100px;overflow:auto;flex:1 1 auto;padding:8px;border:1px solid var(--border);
+  background:var(--bg-soft);border-radius:10px;}
+.pi-compass-folder-note-list .pi-note-card{overflow:visible;}
+.pi-compass-folder-note-list > .pi-muted{text-align:center;padding:20px 6px;}
+html body.pi-compass-body section.pi-current-panel.pi-panel-popout .pi-current-folder{width:100%;flex:0 0 auto;}
+@media(max-width:700px){
+  /* Match Home's two-by-two mobile header, regardless of source DOM order.
+     Row one: Theme + Pages, row two: Tools + Synced. */
+  html body :is(.aq-header,.almanac-header,.patterns-header,.longform-header,
+    .neo-header,.alignment-header) {display:flex!important;flex-direction:column!important;
+    align-items:stretch!important;gap:8px!important;width:100%!important;max-width:100%!important;
+    min-width:0!important;box-sizing:border-box!important;overflow:visible!important;}
+  html body :is(.aq-header,.almanac-header,.patterns-header,.longform-header,
+    .neo-header,.alignment-header) > .brand {width:100%!important;min-width:0!important;}
+  html body header :is(.header-right.header-right,.aq-header-actions.aq-header-actions,.almanac-header-actions.almanac-header-actions,
+    .patterns-header-actions.patterns-header-actions,.longform-header-actions.longform-header-actions,.neo-header-tools.neo-header-tools) {
+    display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+    grid-template-rows:auto auto!important;gap:7px 8px!important;grid-auto-flow:row!important;
+    justify-content:stretch!important;align-items:stretch!important;justify-items:stretch!important;
+    flex:none!important;margin:0!important;width:100%!important;max-width:100%!important;
+    min-width:0!important;overflow:visible!important;}
+  html body header :is(.header-right.header-right,.aq-header-actions.aq-header-actions,.almanac-header-actions.almanac-header-actions,
+    .patterns-header-actions.patterns-header-actions,.longform-header-actions.longform-header-actions,.neo-header-tools.neo-header-tools) > .pi-theme-menu {
+    grid-area:1 / 1!important;display:block!important;order:0!important;flex:none!important;
+    width:100%!important;min-width:0!important;max-width:100%!important;margin:0!important;}
+  html body header :is(.header-right.header-right,.aq-header-actions.aq-header-actions,.almanac-header-actions.almanac-header-actions,
+    .patterns-header-actions.patterns-header-actions,.longform-header-actions.longform-header-actions,.neo-header-tools.neo-header-tools) > .ecosystem-menu:not(.pi-theme-menu):not(.pi-tools-menu) {
+    grid-area:1 / 2!important;display:block!important;order:0!important;flex:none!important;
+    width:100%!important;min-width:0!important;max-width:100%!important;margin:0!important;}
+  html body header :is(.header-right.header-right,.aq-header-actions.aq-header-actions,.almanac-header-actions.almanac-header-actions,
+    .patterns-header-actions.patterns-header-actions,.longform-header-actions.longform-header-actions,.neo-header-tools.neo-header-tools) > .pi-tools-menu {
+    grid-area:2 / 1!important;display:block!important;order:0!important;flex:none!important;
+    width:100%!important;min-width:0!important;max-width:100%!important;margin:0!important;}
+  html body header :is(.header-right.header-right,.aq-header-actions.aq-header-actions,.almanac-header-actions.almanac-header-actions,
+    .patterns-header-actions.patterns-header-actions,.longform-header-actions.longform-header-actions,.neo-header-tools.neo-header-tools) > #saveStatus.sync-status {
+    grid-area:2 / 2!important;order:0!important;display:flex!important;
+    box-sizing:border-box!important;align-items:center!important;justify-content:center!important;
+    width:100%!important;min-width:0!important;max-width:100%!important;
+    margin:0!important;padding:5px 7px!important;min-height:36px!important;height:36px!important;
+    white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;}
+  html body header :is(.header-right.header-right,.aq-header-actions.aq-header-actions,.almanac-header-actions.almanac-header-actions,
+    .patterns-header-actions.patterns-header-actions,.longform-header-actions.longform-header-actions,.neo-header-tools.neo-header-tools) > :is(.pi-theme-menu,.ecosystem-menu) > summary {
+    display:flex!important;justify-content:space-between!important;align-items:center!important;
+    box-sizing:border-box!important;width:100%!important;min-width:0!important;max-width:100%!important;
+    height:36px!important;min-height:36px!important;margin:0!important;padding:6px 9px!important;
+    white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;font-size:12px!important;}
+  html body header select#themeSelect.pi-nav-source-select{display:none!important;}
+
+  /* Timeline: the composer goes first; entire board is one comfortable column. */
+  html body.pi-reflections-body #piReflections.pi-reflections-grid {
+    display:flex!important;flex-direction:column!important;align-items:stretch!important;
+    grid-template-columns:minmax(0,1fr)!important;width:100%!important;min-width:0!important;
+    height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important;gap:10px!important;}
+  html body.pi-reflections-body #piReflections.pi-reflections-grid > .pi-workspace-panel {
+    box-sizing:border-box!important;display:flex!important;flex-direction:column!important;
+    width:100%!important;min-width:0!important;max-width:100%!important;
+    height:auto!important;min-height:0!important;max-height:none!important;overflow:hidden!important;flex:none!important;}
+  html body.pi-reflections-body #piReflections > .pi-workspace-panel:nth-child(2){order:0!important;}
+  html body.pi-reflections-body #piReflections > .pi-workspace-panel:nth-child(1){order:1!important;}
+  html body.pi-reflections-body #piReflections > .pi-workspace-panel:nth-child(3){order:2!important;}
+  html body.pi-reflections-body #piReflections .pi-workspace-head{min-height:43px!important;box-sizing:border-box!important;}
+  html body.pi-reflections-body #piReflections .pi-workspace-head h2 {white-space:normal;overflow-wrap:normal;word-break:normal;line-height:1.3;}
+  html body.pi-reflections-body #piReflections .pi-workspace-scroll {
+    flex:none!important;width:100%!important;box-sizing:border-box!important;max-height:480px!important;
+    height:auto!important;overflow-y:auto!important;overflow-x:hidden!important;}
+  html body.pi-reflections-body #piReflections .pi-workspace-form {
+    box-sizing:border-box!important;width:100%!important;min-height:0!important;flex:none!important;overflow:visible!important;}
+  html body.pi-reflections-body #piReflections .pi-note-editor{min-height:195px!important;flex:none!important;}
+  html body.pi-reflections-body #piReflections .pi-ws-three-fields{display:grid!important;grid-template-columns:minmax(0,1fr)!important;}
+  html body.pi-reflections-body #piReflections .pi-form-foot{flex-wrap:wrap;}
+
+  /* Longform: header titles occupy full width before the metadata row.
+     The old .editable-ui padding was consuming all available title space. */
+  html body #longformApp .longform-library-head,
+  html body #longformApp .longform-composer-head {
+    display:flex!important;flex-direction:row!important;flex-wrap:wrap!important;
+    box-sizing:border-box!important;gap:6px 8px!important;
+    align-items:center!important;justify-content:flex-start!important;
+    min-height:0!important;height:auto!important;padding:9px 10px!important;}
+  html body #longformApp :is(.longform-library-head,.longform-composer-head) > :first-child {
+    display:block!important;flex:1 1 100%!important;width:100%!important;min-width:0!important;
+    max-width:100%!important;margin:0!important;padding:0!important;}
+  html body #longformApp :is(.longform-library-head,.longform-composer-head) .longform-section-title {
+    box-sizing:border-box!important;display:block!important;width:100%!important;max-width:100%!important;
+    min-width:0!important;font-size:16px!important;line-height:1.3!important;
+    text-align:left!important;padding:0!important;margin:0!important;background:transparent!important;
+    border:0!important;border-radius:0!important;word-break:normal!important;overflow-wrap:normal!important;
+    white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;}
+  html body #longformApp :is(.longform-library-head,.longform-composer-head) .longform-section-note{display:none!important;}
+  html body #longformApp :is(.longform-library-controls,.longform-compose-meta) {
+    order:1!important;display:flex!important;flex:1 1 auto!important;min-width:0!important;max-width:100%!important;
+    justify-content:flex-start!important;align-items:center!important;gap:6px!important;
+    flex-direction:row!important;flex-wrap:wrap!important;margin:0!important;width:auto!important;}
+  html body #longformApp .longform-compose-meta label{flex:0 1 auto!important;min-width:0!important;max-width:100%!important;}
+  html body #longformApp .longform-compose-meta .longform-section-choice-field{
+    flex:1 1 158px!important;max-width:100%!important;}
+  html body #longformApp .longform-compose-meta .longform-date-field{flex:0 1 124px!important;max-width:100%!important;}
+  html body #longformApp .longform-compose-meta :is(select,input){box-sizing:border-box!important;
+    min-width:0!important;max-width:100%!important;width:100%!important;height:33px!important;}
+  html body #longformApp :is(.longform-library-head,.longform-composer-head) > :is(.pi-popout-button,.pi-color-panel-menu,.panel-collapse-toggle){
+    flex:0 0 auto!important;order:2!important;align-self:center!important;margin:0!important;}
+  html body #longformApp .longform-library-controls .longform-add-section{width:auto!important;padding:5px 9px!important;}
+  html body #longformApp .longform-library-head > :first-child,
+  html body #longformApp .longform-composer-head > :first-child{grid-column:auto!important;grid-row:auto!important;}
+  /* Nested cards stay legible even in enlarged mobile text settings. */
+  html body #longformApp .longform-saved-section-head,
+  html body #longformApp .longform-entry-top{min-width:0!important;max-width:100%!important;}
+  html body #longformApp .longform-entry-title{overflow-wrap:break-word!important;word-break:normal!important;}
+  /* The folder rail remains swipeable like Alignment's tiles. */
+  html body.pi-compass-body .pi-current-folder{min-height:100px;}
+  html body .pi-compass-folder-dialog{max-height:90dvh;}
+}
+/* Calendar pages share the Home header class but not Home's .database-page root. */
+@media(max-width:700px){
+ html body.planner-body header.database-header > .header-right {
+   display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+   grid-template-rows:auto auto!important;grid-auto-flow:row!important;
+   gap:7px 8px!important;justify-items:stretch!important;align-items:stretch!important;
+   width:100%!important;min-width:0!important;max-width:100%!important;
+   margin:0!important;overflow:visible!important;
+ }
+ html body.planner-body header.database-header > .header-right > .pi-theme-menu {
+   grid-area:1/1!important;display:block!important;width:100%!important;min-width:0!important;
+   max-width:100%!important;margin:0!important;flex:none!important;order:0!important;
+ }
+ html body.planner-body header.database-header > .header-right > .ecosystem-menu:not(.pi-theme-menu):not(.pi-tools-menu){
+   grid-area:1/2!important;display:block!important;width:100%!important;min-width:0!important;
+   max-width:100%!important;margin:0!important;flex:none!important;order:0!important;
+ }
+ html body.planner-body header.database-header > .header-right > .pi-tools-menu {
+   grid-area:2/1!important;display:block!important;width:100%!important;min-width:0!important;
+   max-width:100%!important;margin:0!important;flex:none!important;order:0!important;
+ }
+ html body.planner-body header.database-header > .header-right > #saveStatus.sync-status {
+   grid-area:2/2!important;order:0!important;display:flex!important;align-items:center!important;
+   justify-content:center!important;box-sizing:border-box!important;width:100%!important;
+   max-width:100%!important;min-width:0!important;height:36px!important;min-height:36px!important;
+   padding:5px 7px!important;margin:0!important;white-space:nowrap!important;
+ }
+ html body.planner-body header.database-header > .header-right > :is(.pi-theme-menu,.ecosystem-menu) > summary {
+   box-sizing:border-box!important;display:flex!important;align-items:center!important;
+   justify-content:space-between!important;width:100%!important;max-width:100%!important;
+   min-width:0!important;height:36px!important;min-height:36px!important;
+   margin:0!important;padding:6px 9px!important;overflow:hidden!important;
+   text-overflow:ellipsis!important;white-space:nowrap!important;font-size:12px!important;
+ }
+ html body.planner-body header.database-header > .header-right > .sync-tools:not(:has(*)) {display:none!important;}
+}

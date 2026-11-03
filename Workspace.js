@@ -116,6 +116,7 @@ function initUnifiedWorkspace(mode){
  const root=$(compass?'piCompass':'piReflections'); if(!root)return;
  const KEY=compass?'pi-compass-v1':NOTES_KEY;
  const MAIN='__current__', TIMELINE='__timeline__', GOALS='__goals__', GROUNDING='__grounding__';
+ const FOLDER_PREFIX='folder:';const folderDest=id=>FOLDER_PREFIX+id;
  const cols=compass
    ? [{id:'goals',title:'Goals',list:$('piCompassGoalsList'),count:$('piCompassGoalsCount')},
       {id:'grounding',title:'Grounding',list:$('piCompassGroundingList'),count:$('piCompassGroundingCount')}]
@@ -136,6 +137,7 @@ function initUnifiedWorkspace(mode){
     {id:'patterns',name:'Patterns',side:'notes',collapsed:false}];
  const destinations=()=>[
    ...(compass?[{id:MAIN,label:'Currently...',side:'current'},
+     ...state.folders.map(f=>({id:folderDest(f.id),label:'Currently · Folder · '+f.name,side:'current'})),
      {id:GOALS,label:'Goals · main column',side:'goals'},
      {id:GROUNDING,label:'Grounding · main column',side:'grounding'}]:[
      {id:TIMELINE,label:'Timeline · main column',side:'timeline'},
@@ -145,14 +147,16 @@ function initUnifiedWorkspace(mode){
  function normalise(data){
    if(!data||!Array.isArray(data.entries)||!Array.isArray(data.sections)) data={sections:defaults(),entries:[]};
    if(!data.sections.length)data.sections=defaults();
+   if(compass)data.folders=Array.isArray(data.folders)?data.folders.filter(f=>f&&typeof f.id==='string').map(f=>({id:f.id,name:String(f.name||'Folder'),description:String(f.description||'')})):[];
    data.sections.forEach(s=>{ if(!s.side)s.side=compass?'goals':'notes';if(!['goals','grounding','timeline','notes'].includes(s.side))s.side=compass?'goals':'notes';if(typeof s.collapsed!=='boolean')s.collapsed=false; });
-   data.entries.forEach(n=>{if(!n.sectionId)n.sectionId=data.sections[0].id;});
+   data.entries.forEach(n=>{if(!n.sectionId)n.sectionId=data.sections[0].id;
+     if(compass&&String(n.sectionId).startsWith(FOLDER_PREFIX)&&!data.folders.some(f=>folderDest(f.id)===n.sectionId))n.sectionId=MAIN;});
    return data;
  }
  let state=normalise(read(KEY,null));
  let selected=null,dragging=null,dragSection=null,dragSub=null;
  function persist(){save(KEY,state);}
- function sideOf(id){ if(id===MAIN)return compass?'current':'notes';if(id===GOALS)return 'goals';if(id===GROUNDING)return 'grounding';if(id===TIMELINE)return 'timeline';return state.sections.find(s=>s.id===id)?.side||cols[0].id; }
+ function sideOf(id){ if(compass&&String(id||'').startsWith(FOLDER_PREFIX)&&state.folders.some(f=>folderDest(f.id)===id))return 'current';if(id===MAIN)return compass?'current':'notes';if(id===GOALS)return 'goals';if(id===GROUNDING)return 'grounding';if(id===TIMELINE)return 'timeline';return state.sections.find(s=>s.id===id)?.side||cols[0].id; }
  function isLine(n){return n.noteType==='line';}
  function inTimeline(n){return !compass && sideOf(n.sectionId)==='timeline';}
  function timelineDate(n){return String(n.date||n.createdAt||'9999-12-31').slice(0,10);}
@@ -194,7 +198,7 @@ function initUnifiedWorkspace(mode){
    if(legacy){if(!migrateLegacy(n,dest))return;}else{
      const at=state.entries.findIndex(x=>x.id===n.id);if(at<0)return;
      state.entries.splice(at,1);
-     if(dest===MAIN&&compass&&n.sectionId!==MAIN){n.currentSide=sideOf(n.sectionId);n.lastSectionId=n.sectionId;}
+     if(compass&&(dest===MAIN||dest.startsWith(FOLDER_PREFIX))&&n.sectionId!==dest){n.currentSide=sideOf(n.sectionId);n.lastSectionId=n.sectionId;}
      n.sectionId=dest;
      const target=before?state.entries.findIndex(x=>x.id===before):-1;
      state.entries.splice(target<0?state.entries.length:target,0,n);
@@ -268,7 +272,9 @@ function initUnifiedWorkspace(mode){
    return menu;
  }
  function attachDrop(target,destination,before=null,parent=null){
-   if(target.dataset.wsDropBound===destination)return;
+   // A folder dialog reuses its list element when another folder is opened.
+   // Update the target destination, rather than stacking stale drop handlers.
+   if(target.dataset.wsDropBound){target.dataset.wsDropBound=destination;return;}
    target.dataset.wsDropBound=destination;
    target.addEventListener('dragover',ev=>{
      if(!dragging&&!dragSub)return;
@@ -277,12 +283,13 @@ function initUnifiedWorkspace(mode){
    target.addEventListener('dragleave',ev=>{if(!target.contains(ev.relatedTarget))target.classList.remove('pi-drop-ready');});
    target.addEventListener('drop',ev=>{
      if(!dragging&&!dragSub)return;ev.preventDefault();ev.stopPropagation();target.classList.remove('pi-drop-ready');
-     if(dragSub){const {n,sub,legacy}=dragSub;moveSub(n,legacy,sub,destination,parent);return;}
-     const {n,legacy}=dragging;move(n,legacy,destination,before);
+     const dest=target.dataset.wsDropBound||destination;
+     if(dragSub){const {n,sub,legacy}=dragSub;moveSub(n,legacy,sub,dest,parent);return;}
+     const {n,legacy}=dragging;move(n,legacy,dest,before);
    });
    target.addEventListener('click',ev=>{
      if(!selected||ev.target.closest('button,input,select,[contenteditable="true"],a,summary'))return;
-     const chosen=findSelected();if(chosen)move(chosen.n,chosen.legacy,destination,before);
+     const chosen=findSelected();if(chosen)move(chosen.n,chosen.legacy,target.dataset.wsDropBound||destination,before);
    });
  }
  function editableTitle(n,legacy){
@@ -415,12 +422,78 @@ function initUnifiedWorkspace(mode){
    if(c.count)c.count.textContent=String(state.entries.filter(n=>sideOf(n.sectionId)===c.id).length+(c.id==='timeline'?legacyItems().length:0));
    attachDrop(root,main);
  }
+ // Folders are stored ONLY inside Compass's existing synced state; Alignment stays independent.
+ const folderDialog=compass?$('piCompassFolderDialog'):null;
+ let activeFolder=null,dragFolder=null;
+ const folderNotes=f=>state.entries.filter(n=>n.sectionId===folderDest(f.id));
+ function closeFolder(){if(folderDialog?.open)folderDialog.close();activeFolder=null;}
+ function openFolder(f){if(!folderDialog)return;activeFolder=f.id;renderFolder();if(!folderDialog.open)folderDialog.showModal();}
+ function renderFolder(){
+   if(!folderDialog||!activeFolder)return;
+   const f=state.folders.find(x=>x.id===activeFolder);if(!f){closeFolder();return;}
+   const name=$('piCompassFolderName'),desc=$('piCompassFolderDescription');
+   if(document.activeElement!==name)name.value=f.name;
+   if(document.activeElement!==desc)desc.value=f.description||'';
+   const notes=folderNotes(f),list=$('piCompassFolderNotes');
+   $('piCompassFolderCount').textContent=notes.length+' note'+(notes.length===1?'':'s');
+   list.replaceChildren();
+   notes.forEach(n=>list.append(makeNote(n)));
+   if(!notes.length)list.append(el('p','pi-muted','This folder is ready for its first note.'));
+   attachDrop(list,folderDest(f.id));
+ }
+ function createFolder(){
+   const title=prompt('Name this Currently folder','New folder');if(!title?.trim())return;
+   const f={id:uid('compass-folder'),name:title.trim().slice(0,90),description:''};
+   state.folders.push(f);persist();renderAll();openFolder(f);
+ }
+ function removeFolder(f){
+   if(!confirm('Remove folder "'+f.name+'"? Its notes will stay in Currently.'))return;
+   state.entries.forEach(n=>{if(n.sectionId===folderDest(f.id))n.sectionId=MAIN;});
+   state.folders=state.folders.filter(x=>x.id!==f.id);
+   if(activeFolder===f.id)closeFolder();persist();renderAll();
+ }
+ function folderTile(f){
+   const tile=el('article','pi-current-folder');tile.dataset.wsFolder=f.id;
+   const head=el('div','pi-current-folder-head');
+   const grip=btn('⠿','Drag folder to reorder',()=>{},'pi-mini-icon pi-move-handle');
+   grip.draggable=true;grip.addEventListener('dragstart',e=>{dragFolder=f;e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',f.id);});
+   grip.addEventListener('dragend',()=>{dragFolder=null;});
+   const title=btn('📁 '+f.name,'Open folder '+f.name,()=>openFolder(f),'pi-current-folder-open');
+   const menu=makeMenu([
+     ['Open folder',()=>openFolder(f)],
+     ['Add note',()=>{addBlank(folderDest(f.id),'category');openFolder(f);}],
+     ['Rename folder',()=>{const name=prompt('Folder name',f.name);if(name?.trim()){f.name=name.trim().slice(0,90);persist();renderAll();}}],
+     ['Edit description',()=>openFolder(f)],
+     null,['Delete folder (keep notes)',()=>removeFolder(f)]
+   ],'Folder options');
+   head.append(grip,title,menu);
+   const desc=el('p','pi-current-folder-description',f.description||'Open folder to see its notes');
+   const count=el('small','pi-current-folder-count',folderNotes(f).length+' note'+(folderNotes(f).length===1?'':'s'));
+   tile.append(head,desc,count);
+   tile.addEventListener('dragover',e=>{if(dragging||dragSub||dragFolder){e.preventDefault();e.stopPropagation();tile.classList.add('pi-drop-ready');}});
+   tile.addEventListener('dragleave',e=>{if(!tile.contains(e.relatedTarget))tile.classList.remove('pi-drop-ready');});
+   tile.addEventListener('drop',e=>{tile.classList.remove('pi-drop-ready');
+     if(dragFolder){e.preventDefault();e.stopPropagation();if(dragFolder.id!==f.id){const old=state.folders.indexOf(dragFolder),to=state.folders.indexOf(f);if(old>=0&&to>=0){state.folders.splice(old,1);state.folders.splice(to,0,dragFolder);persist();renderAll();}}dragFolder=null;return;}
+     if(dragging||dragSub){e.preventDefault();e.stopPropagation();if(dragSub){const {n,sub,legacy}=dragSub;moveSub(n,legacy,sub,folderDest(f.id));}else{const {n,legacy}=dragging;move(n,legacy,folderDest(f.id));}}
+   });
+   tile.addEventListener('click',e=>{if(e.target.closest('button,summary,details,input'))return;const chosen=findSelected();if(chosen)move(chosen.n,chosen.legacy,folderDest(f.id));else openFolder(f);});
+   return tile;
+ }
+ if(compass&&folderDialog){
+   $('piCompassAddFolder').addEventListener('click',createFolder);
+   $('piCompassFolderClose').addEventListener('click',closeFolder);
+   folderDialog.addEventListener('close',()=>{activeFolder=null;});
+   $('piCompassFolderName').addEventListener('change',e=>{const f=state.folders.find(x=>x.id===activeFolder);if(!f)return;f.name=e.target.value.trim().slice(0,90)||'Folder';persist();renderAll();});
+   $('piCompassFolderDescription').addEventListener('change',e=>{const f=state.folders.find(x=>x.id===activeFolder);if(!f)return;f.description=e.target.value.slice(0,500);persist();renderAll();});
+   $('piCompassFolderAddNote').addEventListener('click',()=>{const f=state.folders.find(x=>x.id===activeFolder);if(f)addBlank(folderDest(f.id),'category');});
+ }
  function renderCurrent(){
    if(!current)return;
    const scroll=current.scrollLeft;
    current.replaceChildren();current.classList.add('pi-current-rail','pi-ws-current-rail');
    const entries=state.entries.filter(n=>n.sectionId===MAIN);
-   $('piCompassCurrentCount').textContent=String(entries.length);
+   $('piCompassCurrentCount').textContent=String(entries.length+state.entries.filter(n=>n.sectionId.startsWith(FOLDER_PREFIX)&&state.folders.some(f=>folderDest(f.id)===n.sectionId)).length);
+   state.folders.forEach(f=>current.append(folderTile(f)));
    entries.forEach(n=>current.append(makeNote(n,false,true)));
    if(!entries.length)current.append(el('div','pi-muted pi-current-empty','Move a category or checklist note here to keep it in view.'));
    current.scrollLeft=scroll;
@@ -436,7 +509,7 @@ function initUnifiedWorkspace(mode){
    });
    sectionField.value=items.some(d=>d.id===value)?value:(compass?MAIN:MAIN);
  }
- function renderAll(){renderPicker();renderCurrent();cols.forEach(renderColumn);}
+ function renderAll(){renderPicker();renderCurrent();cols.forEach(renderColumn);if(compass&&folderDialog?.open)renderFolder();}
  // Opt-in type picker that keeps the existing title, rich editor and date inputs.
  const formRow=sectionField.closest('.pi-workspace-form-row');
  let typeField=$(compass?'piCompassNoteType':'piTimelineNoteType');

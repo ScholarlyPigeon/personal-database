@@ -237,3 +237,11 @@ were changed. V20.4 fixes otherwise remain in place.
 - Aquarium cards now use their existing combined move / color / archive / delete menu without an extra color-only three-dot menu.
 - Week/Month/Next Month headers arrange their palette and pop-out controls together on the right, preserving live pop-outs.
 - No storage keys, cloud sync formats, or saved note data were modified.
+
+## V21.9 — Mobile navigation, Longform, Timeline & Compass folders (Nov 2, 2026)
+- Added `MobileV21_9.css` after all existing theme CSS on the 11 app pages. At phone widths, Theme and Pages share the first navigation row, with Tools and Synced on row two, matching Home (including Week/Month/Next Month). Existing theme dropdowns, sync indicators, and menu behavior are unchanged.
+- Longform's editable panel headings are now short, single-line mobile titles. The save-to and date controls wrap below the title without squeezing its letters into a vertical stack. Popout/color/collapse controls remain available.
+- Timeline + Notes becomes one full-width mobile column: **Write it Out**, then **Timeline**, then **Saved Notes**. Desktop's three-column board is preserved.
+- Compass → Currently has `+ folder`, folder tiles, names/descriptions, a folder view, new-note action, reorder-by-drag, note drag-and-drop, and `⋮` folder actions. You can also select a folder in the Compass capture destination or the existing note movement menu. Removing a folder moves its notes to the main Currently rail; it never deletes them.
+- Compass folders live inside the existing synced `pi-compass-v1` object as an additive `folders` array. Alignment folders and records are untouched; no notes have been migrated between pages.
+- Mobile layout checked at 390px and 320px using Chromium style rendering. Compass folder lifecycle tested in a browser with mock storage: create → note → delete/rehome, no runtime errors. Actual live GitHub/Supabase deployment was not accessible from this build environment.
