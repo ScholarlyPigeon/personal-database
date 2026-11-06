@@ -28,6 +28,12 @@
     ['[data-pi-item-id]', 'piItemId', 'item'],
     ['[data-pi-category-id]', 'piCategoryId', 'item'],
     ['[data-entry-id]', 'entryId', 'item'],
+    ['.pi-current-folder[data-ws-folder]', 'wsFolder', 'compass-folder'],
+    ['.alignment-folder[data-folder-id]', 'folderId', 'alignment-folder'],
+    ['.alignment-list-zone[data-place]', 'place', 'alignment-list'],
+    ['.board-tile[data-id]', 'id', 'board-tile'],
+    ['.day-card[data-pi-color-day]', 'piColorDay', 'calendar-day'],
+    ['.planner-day[data-date]', 'date', 'calendar-day'],
     ['[data-card-id]', 'cardId', 'aquarium'],
     ['[data-category-id]', 'categoryId', 'aquarium-category'],
     ['[data-ws-section]', 'wsSection', 'workspace-section'],
@@ -136,8 +142,10 @@
         'section-'+i;
       const key='panel:'+page+':'+id;
       panel.dataset.piColorPanelId=page+':'+id;
-      panel.dataset.piColorKey=key;
-      apply(panel,key);
+      const sectionKey=panel.dataset.wsSection?'workspace-section:'+panel.dataset.wsSection:null;
+      const activeKey=sectionKey&&colors[sectionKey]?sectionKey:key;
+      panel.dataset.piColorKey=activeKey;
+      apply(panel,activeKey);
       if(header.querySelector('.pi-color-panel-menu'))return;
       const menu=document.createElement('details');menu.className='pi-color-panel-menu';
       const summary=document.createElement('summary');summary.textContent='🎨';
@@ -163,7 +171,70 @@
       });
     });
   }
+  // Whole-surface palettes (in addition to note/row palettes) use the
+  // existing synced color map, so folders and tables keep their own colors
+  // even when a UI component is re-rendered or the theme changes.
+  function attachSurfacePalette(target, header, key, purpose){
+    if(!target || !header || !key || key.length > 180)return;
+    target.dataset.piColorKey = key;
+    apply(target,key);
+    if(header.querySelector(':scope > .pi-full-surface-menu') ||
+       header.querySelector(':scope > .pi-color-panel-menu'))return;
+    const menu=document.createElement('details');
+    menu.className='pi-color-panel-menu pi-full-surface-menu';
+    const summary=document.createElement('summary');
+    summary.textContent='🎨';
+    summary.title='Color the entire '+purpose;
+    summary.setAttribute('aria-label','Color the entire '+purpose);
+    const tray=document.createElement('div');
+    tray.className='pi-color-panel-tray';
+    tray.append(picker(key));menu.append(summary,tray);
+    menu.addEventListener('click',event=>event.stopPropagation());
+    header.append(menu);
+    // Menus in tables and narrow folder cards float in the top layer to
+    // avoid clipping by rounded/scrolling ancestors. Outside-click/Escape
+    // handling remains provided by the existing shared menu policy.
+    menu.addEventListener('toggle',()=>{
+      if(typeof tray.showPopover!=='function')return;
+      if(!menu.open || !menu.isConnected){
+        try{if(tray.matches(':popover-open'))tray.hidePopover();}catch{}
+        tray.removeAttribute('popover');return;
+      }
+      tray.setAttribute('popover','manual');
+      try{if(!tray.matches(':popover-open'))tray.showPopover();}catch{return;}
+      const at=summary.getBoundingClientRect();
+      const w=Math.min(282,innerWidth-16),h=tray.offsetHeight;
+      const left=Math.max(8,Math.min(innerWidth-w-8,at.right-w));
+      const top=at.bottom+h+8<=innerHeight?at.bottom+5:Math.max(8,at.top-h-5);
+      tray.style.setProperty('left',left+'px','important');
+      tray.style.setProperty('top',top+'px','important');
+      tray.style.setProperty('width',w+'px','important');
+    });
+  }
+  function addWholeSurfaceMenus(){
+    const configs=[
+      ['.board-tile[data-id]', '.tile-head', node=>'board-tile:'+node.dataset.id,'table'],
+      ['.day-card[data-pi-color-day]', '.day-card-top', node=>'calendar-day:'+node.dataset.piColorDay,'day table'],
+      ['.planner-day[data-date]', 'h3', node=>'calendar-day:'+node.dataset.date,'calendar day'],
+      ['.pi-current-folder[data-ws-folder]', '.pi-current-folder-head', node=>'compass-folder:'+node.dataset.wsFolder,'folder'],
+      ['.alignment-folder[data-folder-id]', '.alignment-folder-controls', node=>'alignment-folder:'+node.dataset.folderId,'folder'],
+      ['.alignment-list-zone[data-place]', '.alignment-list-section-head', node=>'alignment-list:'+node.dataset.place,'section table']
+    ];
+    configs.forEach(([selector,headerSelector,keyFor,purpose])=>{
+      document.querySelectorAll(selector).forEach(node=>{
+        const header=node.querySelector(':scope > '+headerSelector);
+        if(header)attachSurfacePalette(node,header,keyFor(node),purpose);
+      });
+    });
+    // Workspace section colors are already in their ⋮ menu. Apply their
+    // saved choice to the entire section, not only its heading.
+    document.querySelectorAll('.pi-ws-section[data-ws-section]').forEach(node=>{
+      const key='workspace-section:'+node.dataset.wsSection;
+      if(colors[key]){node.dataset.piColorKey=key;apply(node,key);}
+    });
+  }
   function scan(){
+    addWholeSurfaceMenus();
     // V21.7: Aquarium color controls live in the existing combined action/move menu.
     addPanelMenus();
     document.querySelectorAll(MENU_PANELS).forEach(decorate);

@@ -1,0 +1,91 @@
+/* V22 · Theme-aware color coverage, shared by EVERY theme.
+   Keeps existing eight color names, existing storage and original labels.
+   A chosen palette now colors whole tables, folders, sections, notes, and rows. */
+
+/* Entire large surfaces, including Home's tables, calendar days, Compass and
+   Alignment folders/sections, Aquarium sections, and other existing panels. */
+html body :is(
+ .board-tile,.day-card,.planner-day,.pi-current-folder,.alignment-folder,
+ .alignment-list-zone,.pi-ws-section,.aq-category,
+ .planner-category,.pi-category-note,.longform-saved-section,
+ .panel,.pi-workspace-panel,.pi-notes-section,.planner-notes,.planner-calendar,
+ .aq-panel,.alignment-library,.alignment-tiles,.alignment-composer,
+ .longform-library,.longform-composer,.archive-v2-panel
+).pi-personal-colored {
+  background:linear-gradient(145deg,
+    color-mix(in srgb,var(--pi-personal-ink) 36%,var(--panel)) 0%,
+    color-mix(in srgb,var(--pi-personal-ink) 25%,var(--panel-light)) 100%) !important;
+  border-color:color-mix(in srgb,var(--pi-personal-ink) 70%,var(--border)) !important;
+  border-left:4px solid var(--pi-personal-ink) !important;
+  background-image:linear-gradient(145deg,
+    color-mix(in srgb,var(--pi-personal-ink) 36%,var(--panel)) 0%,
+    color-mix(in srgb,var(--pi-personal-ink) 25%,var(--panel-light)) 100%) !important;
+}
+/* Shade the section's actual header too, while keeping readable ink.
+   Windows XP uses its own deep-blue headers, with localized pastel overlays. */
+html body :is(.board-tile,.day-card,.pi-ws-section,.alignment-list-zone,.aq-category,
+ .planner-category,.pi-current-folder,.alignment-folder,.planner-day).pi-personal-colored
+ > :is(.tile-head,.day-card-top,.pi-ws-section-head,.alignment-list-section-head,
+        .aq-category-head,.planner-category-head,.pi-current-folder-head,
+        .alignment-folder-center,h3) {
+  background:color-mix(in srgb,var(--pi-personal-ink) 27%,var(--panel-light)) !important;
+  border-color:color-mix(in srgb,var(--pi-personal-ink) 52%,var(--border)) !important;
+  text-shadow:none !important;
+}
+html body :is(.board-tile,.day-card,.pi-ws-section,.alignment-list-zone,.aq-category,
+ .planner-category,.pi-current-folder,.alignment-folder,.planner-day).pi-personal-colored
+ > :is(.tile-head,.day-card-top,.pi-ws-section-head,.alignment-list-section-head,
+        .aq-category-head,.planner-category-head,.pi-current-folder-head,
+        .alignment-folder-center,h3) :is(.tile-title,.date-label,.pi-section-name,
+        .alignment-list-section-name,.aq-category-name,.pi-current-folder-open,strong,span) {
+  color:var(--text) !important;
+  text-shadow:none !important;
+}
+/* Whole rows and thought cards instead of a skinny color stripe alone. */
+html body :is(
+ .checklist-item,.pi-focus-item,.pi-nested-line,.planner-item,
+ .planner-category-line,.pi-ws-note,.pi-ws-subrow,.aq-card,.alignment-note,
+ .pi-category-note,.tile-item-row,.planner-preview-item
+).pi-personal-colored {
+  background:color-mix(in srgb,var(--pi-personal-ink) 29%,var(--panel-light)) !important;
+  border-color:color-mix(in srgb,var(--pi-personal-ink) 66%,var(--border)) !important;
+  border-left:3px solid var(--pi-personal-ink) !important;
+  background-image:none !important;
+}
+/* Keep writing text and real input fields legible; colors never override the
+   active theme's text/placeholder inks or intentionally transparent notes. */
+html body .pi-personal-colored > :is(.aq-category-zone,.pi-notes-section-body,.pi-ws-section-body,
+  .alignment-list-section-body,.tile-body,.day-list) {background:transparent !important;}
+html body .pi-personal-colored .aq-card :is(.aq-card-body,.aq-card-main) {background:transparent;}
+
+/* Surface color buttons sit *within* the existing title/action rails, not in
+   a new toolbar. Never cover folder titles or date labels. */
+html body .pi-full-surface-menu {flex:0 0 auto;margin:0 2px 0 auto;align-self:center;z-index:6;}
+html body .pi-full-surface-menu > summary {
+  width:26px;min-width:26px;height:26px;min-height:26px;
+  padding:0;line-height:1;display:grid;place-items:center;
+  border:1px solid var(--border);border-radius:7px;
+  color:var(--text);background:var(--panel-light);
+  font-size:13px;cursor:pointer;list-style:none;
+}
+html body .pi-full-surface-menu > summary::-webkit-details-marker {display:none;}
+html body .pi-full-surface-menu > summary:focus-visible {outline:2px solid var(--teal);outline-offset:2px;}
+html body .alignment-folder-controls {display:flex;align-items:center;gap:3px;}
+html body .alignment-folder-controls > .pi-full-surface-menu {margin-left:0;}
+html body .pi-current-folder-head > .pi-full-surface-menu {margin-left:auto;}
+html body .alignment-list-section-head > .pi-full-surface-menu {margin-left:auto;}
+html body .board-tile .tile-head > .pi-full-surface-menu {margin-left:auto;}
+html body .day-card .day-card-top > .pi-full-surface-menu {margin-left:auto;}
+html body .planner-day > h3 > .pi-full-surface-menu {margin-left:auto;}
+/* Modal popovers use theme colors regardless of surrounding tinted surface. */
+html body .pi-full-surface-menu .pi-color-panel-tray {
+  background:var(--panel) !important;color:var(--text) !important;
+  border:1px solid var(--border) !important;text-shadow:none !important;
+}
+html body .pi-full-surface-menu .pi-personal-color-picker {
+  background:var(--panel) !important;color:var(--text) !important;
+}
+@media (max-width:700px) {
+ html body .pi-full-surface-menu {margin-left:auto;}
+ html body .pi-full-surface-menu > summary {min-width:25px;width:25px;height:25px;}
+}

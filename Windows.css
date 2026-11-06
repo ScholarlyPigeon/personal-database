@@ -1,0 +1,149 @@
+/* windows · bright Windows XP / old-web styling across all intranet pages.
+   Uses scenery supplied by the user; existing layout and interaction are unchanged. */
+body[data-theme="windows"] {
+  --bg:#2477e4; --bg-soft:#e8f3ff;
+  --panel:#fffef5; --panel-light:#e9f3ff;
+  --plum:#9462d5; --plum-soft:#dcc7fa;
+  --teal:#1597ab; --teal-soft:#96e5ec;
+  --blue:#286fda; --blue-soft:#bddeff;
+  --rose:#ce639e; --rose-soft:#f8cbe4;
+  --green:#329c4a; --green-soft:#b6eab8;
+  --orange:#d69918; --orange-soft:#ffe09a;
+  --coral:#ed7e70; --cyan:#69cce4;
+  --text:#16325b; --muted:#425b80; --faint:#6780a3;
+  --border:#6e9ddf;
+  --shadow:0 4px 11px rgba(9,48,128,.28),inset 0 1px 0 rgba(255,255,255,.86);
+  color:var(--text);color-scheme:light;
+  background-color:#2376e2;
+  background-image:linear-gradient(180deg,rgba(32,117,233,.05),rgba(255,255,255,0) 58%,rgba(1,65,2,.04)),url('assets/windows-bliss-desktop.webp');
+  background-size:cover,cover;background-position:center,center;
+  background-attachment:fixed,fixed;background-repeat:no-repeat,no-repeat;
+}
+/* Major content boxes deliberately keep their own foundations to make text readable. */
+body[data-theme="windows"] :is(
+  .panel,.aq-panel,.aq-category,.board-tile,.link-strip,.current-strip,
+  .pi-workspace-panel,.pi-notes-section,.pi-focus-panel,
+  .planner-calendar,.planner-notes,.planner-day,.day-card,
+  .calendar-panel,.pattern-panel,.almanac-panel,
+  .neo-card,.archive-section-block,.tracking-section-block,
+  .longform-library,.longform-composer,.longform-saved-section,
+  .alignment-library,.alignment-tiles,.alignment-composer,.archive-v2-panel,
+  .pi-current-folder,.alignment-folder,.alignment-list-zone
+) {
+  color:var(--text);border:1px solid #75a1de;
+  background:linear-gradient(140deg,#fffef6,#e7f3ff);
+  box-shadow:0 3px 10px rgba(11,64,154,.26),inset 0 1px 0 #fff;
+}
+body[data-theme="windows"] :is(
+  .panel-header,.aq-panel-head,.aq-category-head,.pi-focus-head,.pi-workspace-head,
+  .pi-notes-section-head,.planner-heading,.longform-library-head,
+  .longform-composer-head,.longform-saved-section-head,.archive-v2-panel-head,
+  .neo-field-header,.almanac-panel-head,.alignment-section-header,
+  .alignment-list-section-head,.pi-ws-section-head
+) {
+  color:#fff!important;border-color:#1a5cc4;
+  background:linear-gradient(180deg,#84caff 0%,#3792ef 10%,#1470e4 48%,#0752bf 93%,#064ab8 100%)!important;
+  box-shadow:inset 0 1px 0 #c7edff,0 1px 2px rgba(17,73,156,.25);
+  text-shadow:0 1px 1px #1c4ca2;
+}
+body[data-theme="windows"] :is(
+ .panel-header,.aq-panel-head,.aq-category-head,.pi-focus-head,
+ .pi-workspace-head,.pi-notes-section-head,.planner-heading,
+ .longform-library-head,.longform-composer-head,.longform-saved-section-head,
+ .archive-v2-panel-head,.alignment-list-section-head,.pi-ws-section-head
+) :is(.panel-title,.aq-panel-title,.aq-category-name,.pi-focus-title,.pi-workspace-title,
+ .pi-section-name,.pi-notes-section-title,h2,strong,.alignment-list-section-name) {color:#fff!important;text-shadow:0 1px 1px #194c9c;}
+/* Glossy XP-style nav tabs and inset toolbar, without creating a fake browser window. */
+body[data-theme="windows"] :is(.database-header,.aq-header,.page-header,.pi-header,.longform-header,.alignment-header,.planner-header,.neo-header,.almanac-header,.patterns-header) h1,
+body[data-theme="windows"] .aq-brand h1 {color:#fff!important;text-shadow:0 2px 4px #044095,0 0 2px #04317b;font-weight:800;}
+body[data-theme="windows"] .pi-mark {
+  width:37px;min-width:37px;height:37px;box-sizing:border-box;
+  font-size:0!important;color:transparent!important;
+  border:1px solid #f7faff;border-radius:10px;
+  background:linear-gradient(160deg,#caeaff,#458be0 70%,#1556b9)!important;
+  box-shadow:inset 0 1px 0 #fff,0 2px 6px #00478b66;
+  position:relative;display:grid;place-items:center;
+}
+body[data-theme="windows"] .pi-mark::after {
+  content:'';position:absolute;inset:4px;
+  background:url('assets/windows-icon.svg') center/contain no-repeat;
+}
+body[data-theme="windows"] :is(.link-strip,.current-strip,.aq-section-header,
+  .pi-nav-bar,.pi-main-nav,.ecosystem-bar) {
+  border:1px solid #70aaf6;
+  background:linear-gradient(180deg,#e6f5ff,#bddbff 55%,#ddecff);
+  box-shadow:inset 0 1px 0 #fff,0 3px 6px #0055b955;
+}
+body[data-theme="windows"] :is(
+ .theme-select,.small-button,.link-add-button,.link-chip,.ecosystem-menu > summary,
+ .pi-theme-menu > summary,.pi-tools-menu > summary,.pi-color-panel-menu > summary,
+ .aq-mini-button,.panel-collapse-toggle,.pi-popout-button,
+ .pi-category-popout-button,.pi-section-button,.pi-mini-icon,.alignment-icon
+) {
+  background:linear-gradient(180deg,#fff 0%,#f0f6ff 51%,#c4dcff 100%);
+  border:1px solid #83a6dc;color:#17458f;text-shadow:none;
+  box-shadow:inset 0 1px 0 #fff,0 1px 2px #507bb654;
+}
+body[data-theme="windows"] :is(.small-button,.link-add-button,.ecosystem-menu > summary,.pi-mini-icon):hover {
+  background:linear-gradient(180deg,#fffef4,#d7f5ff 60%,#a8ceff);border-color:#2377d9;
+}
+body[data-theme="windows"] :is(.mini-add,.add-button,.checklist-add,.aq-primary-button,
+ .tile-item-add,#saveLinkEdit) {color:#12421d;background:linear-gradient(#e7ffd4,#70d278);border:1px solid #4caa58;font-weight:700;}
+body[data-theme="windows"] :is(
+ .aq-category:nth-child(6n+1),.board-tile[data-accent="teal"]
+) {background:linear-gradient(135deg,#fffef1,#e7fae2);}
+body[data-theme="windows"] :is(.aq-category:nth-child(6n+2),.board-tile[data-accent="rose"]) {background:linear-gradient(135deg,#fff1f4,#ffdeed);}
+body[data-theme="windows"] :is(.aq-category:nth-child(6n+3),.board-tile[data-accent="blue"]) {background:linear-gradient(135deg,#f1faff,#d7ecff);}
+body[data-theme="windows"] :is(.aq-category:nth-child(6n+4),.board-tile[data-accent="plum"]) {background:linear-gradient(135deg,#fbf4ff,#e4dafa);}
+body[data-theme="windows"] :is(.aq-category:nth-child(6n+5),.board-tile[data-accent="green"]) {background:linear-gradient(135deg,#f5fff6,#e2f8dd);}
+body[data-theme="windows"] :is(.aq-category:nth-child(6n+6),.board-tile[data-accent="orange"]) {background:linear-gradient(135deg,#fff9e5,#fff0c3);}
+body[data-theme="windows"] :is(
+  .checklist-item,.pi-focus-item,.pi-compact-item,.planner-item,.planner-category,
+  .pi-ws-note,.pi-ws-subrow,.aq-card,.note,.pi-category-note,.alignment-note,
+  .longform-card,.link-chip,.neo-dream-card,.almanac-item,.archive-entry
+) {color:var(--text);background:linear-gradient(135deg,#fff,#ebf3ff);border-color:#a6bee1;}
+body[data-theme="windows"] :is(
+ input:not([type="checkbox"]):not([type="radio"]),textarea,select,
+ .day-input,.aq-capture-rich-input,[contenteditable="true"].aq-capture-rich-input
+) {background:#f5f8ff;color:#143561;border-color:#8caee2;caret-color:#1765e1;}
+body[data-theme="windows"] :is(input,textarea)::placeholder,
+body[data-theme="windows"] [contenteditable="true"][data-placeholder]:empty::before {color:#657da3;opacity:1;}
+body[data-theme="windows"] :is(input,textarea,select,button,[contenteditable="true"]):focus-visible {
+ outline:2px solid #ffc43a;outline-offset:2px;
+}
+body[data-theme="windows"] :is(
+ .ecosystem-menu-popover,.pi-tools-popover,.pi-cross-panel,.pi-item-tools-panel,
+ .pi-ws-menu-panel,.planner-item-actions,.planner-nested-options,
+ .planner-category-menu-actions,.pi-focus-tools-panel,.pi-v17-unified-menu,
+ .pi-nested-tools-menu,.alignment-floating-menu,.longform-card-tool-panel,
+ .pi-category-dialog,.link-editor,.pi-overlay-content,.pi-modal,dialog
+) {color:#152f56;background:#fffdf5;border-color:#6196d9;text-shadow:none;}
+body[data-theme="windows"] :is(.theme-select,.theme-select option,.theme-select optgroup) {background:#f7fbff;color:#174382;}
+body[data-theme="windows"] :is(.aq-category-name,.tile-title,.pi-current-folder-open) {color:#163b7a;}
+body[data-theme="windows"] :is(.sync-status,#saveStatus.saved) {color:#f4faff;}
+/* Background can peek through where panels end rather than being painted over. */
+body[data-theme="windows"] :is(.aq-page,.page,.patterns-page,.longform-page,
+ .alignment-page,.almanac-page,.neo-page) {position:relative;z-index:1;}
+body[data-theme="windows"] :is(.pi-cross-panel,.pi-item-tools-panel,.pi-ws-menu-panel,
+ .pi-nested-tools-menu,.planner-category-menu-actions,.planner-nested-options,
+ .planner-item-actions,.pi-focus-tools-panel,.longform-card-tool-panel):popover-open,
+body[data-theme="windows"] .pi-v17-unified-menu {background:#fffdf5!important;color:#17365a!important;}
+@media(max-width:800px) and (orientation:portrait) {
+ body[data-theme="windows"] {background-image:linear-gradient(180deg,#1374d80d,transparent),url('assets/windows-bliss-mobile.webp');
+  background-position:center top,center center;background-size:cover,cover;background-attachment:scroll,scroll;}
+}
+/* Light clouds behind the top bar demand a stronger label outline, especially
+   on phones where the heading is small. Keep the playful colorful day accents,
+   but give their text enough darkness against white calendar cards. */
+body[data-theme="windows"] :is(.database-header,.aq-header,.almanac-header,
+ .longform-header,.alignment-header,.planner-header,.neo-header,.patterns-header) h1 {
+  color:#fff!important;
+  text-shadow:-1px -1px 0 #1357a5,1px 1px 0 #0b4e9a,0 2px 5px #003578!important;
+}
+body[data-theme="windows"] .link-strip-label {color:#1d4b86!important;text-shadow:none!important;}
+body[data-theme="windows"] .day-card.scroll-plum .date-label {color:#72509d!important;}
+body[data-theme="windows"] .day-card.scroll-teal .date-label {color:#126e82!important;}
+body[data-theme="windows"] .day-card.scroll-blue .date-label {color:#245ba5!important;}
+body[data-theme="windows"] .day-card.scroll-rose .date-label {color:#a03d72!important;}
+body[data-theme="windows"] .day-card.scroll-green .date-label {color:#237441!important;}
+body[data-theme="windows"] .day-card.scroll-orange .date-label {color:#976220!important;}

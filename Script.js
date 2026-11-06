@@ -459,6 +459,7 @@ const THEME_OPTIONS = [
     { value: "fieldnotes", label: "📓 Universal Field Notes", mode: "dark" },
     { value: "aurora", label: "🌌 Aurora", mode: "dark" },
     { value: "candy-jurassic", label: "🦕 Candy Jurassic", mode: "light" },
+    { value: "windows", label: "🪟 windows", mode: "light" },
     { value: "y2k", label: "🖥️ Y2K Web Portal", mode: "dark" },
     { value: "fall2", label: "🍁 Fall 2", mode: "dark" },
     { value: "clarity-dark", label: "🧾 Clarity Dark", mode: "dark" },
@@ -528,6 +529,19 @@ function applyTheme(theme, save = false) {
     const nextTheme = validThemes.has(theme) ? theme : fallback;
 
     document.body.dataset.theme = nextTheme;
+    // Only Windows borrows the classic logo as a browser-tab icon.
+    // A non-Windows theme removes it so the browser returns to its usual icon.
+    let winFavicon = document.getElementById('pi-windows-favicon');
+    if (nextTheme === 'windows') {
+        if (!winFavicon) {
+            winFavicon = document.createElement('link');
+            winFavicon.id = 'pi-windows-favicon';
+            winFavicon.rel = 'icon';
+            winFavicon.type = 'image/svg+xml';
+            document.head.append(winFavicon);
+        }
+        winFavicon.href = 'assets/windows-icon.svg';
+    } else if (winFavicon) winFavicon.remove();
     if (themeSelect) themeSelect.value = nextTheme;
 
     if (save) {
@@ -1171,6 +1185,7 @@ if (document.getElementById("tileGrid")) {
         const accentClass = dayAccentClasses[offset % dayAccentClasses.length];
         const cell = document.createElement("section");
         cell.className = `day-card ${accentClass}` + (offset === 0 ? " today-card" : "");
+        cell.dataset.piColorDay = isoDate(date);
 
         const top = document.createElement("div");
         top.className = "day-card-top";
