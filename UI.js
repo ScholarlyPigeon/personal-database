@@ -118,11 +118,11 @@
     '.database-page .right-date-rail', '.database-page .day-card',
     '.database-page .pi-focus-panel',
     '.pi-workspace-panel', '.pi-notes-section', '.pi-archive-column',
-    '.longform-library', '.longform-composer', '.longform-saved-section',
+    '.longform-library', '.longform-composer', '.longform-saved-section', '.longform-unsorted-zone',
     '.planner-notes', '.planner-calendar', '.aq-panel', '.aq-category-zone',
     '.neo-card'
   ].join(',');
-  const headers = '.panel-header, .date-rail-header, .day-card-top, .pi-workspace-head, .pi-notes-section-head, .planner-heading, .longform-library-head, .longform-composer-head, .longform-saved-section-head, .aq-panel-head, .aq-category-head, .neo-panel-heading, .neo-dailies-head, .pi-focus-head';
+  const headers = '.panel-header, .date-rail-header, .day-card-top, .pi-workspace-head, .pi-notes-section-head, .planner-heading, .longform-library-head, .longform-composer-head, .longform-saved-section-head, .longform-unsorted-head, .aq-panel-head, .aq-category-head, .neo-panel-heading, .neo-dailies-head, .pi-focus-head';
   let opened = null;
   let backdrop = null;
   const close = () => {
@@ -797,7 +797,7 @@
       const head=card.querySelector(':scope > .day-card-top');
       const archive=head?.querySelector('.day-archive-button');
       const pop=head?.querySelector('.pi-popout-button');
-      if(!head || !archive)return;
+      if(!head || !archive || archive.closest('.pi-v23-actions-menu,.pi-color-panel-menu,.pi-ws-menu'))return;
       if(archive.nextElementSibling!==pop){
         if(pop)head.insertBefore(archive,pop);
         else head.append(archive);

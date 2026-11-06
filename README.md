@@ -1,3 +1,17 @@
+# V23 · Consistent three-dot menus, Longform pop-outs and calendar polish (November 6, 2026)
+
+Built on **V22 Windows & Whole-Surface Colors**. Includes all existing Windows wallpaper/icon assets and the theme-wide color system.
+
+- **Unified options:** Table, panel, calendar-day and folder palettes now open from **⋮** rather than a separate paint-palette button. Where an existing three-dot menu is present, color choices merge into it, preserving the original event handlers and color records. Other inline table-header action buttons are moved into that menu where appropriate; **pop-out** and **expand/collapse** remain visible. Inline text editors, inputs and dropdowns remain usable.
+- **Longform:** Every saved note has a separate **⤢** editable pop-out with its title, date and rich text. The Unsorted group now has a persistent collapse toggle and its own existing-style panel pop-out. The original per-note editing, category move, colors and save keys are unchanged.
+- **Compass:** Currently folders now use centered, colorful Alignment-style tiles, with title, folder symbol, description and count; the existing folder actions and color picker share one three-dot menu. Drag-to-reorder and folder open remain intact. Alignment folder actions and colors are consolidated into one menu too.
+- **Calendar/Home:** Empty calendar Notes states are centered in their available space rather than appearing in a narrow strip beneath the header. Calendar-day palettes use three-dot menus. Home Upcoming colored rows receive additional room for text/date/actions, and narrow-screen Longform controls are kept on one line.
+- **No data migrations:** All current storage keys, cloud-sync scripts and notes are preserved. Unsorted collapse alone adds a non-destructive `pi-longform-unsorted-collapsed-v1` preference.
+- **Deploy:** Export a JSON backup first, close other intranet tabs, and replace your GitHub repository root with the **contents** of `CURRENT/`, including new `V23Menus.js` and `V23Polish.css` and the existing `assets/` folder. Hard-refresh after deploying. Check your own notes, folders, colors and cloud sync on desktop and mobile before making extensive new entries.
+- **Validation:** JavaScript syntax and HTML asset references were checked. Automated visual/browser tests were not completed because the Chromium instance in this environment rejected local page navigation; please verify the actual deployed pages, especially interactive menus, separately.
+
+---
+
 # V22 · windows theme + whole-surface colors (November 6, 2026)
 
 **New bright theme:** Select **🪟 windows** in the Themes menu (under **Light themes**). It uses the blue-sky/green-hill image the user supplied, optimized into `assets/windows-bliss-desktop.webp` (1920×1080) and `assets/windows-bliss-mobile.webp` (1080×1917), with Windows XP-style glossy-blue chrome, softly colored panels, and an original, locally stored four-color classic Windows-style SVG (`assets/windows-icon.svg`). The Windows icon replaces the page's header mark and browser-tab favicon only while this theme is selected. Existing themes retain their original marks. The usual layout, content, functionality, stored notes and page titles are unchanged.

@@ -1,0 +1,161 @@
+/* V23 · unified ⋮ actions, accessible Longform popouts, folder tiles and calendar spacing.
+   All rules follow theme tokens, including Windows, and preserve existing data formats. */
+
+/* A single consistent control for every palette: color always lives behind ⋮. */
+html body .pi-color-panel-menu.pi-v23-primary-options > summary,
+html body .pi-v23-actions-menu > summary {
+ display:grid!important;place-items:center!important;box-sizing:border-box!important;
+ width:27px!important;min-width:27px!important;height:27px!important;min-height:27px!important;
+ padding:0!important;border:1px solid var(--border)!important;border-radius:7px!important;
+ color:var(--text)!important;background:var(--panel-light)!important;
+ line-height:1!important;font-size:19px!important;font-weight:700!important;
+ text-shadow:none!important;cursor:pointer!important;list-style:none!important;
+}
+html body .pi-v23-actions-menu > summary::-webkit-details-marker {display:none;}
+html body .pi-v23-merged {display:none!important;}
+html body .pi-v23-actions-menu {position:relative;flex:0 0 auto;margin-left:auto;z-index:7;}
+html body .pi-v23-actions-panel {
+ display:flex;flex-direction:column;align-items:stretch;gap:5px;
+ position:absolute;right:0;top:calc(100% + 4px);z-index:9500;
+ min-width:min(230px,calc(100vw - 16px));max-width:min(298px,calc(100vw - 16px));
+ max-height:min(520px,calc(100dvh - 16px));overflow:auto;
+ padding:8px;box-sizing:border-box;
+ background:var(--panel);color:var(--text);border:1px solid var(--border);
+ border-radius:10px;box-shadow:0 12px 30px #0006;
+}
+html body .pi-v23-actions-menu:not([open]) > .pi-v23-actions-panel:not(:popover-open){display:none!important;}
+html body .pi-v23-actions-panel:popover-open {position:fixed!important;inset:auto!important;margin:0!important;z-index:2147483000!important;}
+html body .pi-v23-menu-action {
+ display:flex!important;align-items:center;justify-content:flex-start!important;gap:7px;
+ box-sizing:border-box;width:100%!important;max-width:100%!important;height:auto!important;
+ min-height:31px!important;margin:0!important;padding:6px 9px!important;
+ background:var(--panel-light)!important;border:1px solid var(--border)!important;
+ border-radius:7px!important;color:var(--text)!important;
+ font-size:12px!important;line-height:1.3!important;text-align:left!important;
+ white-space:normal!important;overflow-wrap:anywhere!important;cursor:pointer!important;
+}
+html body .pi-v23-menu-action:hover {border-color:var(--teal)!important;}
+html body .pi-v23-action-text {font-size:11px;font-weight:600;}
+html body :is(.pi-v23-actions-panel,.pi-color-panel-tray,.pi-ws-menu-panel,.alignment-menu-panel) > .pi-personal-color-picker {
+ min-width:0;max-width:100%;border-top:1px solid var(--border);margin-top:3px;
+}
+html body .pi-color-panel-tray:popover-open {max-height:min(560px,calc(100dvh - 16px));overflow-y:auto;z-index:2147483000!important;}
+/* Preserve pop-out and collapse controls where they can always be reached. */
+html body :is(.panel-header,.day-card-top,.planner-heading,.longform-saved-section-head,.pi-workspace-head) > .pi-popout-button {flex:0 0 auto!important;margin-left:0!important;}
+html body .day-card-top > :is(.pi-v23-actions-menu,.pi-v23-primary-options) {margin-left:0!important;}
+html body .day-card-top .day-card-actions {margin-left:auto!important;}
+html body .day-card-top .day-card-actions:empty {display:none;}
+html body .day-card-top > .pi-popout-button {order:9!important;}
+html body .longform-saved-section-head {
+ display:flex!important;flex-wrap:nowrap!important;align-items:center!important;gap:5px!important;
+ min-height:34px;box-sizing:border-box;
+}
+html body .longform-saved-section-head > .longform-section-name {flex:1 1 auto!important;min-width:0!important;}
+html body .longform-saved-section-head > .longform-section-head-actions {flex:0 0 auto!important;margin-left:auto!important;}
+html body .longform-saved-section-head > :is(.pi-color-panel-menu,.pi-v23-actions-menu,.pi-popout-button) {flex:0 0 auto!important;margin-left:0!important;}
+html body .longform-section-head-actions > .longform-section-remove {margin-left:0;}
+
+/* Longform: every note can become its own editable modal. */
+html body .longform-entry-actions {display:flex;align-items:center;gap:4px;min-width:0;}
+html body .pi-longform-note-popout {
+ display:grid;place-items:center;flex:0 0 27px;width:27px;height:27px;
+ padding:0;border:1px solid var(--border);border-radius:7px;
+ background:var(--panel-light);color:var(--text);font-size:17px;cursor:pointer;
+}
+html body .pi-longform-note-popout:hover {border-color:var(--teal);}
+html body .longform-card-tools > summary {font-size:19px!important;min-width:27px!important;width:27px!important;height:27px!important;padding:0!important;display:grid!important;place-items:center!important;}
+html body dialog.pi-longform-entry-dialog {
+ width:min(870px,calc(100vw - 24px));height:min(87dvh,890px);max-width:calc(100vw - 24px);
+ max-height:calc(100dvh - 24px);box-sizing:border-box;padding:0;overflow:hidden;
+ color:var(--text);background:var(--panel);border:1px solid var(--border);
+ border-radius:14px;box-shadow:0 20px 64px #0009;
+}
+html body dialog.pi-longform-entry-dialog[open] {display:flex;flex-direction:column;gap:0;}
+html body dialog.pi-longform-entry-dialog::backdrop{background:rgba(7,13,30,.66);}
+html body .pi-longform-dialog-head {display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--panel-light);border-bottom:1px solid var(--border);}
+html body .pi-longform-dialog-title {flex:1;min-width:0;width:auto;padding:8px 11px;background:var(--panel);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:16px;font-weight:750;}
+html body .pi-longform-dialog-close {flex:0 0 33px;width:33px;height:33px;cursor:pointer;border-radius:8px;border:1px solid var(--border);background:var(--panel);color:var(--text);font-size:21px;}
+html body .pi-longform-dialog-info {display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:9px 15px;border-bottom:1px solid var(--border);font-size:11px;color:var(--muted);}
+html body .pi-longform-dialog-info input {min-height:30px;max-width:155px;background:var(--panel-light);border:1px solid var(--border);border-radius:7px;padding:4px 6px;color:var(--text);}
+html body .pi-longform-dialog-editor {flex:1;min-height:0;max-width:100%;overflow:auto;padding:20px 22px;outline:none;white-space:pre-wrap;overflow-wrap:anywhere;font-size:15px;line-height:1.65;}
+html body .pi-longform-dialog-editor:focus {box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--teal) 38%,transparent);}
+html body .pi-longform-dialog-image {max-width:min(75%,430px);max-height:220px;object-fit:contain;align-self:center;margin:13px auto 0;}
+
+/* Unsorted behaves like a first-class collapsible, pop-out-capable section. */
+html.longform-page-html .longform-unsorted-zone {overflow:visible;}
+html.longform-page-html .longform-unsorted-head {display:flex!important;align-items:center!important;gap:7px!important;}
+html.longform-page-html .longform-unsorted-head > .longform-section-head-actions {margin-left:auto!important;}
+html.longform-page-html .longform-unsorted-head > .pi-popout-button {margin-left:0!important;}
+html.longform-page-html .longform-unsorted-zone.collapsed > .longform-saved-section-body {display:none!important;}
+html body .pi-panel-popout.longform-unsorted-zone {display:flex!important;flex-direction:column!important;}
+html body .pi-panel-popout.longform-unsorted-zone > .longform-saved-section-body {min-height:0!important;flex:1!important;overflow:auto!important;}
+
+/* Compass's folders now look like Alignment's softly colored centered tiles. */
+html body .pi-compass-page .pi-current-folder {
+ position:relative;flex:0 0 clamp(162px,19vw,242px);width:clamp(162px,19vw,242px);
+ min-width:0;min-height:130px;padding:8px 9px 9px;border-radius:11px;
+ display:flex;flex-direction:column;align-items:stretch;
+ background:color-mix(in srgb,var(--panel-light) 83%,var(--teal) 17%);
+ border:1px solid var(--border);box-shadow:var(--shadow);scroll-snap-align:start;
+}
+html body .pi-compass-page .pi-current-folder:nth-child(5n+2){background:color-mix(in srgb,var(--panel-light) 82%,var(--plum) 18%);}
+html body .pi-compass-page .pi-current-folder:nth-child(5n+3){background:color-mix(in srgb,var(--panel-light) 85%,var(--rose-soft) 15%);}
+html body .pi-compass-page .pi-current-folder:nth-child(5n+4){background:color-mix(in srgb,var(--panel-light) 83%,var(--blue-soft) 17%);}
+html body .pi-compass-page .pi-current-folder:nth-child(5n+5){background:color-mix(in srgb,var(--panel-light) 85%,var(--green-soft) 15%);}
+html body .pi-compass-page .pi-current-folder-head {flex:0 0 auto;display:flex;align-items:center;gap:5px;height:27px;justify-content:space-between;}
+html body .pi-compass-page .pi-current-folder-head > .pi-ws-menu {margin-left:auto;}
+html body .pi-compass-page .pi-current-folder-open {
+ display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+ flex:1 1 auto;max-width:100%;min-height:55px;padding:6px 8px 0;
+ text-align:center;background:transparent!important;border:0!important;color:var(--text)!important;
+ white-space:normal;overflow-wrap:anywhere;cursor:pointer;text-decoration:none!important;
+}
+html body .pi-compass-page .pi-current-folder-open:hover .pi-current-folder-title{text-decoration:underline;}
+html body .pi-compass-page .pi-current-folder-symbol{font-size:23px;line-height:1;color:var(--teal-soft);}
+html body .pi-compass-page .pi-current-folder-title{font:800 13px/1.25 'Trebuchet MS','Segoe UI',sans-serif;color:var(--text);}
+html body .pi-compass-page .pi-current-folder-description {
+ flex:0 1 auto;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+ margin:4px 4px 2px;font-size:11px;line-height:1.35;text-align:center;color:var(--muted);
+}
+html body .pi-compass-page .pi-current-folder-count {flex:0 0 auto;align-self:center;margin:3px 0 0;font-size:10px;color:var(--muted);}
+html body .pi-compass-page .pi-current-folder.pi-personal-colored {background:linear-gradient(140deg,color-mix(in srgb,var(--pi-personal-ink) 33%,var(--panel-light)),color-mix(in srgb,var(--pi-personal-ink) 18%,var(--panel-light)))!important;}
+html body .pi-compass-page .pi-current-folder.pi-personal-colored > .pi-current-folder-head {background:transparent!important;border:0!important;}
+html body .pi-compass-page .pi-current-folder.pi-personal-colored .pi-current-folder-open {background:transparent!important;}
+
+/* Calendar cleanup: don't put the empty-state text into an awkward white
+   ribbon directly under the Notes title. Center it in the available canvas. */
+html body.planner-body .planner-notes {min-width:0;}
+html body.planner-body .planner-notes > .panel-header {min-height:42px!important;padding:8px 13px!important;box-sizing:border-box!important;flex:0 0 auto!important;}
+html body.planner-body .planner-note-list {min-width:0;flex:1 1 auto;padding:12px 13px;}
+html body.planner-body .planner-note-list:has(> .planner-empty) {display:flex;align-items:center;justify-content:center;}
+html body.planner-body .planner-note-list > .planner-empty {
+ padding:12px 15px;max-width:100%;margin:0;text-align:center;color:var(--muted);
+ border:1px dashed var(--border);border-radius:10px;
+ background:color-mix(in srgb,var(--panel-light) 74%,transparent);
+ font-size:12px;line-height:1.5;
+}
+html body.planner-body .planner-grid.is-month .planner-day {min-width:0;}
+html body.planner-body .planner-day > h3 {flex-wrap:nowrap;min-width:0;gap:5px;}
+html body.planner-body .planner-day > h3 .pi-v23-primary-options{margin-left:auto;}
+html body.planner-body .planner-grid.is-month .planner-day-items {min-width:0;}
+html body.planner-body .planner-item {box-sizing:border-box;min-width:0;}
+html body.planner-body .planner-item-text {min-width:0;overflow-wrap:anywhere;}
+/* Home's Upcoming cards: tall tinted items wrap naturally instead of
+   clashing with the date/actions and scrollbar in narrow day columns. */
+html body .database-page .day-card .day-list {scrollbar-gutter:stable;min-width:0;padding-right:3px;}
+html body .database-page .day-card .checklist-item {box-sizing:border-box;min-width:0;height:auto;min-height:34px;align-items:center;}
+html body .database-page .day-card .checklist-item.pi-personal-colored {padding-block:7px!important;}
+html body .database-page .day-card .task-text {min-width:0;max-width:100%;white-space:normal!important;overflow-wrap:anywhere;line-height:1.4;}
+html body .database-page .day-card .checklist-item :is(.pi-item-date,.pi-compact-date-view) {flex-shrink:0;}
+@media(max-width:700px){
+ html body .pi-compass-page .pi-current-folder {width:min(75vw,245px);flex-basis:min(75vw,245px);min-height:125px;}
+ html body .pi-longform-dialog-editor {padding:14px!important;font-size:14px!important;}
+ html body .longform-entry-actions {gap:2px!important;}
+ html body .pi-longform-note-popout {width:26px;height:26px;flex-basis:26px;}
+}
+/* Three saved-thought controls still fit on a phone without a second row. */
+html body #longformApp .longform-entry-top > .longform-entry-actions {
+ max-width:none!important;min-width:max-content!important;flex-wrap:nowrap!important;
+ justify-content:flex-end!important;
+}
+html body #longformApp .longform-entry-top > .longform-entry-meta {min-width:0!important;}

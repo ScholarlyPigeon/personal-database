@@ -218,11 +218,15 @@ opts.addEventListener('click',()=>noteOptions(opts,n));
     grip.draggable=true;grip.addEventListener('dragstart',e=>{dragId=f.id;dragType='folder';e.dataTransfer.setData('application/x-alignment-folder',f.id);});
     grip.addEventListener('dragend',()=>{dragId=null;dragType=null;});
     const controls=node('div','alignment-folder-controls');
-    const opts=button('⋮','Folder options',()=>{},'alignment-icon');opts.dataset.alignmentMenu='folder';
-    opts.addEventListener('click',()=>menuItems(opts,[{label:'Open folder',run:()=>openFolder(f.id)},
-      {label:'Rename folder',run:()=>{const v=prompt('Folder title',f.name);if(v?.trim()){f.name=v.trim();save();render();}}},
-      {label:'Edit description',run:()=>openFolder(f.id)},
-      {label:'Delete folder (keep notes in Readings & Rituals)',run:()=>{if(!confirm('Delete this folder? Its notes will move to Readings & Rituals.'))return;state.entries.forEach(n=>{if(n.place==='folder:'+f.id)n.place=UNSORTED;});state.folders=state.folders.filter(x=>x.id!==f.id);save();render();}}]));
+    const opts=node('details','alignment-menu pi-ws-menu');
+    const summary=node('summary','','⋮');summary.title='Folder options';summary.setAttribute('aria-label','Folder options');
+    const panel=node('div','pi-ws-menu-panel alignment-menu-panel');
+    const addAction=(label,run)=>{const item=button(label,label,()=>{opts.open=false;run();},'alignment-menu-option');panel.append(item);};
+    addAction('Open folder',()=>openFolder(f.id));
+    addAction('Rename folder',()=>{const v=prompt('Folder title',f.name);if(v?.trim()){f.name=v.trim();save();render();}});
+    addAction('Edit description',()=>openFolder(f.id));
+    addAction('Delete folder (keep notes)',()=>{if(!confirm('Delete this folder? Its notes will move to Readings & Rituals.'))return;state.entries.forEach(n=>{if(n.place==='folder:'+f.id)n.place=UNSORTED;});state.folders=state.folders.filter(x=>x.id!==f.id);save();render();});
+    opts.append(summary,panel);
     controls.append(opts);tile.append(grip,controls);
     const center=node('div','alignment-folder-center');center.append(node('span','alignment-folder-symbol','✧'),node('strong','alignment-folder-title',f.name||'Folder'),node('p','alignment-folder-description',f.description||'. . .'));
     tile.append(center,node('span','alignment-folder-count',`${entriesAt('folder:'+f.id).length} thought${entriesAt('folder:'+f.id).length===1?'':'s'}`));

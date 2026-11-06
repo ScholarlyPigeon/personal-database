@@ -5986,6 +5986,76 @@ if (document.getElementById("longformApp")) {
         showSaved();
     }
 
+    // V23: edit one saved thought in its own live pop-out without cloning its record.
+    // The title uses Longform's existing title map; edits to content use the
+    // existing state saver, keeping cloud synchronization paths unchanged.
+    function popLongformEntry(entry) {
+        document.querySelector('.pi-longform-entry-dialog[open]')?.close();
+        const dialog = document.createElement('dialog');
+        dialog.className = 'pi-longform-entry-dialog';
+        dialog.setAttribute('aria-label', 'Expanded saved thought');
+        const header = document.createElement('div');
+        header.className = 'pi-longform-dialog-head';
+        const heading = document.createElement('input');
+        heading.className = 'pi-longform-dialog-title';
+        heading.setAttribute('aria-label', 'Thought title');
+        heading.placeholder = 'Untitled note';
+        const titleKey = 'pi-longform-titles-v1';
+        let titles = {};
+        try { titles = JSON.parse(localStorage.getItem(titleKey) || '{}') || {}; } catch {}
+        heading.value = titles[entry.id] || '';
+        heading.addEventListener('input', () => {
+            const value = heading.value.replace(/\s+/g,' ').trim();
+            let latest = {};
+            try {latest = JSON.parse(localStorage.getItem(titleKey) || '{}') || {};}catch{}
+            if(value) latest[entry.id] = value; else delete latest[entry.id];
+            localStorage.setItem(titleKey, JSON.stringify(latest));
+            window.showSaved?.();
+        });
+        const close = document.createElement('button');
+        close.type = 'button';
+        close.className = 'pi-longform-dialog-close';
+        close.textContent = '×';
+        close.title = 'Close expanded note';
+        close.setAttribute('aria-label','Close expanded note');
+        close.addEventListener('click', () => dialog.close());
+        header.append(heading,close);
+        const info = document.createElement('div');
+        info.className = 'pi-longform-dialog-info';
+        const date = document.createElement('input');
+        date.type = 'date';date.value = entry.date || '';
+        date.setAttribute('aria-label','Thought date');
+        date.addEventListener('change', () => {if(date.value){entry.date=date.value;saveLongformState(false);window.showSaved?.();}});
+        const label = document.createElement('span');label.textContent = 'Saved thought · changes save automatically';
+        info.append(date,label);
+        const editor = document.createElement('div');
+        editor.className = 'pi-longform-dialog-editor';
+        editor.contentEditable = 'true'; editor.spellcheck = true;
+        editor.setAttribute('role','textbox'); editor.setAttribute('aria-multiline','true');
+        editor.setAttribute('aria-label','Edit full saved thought');
+        editor.innerHTML = entry.html || longformPlainTextToHtml(entry.text);
+        editor.addEventListener('input', () => {
+            entry.html = window.PIInlineRich?.cleanHTML(editor.innerHTML) || editor.innerHTML;
+            entry.text = editor.innerText;
+            saveLongformState(false);
+            window.showSaved?.();
+        });
+        if(entry.imageUrl){
+            const img=document.createElement('img');img.className='pi-longform-dialog-image';
+            img.alt='Thought image';img.src=entry.imageUrl;img.loading='lazy';
+            dialog.append(header,info,img,editor);
+        } else dialog.append(header,info,editor);
+        dialog.addEventListener('close',()=>{
+            dialog.remove();
+            renderLongformEntries();
+            window.PIItemColors?.refresh?.();
+        });
+        dialog.addEventListener('click', event=>{if(event.target===dialog)dialog.close();});
+        document.body.append(dialog);
+        dialog.showModal();
+        editor.focus();
+    }
+
     function makeLongformEntryCard(entry) {
             const card = document.createElement("article");
             const expanded = expandedLongformIds.has(entry.id);
@@ -6023,8 +6093,8 @@ if (document.getElementById("longformApp")) {
             tools.className = "longform-card-tools";
 
             const toolsSummary = document.createElement("summary");
-            toolsSummary.textContent = "tools";
-            toolsSummary.title = "Entry tools";
+            toolsSummary.textContent = "⋮";
+            toolsSummary.title = "Note options";
             toolsSummary.setAttribute("aria-label", "Open entry tools");
 
             const toolsPanel = document.createElement("div");
@@ -6167,6 +6237,14 @@ if (document.getElementById("longformApp")) {
                 renderLongformEntries();
             });
 
+            const pop = document.createElement('button');
+            pop.type = 'button';
+            pop.className = 'pi-longform-note-popout';
+            pop.textContent = '⤢';
+            pop.title = 'Pop out this thought';
+            pop.setAttribute('aria-label','Pop out this thought');
+            pop.addEventListener('click', event => {event.stopPropagation();popLongformEntry(entry);});
+
             const moveTap = document.createElement("button");
             moveTap.type = "button";
             moveTap.className = "pi-tap-move-handle";
@@ -6181,7 +6259,7 @@ if (document.getElementById("longformApp")) {
                 renderLongformEntries();
             });
             moveTap.classList.add('longform-entry-move');
-            actions.append(tools, expand);
+            actions.append(tools, pop, expand);
             top.append(moveTap, meta, actions);
 
             const summary = document.createElement("button");
@@ -6456,8 +6534,10 @@ if (document.getElementById("longformApp")) {
             .sort((a, b) => Number(Boolean(b.pinned)) - Number(Boolean(a.pinned)));
 
         const unsortedEntries = visible.filter(entry => longformSectionForEntry(entry.id) === LONGFORM_UNSORTED);
+        const unsortedCollapsedKey = 'pi-longform-unsorted-collapsed-v1';
+        const unsortedCollapsed = localStorage.getItem(unsortedCollapsedKey) === 'true';
         const unsorted = document.createElement("section");
-        unsorted.className = "longform-unsorted-zone";
+        unsorted.className = 'longform-unsorted-zone' + (unsortedCollapsed ? ' collapsed' : '');
         unsorted.dataset.longformSectionId = LONGFORM_UNSORTED;
         const unsortedHead = document.createElement("div");
         unsortedHead.className = "longform-unsorted-head";
@@ -6466,9 +6546,32 @@ if (document.getElementById("longformApp")) {
         const unsortedCount = document.createElement("span");
         unsortedCount.className = "longform-section-count";
         unsortedCount.textContent = String(unsortedEntries.length);
-        unsortedHead.append(unsortedTitle,unsortedCount);
+        const unsortedActions = document.createElement('div');
+        unsortedActions.className = 'longform-section-head-actions';
+        const unsortedToggle = document.createElement('button');
+        unsortedToggle.type = 'button';
+        unsortedToggle.className = 'longform-section-toggle';
+        unsortedToggle.textContent = unsortedCollapsed ? '▸' : '▾';
+        unsortedToggle.title = unsortedCollapsed ? 'Expand Unsorted' : 'Collapse Unsorted';
+        unsortedToggle.setAttribute('aria-label',unsortedToggle.title);
+        unsortedToggle.setAttribute('aria-expanded',String(!unsortedCollapsed));
+        unsortedToggle.addEventListener('click',()=>{
+            const collapsed = !unsorted.classList.contains('collapsed');
+            unsorted.classList.toggle('collapsed',collapsed);
+            unsortedBody.hidden = collapsed;
+            unsortedBody.setAttribute('aria-hidden',String(collapsed));
+            unsortedToggle.textContent = collapsed ? '▸' : '▾';
+            unsortedToggle.setAttribute('aria-expanded',String(!collapsed));
+            unsortedToggle.title = collapsed ? 'Expand Unsorted' : 'Collapse Unsorted';
+            localStorage.setItem(unsortedCollapsedKey,String(collapsed));
+            window.showSaved?.();
+        });
+        unsortedActions.append(unsortedToggle);
+        unsortedHead.append(unsortedTitle,unsortedCount,unsortedActions);
         const unsortedBody = document.createElement("div");
         unsortedBody.className = "longform-saved-section-body longform-unsorted-body";
+        unsortedBody.hidden = unsortedCollapsed;
+        unsortedBody.setAttribute('aria-hidden',String(unsortedCollapsed));
         if(!unsortedEntries.length) {
             const empty = document.createElement("p");
             empty.className = "longform-section-empty";

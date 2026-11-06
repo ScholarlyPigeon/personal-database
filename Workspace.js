@@ -458,7 +458,6 @@ function initUnifiedWorkspace(mode){
    const grip=btn('⠿','Drag folder to reorder',()=>{},'pi-mini-icon pi-move-handle');
    grip.draggable=true;grip.addEventListener('dragstart',e=>{dragFolder=f;e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',f.id);});
    grip.addEventListener('dragend',()=>{dragFolder=null;});
-   const title=btn('📁 '+f.name,'Open folder '+f.name,()=>openFolder(f),'pi-current-folder-open');
    const menu=makeMenu([
      ['Open folder',()=>openFolder(f)],
      ['Add note',()=>{addBlank(folderDest(f.id),'category');openFolder(f);}],
@@ -466,10 +465,12 @@ function initUnifiedWorkspace(mode){
      ['Edit description',()=>openFolder(f)],
      null,['Delete folder (keep notes)',()=>removeFolder(f)]
    ],'Folder options');
-   head.append(grip,title,menu);
-   const desc=el('p','pi-current-folder-description',f.description||'Open folder to see its notes');
+   head.append(grip,menu);
+   const title=btn('','Open folder '+f.name,()=>openFolder(f),'pi-current-folder-open');
+   title.append(el('span','pi-current-folder-symbol','✧'),el('strong','pi-current-folder-title',f.name));
+   const desc=el('p','pi-current-folder-description',f.description||'. . .');
    const count=el('small','pi-current-folder-count',folderNotes(f).length+' note'+(folderNotes(f).length===1?'':'s'));
-   tile.append(head,desc,count);
+   tile.append(head,title,desc,count);
    tile.addEventListener('dragover',e=>{if(dragging||dragSub||dragFolder){e.preventDefault();e.stopPropagation();tile.classList.add('pi-drop-ready');}});
    tile.addEventListener('dragleave',e=>{if(!tile.contains(e.relatedTarget))tile.classList.remove('pi-drop-ready');});
    tile.addEventListener('drop',e=>{tile.classList.remove('pi-drop-ready');
