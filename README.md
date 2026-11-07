@@ -273,3 +273,13 @@ were changed. V20.4 fixes otherwise remain in place.
 - Compass → Currently has `+ folder`, folder tiles, names/descriptions, a folder view, new-note action, reorder-by-drag, note drag-and-drop, and `⋮` folder actions. You can also select a folder in the Compass capture destination or the existing note movement menu. Removing a folder moves its notes to the main Currently rail; it never deletes them.
 - Compass folders live inside the existing synced `pi-compass-v1` object as an additive `folders` array. Alignment folders and records are untouched; no notes have been migrated between pages.
 - Mobile layout checked at 390px and 320px using Chromium style rendering. Compass folder lifecycle tested in a browser with mock storage: create → note → delete/rehome, no runtime errors. Actual live GitHub/Supabase deployment was not accessible from this build environment.
+
+
+## V24: targeted polish (November 2026)
+- Home day-card checklist items now grow with wrapped text instead of letting line two escape tinted row bounds.
+- Aquarium category menus float above scroll clipping; section bars have their own color palette alongside Add/Remove in a single ⋮ menu.
+- Compass header controls align right; Currently uses content-width folder/note cards with close spacing.
+- Stable panel IDs prevent colors from jumping between Compass capture and other sections when notes change. Workspace section palettes are no longer duplicated.
+- Longform saved-section controls remain on one line; delete goes into the ⋮ menu; count labels have readable contrast.
+- Longform pop-out editors now expose an Edit in composer action sharing the original save/update workflow.
+- No changes to content storage schemas or cloud sync protocol. Test with a fresh JSON backup before editing live records.

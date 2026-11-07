@@ -1,0 +1,147 @@
+/* V24: compact header rails, clipped-menu repair, stable Longform controls,
+   and text wrapping. All colors honor active theme tokens. */
+
+/* Home: tinted checklist lines grow with wrapped text, rather than letting a
+   second line protrude beneath the fixed-height colored rectangle. */
+html body .database-page .day-card .pi-compact-item,
+html body .database-page .day-card .checklist-item {
+  height:auto!important;max-height:none!important;min-height:36px!important;
+  align-items:center!important;grid-auto-rows:auto!important;
+  box-sizing:border-box!important;overflow:visible!important;
+}
+html body .database-page .day-card .pi-compact-item .task-text,
+html body .database-page .day-card .checklist-item .task-text {
+  display:block!important;min-width:0!important;max-width:100%!important;
+  min-height:0!important;max-height:none!important;height:auto!important;
+  white-space:normal!important;overflow-wrap:anywhere!important;word-break:normal!important;
+  overflow:visible!important;text-overflow:clip!important;
+  line-height:1.4!important;align-self:center!important;
+}
+html body .database-page .day-card .pi-personal-colored {padding-top:7px!important;padding-bottom:7px!important;}
+
+/* Floating Aquarium category menus remain visible even when the tile is tiny,
+   collapsed, or in a scrollable section. */
+html.aquarium-page body .aq-category-actions .pi-cross-panel:popover-open,
+html.aquarium-page body .aq-card-actions .pi-cross-panel:popover-open {
+  position:fixed!important;inset:auto!important;margin:0!important;
+  display:flex!important;flex-direction:column!important;min-width:0!important;
+  box-sizing:border-box!important;max-height:min(65dvh,440px)!important;
+  overflow:auto!important;background:var(--panel)!important;color:var(--text)!important;
+  z-index:2147483600!important;
+}
+/* Aquarium section surface: the section's ⋮ includes +, remove, and its color
+   palette. The toggling arrow is still independent. */
+html.aquarium-page body .aq-board-section.pi-personal-colored > .aq-section-divider {
+  background:color-mix(in srgb,var(--pi-personal-ink) 38%,var(--panel-light))!important;
+  border:1px solid color-mix(in srgb,var(--pi-personal-ink) 65%,var(--border))!important;
+}
+html.aquarium-page body .aq-board-section.pi-personal-colored > .aq-section-divider .aq-section-label,
+html.aquarium-page body .aq-board-section.pi-personal-colored > .aq-section-divider .aq-section-toggle {color:var(--text)!important;text-shadow:none!important;}
+html.aquarium-page body .aq-section-divider > .aq-section-actions > .pi-color-panel-menu,
+html.aquarium-page body .aq-section-divider > .aq-section-actions > .pi-v23-actions-menu {
+  display:block!important;flex:0 0 27px!important;width:27px!important;
+  margin:0!important;grid-column:auto!important;justify-self:end!important;
+}
+html.aquarium-page body .aq-section-divider > .aq-section-actions > :is(.pi-color-panel-menu,.pi-v23-actions-menu) > summary {
+  width:27px!important;height:27px!important;color:var(--text)!important;
+}
+html.aquarium-page body .aq-section-divider .pi-color-panel-tray:popover-open {
+  position:fixed!important;inset:auto!important;max-width:calc(100vw - 16px)!important;
+  z-index:2147483600!important;background:var(--panel)!important;color:var(--text)!important;
+}
+
+/* Compass: all title bars use the same tight right-aligned command rail. */
+html body .pi-compass-page .pi-workspace-head,
+html body .pi-compass-page .pi-notes-section-head {
+  display:flex!important;flex-wrap:nowrap!important;align-items:center!important;
+  justify-content:flex-start!important;gap:5px!important;min-width:0!important;
+}
+html body .pi-compass-page .pi-workspace-head > h2,
+html body .pi-compass-page .pi-notes-section-head > .pi-section-name {
+  flex:1 1 auto!important;min-width:0!important;width:auto!important;margin:0!important;
+}
+html body .pi-compass-page .pi-workspace-head > .pi-muted {flex:0 1 auto!important;min-width:0!important;white-space:normal!important;}
+html body .pi-compass-page .pi-workspace-head > .pi-workspace-actions {
+  display:flex!important;flex:0 0 auto!important;flex-wrap:nowrap!important;
+  align-items:center!important;gap:4px!important;margin-left:auto!important;
+}
+html body .pi-compass-page .pi-workspace-head > :is(.pi-color-panel-menu,.pi-v23-actions-menu,.pi-popout-button,.panel-collapse-toggle),
+html body .pi-compass-page .pi-notes-section-head > :is(.pi-ws-menu,.pi-popout-button,.pi-color-panel-menu) {
+  flex:0 0 auto!important;margin:0!important;align-self:center!important;
+}
+html body .pi-compass-page .pi-notes-section-head > .pi-mini-icon {flex:0 0 26px!important;}
+html body .pi-compass-page .pi-notes-section-head > :is(.pi-ws-menu,.pi-v23-actions-menu,.pi-color-panel-menu) {margin-left:0!important;}
+html body .pi-compass-page .pi-workspace-head > .pi-workspace-actions:only-of-type {margin-left:auto!important;}
+
+/* Currently: use each card's real width instead of oversized fixed grid slots.
+   Folder and note cards now sit next to one another with an 8px gap. */
+html body.pi-compass-body section.pi-current-panel > .pi-current-rail.pi-ws-current-rail {
+  display:flex!important;flex-direction:row!important;flex-wrap:nowrap!important;
+  gap:8px!important;align-items:flex-start!important;justify-content:flex-start!important;
+  grid-auto-columns:unset!important;grid-auto-flow:unset!important;
+  overflow-x:auto!important;overflow-y:hidden!important;
+  padding:8px!important;margin:0!important;
+}
+html body.pi-compass-body section.pi-current-panel > .pi-current-rail.pi-ws-current-rail > .pi-current-folder {
+  flex:0 0 clamp(190px,18vw,250px)!important;
+  width:clamp(190px,18vw,250px)!important;max-width:250px!important;
+}
+html body.pi-compass-body section.pi-current-panel > .pi-current-rail.pi-ws-current-rail > .pi-current-tile {
+  flex:0 0 clamp(245px,25vw,360px)!important;
+  width:clamp(245px,25vw,360px)!important;
+}
+html body.pi-compass-body section.pi-current-panel.pi-panel-popout > .pi-current-rail.pi-ws-current-rail {
+  display:flex!important;flex-direction:column!important;overflow-y:auto!important;overflow-x:hidden!important;
+}
+html body.pi-compass-body section.pi-current-panel.pi-panel-popout > .pi-current-rail.pi-ws-current-rail > :is(.pi-current-folder,.pi-current-tile) {
+  width:100%!important;max-width:none!important;flex:0 0 auto!important;
+}
+
+/* Longform saved sections always have one short header, regardless of theme.
+   The optional delete button lives in the color/options ⋮, never row two. */
+html.longform-page-html body .longform-saved-section-head {
+  display:flex!important;grid-template-columns:none!important;
+  flex-wrap:nowrap!important;align-items:center!important;gap:5px!important;
+  box-sizing:border-box!important;min-width:0!important;min-height:36px!important;
+  height:auto!important;padding:5px 8px!important;
+}
+html.longform-page-html body .longform-saved-section-head > .pi-tap-move-handle {flex:0 0 21px!important;margin:0!important;}
+html.longform-page-html body .longform-saved-section-head > .longform-section-name {
+  flex:1 1 0%!important;min-width:0!important;margin:0!important;
+  grid-column:auto!important;white-space:nowrap!important;overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+html.longform-page-html body .longform-saved-section-head > .longform-section-head-actions {
+  display:flex!important;align-items:center!important;flex-wrap:nowrap!important;
+  gap:4px!important;flex:0 0 auto!important;margin:0!important;
+  grid-column:auto!important;grid-row:auto!important;
+}
+html.longform-page-html body .longform-saved-section-head > :is(.pi-popout-button,.pi-color-panel-menu,.pi-v23-actions-menu) {
+  display:inline-grid!important;place-items:center!important;
+  flex:0 0 27px!important;width:27px!important;height:27px!important;
+  margin:0!important;grid-column:auto!important;grid-row:auto!important;
+}
+html.longform-page-html body .longform-saved-section-head > .pi-popout-button {order:9!important;}
+html.longform-page-html body .longform-section-count,
+html.longform-page-html body .longform-unsorted-head .longform-section-count {
+  color:var(--text)!important;background:color-mix(in srgb,var(--plum) 36%,var(--panel-light))!important;
+  border:1px solid color-mix(in srgb,var(--plum) 45%,var(--border))!important;
+  opacity:1!important;text-shadow:none!important;font-size:10px!important;
+}
+html.longform-page-html body .longform-saved-section-head .longform-section-remove {display:none!important;}
+/* In the open menu, the actual remove action remains visible and usable. */
+html.longform-page-html body :is(.pi-color-panel-tray,.pi-v23-actions-panel) > .longform-section-remove {
+  display:flex!important;
+}
+html body .pi-longform-dialog-composer {
+  flex:0 0 auto;padding:7px 10px;white-space:nowrap;
+  border-radius:8px;border:1px solid var(--border);
+  background:var(--panel-light);color:var(--text);font-weight:700;font-size:12px;
+  cursor:pointer;
+}
+html body .pi-longform-dialog-composer:hover {border-color:var(--teal);}
+@media(max-width:720px){
+ html body .pi-longform-dialog-head{flex-wrap:wrap;}
+ html body .pi-longform-dialog-composer{order:3;width:100%;}
+ html body.pi-compass-body section.pi-current-panel > .pi-current-rail.pi-ws-current-rail > .pi-current-folder{flex-basis:210px!important;width:210px!important;}
+}

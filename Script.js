@@ -4495,12 +4495,12 @@ if (document.getElementById("aquariumApp")) {
             }
 
             divider.addEventListener("click", event => {
-                if (event.target.closest(".aq-section-label, .aq-section-remove")) return;
+                if (event.target.closest(".aq-section-label, .aq-section-actions, .aq-section-remove, details, button")) return;
                 toggleSection();
             });
             divider.addEventListener("keydown", event => {
                 if (event.key !== "Enter" && event.key !== " ") return;
-                if (event.target.closest(".aq-section-label, .aq-section-remove")) return;
+                if (event.target.closest(".aq-section-label, .aq-section-actions, .aq-section-remove, details, button")) return;
                 event.preventDefault();
                 toggleSection();
             });
@@ -5986,6 +5986,29 @@ if (document.getElementById("longformApp")) {
         showSaved();
     }
 
+    // One shared edit action is used by the saved-note menu and the pop-out.
+    function editLongformInComposer(entry) {
+        editingLongformEntryId = entry.id;
+        longformInput.dataset.longformEditingId = entry.id;
+        let titles={};
+        try { titles=JSON.parse(localStorage.getItem('pi-longform-titles-v1')||'{}')||{}; } catch {}
+        const titleField=document.getElementById('longformTitleInput');
+        if(titleField)titleField.value=titles[entry.id]||'';
+        longformInput.innerHTML=window.PIInlineRich?.cleanHTML(
+            entry.html || longformPlainTextToHtml(entry.text)) || '';
+        longformDate.value=entry.date||'';
+        longformImageUrl.value=entry.imageUrl||'';
+        longformLinkUrl.value=entry.linkUrl||'';
+        longformSectionChoice.value=longformSectionForEntry(entry.id);
+        saveLongformEntry.textContent='Update thought';
+        // The composer stays inline. Focus it without stealing focus from a
+        // dialog that is still closing, then scroll into view.
+        requestAnimationFrame(()=>{
+            longformInput.closest('.longform-composer')?.scrollIntoView({block:'nearest',behavior:'smooth'});
+            longformInput.focus({preventScroll:true});
+        });
+    }
+
     // V23: edit one saved thought in its own live pop-out without cloning its record.
     // The title uses Longform's existing title map; edits to content use the
     // existing state saver, keeping cloud synchronization paths unchanged.
@@ -6019,7 +6042,12 @@ if (document.getElementById("longformApp")) {
         close.title = 'Close expanded note';
         close.setAttribute('aria-label','Close expanded note');
         close.addEventListener('click', () => dialog.close());
-        header.append(heading,close);
+        const composer = document.createElement('button');
+        composer.type='button';composer.className='pi-longform-dialog-composer';
+        composer.textContent='✎ Edit in composer';
+        composer.title='Continue editing this thought in the Longform composer';
+        composer.addEventListener('click',()=>{editLongformInComposer(entry);dialog.close();});
+        header.append(heading,composer,close);
         const info = document.createElement('div');
         info.className = 'pi-longform-dialog-info';
         const date = document.createElement('input');
@@ -6207,18 +6235,7 @@ if (document.getElementById("longformApp")) {
             editInComposer.textContent = "✎ Edit in composer";
             editInComposer.addEventListener("click", event=>{
                 event.stopPropagation();
-                editingLongformEntryId=entry.id;
-                longformInput.dataset.longformEditingId=entry.id;
-                const titles=JSON.parse(localStorage.getItem('pi-longform-titles-v1')||'{}');
-                const titleField=document.getElementById('longformTitleInput');
-                titleField.value=titles[entry.id]||'';
-                longformInput.innerHTML=window.PIInlineRich?.cleanHTML(entry.html||longformPlainTextToHtml(entry.text))||'';
-                longformDate.value=entry.date;
-                longformImageUrl.value=entry.imageUrl||'';
-                longformLinkUrl.value=entry.linkUrl||'';
-                longformSectionChoice.value=longformSectionForEntry(entry.id);
-                saveLongformEntry.textContent='Update thought';
-                longformInput.focus();
+                editLongformInComposer(entry);
                 tools.open=false;
             });
             const sectionMove = makeLongformSectionSelect(entry);

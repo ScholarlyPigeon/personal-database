@@ -64,6 +64,7 @@
  };
  const scan=()=>{
    document.querySelectorAll('details.pi-ws-menu').forEach(m=>floatMenu(m,'.pi-ws-menu-panel'));
+   document.querySelectorAll('details.pi-cross-menu').forEach(m=>floatMenu(m,'.pi-cross-panel'));
    document.querySelectorAll('details.pi-nested-tools').forEach(m=>floatMenu(m,'.pi-nested-tools-menu'));
    document.querySelectorAll('details.planner-category-menu').forEach(m=>floatMenu(m,'.planner-category-menu-actions'));
    document.querySelectorAll('details.planner-nested-tools').forEach(m=>floatMenu(m,'.planner-nested-options'));

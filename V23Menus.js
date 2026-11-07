@@ -14,7 +14,7 @@
   '.planner-category-head','.date-rail-header'
  ].join(',');
  const menuSelector='details.pi-ws-menu,details.pi-cross-menu,details.pi-focus-tools,details.pi-item-tools,details.alignment-menu,details.pi-v23-actions-menu';
- const panelSelector='.pi-ws-menu-panel,.pi-cross-panel,.pi-focus-tools-panel,.pi-item-tools-panel,.alignment-menu-panel,.pi-v23-actions-panel';
+ const panelSelector='.pi-ws-menu-panel,.pi-cross-panel,.pi-focus-tools-panel,.pi-item-tools-panel,.alignment-menu-panel,.pi-v23-actions-panel,.pi-color-panel-tray';
  const own = (element,selector)=>[...element.querySelectorAll(selector)].find(node=>node.closest(HEADERS)===element);
  const isOpen=panel=>{try{return panel.matches(':popover-open');}catch{return false;}};
  const place=(tray,anchor)=>{
@@ -94,8 +94,9 @@
    if(menu===native)continue;
    const picker=menu.querySelector('.pi-personal-color-picker');
    if(picker && picker.parentElement!==tray){
-    picker.classList.add('pi-v23-merged-picker');
-    tray.append(picker);
+    const exists=[...tray.querySelectorAll('.pi-personal-color-picker')].some(
+      existing=>existing.dataset.piColorFor===picker.dataset.piColorFor);
+    if(!exists){picker.classList.add('pi-v23-merged-picker');tray.append(picker);}
    }
    menu.classList.add('pi-v23-merged');menu.open=false;menu.hidden=true;
   }

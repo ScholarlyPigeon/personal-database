@@ -128,7 +128,7 @@
       '.database-page .database-notes-panel',
       '.database-page .home-upcoming-panel',
       '.database-page .pi-focus-panel',
-      '.pi-workspace-panel','.pi-notes-section',
+      '.pi-workspace-panel',
       '.planner-notes','.planner-calendar',
       '.aq-panel','.alignment-library','.alignment-tiles','.alignment-composer',
       '.longform-library','.longform-composer',
@@ -138,8 +138,15 @@
       const header=panel.querySelector(':scope > .panel-header, :scope > .pi-focus-head, :scope > .pi-workspace-head, :scope > .pi-notes-section-head, :scope > .planner-heading, :scope > .aq-panel-head, :scope > .longform-library-head, :scope > .longform-composer-head, :scope > .longform-saved-section-head, :scope > .archive-v2-panel-head');
       if(!header)return;
       const page=location.pathname.split('/').pop() || 'home';
+      const workspaceId=panel.matches('.pi-compass-capture-panel')?'compass-capture':
+        panel.matches('.pi-current-panel')?'compass-current':
+        panel.matches('.pi-compass-column-panel')?
+          (panel.parentElement?.firstElementChild===panel?'compass-goals':'compass-grounding'):
+        panel.matches('.pi-workspace-panel')?
+          ((panel.closest('.pi-reflections-page')?'timeline':'workspace')+'-'+
+            [...panel.parentElement.children].indexOf(panel)) : '';
       const id=panel.id || panel.dataset.collapsiblePanel || panel.dataset.collapsePanel ||
-        'section-'+i;
+        workspaceId || 'section-'+i;
       const key='panel:'+page+':'+id;
       panel.dataset.piColorPanelId=page+':'+id;
       const sectionKey=panel.dataset.wsSection?'workspace-section:'+panel.dataset.wsSection:null;
@@ -214,6 +221,7 @@
   function addWholeSurfaceMenus(){
     const configs=[
       ['.board-tile[data-id]', '.tile-head', node=>'board-tile:'+node.dataset.id,'table'],
+      ['.aq-board-section[data-section-id]', '.aq-section-divider > .aq-section-actions', node=>'aquarium-section:'+node.dataset.sectionId,'Aquarium section'],
       ['.day-card[data-pi-color-day]', '.day-card-top', node=>'calendar-day:'+node.dataset.piColorDay,'day table'],
       ['.planner-day[data-date]', 'h3', node=>'calendar-day:'+node.dataset.date,'calendar day'],
       ['.pi-current-folder[data-ws-folder]', '.pi-current-folder-head', node=>'compass-folder:'+node.dataset.wsFolder,'folder'],
