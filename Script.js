@@ -4359,10 +4359,14 @@ if (document.getElementById("aquariumApp")) {
             renderAquarium();
         });
 
-        panel.append(add);
-        if (!inFocus) panel.append(focusTile);
-        panel.append(remove);
+        panel.append(add, remove);
         menu.append(summary, panel);
+        // The tile's own focus action stays visible, and operates only on its
+        // category ID. The separate collapse arrow changes only this tile.
+        if (!inFocus) {
+            focusTile.classList.add("aq-tile-popout");
+            actions.append(focusTile);
+        }
         actions.append(collapse, menu);
         head.append(handle, name, actions);
 
@@ -4423,10 +4427,13 @@ if (document.getElementById("aquariumApp")) {
             divider.setAttribute("aria-expanded", String(!collapsed));
             divider.title = collapsed ? "Expand this section" : "Collapse this section";
 
-            const toggle = document.createElement("span");
-            toggle.className = "aq-section-toggle";
+            const toggle = document.createElement("button");
+            toggle.type = "button";
+            toggle.className = "aq-section-toggle aq-section-collapse-button";
             toggle.textContent = collapsed ? "▸" : "▾";
-            toggle.setAttribute("aria-hidden", "true");
+            toggle.title = collapsed ? "Expand section" : "Collapse section";
+            toggle.setAttribute("aria-label", toggle.title);
+            toggle.setAttribute("aria-expanded", String(!collapsed));
 
             const label = document.createElement("div");
             label.className = "aq-section-label";
@@ -4441,7 +4448,7 @@ if (document.getElementById("aquariumApp")) {
                 saveAquariumState();
             });
 
-            divider.append(toggle, label);
+            divider.append(label);
 
             const addSection = document.createElement("button");
             addSection.type = "button";
@@ -4484,9 +4491,14 @@ if (document.getElementById("aquariumApp")) {
             // inheriting different grid placement and vertical alignment.
             const sectionActions = document.createElement("div");
             sectionActions.className = "aq-section-actions";
-            sectionActions.append(addSection, removeSection);
+            sectionActions.append(toggle, addSection, removeSection);
             divider.appendChild(sectionActions);
 
+            toggle.addEventListener("click", event => {
+                event.preventDefault();
+                event.stopPropagation();
+                toggleSection();
+            });
             function toggleSection() {
                 if (collapsedAquariumSections.has(section.id)) collapsedAquariumSections.delete(section.id);
                 else collapsedAquariumSections.add(section.id);
@@ -4546,7 +4558,12 @@ if (document.getElementById("aquariumApp")) {
                 saveAquariumState();
                 renderAquarium();
             });
-            grid.appendChild(addTile);
+            // Add a tile from this section's existing ⋮ menu, not a tall
+            // placeholder card in the grid. V23/V25 merges live buttons into
+            // the section's options tray without changing their listeners.
+            addTile.setAttribute("aria-label", "Add tile to " + section.name);
+            addTile.title = "Add tile to " + section.name;
+            sectionActions.appendChild(addTile);
             band.append(divider, grid);
             board.appendChild(band);
         });

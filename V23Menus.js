@@ -46,6 +46,7 @@
  const exempt=button=>button.matches([
   '.pi-popout-button','.panel-collapse-toggle','.pi-focus-collapse','.pi-notes-section-toggle',
   '.aq-panel-collapse','.aq-category-collapse','.aq-section-toggle',
+  '.aq-card-focus','.aq-card-collapse','.aq-tile-popout','.pi-ws-note-toggle',
   '.longform-section-toggle','.longform-expand-button','.pi-longform-note-popout',
   '.pi-tap-move-handle','.pi-move-handle','.alignment-tile-handle',
   '.pi-mini-icon.pi-move-handle','.pi-mini-icon.pi-tap-move-handle',

@@ -185,8 +185,12 @@
     if(!target || !header || !key || key.length > 180)return;
     target.dataset.piColorKey = key;
     apply(target,key);
-    if(header.querySelector(':scope > .pi-full-surface-menu') ||
-       header.querySelector(':scope > .pi-color-panel-menu'))return;
+    // V25 moves the existing live picker into a right-aligned control rail,
+    // which can be a *sibling* of the original section-actions host. Search
+    // the target surface by its actual color key to prevent duplicate palettes.
+    if([...target.querySelectorAll('.pi-personal-color-picker')].some(
+         region => region.dataset.piColorFor === key) ||
+       header.querySelector('.pi-full-surface-menu,.pi-color-panel-menu'))return;
     const menu=document.createElement('details');
     menu.className='pi-color-panel-menu pi-full-surface-menu';
     const summary=document.createElement('summary');

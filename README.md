@@ -1,3 +1,18 @@
+# V25 · Sunday control consistency pass (November 8, 2026)
+
+Built on V24. This pass keeps the original notes, cloud sync, storage keys and all existing themes.
+
+- **Shared header order:** Available pop-out, collapse and three-dot controls now sit on a consistent right-aligned rail, in that order. Existing live controls and their handlers are moved, not recreated. Includes the Home upcoming day headers, Compass sections and panel headers across the app.
+- **One menu language:** Action menus use full-width, readable buttons; color choices are theme-aware dots; direct `Move to …` buttons are grouped under a destination dropdown. Duplicate palette controls are suppressed by matching their saved color key. Menus still float above scroll panes and close when clicked outside.
+- **Aquarium:** The section's `+ tile` is inside its three-dot menu, not a big dashed tile. Each tile has its own visible pop-out and independent collapse. Tiles no longer stretch each other vertically in the same row. Section collapse moves to the right-hand controls. Tiny section menus use the same full-width buttons as the rest of the app.
+- **Home / Compass:** Day-card menu placement and Compass header alignment use the shared right rail. Old action containers can remain as count/label holders without scattering controls.
+- **This Week / This Month / Next Month:** Options dots use a quieter transparent, borderless trigger while retaining the same menu formatting.
+- **Technical:** `V25Controls.js` and `V25Controls.css` load after V23/V24; `Script.js` contains the Aquarium changes, `ColorAccents.js` recognizes menus moved into the rail to avoid duplicate palettes, and `V23Menus.js` keeps Aquarium pop-out/collapse outside the menu. No existing data format or cloud-sync file was changed.
+- **Deployment:** Make a fresh in-app JSON backup, close extra tabs/devices, replace files at your GitHub Pages repository root with the **contents** of `CURRENT/` (keep `assets/` as a directory), hard refresh, then test Aquarium tile controls, Home day menus, Compass and planner pages, theme colors, and sync before heavy editing.
+- **Verification:** JavaScript syntax and CSS parsing passed, and HTML entrypoints were checked for the new shared assets. A full interactive browser preview was blocked by this environment, so actual deployed browser interactions and sync still require a real-world smoke test.
+
+---
+
 # V23 · Consistent three-dot menus, Longform pop-outs and calendar polish (November 6, 2026)
 
 Built on **V22 Windows & Whole-Surface Colors**. Includes all existing Windows wallpaper/icon assets and the theme-wide color system.

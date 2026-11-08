@@ -1,0 +1,163 @@
+/* V25 • Right-aligned controls: pop-out, collapse, options. */
+html body :is(.panel-header,.date-rail-header,.day-card-top,.tile-head,
+ .pi-workspace-head,.pi-notes-section-head,.pi-ws-section-head,.pi-focus-head,
+ .aq-panel-head,.aq-category-head,.aq-section-divider,.aq-card-actions,
+ .longform-library-head,.longform-composer-head,.longform-saved-section-head,
+ .longform-unsorted-head,.longform-entry-actions,.pi-current-folder-head,
+ .alignment-folder-controls,.alignment-list-section-head,.alignment-tiles-head,
+ .archive-v2-panel-head,.neo-panel-heading,.neo-dailies-head,
+ .planner-category-head,.planner-day > h3,.planner-heading,.pi-note-card-head,
+ .alignment-note-head):has(> .pi-v25-control-rail) {
+ display:flex!important;align-items:center!important;flex-wrap:nowrap!important;
+ gap:5px!important;min-width:0!important;
+}
+html body .pi-v25-control-rail {
+ display:flex!important;flex:0 0 auto!important;align-items:center!important;
+ justify-content:flex-end!important;flex-wrap:nowrap!important;gap:4px!important;
+ margin-left:auto!important;min-width:max-content!important;
+ position:relative;order:99!important;
+}
+html body .pi-v25-control-rail > * {
+ position:relative;flex:0 0 27px!important;min-width:27px!important;
+ width:27px!important;max-width:27px!important;height:27px!important;
+ box-sizing:border-box!important;margin:0!important;align-self:center!important;
+ padding:0!important;grid-column:auto!important;grid-row:auto!important;
+}
+html body .pi-v25-control-rail > button {display:grid!important;place-items:center!important;}
+html body .pi-v25-control-rail > details {display:block!important;}
+html body .pi-v25-control-rail > details[hidden],
+html body .pi-v25-control-rail > .pi-v25-secondary-menu {display:none!important;}
+html body .pi-v25-control-rail > details > summary {
+ display:grid!important;place-items:center!important;
+ min-width:27px!important;width:27px!important;max-width:27px!important;
+ min-height:27px!important;height:27px!important;
+ padding:0!important;box-sizing:border-box!important;
+ margin:0!important;list-style:none!important;
+ border:1px solid var(--border)!important;border-radius:7px!important;
+ color:var(--text)!important;background:var(--panel-light)!important;
+ font-size:19px!important;font-weight:700!important;line-height:1!important;
+ cursor:pointer!important;box-shadow:none!important;
+}
+html body .pi-v25-control-rail > details > summary::-webkit-details-marker{display:none!important;}
+html body .pi-v25-control-rail > details > summary:hover {border-color:var(--teal)!important;}
+/* The label and ordinary title content have first claim on the left side. */
+html body :is(.day-card-top,.pi-workspace-head,.pi-notes-section-head,.pi-ws-section-head,
+ .aq-category-head,.aq-section-divider,.planner-heading,.planner-day > h3)
+ > :is(.date-label,h2,h3,.pi-section-name,.aq-category-name,.aq-section-label) {
+ flex:1 1 auto!important;min-width:0!important;
+}
+/* Home: the action menu is always flush right, including narrow calendar cards. */
+html body .database-page .day-card-top {display:flex!important;grid-template-columns:none!important;align-items:center!important;gap:5px!important;}
+html body .database-page .day-card-top > .date-label {flex:1 1 auto!important;min-width:0!important;white-space:normal!important;}
+html body .database-page .day-card-top > .day-card-actions {margin:0!important;flex:0 0 auto!important;}
+html body .database-page .day-card-top > .pi-v25-control-rail {margin-left:auto!important;}
+/* Compass: original nested action wrappers cannot push a secondary button
+   row under the heading. Counts remain beside the new right-hand rail. */
+html body .pi-compass-page .pi-workspace-head > .pi-workspace-actions,
+html body .pi-compass-page .pi-notes-section-head > .pi-workspace-actions {margin:0!important;flex:0 0 auto!important;justify-content:flex-end!important;gap:4px!important;}
+html body .pi-compass-page :is(.pi-workspace-head,.pi-notes-section-head) > .pi-v25-control-rail {margin-left:auto!important;}
+/* Aquarium: an individual tile's collapse never changes its neighbor's height. */
+html.aquarium-page body .aq-category-grid:not(.aq-direct-section-zone){align-items:start!important;grid-auto-rows:max-content!important;}
+html.aquarium-page body .aq-category-grid > .aq-category {align-self:start!important;height:auto!important;min-height:0!important;max-height:none!important;}
+html.aquarium-page body .aq-category-grid > .aq-category.collapsed{align-self:start!important;}
+html.aquarium-page body .aq-category-grid > .aq-category:not(.collapsed) .aq-category-zone {height:auto!important;min-height:0!important;}
+html.aquarium-page body .aq-category-head > .aq-category-name {flex:1 1 auto!important;min-width:0!important;}
+html.aquarium-page body .aq-category-head > .aq-category-actions {margin-left:auto!important;flex:0 0 auto!important;}
+html.aquarium-page body .aq-category-head > .aq-category-actions:empty {display:none!important;}
+html.aquarium-page body .aq-category-head > .pi-v25-control-rail {margin-left:auto!important;}
+html.aquarium-page body .aq-section-divider {display:flex!important;grid-template-columns:none!important;gap:6px!important;}
+html.aquarium-page body .aq-section-divider > .aq-section-toggle{flex:0 0 18px!important;grid-column:auto!important;}
+html.aquarium-page body .aq-section-divider > .aq-section-label{
+ flex:1 1 auto!important;grid-column:auto!important;min-width:0!important;
+ margin:0!important;text-align:center!important;}
+html.aquarium-page body .aq-section-divider > .aq-section-actions {flex:0 0 auto!important;display:flex!important;margin:0!important;}
+html.aquarium-page body .aq-section-divider > .aq-section-actions:empty {display:none!important;}
+html.aquarium-page body .aq-section-divider > .pi-v25-control-rail{flex:0 0 27px!important;margin-left:0!important;}
+/* All action menus share one generous single-column tray with full-width,
+   readable buttons and a real disclosure for destinations. */
+html body .pi-v25-menu-panel,
+html body .pi-v25-menu-panel:popover-open {
+ display:flex!important;flex-direction:column!important;align-items:stretch!important;
+ gap:6px!important;grid-template-columns:none!important;
+ box-sizing:border-box!important;
+ width:min(290px,calc(100vw - 16px))!important;
+ min-width:min(250px,calc(100vw - 16px))!important;
+ max-width:calc(100vw - 16px)!important;
+ padding:9px!important;
+ max-height:min(510px,calc(100dvh - 18px))!important;
+ overflow-x:hidden!important;overflow-y:auto!important;
+ background:var(--panel)!important;color:var(--text)!important;
+ border:1px solid var(--border)!important;border-radius:10px!important;
+ box-shadow:0 12px 34px #0005!important;
+}
+html body .pi-v25-standard-menu:not([open]) > .pi-v25-menu-panel:not(:popover-open) {display:none!important;}
+html body .pi-v25-menu-panel:popover-open {
+ position:fixed!important;inset:auto!important;z-index:2147483600!important;
+ margin:0!important;
+}
+html body .pi-v25-menu-panel > button:not(.pi-personal-color-swatch),
+html body .pi-v25-menu-panel > .pi-v23-menu-action,
+html.aquarium-page body .pi-v25-menu-panel > :is(.aq-section-add,.aq-section-remove,.aq-new-category,.aq-menu-button),
+html body .pi-v25-menu-panel > .alignment-menu-option {
+ display:flex!important;align-items:center!important;justify-content:flex-start!important;
+ grid-column:auto!important;grid-row:auto!important;
+ box-sizing:border-box!important;float:none!important;
+ width:100%!important;min-width:0!important;max-width:100%!important;
+ height:auto!important;min-height:32px!important;
+ margin:0!important;padding:7px 10px!important;
+ border:1px solid var(--border)!important;border-radius:7px!important;
+ background:var(--panel-light)!important;color:var(--text)!important;
+ font:600 12px/1.35 'Segoe UI',Arial,sans-serif!important;
+ text-align:left!important;white-space:normal!important;
+ word-break:normal!important;overflow-wrap:anywhere!important;
+ cursor:pointer!important;letter-spacing:normal!important;
+}
+html body .pi-v25-menu-panel > button:hover {border-color:var(--teal)!important;}
+html body .pi-v25-menu-panel > button:disabled {opacity:.42!important;cursor:default!important;}
+html body .pi-v25-menu-panel > .pi-personal-color-picker {
+ box-sizing:border-box!important;width:100%!important;min-width:0!important;
+ display:flex!important;flex-direction:column!important;align-items:stretch!important;
+ gap:6px!important;margin:0!important;padding:6px 2px 2px!important;
+ border-top:1px solid var(--border)!important;
+ background:transparent!important;
+}
+html body .pi-v25-menu-panel > .pi-personal-color-picker[hidden]{display:none!important;}
+html body .pi-v25-menu-panel .pi-personal-color-swatches {
+ display:flex!important;flex-wrap:nowrap!important;align-items:center!important;
+ justify-content:space-between!important;width:100%!important;gap:3px!important;
+ overflow-x:auto!important;padding:4px 3px 6px!important;
+}
+html body .pi-v25-menu-panel .pi-personal-color-swatch {flex:0 0 21px!important;}
+html body .pi-v25-menu-panel > :is(.pi-move-scope,.pi-v25-movement-dropdown),
+html body .pi-v25-menu-panel > select {box-sizing:border-box!important;width:100%!important;min-width:0!important;max-width:100%!important;margin:0!important;}
+html body .pi-v25-menu-panel > .pi-move-scope > summary {
+ display:flex!important;align-items:center!important;justify-content:space-between!important;
+ min-height:32px!important;box-sizing:border-box!important;
+ padding:7px 10px!important;border:1px solid var(--border)!important;
+ border-radius:7px!important;background:var(--panel-light)!important;
+ color:var(--text)!important;font:600 12px/1.3 'Segoe UI',Arial,sans-serif!important;
+}
+html body .pi-v25-menu-panel > .pi-move-scope > summary::after{content:'▾';margin-left:auto;font-size:11px;}
+html body .pi-v25-menu-panel > .pi-move-scope[open] > summary::after{content:'▴';}
+html body .pi-v25-menu-panel .pi-move-choices{display:flex!important;flex-direction:column!important;gap:4px!important;box-sizing:border-box!important;padding:6px 3px!important;width:100%!important;min-width:0!important;}
+html body .pi-v25-menu-panel .pi-move-choices > button{display:block!important;width:100%!important;min-width:0!important;box-sizing:border-box!important;white-space:normal!important;text-align:left!important;}
+/* Planner Week / Month / Next Month: lighter, unboxed menu icon. */
+html body.planner-body .pi-v25-control-rail > details > summary,
+html body.planner-body :is(.pi-v23-actions-menu,.pi-color-panel-menu) > summary {
+ min-width:25px!important;width:25px!important;max-width:25px!important;
+ min-height:25px!important;height:25px!important;
+ border:0!important;border-radius:6px!important;box-shadow:none!important;
+ background:transparent!important;color:var(--muted)!important;
+ font-size:18px!important;font-weight:600!important;
+}
+html body.planner-body :is(.planner-heading,.planner-day > h3,.panel-header) > .pi-v25-control-rail {margin-left:auto!important;}
+@media(max-width:700px){
+ html body .pi-v25-control-rail{gap:3px!important;}
+ html body .pi-v25-control-rail > *{flex-basis:25px!important;min-width:25px!important;width:25px!important;max-width:25px!important;}
+ html body .pi-v25-control-rail > details > summary{min-width:25px!important;width:25px!important;max-width:25px!important;}
+ html.aquarium-page body .aq-section-divider{min-width:0!important;}
+}
+
+/* Unopened legacy trays must remain hidden even after they acquire the
+   unified layout class. Popover-open trays stay in the top layer. */
+html body details:not([open]) > .pi-v25-menu-panel:not(:popover-open){display:none!important;}
