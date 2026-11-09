@@ -193,6 +193,18 @@
        menu.open=false;
        updateList(key,index,items=>{items[index].showDetails=items[index].showDetails===false;});
      }));
+     options.append(button('Archive','Archive this category note',()=>{
+       menu.open=false;
+       if(!confirm('Archive this category note?'))return;
+       if(!archiveManualItem({text:[item.text,item.details,...(item.subtasks||[]).map(s=>'• '+s.text)].filter(Boolean).join('\n\n'),
+         source:'Planner category',context:key,originalDate:item.date||key.replace('pi-calendar-day-',''),
+         createdAt:item.createdAt||null,metadata:{...item}}))return;
+       updateList(key,index,items=>items.splice(index,1));
+     }));
+     options.append(button('Delete','Delete this category note',()=>{
+       menu.open=false;
+       if(confirm('Delete this category note and its checklist?'))updateList(key,index,items=>items.splice(index,1));
+     }));
      menu.append(trigger,options);head.append(menu);
    }
    wrap.append(head);
@@ -353,6 +365,13 @@
    more.classList.add('planner-more');more.setAttribute('aria-haspopup','true');r.append(more);
    const actions=el('div','planner-item-actions');
    const addAction=(label,title,fn)=>{const b=button(label,title,()=>{closeActionMenus();fn();});actions.append(b);};
+   addAction('Archive','Archive item',()=>{
+     if(!confirm('Archive this item?'))return;
+     if(!archiveManualItem({text:item.text,source:'Planner',context:key,
+       originalDate:item.date||key.replace('pi-calendar-day-',''),createdAt:item.createdAt||null,
+       metadata:{...item}}))return;
+     updateList(key,index,a=>a.splice(index,1));
+   });
    addAction('Delete','Delete item',()=>{if(confirm('Delete this item?'))updateList(key,index,a=>a.splice(index,1));});
    r.append(actions);
    r.ondragover=e=>{

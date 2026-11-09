@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+
+<html class="aquarium-page aquarium-folders-page" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Aquarium · Folders</title>
+<link rel="stylesheet" href="Core.css?v=20261101-v21-3"/>
+<script defer="" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script defer src="CloudSync.js?v=20261101-v21-3"></script>
+<script defer src="Activity.js?v=20261101-v21-3"></script>
+<script defer src="Script.js?v=20261108-v26-1"></script>
+
+<script defer src="Planner.js?v=20261108-v26-1"></script>
+
+<script defer src="Workspace.js?v=20261102-v21-9"></script>
+
+<script defer src="UI.js?v=20261102-v21-7"></script>
+
+
+
+
+<link rel="stylesheet" href="Navigation.css?v=20261101-v21-3"/>
+<link rel="stylesheet" href="Panels.css?v=20261101-v21-3"/>
+
+
+<script defer src="Features.js?v=20261101-v21-3"></script>
+<link rel="stylesheet" href="Interface.css?v=20261101-v21-3"/>
+
+
+
+<link rel="stylesheet" href="Polish.css?v=20261101-v21-3"/>
+
+
+
+
+<script defer src="AquariumNotes.js?v=20261101-v21-3"></script>
+
+<link rel="stylesheet" href="Aurora.css?v=20261101-aurora-1"/>
+<link rel="stylesheet" href="ColorAccents.css?v=20261101-v21-5"/>
+<script defer src="ColorAccents.js?v=20261107-v24-1"></script>
+<link rel="stylesheet" href="Refinements.css?v=20261101-v21-6"/>
+<script defer src="Refinements.js?v=20261101-v21-6"></script>
+<link rel="stylesheet" href="MenuPolish.css?v=20261102-v21-7"/>
+<link rel="stylesheet" href="CandyJurassic.css?v=20261102-candy-jurassic-1"/>
+<link rel="stylesheet" href="MobileV21_9.css?v=20261102-v21-9"/>
+<script defer src="MenuPolish.js?v=20261107-v24-1"></script>
+<link rel="stylesheet" href="Windows.css?v=20261106-windows-1"/>
+<link rel="stylesheet" href="ColorCoverage.css?v=20261106-color-everywhere-1"/>
+<link rel="stylesheet" href="V23Polish.css?v=20261106-v23-1"/>
+<link rel="stylesheet" href="V24Polish.css?v=20261107-v24-1"/>
+<link rel="stylesheet" href="V25Controls.css?v=20261108-v25-1"/>
+<script defer src="V23Menus.js?v=20261107-v24-1"></script>
+<script defer src="V25Controls.js?v=20261108-v25-1"></script>
+<link rel="stylesheet" href="V26Sunday.css?v=20261108-v26-1"/>
+<link rel="stylesheet" href="V26FoldersViewport.css?v=20261108-v26-1a"/>
+</head>
+<body data-default-theme="aquarium" class="aq-folder-layout">
+<div class="aq-page" id="aquariumApp">
+<header class="aq-header">
+<div class="aq-brand">
+<div aria-hidden="true" class="pi-mark">🪼</div>
+<div class="aq-title">
+<h1>Aquarium · Folders</h1>
+</div>
+</div>
+<div class="aq-header-actions"><span aria-live="polite" class="sync-status" id="saveStatus">cloud ready</span><select aria-label="Theme" class="theme-select" id="themeSelect"></select><details class="ecosystem-menu">
+<summary>pages</summary>
+<nav aria-label="Open another page" class="ecosystem-menu-popover"><a href="Database.html">🏠 Home</a><a href="Aquarium.html">🪼 Aquarium</a><a aria-current="page" class="current" href="AquariumFolders.html">🗂 Aquarium · Folders</a><a href="Longform.html">✎ Longform</a><a href="Compass.html">🧭 Compass</a><a href="Alignment.html">✨ Alignment</a><a href="Week.html">🗓️ This Week</a><a href="Month.html">📅 This Month</a><a href="NextMonth.html">📆 Next Month</a><a href="Almanac.html">◷ Timeline</a><a href="Patterns.html">🗂 Archive</a><a href="neopets.html">✦ Neopets</a></nav>
+</details><details class="ecosystem-menu pi-tools-menu"><summary>tools</summary><div class="pi-tools-popover"><button class="small-button cloud-login-button" id="cloudLoginButton" type="button">cloud login</button><button class="small-button selection-mode-button" id="selectModeButton" type="button">select</button><button class="small-button selection-action-button" hidden="" id="selectionActionButton" type="button">archive selected</button><button class="small-button" id="archiveDone">archive completed</button></div></details></div>
+</header>
+<section class="link-strip database-global-links">
+<div class="link-strip-label editable-ui" contenteditable="true" data-ui-save="links-title">🔗 Links</div>
+<div class="links-container" id="linksContainer"></div>
+<button class="link-add-button" id="addLinkButton" title="Add a new link" type="button">+ link</button>
+</section>
+<div class="aq-workspace aq-folder-workspace">
+  <aside class="aq-folder-dashboard aq-panel" aria-label="Dashboard">
+    <div class="aq-panel-head"><div class="aq-title-wrap"><span class="aq-section-icon">✧</span><div><div class="aq-panel-title">Dashboard</div></div></div></div>
+    <p class="aq-folder-hint">Loose thoughts stay visible here. Drag a note onto any folder to file it, or drag it back here to bring it out.</p>
+    <div class="aq-inbox-zone aq-dropzone aq-dashboard-list" data-zone="inbox" id="inboxZone"></div>
+  </aside>
+  <div class="aq-capture-column aq-folder-capture">
+    <aside class="aq-panel aq-capture-panel" data-collapsible-panel="aquarium-capture">
+      <div class="aq-panel-head"><div class="aq-title-wrap"><span class="aq-section-icon">✎</span><div><div class="aq-panel-title editable-ui" contenteditable="true" data-pi-ui="aquarium-capture-title" data-pi-ui-fallback="Brain Dump">Brain Dump</div></div></div></div>
+      <div class="aq-capture-body" data-collapse-body="">
+        <input aria-label="Aquarium note title" autocomplete="off" class="aq-capture-title-input" id="aqCaptureTitle" maxlength="180" placeholder="Title this thought…" type="text"/>
+        <div aria-multiline="true" class="aq-capture-rich-input" contenteditable="true" data-placeholder="Write a thought… Ctrl/Cmd + Enter saves." id="captureInput" role="textbox"></div>
+        <div class="aq-kind-select-row"><label class="aq-kind-select-label"><span>type</span><select aria-label="Aquarium card type" id="aqCaptureKind"></select></label><button class="small-button" id="manageAquariumKinds" type="button">manage types</button></div>
+        <div class="aq-capture-row"><span class="aq-shortcut">Ctrl/Cmd + Enter saves · plain Enter adds a line</span><button class="aq-primary-button" id="captureBtn">add to Dashboard</button></div>
+      </div>
+    </aside>
+    <div class="aq-folder-help">Tip: drag a note by its ⠿ handle into a folder. A collapsed folder also accepts drops. Your edits appear in both Aquarium layouts.</div>
+  </div>
+  <main class="aq-board-workspace aq-folder-board">
+    <div class="aq-folder-heading"><div><strong>Folders</strong><small>Two per row · grouped by section</small></div><a href="Aquarium.html" class="small-button">Original Aquarium ↗</a></div>
+    <div class="aq-section-board" id="categoryGrid"></div>
+  </main>
+</div>
+</div>
+<div aria-hidden="true" class="link-editor-backdrop" id="linkEditorBackdrop">
+<div aria-labelledby="linkEditorTitle" aria-modal="true" class="link-editor" role="dialog">
+<h2 id="linkEditorTitle">Edit Link</h2>
+<label for="linkLabelInput">Label</label>
+<input id="linkLabelInput" type="text"/>
+<label for="linkUrlInput">URL or local file</label>
+<input id="linkUrlInput" placeholder="example.html or https://..." type="text"/>
+<div class="link-editor-actions">
+<button id="cancelLinkEdit" type="button">Cancel</button>
+<button id="saveLinkEdit" type="button">Save</button>
+</div>
+</div>
+</div>
+</body>
+</html>

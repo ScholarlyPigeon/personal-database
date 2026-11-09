@@ -97,7 +97,10 @@
         scope.append(summary,choices);p.append(scope);return;
       }
       const b=button(item.label,item.label,()=>{closeMenu();item.run();},'alignment-menu-option');p.append(b);
-    });document.body.append(p);menu=p;
+    });
+    // Native modal dialogs paint in the top layer. A menu attached to body
+    // appears *behind* them regardless of z-index; the current dialog owns it.
+    (dialog?.open ? dialog : document.body).append(p);menu=p;
     const r=trigger.getBoundingClientRect(),w=p.offsetWidth||296,h=p.offsetHeight||280;
     p.style.left=Math.max(8,Math.min(window.innerWidth-w-8,r.right-w))+'px';
     const below=r.bottom+5,above=r.top-h-5;
@@ -255,7 +258,7 @@ opts.addEventListener('click',()=>noteOptions(opts,n));
   function openFolder(id){
     const f=state.folders.find(x=>x.id===id);if(!f)return;openedFolder=id;
     $('alignmentFolderName').value=f.name;$('alignmentFolderDescription').value=f.description||'';
-    dialog.showModal();renderFolder();
+    closeQuick();dialog.showModal();renderFolder();
   }
   function renderFolder(){
     if(!openedFolder||!dialog.open)return;
@@ -288,10 +291,30 @@ opts.addEventListener('click',()=>noteOptions(opts,n));
   title.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();editor.focus();}});
   $('alignmentFolderClose').addEventListener('click',()=>dialog.close());
   dialog.addEventListener('click',e=>{if(e.target===dialog)dialog.close();});
-  dialog.addEventListener('close',()=>{openedFolder=null;});
+  dialog.addEventListener('close',()=>{closeQuick();openedFolder=null;closeMenu();});
   $('alignmentFolderName').addEventListener('change',e=>{const f=state.folders.find(x=>x.id===openedFolder);if(!f)return;f.name=tidy(e.target.value)||'Folder';save();renderShelf();});
   $('alignmentFolderDescription').addEventListener('input',e=>{const f=state.folders.find(x=>x.id===openedFolder);if(!f)return;f.description=e.target.value.slice(0,500);save();renderShelf();});
-  $('alignmentFolderNew').addEventListener('click',()=>{if(!openedFolder)return;const place='folder:'+openedFolder;dialog.close();fillDestination(destination,place);title.focus();});
+  // Add thoughts *inside* the active folder, without dismissing the pop-out.
+  const quickForm=$('alignmentFolderQuickAdd');
+  const quickTitle=$('alignmentFolderQuickTitle');
+  const quickBody=$('alignmentFolderQuickBody');
+  const closeQuick=()=>{quickForm.hidden=true;quickTitle.value='';quickBody.innerHTML='';};
+  $('alignmentFolderNew').addEventListener('click',()=>{
+    if(!openedFolder)return;
+    quickForm.hidden=false;
+    quickTitle.focus();
+  });
+  $('alignmentFolderQuickCancel').addEventListener('click',closeQuick);
+  quickForm.addEventListener('submit',event=>{
+    event.preventDefault();
+    const name=tidy(quickTitle.value), html=clean(quickBody.innerHTML.trim()), text=plain(html);
+    if(!name&&!text){quickTitle.focus();return;}
+    if(!openedFolder||!state.folders.some(f=>f.id===openedFolder))return;
+    state.entries.unshift({id:uid('note'),title:name||text.slice(0,90)||'Untitled',html,text,
+      createdAt:new Date().toISOString(),date:today(),place:'folder:'+openedFolder,
+      expanded:true,pinned:false,imageUrl:'',linkUrl:''});
+    save();closeQuick();renderFolder();
+  });
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&menu)closeMenu();});
   window.addEventListener('storage',e=>{if(e.key===STATE){state=normalize(load(STATE,blank()));render();}});
   window.addEventListener('focus',()=>{const next=normalize(load(STATE,blank()));if(JSON.stringify(next)!==JSON.stringify(state)){state=next;render();}});

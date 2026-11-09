@@ -4109,14 +4109,25 @@ if (document.getElementById("aquariumApp")) {
         renderAquarium();
     }
 
-    const AQUARIUM_COLLAPSED_CATEGORIES_KEY = "pi-aquarium-collapsed-categories-v1";
+    // The experimental folder layout has its own *view-only* collapse state.
+    // All folders start closed there, and opening them never changes which
+    // tiles are open in the original Aquarium. Card data remains shared.
+    const AQUARIUM_IS_FOLDER_VIEW = document.documentElement.classList.contains("aquarium-folders-page");
+    const AQUARIUM_COLLAPSED_CATEGORIES_KEY = AQUARIUM_IS_FOLDER_VIEW
+        ? "pi-aquarium-folder-view-collapsed-v1"
+        : "pi-aquarium-collapsed-categories-v1";
 
     function readCollapsedAquariumCategories() {
         try {
-            const saved = JSON.parse(localStorage.getItem(AQUARIUM_COLLAPSED_CATEGORIES_KEY) || "[]");
+            const raw = localStorage.getItem(AQUARIUM_COLLAPSED_CATEGORIES_KEY);
+            if (raw === null && AQUARIUM_IS_FOLDER_VIEW) {
+                return new Set(aquariumState.categories.map(category => category.id));
+            }
+            const saved = JSON.parse(raw || "[]");
             return new Set(Array.isArray(saved) ? saved : []);
         } catch {
-            return new Set();
+            return AQUARIUM_IS_FOLDER_VIEW
+                ? new Set(aquariumState.categories.map(category => category.id)) : new Set();
         }
     }
 
@@ -4270,20 +4281,39 @@ if (document.getElementById("aquariumApp")) {
         });
 
         shell.addEventListener("dragover", event => {
-            if (!draggedCategoryId) return;
+            if (!draggedCategoryId && !draggedAquariumCardId) return;
             event.preventDefault();
             event.stopPropagation();
+            if (draggedAquariumCardId) shell.classList.add("aq-folder-drop-ready");
+        });
+        shell.addEventListener("dragleave", event => {
+            if (!shell.contains(event.relatedTarget)) shell.classList.remove("aq-folder-drop-ready");
         });
 
         shell.addEventListener("drop", event => {
-            if (!draggedCategoryId) return;
+            if (!draggedCategoryId && !draggedAquariumCardId) return;
+            // A child note handles reorder drops itself. Everywhere else in the
+            // folder, including its collapsed heading, accepts a move into it.
             event.preventDefault();
             event.stopPropagation();
+            shell.classList.remove("aq-folder-drop-ready");
+            if (draggedAquariumCardId) {
+                const sourceId = draggedAquariumCardId;
+                draggedAquariumCardId = null;
+                moveAquariumCard(sourceId, category.id);
+                return;
+            }
             const sourceId = draggedCategoryId;
             draggedCategoryId = null;
             if (!sourceId || sourceId === category.id) return;
             moveAquariumCategory(sourceId, category.section, category.id);
         });
+        shell.addEventListener("click", event => {
+            if (!tapMoveAquariumCardId || event.target.closest('button,summary,details,input,select,[contenteditable="true"],.aq-card')) return;
+            const sourceId = tapMoveAquariumCardId;
+            setAquariumTapMove(null);
+            moveAquariumCard(sourceId, category.id);
+        }, true);
 
         const name = document.createElement("div");
         name.className = "aq-category-name";
@@ -4334,7 +4364,7 @@ if (document.getElementById("aquariumApp")) {
         const focusTile = document.createElement("button");
         focusTile.type = "button";
         focusTile.className = "aq-menu-button";
-        focusTile.textContent = "Pop out tile";
+        focusTile.textContent = "⤢";
         focusTile.title = "Open the entire tile in focus view";
         focusTile.setAttribute("aria-label", "Focus tile " + category.name);
         focusTile.addEventListener("click", event => {

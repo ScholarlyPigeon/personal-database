@@ -1,3 +1,21 @@
+# V26 · Sunday layout repairs + Aquarium Folders experiment (November 8, 2026)
+
+**Based on V25.** Upload everything inside `CURRENT/` into the GitHub Pages repository root, keeping `assets/` as a folder. Before deploying, export a fresh JSON backup and close other open intranet tabs. Hard-refresh after uploading. Do not clear browser storage to test these changes.
+
+**Home:** Day category notes now stay within each day's independently scrollable list, above the date's add field. On My Radar's collapse control uses the same compact bordered button style as the other tables.
+
+**Aquarium:** Visible tile pop-outs now use the ⤢ icon instead of text squeezed into a tiny button. The tile itself accepts note drops, including when its contents are collapsed.
+
+**Week, Month, Next Month:** Editable regular items and category notes now offer Archive and Delete behind their own menus, including when editing inside a day pop-out. Nested checklist items already had these actions. As before, automatically archived historical days are read-only.
+
+**Alignment:** `+ note` inside an open folder opens a compact in-folder editor without closing the dialog. Note options opened from within the dialog are attached to that dialog, keeping settings visible above the modal. The original page-level composer remains available as before.
+
+**NEW: `AquariumFolders.html`** is a second view of the existing Aquarium rather than a separate dataset. Three-column desktop layout: **Dashboard on the left** (the existing Inbox/unfiled notes), **Brain Dump in the center** (saves to Dashboard), and **Folders on the right** (the existing categories in two columns per section). Folder tiles start closed, can be individually expanded or popped out, and accept notes dragged onto them even while collapsed. Moving notes between folders or back to Dashboard changes the same synced Aquarium records visible in `Aquarium.html`. Both layouts are linked in the Pages menu; the experiment is also accessible through **Aquarium → Folders** in navigation. The new page stores its *own* collapse preference under `pi-aquarium-folder-view-collapsed-v1` so opening a folder does not expand the matching original Aquarium tile. No migration of existing notes or change to the cloud sync algorithm.
+
+**Validation:** All JS files passed `node --check`, all page-local script and stylesheet references resolved, and V26 CSS parsed cleanly. Isolated Chromium DOM tests passed on Aquarium Folders (3 columns, 8 default folders, no script errors; HTML5 card drag/drop updated the saved destination and capture created a Dashboard note), on Alignment (save within open folder, menu inside modal), and on Week (Archive/Delete in regular note and category menus). These tests used simulated localStorage and blocked external cloud access. Actual live GitHub deployment, Supabase sync and device-specific layout still need checking.
+
+---
+
 # V25 · Sunday control consistency pass (November 8, 2026)
 
 Built on V24. This pass keeps the original notes, cloud sync, storage keys and all existing themes.
@@ -298,3 +316,11 @@ were changed. V20.4 fixes otherwise remain in place.
 - Longform saved-section controls remain on one line; delete goes into the ⋮ menu; count labels have readable contrast.
 - Longform pop-out editors now expose an Edit in composer action sharing the original save/update workflow.
 - No changes to content storage schemas or cloud sync protocol. Test with a fresh JSON backup before editing live records.
+
+
+### V26.1 — Aquarium · Folders locked viewport
+- AquariumFolders.html only: the browser page stays exactly one visible viewport high.
+- The left Dashboard list, middle composer column, and right folder board scroll within their own bounded areas on desktop.
+- Narrow/phone screens stack the three panels within one internally scrollable workspace (the document itself does not scroll).
+- Original Aquarium.html, cloud sync, note storage, and all other pages are unchanged.
+- Add `V26FoldersViewport.css` to GitHub along with the updated `AquariumFolders.html`.
