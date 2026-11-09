@@ -324,3 +324,11 @@ were changed. V20.4 fixes otherwise remain in place.
 - Narrow/phone screens stack the three panels within one internally scrollable workspace (the document itself does not scroll).
 - Original Aquarium.html, cloud sync, note storage, and all other pages are unchanged.
 - Add `V26FoldersViewport.css` to GitHub along with the updated `AquariumFolders.html`.
+
+## V26.2 — Folder tiles + full-height Aquarium composer (November 8, 2026)
+
+The **Aquarium · Folders** experimental view uses the *existing Aquarium categories as genuine folder tiles*, with the same centered-symbol, title, optional description, and note-count presentation found in Compass and Alignment. Opening a tile reveals an editable folder dialog with its own note list, quick-add form, and per-note destination dropdown. Folder tiles accept drag-and-drop from Dashboard; the ⋮ menu supports adding notes, renaming, deleting while keeping notes in Dashboard, a dropdown to move the folder between sections, and color-dot accents. Existing sections and their separators remain, and sections/folders can be added. Both Aquarium layouts still use the same `pi-aquarium-state-v3` record, so moving a note in one changes its location in the other. The original `Aquarium.html` design is untouched.
+
+The center **Brain Dump** now takes a larger share of the three-column layout. Its note body stretches from the title field to the compact Type / Save controls at the bottom, occupying the available window height. The extra instructional card and caption below the editor were removed. This remains a viewport-locked page with independent Dashboard and folder scrolling; on narrow screens the workspace itself scrolls internally.
+
+Files updated/added: `AquariumFolders.html`, `Script.js`, `V26FolderTiles.css`. No schema or storage migration is required. Browser interaction and responsive layout tests passed in a local isolated environment; your live cloud-connected dataset still needs a quick post-deployment check. As always, export a JSON backup before replacing the website files.

@@ -9,7 +9,7 @@
 <script defer="" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script defer src="CloudSync.js?v=20261101-v21-3"></script>
 <script defer src="Activity.js?v=20261101-v21-3"></script>
-<script defer src="Script.js?v=20261108-v26-1"></script>
+<script defer src="Script.js?v=20261108-v26-2"></script>
 
 <script defer src="Planner.js?v=20261108-v26-1"></script>
 
@@ -54,6 +54,7 @@
 <script defer src="V25Controls.js?v=20261108-v25-1"></script>
 <link rel="stylesheet" href="V26Sunday.css?v=20261108-v26-1"/>
 <link rel="stylesheet" href="V26FoldersViewport.css?v=20261108-v26-1a"/>
+<link rel="stylesheet" href="V26FolderTiles.css?v=20261108-v26-2"/>
 </head>
 <body data-default-theme="aquarium" class="aq-folder-layout">
 <div class="aq-page" id="aquariumApp">
@@ -77,27 +78,35 @@
 <div class="aq-workspace aq-folder-workspace">
   <aside class="aq-folder-dashboard aq-panel" aria-label="Dashboard">
     <div class="aq-panel-head"><div class="aq-title-wrap"><span class="aq-section-icon">✧</span><div><div class="aq-panel-title">Dashboard</div></div></div></div>
-    <p class="aq-folder-hint">Loose thoughts stay visible here. Drag a note onto any folder to file it, or drag it back here to bring it out.</p>
     <div class="aq-inbox-zone aq-dropzone aq-dashboard-list" data-zone="inbox" id="inboxZone"></div>
   </aside>
   <div class="aq-capture-column aq-folder-capture">
     <aside class="aq-panel aq-capture-panel" data-collapsible-panel="aquarium-capture">
-      <div class="aq-panel-head"><div class="aq-title-wrap"><span class="aq-section-icon">✎</span><div><div class="aq-panel-title editable-ui" contenteditable="true" data-pi-ui="aquarium-capture-title" data-pi-ui-fallback="Brain Dump">Brain Dump</div></div></div></div>
+      <div class="aq-panel-head"><div class="aq-title-wrap"><span class="aq-section-icon">✎</span><div><div class="aq-panel-title editable-ui" contenteditable="true" data-pi-ui="aquarium-capture-title" data-pi-ui-fallback="Brain Dump">Brain Dump</div></div></div><details class="aq-composer-options"><summary aria-label="Composer options" title="Composer options">⋮</summary><div class="aq-composer-options-panel"><button class="small-button" id="manageAquariumKinds" type="button">Manage note types</button></div></details></div>
       <div class="aq-capture-body" data-collapse-body="">
-        <input aria-label="Aquarium note title" autocomplete="off" class="aq-capture-title-input" id="aqCaptureTitle" maxlength="180" placeholder="Title this thought…" type="text"/>
-        <div aria-multiline="true" class="aq-capture-rich-input" contenteditable="true" data-placeholder="Write a thought… Ctrl/Cmd + Enter saves." id="captureInput" role="textbox"></div>
-        <div class="aq-kind-select-row"><label class="aq-kind-select-label"><span>type</span><select aria-label="Aquarium card type" id="aqCaptureKind"></select></label><button class="small-button" id="manageAquariumKinds" type="button">manage types</button></div>
-        <div class="aq-capture-row"><span class="aq-shortcut">Ctrl/Cmd + Enter saves · plain Enter adds a line</span><button class="aq-primary-button" id="captureBtn">add to Dashboard</button></div>
+        <input aria-label="Aquarium note title" autocomplete="off" class="aq-capture-title-input" id="aqCaptureTitle" maxlength="180" placeholder="Title your thought…" type="text"/>
+        <div aria-multiline="true" aria-label="Write a thought" class="aq-capture-rich-input" contenteditable="true" data-placeholder=". . ." id="captureInput" role="textbox"></div>
+        <div class="aq-capture-row"><label class="aq-composer-kind-label"><span>Type</span><select aria-label="Aquarium card type" id="aqCaptureKind"></select></label><button class="aq-primary-button" id="captureBtn">Save to Dashboard ↑</button></div>
       </div>
     </aside>
-    <div class="aq-folder-help">Tip: drag a note by its ⠿ handle into a folder. A collapsed folder also accepts drops. Your edits appear in both Aquarium layouts.</div>
   </div>
   <main class="aq-board-workspace aq-folder-board">
-    <div class="aq-folder-heading"><div><strong>Folders</strong><small>Two per row · grouped by section</small></div><a href="Aquarium.html" class="small-button">Original Aquarium ↗</a></div>
+    <div class="aq-folder-heading"><strong>Folders</strong><button type="button" class="small-button" id="aqFoldersAddSection">+ section</button></div>
     <div class="aq-section-board" id="categoryGrid"></div>
   </main>
 </div>
 </div>
+<dialog class="aq-folder-dialog" id="aqFolderDialog" aria-label="Aquarium folder contents">
+  <div class="aq-folder-dialog-top"><span class="aq-folder-dialog-symbol" aria-hidden="true">✧</span><input id="aqFolderDialogName" maxlength="120" aria-label="Folder name"/><button class="aq-folder-icon-button" type="button" id="aqFolderDialogClose" aria-label="Close folder">×</button></div>
+  <textarea id="aqFolderDialogDescription" rows="2" maxlength="500" placeholder="A little description…" aria-label="Folder description"></textarea>
+  <div class="aq-folder-dialog-tools"><span id="aqFolderDialogCount">0 notes</span><button type="button" class="small-button" id="aqFolderDialogAdd">+ note</button></div>
+  <form id="aqFolderDialogForm" class="aq-folder-inline-form" hidden>
+    <input id="aqFolderNewTitle" type="text" maxlength="180" placeholder="Note title…" aria-label="Note title"/>
+    <div id="aqFolderNewBody" class="aq-folder-inline-body" role="textbox" contenteditable="true" aria-multiline="true" data-placeholder="Write your note…" aria-label="Note text"></div>
+    <div class="aq-folder-inline-actions"><select id="aqFolderNewType" aria-label="Note type"></select><button class="small-button" type="button" id="aqFolderNewCancel">Cancel</button><button class="aq-primary-button" type="submit">Save note</button></div>
+  </form>
+  <div class="aq-folder-dialog-notes aq-dropzone" id="aqFolderDialogNotes" aria-label="Notes in folder"></div>
+</dialog>
 <div aria-hidden="true" class="link-editor-backdrop" id="linkEditorBackdrop">
 <div aria-labelledby="linkEditorTitle" aria-modal="true" class="link-editor" role="dialog">
 <h2 id="linkEditorTitle">Edit Link</h2>

@@ -4438,7 +4438,410 @@ if (document.getElementById("aquariumApp")) {
         showSaved();
     }
 
+    // V26.2: the second Aquarium presents the shared categories as real
+    // Compass/Alignment-style folders. This UI changes no storage keys and
+    // leaves Aquarium.html's expanding category layout untouched.
+    let openAquariumFolderId = null;
+    let aquariumFolderDialogReady = false;
+
+    function aqFolderButton(label, title, callback, className = "aq-folder-icon-button") {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = className;
+        button.textContent = label;
+        button.title = title;
+        button.setAttribute("aria-label", title);
+        button.addEventListener("click", callback);
+        return button;
+    }
+
+    function aqFolderMenu(label, entries) {
+        const details = document.createElement("details");
+        details.className = "aq-folder-options";
+        const summary = document.createElement("summary");
+        summary.textContent = "⋮";
+        summary.setAttribute("aria-label", label);
+        summary.title = label;
+        const panel = document.createElement("div");
+        panel.className = "aq-folder-options-panel";
+        const dismiss = () => { details.open = false; };
+        entries.forEach(({ text, action, disabled }) => {
+            const button = aqFolderButton(text, text, event => {
+                event.preventDefault(); event.stopPropagation(); dismiss(); action();
+            }, "aq-folder-option");
+            button.disabled = Boolean(disabled);
+            panel.appendChild(button);
+        });
+        details.append(summary, panel);
+        // Keep large folder menus out of the right column's clipped scroller.
+        // Native popovers lift this same panel into the browser's top layer.
+        if (typeof panel.showPopover === "function") {
+            panel.setAttribute("popover", "auto");
+            const positionMenu = () => {
+                const r = summary.getBoundingClientRect();
+                const height = panel.offsetHeight || 240;
+                const width = panel.offsetWidth || 200;
+                panel.style.position = "fixed";
+                panel.style.left = Math.max(8, Math.min(innerWidth - width - 8, r.right - width)) + "px";
+                const below = r.bottom + 5;
+                panel.style.top = (below + height <= innerHeight - 8
+                    ? below : Math.max(8, r.top - height - 5)) + "px";
+            };
+            details.addEventListener("toggle", () => {
+                if (details.open) {
+                    try { panel.showPopover(); positionMenu(); } catch {}
+                } else if (panel.matches(":popover-open")) panel.hidePopover();
+            });
+            panel.addEventListener("toggle", event => {
+                if (event.newState === "closed" && details.open) details.open = false;
+            });
+        }
+        return details;
+    }
+
+    function aqAddFolderInSection(sectionId) {
+        const proposed = prompt("Folder name:", "New folder");
+        const name = proposed?.trim();
+        if (!name) return;
+        const id = "cat-" + piUuid();
+        aquariumState.categories.push({ id, name: name.slice(0, 120), description: "", accent: nextCategoryAccent(), section: sectionId });
+        saveAquariumState(); renderAquarium(); openAquariumFolder(id);
+    }
+
+    function aqDeleteFolder(category) {
+        if (!confirm('Delete folder "' + category.name + '"? Its notes will return to Dashboard.')) return;
+        aquariumState.cards.forEach(card => { if (card.zone === category.id) card.zone = "inbox"; });
+        aquariumState.categories = aquariumState.categories.filter(f => f.id !== category.id);
+        if (openAquariumFolderId === category.id) document.getElementById("aqFolderDialog")?.close();
+        saveAquariumState(); renderAquarium();
+    }
+
+    function aqFolderTile(category) {
+        const tile = document.createElement("article");
+        tile.className = "aq-folder-tile";
+        tile.dataset.folderId = category.id;
+        tile.dataset.accent = category.accent;
+        const handle = document.createElement("span");
+        handle.className = "aq-folder-tile-grip";
+        handle.textContent = "⠿";
+        handle.draggable = true;
+        handle.title = "Drag to reorder folders";
+        handle.addEventListener("dragstart", event => {
+            draggedCategoryId = category.id;
+            event.dataTransfer.effectAllowed = "move";
+            event.dataTransfer.setData("application/x-aquarium-category", category.id);
+            tile.classList.add("dragging");
+        });
+        handle.addEventListener("dragend", () => { draggedCategoryId = null; tile.classList.remove("dragging"); });
+        const options = aqFolderMenu("Folder options", [
+            { text: "Open folder", action: () => openAquariumFolder(category.id) },
+            { text: "+ note", action: () => { openAquariumFolder(category.id, true); } },
+            { text: "Rename folder", action: () => {
+                const name = prompt("Folder name:", category.name)?.trim();
+                if (name) { category.name = name.slice(0, 120); saveAquariumState(); renderAquarium(); }
+            } },
+            { text: "Edit description", action: () => openAquariumFolder(category.id) },
+            { text: "Delete folder (keep notes)", action: () => aqDeleteFolder(category) }
+        ]);
+        // Use the same dropdown + color-dot vocabulary across this intranet.
+        const tray = options.querySelector(".aq-folder-options-panel");
+        const moveLabel = document.createElement("label");
+        moveLabel.className = "aq-folder-menu-move";
+        moveLabel.textContent = "Move to…";
+        const select = document.createElement("select");
+        aquariumState.sections.forEach(section => {
+            const option = document.createElement("option");
+            option.value = section.id;
+            option.textContent = section.name;
+            select.appendChild(option);
+        });
+        select.value = category.section;
+        select.addEventListener("change", event => {
+            event.stopPropagation();
+            options.open = false;
+            moveAquariumCategory(category.id, select.value);
+        });
+        moveLabel.append(select);
+        tray.append(moveLabel);
+        const colors = document.createElement("div");
+        colors.className = "aq-folder-color-palette";
+        [...new Set(CATEGORY_ACCENT_SEQUENCE)].forEach(color => {
+            const dot = aqFolderButton("", "Color: " + color, () => {
+                category.accent = color;
+                saveAquariumState(); renderAquarium();
+            }, "aq-folder-color-dot");
+            dot.dataset.color = color;
+            dot.style.backgroundColor = "var(--" + color + "-soft)";
+            dot.setAttribute("aria-pressed", String(category.accent === color));
+            colors.append(dot);
+        });
+        tray.append(colors);
+        const center = document.createElement("div");
+        center.className = "aq-folder-tile-center";
+        center.tabIndex = 0;
+        center.setAttribute("role", "button");
+        center.setAttribute("aria-label", "Open folder " + category.name);
+        const symbol = document.createElement("span");
+        symbol.className = "aq-folder-tile-symbol";
+        symbol.textContent = "✧";
+        const name = document.createElement("strong");
+        name.className = "aq-folder-tile-title";
+        name.textContent = category.name;
+        const description = document.createElement("p");
+        description.className = "aq-folder-tile-description";
+        description.textContent = category.description || "· · ·";
+        center.append(symbol, name, description);
+        center.addEventListener("click", () => openAquariumFolder(category.id));
+        center.addEventListener("keydown", event => {
+            if (event.key === "Enter" || event.key === " ") { event.preventDefault(); openAquariumFolder(category.id); }
+        });
+        const count = document.createElement("span");
+        count.className = "aq-folder-tile-count";
+        const n = aquariumState.cards.filter(card => card.zone === category.id).length;
+        count.textContent = n + (n === 1 ? " note" : " notes");
+        tile.append(handle, options, center, count);
+        tile.addEventListener("dragover", event => {
+            if (!draggedAquariumCardId && !draggedCategoryId) return;
+            event.preventDefault(); event.stopPropagation();
+            tile.classList.add("aq-folder-tile-drop");
+        });
+        tile.addEventListener("dragleave", event => {
+            if (!tile.contains(event.relatedTarget)) tile.classList.remove("aq-folder-tile-drop");
+        });
+        tile.addEventListener("drop", event => {
+            if (!draggedAquariumCardId && !draggedCategoryId) return;
+            event.preventDefault(); event.stopPropagation();
+            tile.classList.remove("aq-folder-tile-drop");
+            if (draggedAquariumCardId) {
+                const id = draggedAquariumCardId; draggedAquariumCardId = null;
+                moveAquariumCard(id, category.id);
+            } else if (draggedCategoryId && draggedCategoryId !== category.id) {
+                const id = draggedCategoryId; draggedCategoryId = null;
+                moveAquariumCategory(id, category.section, category.id);
+            }
+        });
+        tile.addEventListener("click", event => {
+            if (!tapMoveAquariumCardId || event.target.closest('button,summary,details,select')) return;
+            const cardId = tapMoveAquariumCardId;
+            setAquariumTapMove(null);
+            moveAquariumCard(cardId, category.id);
+        }, true);
+        return tile;
+    }
+
+    function aqFolderSection(section) {
+        const band = document.createElement("section");
+        band.className = "aq-folder-section";
+        band.dataset.sectionId = section.id;
+        const head = document.createElement("div");
+        head.className = "aq-folder-section-head";
+        const label = document.createElement("strong");
+        label.className = "aq-folder-section-name";
+        label.textContent = section.name;
+        label.title = "Double-click to rename section";
+        label.addEventListener("dblclick", () => {
+            const next = prompt("Section name:", section.name)?.trim();
+            if (next) { section.name = next; saveAquariumState(); renderAquarium(); }
+        });
+        const collapsed = collapsedAquariumSections.has(section.id);
+        const fold = aqFolderButton(collapsed ? "▸" : "▾", collapsed ? "Expand section" : "Collapse section", () => {
+            if (collapsedAquariumSections.has(section.id)) collapsedAquariumSections.delete(section.id);
+            else collapsedAquariumSections.add(section.id);
+            saveCollapsedAquariumSections(); renderAquariumCategories();
+        });
+        const menu = aqFolderMenu("Section options", [
+            { text: "+ folder", action: () => aqAddFolderInSection(section.id) },
+            { text: "+ section below", action: () => {
+                const name = prompt("Section name:", "New section")?.trim();
+                if (!name) return;
+                const index = aquariumState.sections.findIndex(s => s.id === section.id);
+                aquariumState.sections.splice(index + 1, 0, { id: piUuid("section"), name });
+                saveAquariumState(); renderAquarium();
+            } },
+            { text: "Rename section", action: () => {
+                const name = prompt("Section name:", section.name)?.trim();
+                if (name) { section.name = name; saveAquariumState(); renderAquarium(); }
+            } },
+            { text: "Delete section (keep folders)", disabled: aquariumState.sections.length < 2, action: () => {
+                if (!confirm('Remove section "' + section.name + '"? Its folders will move into the first remaining section.')) return;
+                aquariumState.sections = aquariumState.sections.filter(s => s.id !== section.id);
+                aquariumState.categories.forEach(category => { if (category.section === section.id) category.section = aquariumState.sections[0].id; });
+                collapsedAquariumSections.delete(section.id);
+                saveCollapsedAquariumSections(); saveAquariumState(); renderAquarium();
+            } }
+        ]);
+        head.append(label, fold, menu);
+        const grid = document.createElement("div");
+        grid.className = "aq-folder-tiles";
+        grid.hidden = collapsed;
+        const categories = aquariumState.categories.filter(cat => cat.section === section.id);
+        categories.forEach(category => grid.appendChild(aqFolderTile(category)));
+        const add = aqFolderButton("+ folder", "Add folder to " + section.name, () => aqAddFolderInSection(section.id), "aq-folder-new-tile");
+        grid.appendChild(add);
+        grid.addEventListener("dragover", event => {
+            if (!draggedCategoryId) return;
+            event.preventDefault(); grid.classList.add("aq-folder-tiles-drop");
+        });
+        grid.addEventListener("dragleave", event => {
+            if (!grid.contains(event.relatedTarget)) grid.classList.remove("aq-folder-tiles-drop");
+        });
+        grid.addEventListener("drop", event => {
+            if (!draggedCategoryId || event.target.closest(".aq-folder-tile")) return;
+            event.preventDefault(); grid.classList.remove("aq-folder-tiles-drop");
+            const id = draggedCategoryId; draggedCategoryId = null;
+            moveAquariumCategory(id, section.id);
+        });
+        band.append(head, grid);
+        return band;
+    }
+
+    function renderAquariumFolderBoard() {
+        const board = document.getElementById("categoryGrid");
+        if (!board) return;
+        board.replaceChildren(...aquariumState.sections.map(aqFolderSection));
+        renderAquariumFolderDialogNotes();
+    }
+
+    function openAquariumFolder(id, startAdding = false) {
+        if (!AQUARIUM_IS_FOLDER_VIEW) return;
+        const category = aquariumState.categories.find(cat => cat.id === id);
+        if (!category) return;
+        const dialog = document.getElementById("aqFolderDialog");
+        if (!dialog) return;
+        if (dialog.open && openAquariumFolderId !== id) dialog.close();
+        openAquariumFolderId = id;
+        document.getElementById("aqFolderDialogName").value = category.name;
+        document.getElementById("aqFolderDialogDescription").value = category.description || "";
+        const form = document.getElementById("aqFolderDialogForm");
+        form.hidden = !startAdding;
+        if (!dialog.open) dialog.showModal();
+        renderAquariumFolderDialogNotes();
+        if (startAdding) document.getElementById("aqFolderNewTitle").focus();
+    }
+
+    function renderAquariumFolderDialogNotes() {
+        if (!AQUARIUM_IS_FOLDER_VIEW || !openAquariumFolderId) return;
+        const dialog = document.getElementById("aqFolderDialog");
+        if (!dialog?.open) return;
+        const category = aquariumState.categories.find(cat => cat.id === openAquariumFolderId);
+        if (!category) { dialog.close(); return; }
+        const list = document.getElementById("aqFolderDialogNotes");
+        if (!list) return;
+        const scroll = list.scrollTop;
+        list.replaceChildren();
+        const cards = aquariumState.cards.filter(card => card.zone === category.id);
+        document.getElementById("aqFolderDialogCount").textContent = cards.length + (cards.length === 1 ? " note" : " notes");
+        if (!cards.length) list.append(makeEmptyMessage("This folder is waiting for its first note."));
+        const destinations = [{ id: "inbox", name: "Dashboard" }, ...aquariumState.categories.map(f => ({ id: f.id, name: f.name }))];
+        for (const card of cards) {
+            const wrapper = document.createElement("div");
+            wrapper.className = "aq-folder-dialog-note";
+            wrapper.append(makeAquariumCard(card));
+            const move = document.createElement("select");
+            move.className = "aq-folder-note-destination";
+            move.title = "Move note to another folder or Dashboard";
+            move.setAttribute("aria-label", "Move " + card.title + " to");
+            destinations.forEach(destination => {
+                const option = document.createElement("option");
+                option.value = destination.id;
+                option.textContent = destination.name;
+                move.append(option);
+            });
+            move.value = card.zone;
+            move.addEventListener("change", () => moveAquariumCard(card.id, move.value));
+            const moveLine = document.createElement("div");
+            moveLine.className = "aq-folder-note-move-row";
+            const moveLabel = document.createElement("span");
+            moveLabel.textContent = "Move to";
+            moveLine.append(moveLabel, move);
+            wrapper.append(moveLine);
+            list.append(wrapper);
+        }
+        list.scrollTop = scroll;
+    }
+
+    function initAquariumFolderDialog() {
+        if (!AQUARIUM_IS_FOLDER_VIEW || aquariumFolderDialogReady) return;
+        const dialog = document.getElementById("aqFolderDialog");
+        if (!dialog) return;
+        aquariumFolderDialogReady = true;
+        // The standard panel palette already creates a ⋮ menu here. Rehome
+        // 'Manage note types' into that menu so there is only one, in the
+        // same right-aligned control rail as the rest of the intranet.
+        const foldComposerMenu = () => {
+            const head = document.querySelector(".aq-folder-capture .aq-panel-head");
+            const original = head?.querySelector(".aq-composer-options");
+            const target = head?.querySelector(".pi-color-panel-menu .pi-color-panel-tray");
+            const manage = document.getElementById("manageAquariumKinds");
+            if (!original || !target || !manage) return false;
+            manage.classList.add("aq-folder-manage-kinds");
+            target.append(manage);
+            original.remove();
+            return true;
+        };
+        if (!foldComposerMenu()) {
+            const head = document.querySelector(".aq-folder-capture .aq-panel-head");
+            if (head) {
+                const obs = new MutationObserver(() => {
+                    if (foldComposerMenu()) obs.disconnect();
+                });
+                obs.observe(head, {childList:true,subtree:true});
+            }
+        }
+        document.addEventListener("pointerdown", event => {
+            document.querySelectorAll(".aq-folder-options[open],.aq-composer-options[open]").forEach(menu => {
+                if (!menu.contains(event.target)) menu.open = false;
+            });
+        }, true);
+        const title = document.getElementById("aqFolderDialogName");
+        const description = document.getElementById("aqFolderDialogDescription");
+        title.addEventListener("change", () => {
+            const folder = aquariumState.categories.find(f => f.id === openAquariumFolderId);
+            if (!folder) return;
+            folder.name = title.value.trim().slice(0, 120) || "Folder";
+            saveAquariumState(); renderAquarium();
+        });
+        description.addEventListener("change", () => {
+            const folder = aquariumState.categories.find(f => f.id === openAquariumFolderId);
+            if (!folder) return;
+            folder.description = description.value.slice(0, 500);
+            saveAquariumState(); renderAquarium();
+        });
+        document.getElementById("aqFolderDialogClose").addEventListener("click", () => dialog.close());
+        dialog.addEventListener("close", () => { openAquariumFolderId = null; document.getElementById("aqFolderDialogForm").hidden = true; });
+        dialog.addEventListener("click", event => { if (event.target === dialog) dialog.close(); });
+        const form = document.getElementById("aqFolderDialogForm");
+        const newTitle = document.getElementById("aqFolderNewTitle");
+        const newBody = document.getElementById("aqFolderNewBody");
+        const type = document.getElementById("aqFolderNewType");
+        const clearForm = () => { form.hidden = true; newTitle.value = ""; newBody.innerHTML = ""; };
+        document.getElementById("aqFolderNewCancel").addEventListener("click", clearForm);
+        document.getElementById("aqFolderDialogAdd").addEventListener("click", () => { form.hidden = false; newTitle.focus(); });
+        newTitle.addEventListener("keydown", event => { if (event.key === "Enter") { event.preventDefault(); newBody.focus(); } });
+        aquariumState.kinds.forEach(kind => {
+            const option = document.createElement("option");
+            option.value = kind.id;
+            option.textContent = kind.name;
+            type.append(option);
+        });
+        form.addEventListener("submit", event => {
+            event.preventDefault();
+            if (!openAquariumFolderId) return;
+            const name = newTitle.value, body = newBody.innerHTML;
+            if (!name.trim() && !aquariumPlainTextFromHtml(body)) { newTitle.focus(); return; }
+            addAquariumCard(openAquariumFolderId, name, body, type.value);
+            clearForm();
+        });
+        document.getElementById("aqFoldersAddSection")?.addEventListener("click", () => {
+            const name = prompt("Section name:", "New section")?.trim();
+            if (!name) return;
+            aquariumState.sections.push({ id: piUuid("section"), name });
+            saveAquariumState(); renderAquarium();
+        });
+    }
+
     function renderAquariumCategories() {
+        if (AQUARIUM_IS_FOLDER_VIEW) { renderAquariumFolderBoard(); return; }
         const board = document.getElementById("categoryGrid");
         board.innerHTML = "";
 
@@ -4787,6 +5190,8 @@ if (document.getElementById("aquariumApp")) {
         });
         repaint();
     }
+
+    initAquariumFolderDialog();
 
     const captureSelect = document.getElementById("aqCaptureKind");
     const filterSelect = document.getElementById("aqFilterSelect");
