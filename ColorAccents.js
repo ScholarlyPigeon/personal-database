@@ -250,6 +250,12 @@
     // V21.7: Aquarium color controls live in the existing combined action/move menu.
     addPanelMenus();
     document.querySelectorAll(MENU_PANELS).forEach(decorate);
+    // V26.3: folder Aquarium notes have one consolidated ⋮ menu.
+    // Include the existing Aquarium note palette in that same menu so
+    // movement and color no longer require competing controls.
+    if(document.documentElement.classList.contains('aquarium-folders-page')){
+      document.querySelectorAll('.aq-card[data-card-id] .pi-v23-actions-panel').forEach(decorate);
+    }
     // Keep colors visible on the noneditable preview rows, too.
     document.querySelectorAll('.planner-preview-item[data-pi-item-id],.alignment-note[data-entry-id]').forEach(node=>{
       const entry=identity(node);if(!entry)return;node.dataset.piColorKey=entry.key;apply(node,entry.key);

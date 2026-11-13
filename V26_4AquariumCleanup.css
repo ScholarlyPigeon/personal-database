@@ -1,0 +1,39 @@
+/* V26.4 | Aquarium Folders: Dashboard / Folders / Writing.
+   This page alone uses the three-column adjustment; nothing about the
+   shared data model or the original Aquarium view changes. */
+@media (min-width: 821px) {
+  html.aquarium-folders-page body .aq-page > .aq-folder-workspace {
+    grid-template-areas: 'dashboard folders capture' !important;
+    grid-template-columns: minmax(0,1fr) minmax(0,1.75fr) minmax(0,1fr) !important;
+    grid-template-rows: minmax(0,1fr) !important;
+  }
+}
+/* The page stays locked to the viewport; on a narrow screen, stack
+   panels in the same reading order as the desktop columns. */
+@media (max-width: 820px) {
+  html.aquarium-folders-page body .aq-folder-workspace > .aq-folder-dashboard { order:0 !important; }
+  html.aquarium-folders-page body .aq-folder-workspace > .aq-folder-board { order:1 !important; }
+  html.aquarium-folders-page body .aq-folder-workspace > .aq-folder-capture { order:2 !important; }
+}
+/* Only the note's ⋮ menu owns its movement actions. */
+html.aquarium-folders-page body #aqFolderDialogNotes .aq-folder-note-move-row,
+html.aquarium-folders-page body #aqFolderDialogNotes .aq-folder-note-destination { display: none !important; }
+/* The top-layer palette must not inherit any left/top placement from a
+   scrolling tile, transformed ancestor, or the browser's default inset. */
+html.aquarium-folders-page body :is(
+  .aq-folder-options-panel,
+  .pi-cross-panel,
+  .pi-v23-actions-panel,
+  .pi-color-panel-tray,
+  .pi-ws-menu-panel,
+  .pi-item-tools-panel,
+  .pi-v25-menu-panel
+)[popover]:popover-open {
+  position:fixed !important;
+  margin:0 !important;
+  max-width:calc(100vw - 16px) !important;
+  max-height:min(65dvh,410px) !important;
+  overflow-y:auto !important;
+  box-sizing:border-box !important;
+  z-index:2147483600 !important;
+}

@@ -1,0 +1,74 @@
+/* V26.3 | Folder Aquarium refinement. No selectors target original Aquarium. */
+@media (min-width:821px) {
+  html.aquarium-folders-page body .aq-page > .aq-folder-workspace {
+    /* Symmetrical outer columns, lightly emphasized writing column. */
+    grid-template-columns:minmax(0,1fr) minmax(0,1.28fr) minmax(0,1fr)!important;
+    grid-template-rows:minmax(0,1fr)!important;
+    grid-template-areas:'dashboard capture folders'!important;
+  }
+}
+html.aquarium-folders-page body .aq-folder-capture .aq-capture-row {
+  justify-content:flex-end!important;
+}
+html.aquarium-folders-page body .aq-folder-capture .aq-capture-row .aq-primary-button {
+  margin-left:auto!important;
+}
+/* Folder notes use only their standard ⋮ menu to move elsewhere. */
+html.aquarium-folders-page body .aq-folder-note-move-row {display:none!important;}
+/* A click anywhere on a section header (except its menu) toggles it. */
+html.aquarium-folders-page body .aq-folder-section-head {cursor:pointer;user-select:none;}
+html.aquarium-folders-page body .aq-folder-section-name {cursor:pointer;}
+html.aquarium-folders-page body .aq-folder-section-name:focus-visible,
+html.aquarium-folders-page body .aq-panel-head[data-aq-toggle-ready]:focus-visible,
+html.aquarium-folders-page body .aq-folder-heading[data-aq-toggle-ready]:focus-visible {
+  outline:2px solid var(--teal,#3d989c);outline-offset:-3px;
+}
+html.aquarium-folders-page body .aq-folder-section-head .aq-folder-options,
+html.aquarium-folders-page body .aq-folder-heading :is(button,details) {cursor:pointer;}
+/* Folder section + board colors use the same saved theme-relative palette as notes. */
+html.aquarium-folders-page body .aq-folder-section.pi-personal-colored > .aq-folder-section-head {
+  background:color-mix(in srgb,var(--pi-personal-ink) 28%,var(--panel-light))!important;
+  border-color:color-mix(in srgb,var(--pi-personal-ink) 55%,var(--border))!important;
+}
+html.aquarium-folders-page body .aq-folder-board.pi-personal-colored > .aq-folder-heading {
+  background:color-mix(in srgb,var(--pi-personal-ink) 22%,var(--panel))!important;
+  border-color:color-mix(in srgb,var(--pi-personal-ink) 53%,var(--border))!important;
+}
+html.aquarium-folders-page body .aq-folder-board.pi-personal-colored > .aq-section-board {
+  background:color-mix(in srgb,var(--pi-personal-ink) 8%,transparent)!important;
+  border-radius:9px!important;
+}
+html.aquarium-folders-page body .aq-folder-color-palette.aq-folder-surface-colors {
+  flex-wrap:wrap;justify-content:flex-start;align-items:center;gap:7px;
+  padding:9px 6px;max-width:100%;box-sizing:border-box;
+  border-top:1px solid var(--border);
+}
+html.aquarium-folders-page body .aq-folder-color-dot.aq-folder-surface-dot {
+  display:grid;place-items:center;flex:0 0 19px;width:19px;height:19px;
+  color:var(--text);font-size:15px;font-weight:700;line-height:1;
+}
+html.aquarium-folders-page body .aq-folder-surface-dot.is-default {border:1px dashed var(--muted);}
+/* Keep popover menus anchored rather than inheriting off-screen/default inset. */
+html.aquarium-folders-page body :is(.aq-folder-options-panel,.pi-cross-panel,.pi-color-panel-tray,.pi-v23-actions-panel,.pi-ws-menu-panel):popover-open {
+  position:fixed!important;inset:auto!important;margin:0!important;
+  box-sizing:border-box!important;max-width:calc(100vw - 16px)!important;
+  max-height:min(65dvh,410px)!important;overflow-y:auto!important;
+  z-index:2147483600!important;
+}
+/* Compact toggles keep the right-aligned control groups looking familiar. */
+html.aquarium-folders-page body .aq-folder-panel-toggle {
+  display:grid;place-items:center;flex:0 0 27px;
+  width:27px;height:27px;padding:0;border:1px solid var(--border);
+  background:var(--panel-light);color:var(--text);border-radius:7px;
+  font-size:14px;cursor:pointer;margin-left:auto;
+}
+html.aquarium-folders-page body .aq-folder-heading > .aq-folder-panel-toggle {margin-left:auto;}
+html.aquarium-folders-page body .aq-folder-heading > .aq-folder-options {flex:0 0 27px;}
+html.aquarium-folders-page body .aq-folder-heading:has(.aq-folder-panel-toggle) > .small-button {margin-left:auto;}
+html.aquarium-folders-page body .aq-folder-capture .aq-capture-body[hidden],
+html.aquarium-folders-page body .aq-folder-dashboard .aq-dashboard-list[hidden],
+html.aquarium-folders-page body .aq-folder-board .aq-section-board[hidden] {display:none!important;}
+html.aquarium-folders-page body .aq-folder-dashboard.aq-collapsed .aq-dashboard-list,
+html.aquarium-folders-page body .aq-folder-board.aq-collapsed .aq-section-board {display:none!important;}
+html.aquarium-folders-page body .aq-folder-capture .aq-capture-panel.aq-collapsed .aq-capture-body {display:none!important;}
+html.aquarium-folders-page body .aq-folder-panel-toggle:focus-visible {outline:2px solid var(--teal,#3d989c);outline-offset:2px;}

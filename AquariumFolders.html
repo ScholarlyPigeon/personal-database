@@ -9,7 +9,7 @@
 <script defer="" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script defer src="CloudSync.js?v=20261101-v21-3"></script>
 <script defer src="Activity.js?v=20261101-v21-3"></script>
-<script defer src="Script.js?v=20261108-v26-2"></script>
+<script defer src="Script.js?v=20261108-v26-3"></script>
 
 <script defer src="Planner.js?v=20261108-v26-1"></script>
 
@@ -38,7 +38,7 @@
 
 <link rel="stylesheet" href="Aurora.css?v=20261101-aurora-1"/>
 <link rel="stylesheet" href="ColorAccents.css?v=20261101-v21-5"/>
-<script defer src="ColorAccents.js?v=20261107-v24-1"></script>
+<script defer src="ColorAccents.js?v=20261108-v26-3"></script>
 <link rel="stylesheet" href="Refinements.css?v=20261101-v21-6"/>
 <script defer src="Refinements.js?v=20261101-v21-6"></script>
 <link rel="stylesheet" href="MenuPolish.css?v=20261102-v21-7"/>
@@ -55,6 +55,10 @@
 <link rel="stylesheet" href="V26Sunday.css?v=20261108-v26-1"/>
 <link rel="stylesheet" href="V26FoldersViewport.css?v=20261108-v26-1a"/>
 <link rel="stylesheet" href="V26FolderTiles.css?v=20261108-v26-2"/>
+<link rel="stylesheet" href="V26_3AquariumPolish.css?v=20261108-v26-3"/>
+<script defer src="V26_3AquariumPolish.js?v=20261108-v26-3"></script>
+<link rel="stylesheet" href="V26_4AquariumCleanup.css?v=20261112-v26-4"/>
+<script defer src="V26_4AquariumCleanup.js?v=20261112-v26-4"></script>
 </head>
 <body data-default-theme="aquarium" class="aq-folder-layout">
 <div class="aq-page" id="aquariumApp">
@@ -80,20 +84,20 @@
     <div class="aq-panel-head"><div class="aq-title-wrap"><span class="aq-section-icon">✧</span><div><div class="aq-panel-title">Dashboard</div></div></div></div>
     <div class="aq-inbox-zone aq-dropzone aq-dashboard-list" data-zone="inbox" id="inboxZone"></div>
   </aside>
-  <div class="aq-capture-column aq-folder-capture">
-    <aside class="aq-panel aq-capture-panel" data-collapsible-panel="aquarium-capture">
-      <div class="aq-panel-head"><div class="aq-title-wrap"><span class="aq-section-icon">✎</span><div><div class="aq-panel-title editable-ui" contenteditable="true" data-pi-ui="aquarium-capture-title" data-pi-ui-fallback="Brain Dump">Brain Dump</div></div></div><details class="aq-composer-options"><summary aria-label="Composer options" title="Composer options">⋮</summary><div class="aq-composer-options-panel"><button class="small-button" id="manageAquariumKinds" type="button">Manage note types</button></div></details></div>
-      <div class="aq-capture-body" data-collapse-body="">
-        <input aria-label="Aquarium note title" autocomplete="off" class="aq-capture-title-input" id="aqCaptureTitle" maxlength="180" placeholder="Title your thought…" type="text"/>
-        <div aria-multiline="true" aria-label="Write a thought" class="aq-capture-rich-input" contenteditable="true" data-placeholder=". . ." id="captureInput" role="textbox"></div>
-        <div class="aq-capture-row"><label class="aq-composer-kind-label"><span>Type</span><select aria-label="Aquarium card type" id="aqCaptureKind"></select></label><button class="aq-primary-button" id="captureBtn">Save to Dashboard ↑</button></div>
-      </div>
-    </aside>
-  </div>
   <main class="aq-board-workspace aq-folder-board">
     <div class="aq-folder-heading"><strong>Folders</strong><button type="button" class="small-button" id="aqFoldersAddSection">+ section</button></div>
     <div class="aq-section-board" id="categoryGrid"></div>
   </main>
+  <div class="aq-capture-column aq-folder-capture">
+    <aside class="aq-panel aq-capture-panel" data-collapsible-panel="aquarium-capture">
+      <div class="aq-panel-head"><div class="aq-title-wrap"><span class="aq-section-icon">✎</span><div><div class="aq-panel-title editable-ui" contenteditable="true" data-pi-ui="aquarium-capture-title" data-pi-ui-fallback="Brain Dump">Brain Dump</div></div></div></div>
+      <div class="aq-capture-body" data-collapse-body="">
+        <input aria-label="Aquarium note title" autocomplete="off" class="aq-capture-title-input" id="aqCaptureTitle" maxlength="180" placeholder="Title your thought…" type="text"/>
+        <div aria-multiline="true" aria-label="Write a thought" class="aq-capture-rich-input" contenteditable="true" data-placeholder=". . ." id="captureInput" role="textbox"></div>
+        <div class="aq-capture-row"><button class="aq-primary-button" id="captureBtn">Save to Dashboard ↑</button></div>
+      </div>
+    </aside>
+  </div>
 </div>
 </div>
 <dialog class="aq-folder-dialog" id="aqFolderDialog" aria-label="Aquarium folder contents">
@@ -103,7 +107,7 @@
   <form id="aqFolderDialogForm" class="aq-folder-inline-form" hidden>
     <input id="aqFolderNewTitle" type="text" maxlength="180" placeholder="Note title…" aria-label="Note title"/>
     <div id="aqFolderNewBody" class="aq-folder-inline-body" role="textbox" contenteditable="true" aria-multiline="true" data-placeholder="Write your note…" aria-label="Note text"></div>
-    <div class="aq-folder-inline-actions"><select id="aqFolderNewType" aria-label="Note type"></select><button class="small-button" type="button" id="aqFolderNewCancel">Cancel</button><button class="aq-primary-button" type="submit">Save note</button></div>
+    <div class="aq-folder-inline-actions"><button class="small-button" type="button" id="aqFolderNewCancel">Cancel</button><button class="aq-primary-button" type="submit">Save note</button></div>
   </form>
   <div class="aq-folder-dialog-notes aq-dropzone" id="aqFolderDialogNotes" aria-label="Notes in folder"></div>
 </dialog>

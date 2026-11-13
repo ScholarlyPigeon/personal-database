@@ -1,3 +1,10 @@
+## V26.4 Aquarium Folders cleanup (November 12, 2026)
+
+- Rearranged Aquarium · Folders to **Dashboard | Folders | Brain Dump**, with equal-width outside columns and a wider center folder board.
+- Reinforced popover anchoring for three-dot menus in the folder view, including after scrolling/resizing and in note pop-outs.
+- Removed/hid the redundant Move to row below notes in folder pop-outs. Movement remains available in the note’s own options menu.
+- Kept the locked-to-viewport layout, shared Aquarium note data, saved colors, and original Aquarium page intact.
+
 # V26 · Sunday layout repairs + Aquarium Folders experiment (November 8, 2026)
 
 **Based on V25.** Upload everything inside `CURRENT/` into the GitHub Pages repository root, keeping `assets/` as a folder. Before deploying, export a fresh JSON backup and close other open intranet tabs. Hard-refresh after uploading. Do not clear browser storage to test these changes.
@@ -332,3 +339,27 @@ The **Aquarium · Folders** experimental view uses the *existing Aquarium catego
 The center **Brain Dump** now takes a larger share of the three-column layout. Its note body stretches from the title field to the compact Type / Save controls at the bottom, occupying the available window height. The extra instructional card and caption below the editor were removed. This remains a viewport-locked page with independent Dashboard and folder scrolling; on narrow screens the workspace itself scrolls internally.
 
 Files updated/added: `AquariumFolders.html`, `Script.js`, `V26FolderTiles.css`. No schema or storage migration is required. Browser interaction and responsive layout tests passed in a local isolated environment; your live cloud-connected dataset still needs a quick post-deployment check. As always, export a JSON backup before replacing the website files.
+
+## V26.3 · Aquarium · Folders controls and layout (Nov 8, 2026)
+
+The experimental Aquarium · Folders page now uses equal-width Dashboard and
+Folders columns, with a center writing column approximately 28% wider.
+The window-locked desktop layout and internal mobile scrolling remain.
+
+- Removed the unused note type selectors from both the central composer and
+  folder's quick-add form, preserving existing saved note kind fields.
+- Removed the redundant separate Move dropdown underneath folder notes.
+  Each note's standard ⋮ menu retains movement to Dashboard, other folders,
+  and other pages alongside Archive/Delete and the restored color palette.
+- Restored color dots in folder section and folder-board ⋮ menus, persisting
+  theme-relative selections through the existing personal-color system.
+  Folder tile accents and Dashboard/Brain Dump color controls remain available.
+- Click folder section headings to expand/collapse their contents. Dashboard,
+  Brain Dump and Folders headers likewise toggle; Brain Dump reuses the
+  original shared collapse control instead of adding a duplicate.
+- Corrected popover positioning at the same CSS priority as the top-layer
+  inset rules, avoiding menus appearing in a viewport corner.
+
+Only Aquarium · Folders uses the new layout. Original Aquarium continues to
+show its previous category-board view; both views share their note records.
+No migration to the note database or Supabase schema is required.

@@ -4479,13 +4479,18 @@ if (document.getElementById("aquariumApp")) {
             panel.setAttribute("popover", "auto");
             const positionMenu = () => {
                 const r = summary.getBoundingClientRect();
-                const height = panel.offsetHeight || 240;
-                const width = panel.offsetWidth || 200;
-                panel.style.position = "fixed";
-                panel.style.left = Math.max(8, Math.min(innerWidth - width - 8, r.right - width)) + "px";
+                const height = Math.min(panel.offsetHeight || 240, innerHeight - 16);
+                const width = Math.min(panel.offsetWidth || 200, innerWidth - 16);
+                // Popover CSS uses inset:auto !important; matching its
+                // priority prevents the menu from snapping to (0,0).
+                panel.style.setProperty("position", "fixed", "important");
+                panel.style.setProperty("left", Math.max(8, Math.min(innerWidth - width - 8, r.right - width)) + "px", "important");
                 const below = r.bottom + 5;
-                panel.style.top = (below + height <= innerHeight - 8
-                    ? below : Math.max(8, r.top - height - 5)) + "px";
+                panel.style.setProperty("top", (below + height <= innerHeight - 8
+                    ? below : Math.max(8, r.top - height - 5)) + "px", "important");
+                panel.style.setProperty("right", "auto", "important");
+                panel.style.setProperty("bottom", "auto", "important");
+                panel.style.setProperty("margin", "0", "important");
             };
             details.addEventListener("toggle", () => {
                 if (details.open) {
@@ -4497,6 +4502,47 @@ if (document.getElementById("aquariumApp")) {
             });
         }
         return details;
+    }
+
+    // Reuse the intranet's existing theme-aware color choices and sync key.
+    // No Aquarium note/folder records are rewritten when a surface is tinted.
+    function aqFolderSurfacePalette(key, surface) {
+        const colors = ["", "plum", "teal", "blue", "rose", "green", "gold", "coral", "cyan"];
+        const palette = document.createElement("div");
+        palette.className = "aq-folder-color-palette aq-folder-surface-colors";
+        palette.setAttribute("role", "group");
+        palette.setAttribute("aria-label", "Color options");
+        let color = window.PIItemColors?.get?.(key) || "";
+        // Script.js runs before ColorAccents.js on first load. Read its
+        // existing saved map directly so colors are restored immediately.
+        if (!color) {
+            try { color = JSON.parse(localStorage.getItem("pi-personal-item-colors-v1") || "{}")[key] || ""; }
+            catch { color = ""; }
+        }
+        surface.dataset.piColorKey = key;
+        if (color) {
+            surface.classList.add("pi-personal-colored");
+            surface.dataset.piPersonalColor = color;
+        } else {
+            surface.classList.remove("pi-personal-colored");
+            delete surface.dataset.piPersonalColor;
+        }
+        colors.forEach(value => {
+            const label = value ? "Color: " + value : "Default color";
+            const dot = aqFolderButton(value ? "" : "×", label, event => {
+                event.stopPropagation();
+                window.PIItemColors?.set?.(key, value);
+                palette.querySelectorAll("button").forEach(button => {
+                    button.setAttribute("aria-pressed", String(button.dataset.color === value));
+                });
+            }, "aq-folder-color-dot aq-folder-surface-dot");
+            dot.dataset.color = value;
+            dot.classList.toggle("is-default", !value);
+            dot.setAttribute("aria-pressed", String(color === value));
+            dot.style.background = value ? "var(--" + ({gold:"orange"}[value] || value) + ",var(--panel-light))" : "var(--panel-light)";
+            palette.append(dot);
+        });
+        return palette;
     }
 
     function aqAddFolderInSection(sectionId) {
@@ -4638,16 +4684,26 @@ if (document.getElementById("aquariumApp")) {
         const label = document.createElement("strong");
         label.className = "aq-folder-section-name";
         label.textContent = section.name;
-        label.title = "Double-click to rename section";
-        label.addEventListener("dblclick", () => {
-            const next = prompt("Section name:", section.name)?.trim();
-            if (next) { section.name = next; saveAquariumState(); renderAquarium(); }
-        });
+
         const collapsed = collapsedAquariumSections.has(section.id);
-        const fold = aqFolderButton(collapsed ? "▸" : "▾", collapsed ? "Expand section" : "Collapse section", () => {
+        const toggleSection = () => {
             if (collapsedAquariumSections.has(section.id)) collapsedAquariumSections.delete(section.id);
             else collapsedAquariumSections.add(section.id);
             saveCollapsedAquariumSections(); renderAquariumCategories();
+        };
+        const fold = aqFolderButton(collapsed ? "▸" : "▾", collapsed ? "Expand section" : "Collapse section", toggleSection);
+        label.tabIndex = 0;
+        label.setAttribute("role", "button");
+        label.setAttribute("aria-expanded", String(!collapsed));
+        label.title = "Click to " + (collapsed ? "expand" : "collapse") + "; rename through ⋮";
+        label.addEventListener("keydown", event => {
+            if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault(); toggleSection();
+            }
+        });
+        head.addEventListener("click", event => {
+            if (event.target.closest("button, details, summary, select, input")) return;
+            toggleSection();
         });
         const menu = aqFolderMenu("Section options", [
             { text: "+ folder", action: () => aqAddFolderInSection(section.id) },
@@ -4670,6 +4726,8 @@ if (document.getElementById("aquariumApp")) {
                 saveCollapsedAquariumSections(); saveAquariumState(); renderAquarium();
             } }
         ]);
+        menu.querySelector(".aq-folder-options-panel").append(
+            aqFolderSurfacePalette("aquarium-folder-section:" + section.id, band));
         head.append(label, fold, menu);
         const grid = document.createElement("div");
         grid.className = "aq-folder-tiles";
@@ -4699,6 +4757,14 @@ if (document.getElementById("aquariumApp")) {
         const board = document.getElementById("categoryGrid");
         if (!board) return;
         board.replaceChildren(...aquariumState.sections.map(aqFolderSection));
+        const heading = document.querySelector(".aq-folder-heading");
+        const surface = document.querySelector(".aq-folder-board");
+        if (heading && surface && !heading.querySelector(".aq-folder-options")) {
+            const menu = aqFolderMenu("Folder board color", []);
+            menu.querySelector(".aq-folder-options-panel").append(
+                aqFolderSurfacePalette("aquarium-folder-board", surface));
+            heading.append(menu);
+        }
         renderAquariumFolderDialogNotes();
     }
 
@@ -4732,29 +4798,12 @@ if (document.getElementById("aquariumApp")) {
         const cards = aquariumState.cards.filter(card => card.zone === category.id);
         document.getElementById("aqFolderDialogCount").textContent = cards.length + (cards.length === 1 ? " note" : " notes");
         if (!cards.length) list.append(makeEmptyMessage("This folder is waiting for its first note."));
-        const destinations = [{ id: "inbox", name: "Dashboard" }, ...aquariumState.categories.map(f => ({ id: f.id, name: f.name }))];
         for (const card of cards) {
             const wrapper = document.createElement("div");
             wrapper.className = "aq-folder-dialog-note";
             wrapper.append(makeAquariumCard(card));
-            const move = document.createElement("select");
-            move.className = "aq-folder-note-destination";
-            move.title = "Move note to another folder or Dashboard";
-            move.setAttribute("aria-label", "Move " + card.title + " to");
-            destinations.forEach(destination => {
-                const option = document.createElement("option");
-                option.value = destination.id;
-                option.textContent = destination.name;
-                move.append(option);
-            });
-            move.value = card.zone;
-            move.addEventListener("change", () => moveAquariumCard(card.id, move.value));
-            const moveLine = document.createElement("div");
-            moveLine.className = "aq-folder-note-move-row";
-            const moveLabel = document.createElement("span");
-            moveLabel.textContent = "Move to";
-            moveLine.append(moveLabel, move);
-            wrapper.append(moveLine);
+            // The note's existing ⋮ already provides Within Aquarium and
+            // Other Pages movement. No second dropdown below each card.
             list.append(wrapper);
         }
         list.scrollTop = scroll;
@@ -4765,29 +4814,6 @@ if (document.getElementById("aquariumApp")) {
         const dialog = document.getElementById("aqFolderDialog");
         if (!dialog) return;
         aquariumFolderDialogReady = true;
-        // The standard panel palette already creates a ⋮ menu here. Rehome
-        // 'Manage note types' into that menu so there is only one, in the
-        // same right-aligned control rail as the rest of the intranet.
-        const foldComposerMenu = () => {
-            const head = document.querySelector(".aq-folder-capture .aq-panel-head");
-            const original = head?.querySelector(".aq-composer-options");
-            const target = head?.querySelector(".pi-color-panel-menu .pi-color-panel-tray");
-            const manage = document.getElementById("manageAquariumKinds");
-            if (!original || !target || !manage) return false;
-            manage.classList.add("aq-folder-manage-kinds");
-            target.append(manage);
-            original.remove();
-            return true;
-        };
-        if (!foldComposerMenu()) {
-            const head = document.querySelector(".aq-folder-capture .aq-panel-head");
-            if (head) {
-                const obs = new MutationObserver(() => {
-                    if (foldComposerMenu()) obs.disconnect();
-                });
-                obs.observe(head, {childList:true,subtree:true});
-            }
-        }
         document.addEventListener("pointerdown", event => {
             document.querySelectorAll(".aq-folder-options[open],.aq-composer-options[open]").forEach(menu => {
                 if (!menu.contains(event.target)) menu.open = false;
@@ -4813,23 +4839,16 @@ if (document.getElementById("aquariumApp")) {
         const form = document.getElementById("aqFolderDialogForm");
         const newTitle = document.getElementById("aqFolderNewTitle");
         const newBody = document.getElementById("aqFolderNewBody");
-        const type = document.getElementById("aqFolderNewType");
         const clearForm = () => { form.hidden = true; newTitle.value = ""; newBody.innerHTML = ""; };
         document.getElementById("aqFolderNewCancel").addEventListener("click", clearForm);
         document.getElementById("aqFolderDialogAdd").addEventListener("click", () => { form.hidden = false; newTitle.focus(); });
         newTitle.addEventListener("keydown", event => { if (event.key === "Enter") { event.preventDefault(); newBody.focus(); } });
-        aquariumState.kinds.forEach(kind => {
-            const option = document.createElement("option");
-            option.value = kind.id;
-            option.textContent = kind.name;
-            type.append(option);
-        });
         form.addEventListener("submit", event => {
             event.preventDefault();
             if (!openAquariumFolderId) return;
             const name = newTitle.value, body = newBody.innerHTML;
             if (!name.trim() && !aquariumPlainTextFromHtml(body)) { newTitle.focus(); return; }
-            addAquariumCard(openAquariumFolderId, name, body, type.value);
+            addAquariumCard(openAquariumFolderId, name, body, captureKind);
             clearForm();
         });
         document.getElementById("aqFoldersAddSection")?.addEventListener("click", () => {
