@@ -383,3 +383,12 @@ The window-locked desktop layout and internal mobile scrolling remain.
 Only Aquarium · Folders uses the new layout. Original Aquarium continues to
 show its previous category-board view; both views share their note records.
 No migration to the note database or Supabase schema is required.
+
+## V27.1 · Alignment responsive tables (November 16, 2026)
+
+- Grounding is now the **bottom-left** table and Insight & Reflections the **bottom-right** table. Their saved notes, folders, sections, movement options, and IDs are unchanged.
+- Writing fills the full remaining height of the middle column; its editable area stretches down toward the bottom Save button. The existing full-screen writing pop-out is retained.
+- All five tables (Goals, Mindset, Grounding, Writing, Insight & Reflections) have independent collapse/expand buttons on the right. Collapsed tables show only their headers; nothing is removed from storage.
+- The top/bottom dashboard height responds to collapses: closing lower tables progressively makes more room for the upper folder shelves, while closing both upper shelves gives the lower tables more room. Counts sit immediately next to their respective header controls.
+- The five expanded/collapsed preferences are local UI-only settings under `pi-alignment-layout-v27-1`; they do not modify synced content, migrations, or Supabase. New file `AlignmentDashboard.js` is loaded only by `Alignment.html`.
+- Full browser testing was unavailable because the sandbox browser blocks even locally served pages; HTML structure, JavaScript syntax and CSS parsing were checked. After deployment, check one desktop and one mobile viewport and take a JSON backup before replacing files.

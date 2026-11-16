@@ -141,3 +141,92 @@ html body.pi-alignment-dashboard-body #piWritingExpand{font-size:18px;}
     inset:10px!important;width:auto!important;max-width:none!important;height:calc(100dvh - 20px)!important;max-height:calc(100dvh - 20px)!important;
   }
 }
+
+/* ==== V27.1 | Five independently collapsible tables ==== */
+/* Writing fills its entire column; only the fullscreen expand button floats it. */
+html body.pi-alignment-dashboard-body .pi-alignment-columns > .pi-compass-capture-panel:not(.is-table-collapsed):not(.is-writing-expanded){
+  height:100%!important;align-self:stretch!important;max-height:none!important;
+}
+html body.pi-alignment-dashboard-body .pi-alignment-columns > .pi-compass-capture-panel:not(.is-table-collapsed) .pi-workspace-form{
+  display:flex!important;flex:1 1 auto!important;height:auto!important;min-height:0!important;
+  overflow:auto!important;
+}
+html body.pi-alignment-dashboard-body .pi-alignment-columns > .pi-compass-capture-panel:not(.is-table-collapsed) .pi-note-editor{
+  flex:1 1 auto!important;height:auto!important;max-height:none!important;min-height:125px!important;
+  overflow:auto!important;
+}
+html body.pi-alignment-dashboard-body .pi-alignment-columns > .pi-compass-capture-panel .pi-form-foot{
+  margin-top:auto;
+}
+/* Header counts sit immediately beside the right-hand icon rail, with no
+   auto margin inserted between them. Move handles inside notes stay left. */
+html body.pi-alignment-dashboard-body .pi-alignment-dashboard .pi-workspace-head > h2{
+  flex:1 1 auto!important;min-width:0!important;margin-right:0!important;
+}
+html body.pi-alignment-dashboard-body .pi-alignment-dashboard .pi-workspace-head > .pi-workspace-actions{
+  margin-left:auto!important;display:flex!important;align-items:center!important;
+  gap:4px!important;flex:0 0 auto!important;
+}
+html body.pi-alignment-dashboard-body .pi-alignment-dashboard .pi-workspace-head > .pi-v25-control-rail{
+  margin-left:0!important;
+}
+html body.pi-alignment-dashboard-body .pi-alignment-dashboard .pi-workspace-head .pi-archive-count{
+  margin:0!important;flex:0 0 auto!important;
+}
+html body.pi-alignment-dashboard-body .pi-alignment-dashboard .pi-ws-section-head > .pi-v25-control-rail{
+  margin-left:0!important;
+}
+html body.pi-alignment-dashboard-body .pi-alignment-dashboard .pi-ws-section-head > .pi-ws-header-count{
+  margin-left:0!important;flex:0 0 auto!important;
+}
+html body.pi-alignment-dashboard-body .pi-alignment-dashboard .pi-alignment-table-toggle{
+  cursor:pointer;display:grid;place-items:center;font-size:13px;
+}
+/* A collapsed table is genuinely just its header, not a tall empty container. */
+html body.pi-alignment-dashboard-body .pi-alignment-dashboard .pi-alignment-shelf-panel.is-table-collapsed,
+html body.pi-alignment-dashboard-body .pi-alignment-dashboard .pi-alignment-columns > .pi-workspace-panel.is-table-collapsed{
+  min-height:44px!important;height:44px!important;max-height:44px!important;
+  flex:0 0 44px!important;align-self:start!important;overflow:visible!important;
+}
+html body.pi-alignment-dashboard-body .pi-alignment-dashboard .is-table-collapsed > .pi-alignment-shelf-scroll,
+html body.pi-alignment-dashboard-body .pi-alignment-dashboard .is-table-collapsed > .pi-workspace-scroll,
+html body.pi-alignment-dashboard-body .pi-alignment-dashboard .is-table-collapsed > .pi-workspace-form{
+  display:none!important;
+}
+html body.pi-alignment-dashboard-body .pi-alignment-dashboard .is-table-collapsed > .pi-workspace-head{
+  border-bottom:none!important;min-height:43px!important;
+}
+/* Collapsing lower tables progressively gives the top folder shelves more height.
+   Collapsing BOTH shelves gives the lower tables the entire usable height. */
+@media(min-width:1081px){
+  html body.pi-alignment-dashboard-body .pi-alignment-dashboard .pi-alignment-board[data-bottom-collapsed="1"]{
+    grid-template-rows:minmax(230px,260px) minmax(0,1fr)!important;
+  }
+  html body.pi-alignment-dashboard-body .pi-alignment-dashboard .pi-alignment-board[data-bottom-collapsed="2"]{
+    grid-template-rows:minmax(275px,55%) minmax(0,1fr)!important;
+  }
+  html body.pi-alignment-dashboard-body .pi-alignment-dashboard .pi-alignment-board[data-bottom-collapsed="3"]{
+    grid-template-rows:minmax(0,1fr) 44px!important;
+  }
+  html body.pi-alignment-dashboard-body .pi-alignment-dashboard .pi-alignment-board[data-top-all-collapsed="true"]{
+    grid-template-rows:44px minmax(0,1fr)!important;
+  }
+  html body.pi-alignment-dashboard-body .pi-alignment-dashboard .pi-alignment-board[data-top-all-collapsed="true"][data-bottom-collapsed="3"]{
+    grid-template-rows:44px 44px!important;align-content:start!important;
+  }
+}
+@media(max-width:1080px){
+  html body.pi-alignment-dashboard-body .pi-alignment-dashboard .pi-alignment-columns > .pi-workspace-panel.is-table-collapsed,
+  html body.pi-alignment-dashboard-body .pi-alignment-dashboard .pi-alignment-shelf-panel.is-table-collapsed{
+    min-height:44px!important;height:44px!important;max-height:44px!important;
+    grid-row:auto!important;
+  }
+  html body.pi-alignment-dashboard-body .pi-alignment-dashboard .pi-alignment-columns > .pi-compass-capture-panel:not(.is-table-collapsed){
+    min-height:330px!important;height:min(68dvh,620px)!important;
+  }
+}
+@media(max-width:670px){
+  html body.pi-alignment-dashboard-body .pi-alignment-dashboard .pi-alignment-columns > .pi-workspace-panel.is-table-collapsed{
+    height:44px!important;min-height:44px!important;max-height:44px!important;
+  }
+}

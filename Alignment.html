@@ -35,7 +35,7 @@
 <link href="V26Sunday.css?v=20261108-v26-1" rel="stylesheet"/>
 <script defer="" src="V23Menus.js?v=20261107-v24-1"></script>
 <script defer="" src="V25Controls.js?v=20261108-v25-1"></script>
-<link href="AlignmentDashboard.css?v=20261116-v27-1" rel="stylesheet"/></head>
+<link href="AlignmentDashboard.css?v=20261116-v27-2" rel="stylesheet"/></head>
 <body class="pi-compass-body pi-alignment-dashboard-body" data-default-theme="fieldnotes">
 <div class="pi-reflections-page pi-compass-page pi-alignment-dashboard" id="alignmentApp">
 <header class="almanac-header">
@@ -46,22 +46,22 @@
 <div class="header-right almanac-header-actions"><span aria-live="polite" class="sync-status" id="saveStatus">cloud ready</span><select aria-label="Theme" class="theme-select" id="themeSelect"></select><details class="ecosystem-menu"><summary>pages</summary><nav aria-label="Open another page" class="ecosystem-menu-popover"><a href="Database.html">🏠 Home</a><a href="Aquarium.html">🪼 Aquarium</a><a href="AquariumFolders.html">🗂 Aquarium · Folders</a><a href="Longform.html">✎ Longform</a><a aria-current="page" class="current" href="Alignment.html">✨ Alignment</a><a href="Week.html">🗓️ This Week</a><a href="Month.html">📅 This Month</a><a href="NextMonth.html">📆 Next Month</a><a href="Almanac.html">◷ Timeline</a><a href="Patterns.html">🗂 Archive</a><a href="neopets.html">✦ Neopets</a></nav></details><details class="ecosystem-menu pi-tools-menu"><summary>tools</summary><div class="pi-tools-popover"><button class="small-button cloud-login-button" id="cloudLoginButton" type="button">cloud login</button></div></details></div>
 </header><main aria-label="Goals, mindset, reflection and grounding workspace" class="pi-compass-layout pi-alignment-board">
 <div class="pi-alignment-shelves">
-<section aria-label="Goals folders" class="pi-workspace-panel pi-alignment-shelf-panel">
-<div class="pi-workspace-head"><h2>↖ Goals</h2><div class="pi-workspace-actions"><span class="pi-archive-count" id="piCompassGoalsShelfCount">0</span><button class="pi-workspace-quiet" id="piCompassAddGoalFolder" type="button">+ folder</button></div></div>
+<section aria-label="Goals folders" class="pi-workspace-panel pi-alignment-shelf-panel" data-alignment-panel="goals">
+<div class="pi-workspace-head"><h2>↖ Goals</h2><div class="pi-workspace-actions"><span class="pi-archive-count" id="piCompassGoalsShelfCount">0</span><button class="pi-workspace-quiet" id="piCompassAddGoalFolder" type="button">+ folder</button><button class="pi-workspace-quiet pi-alignment-table-toggle" type="button" data-toggle-panel="goals" aria-label="Collapse goals table" title="Collapse panel" aria-expanded="true" aria-controls="piCompassGoalsShelf">▾</button></div></div>
 <div aria-label="Drag folders here to organize goals" class="pi-alignment-shelf-scroll" id="piCompassGoalsShelf"></div></section>
-<section aria-label="Mindset folders" class="pi-workspace-panel pi-alignment-shelf-panel">
-<div class="pi-workspace-head"><h2>✧ Mindset</h2><div class="pi-workspace-actions"><span class="pi-archive-count" id="piCompassMindsetShelfCount">0</span><button class="pi-workspace-quiet" id="piCompassAddMindsetFolder" type="button">+ folder</button></div></div>
+<section aria-label="Mindset folders" class="pi-workspace-panel pi-alignment-shelf-panel" data-alignment-panel="mindset">
+<div class="pi-workspace-head"><h2>✧ Mindset</h2><div class="pi-workspace-actions"><span class="pi-archive-count" id="piCompassMindsetShelfCount">0</span><button class="pi-workspace-quiet" id="piCompassAddMindsetFolder" type="button">+ folder</button><button class="pi-workspace-quiet pi-alignment-table-toggle" type="button" data-toggle-panel="mindset" aria-label="Collapse mindset table" title="Collapse panel" aria-expanded="true" aria-controls="piCompassMindsetShelf">▾</button></div></div>
 <div aria-label="Drag folders here to organize mindset" class="pi-alignment-shelf-scroll" id="piCompassMindsetShelf"></div></section>
 </div>
 <div class="pi-compass-grid pi-alignment-columns" id="piCompass">
-<section class="pi-workspace-panel pi-compass-column-panel"><div class="pi-workspace-head"><h2>☾ Insight &amp; Reflections</h2><div class="pi-workspace-actions"><span class="pi-archive-count" id="piCompassInsightsCount">0</span><button class="pi-workspace-quiet" id="piCompassAddInsightSection" type="button">+ section</button></div></div><div class="pi-workspace-scroll" id="piCompassInsightsList"></div></section>
-<section class="pi-workspace-panel pi-compass-capture-panel" id="piAlignmentWritingPanel"><div class="pi-workspace-head"><h2>✎ Writing</h2><div class="pi-workspace-actions"><button aria-expanded="false" aria-label="Expand writing" class="pi-workspace-quiet pi-popout-button" id="piWritingExpand" title="Expand writing" type="button">⤢</button></div></div><div class="pi-workspace-form">
+<section class="pi-workspace-panel pi-compass-column-panel" data-alignment-panel="grounding"><div class="pi-workspace-head"><h2>↘ Grounding</h2><div class="pi-workspace-actions"><span class="pi-archive-count" id="piCompassGroundingCount">0</span><button class="pi-workspace-quiet" id="piCompassAddGroundingSection" type="button">+ section</button><button class="pi-workspace-quiet pi-alignment-table-toggle" type="button" data-toggle-panel="grounding" aria-label="Collapse grounding table" title="Collapse panel" aria-expanded="true" aria-controls="piCompassGroundingList">▾</button></div></div><div class="pi-workspace-scroll" id="piCompassGroundingList"></div></section>
+<section class="pi-workspace-panel pi-compass-capture-panel" id="piAlignmentWritingPanel" data-alignment-panel="writing"><div class="pi-workspace-head"><h2>✎ Writing</h2><div class="pi-workspace-actions"><button aria-expanded="false" aria-label="Expand writing" class="pi-workspace-quiet pi-popout-button" id="piWritingExpand" title="Expand writing" type="button">⤢</button><button class="pi-workspace-quiet pi-alignment-table-toggle" type="button" data-toggle-panel="writing" aria-label="Collapse writing table" title="Collapse panel" aria-expanded="true" aria-controls="piAlignmentWritingForm">▾</button></div></div><div class="pi-workspace-form" id="piAlignmentWritingForm">
 <label>Title<input id="piCompassTitle" maxlength="180" placeholder="Title this thought…" type="text"/></label>
 <div class="pi-workspace-form-row"><label>Section / folder<select id="piCompassSection"></select></label><label>Date<input id="piCompassDate" type="date"/></label></div>
 <label for="piCompassEditor">Your note</label><div aria-multiline="true" class="pi-note-editor" contenteditable="true" data-placeholder="What's on your mind?" id="piCompassEditor" role="textbox"></div>
 <details class="pi-note-attach"><summary>optional image / link</summary><div><label>Image URL<input id="piCompassImageUrl" placeholder="https://…" type="url"/></label><label>Clickable link<input id="piCompassLinkUrl" placeholder="https://…" type="url"/></label></div></details>
 <div class="pi-form-foot"><span class="pi-muted">Ctrl/Cmd + Enter saves</span><button class="pi-primary" id="piCompassSave" type="button">Save note ↑</button></div></div></section>
-<section class="pi-workspace-panel pi-compass-column-panel"><div class="pi-workspace-head"><h2>↘ Grounding</h2><div class="pi-workspace-actions"><span class="pi-archive-count" id="piCompassGroundingCount">0</span><button class="pi-workspace-quiet" id="piCompassAddGroundingSection" type="button">+ section</button></div></div><div class="pi-workspace-scroll" id="piCompassGroundingList"></div></section>
+<section class="pi-workspace-panel pi-compass-column-panel" data-alignment-panel="insights"><div class="pi-workspace-head"><h2>☾ Insight &amp; Reflections</h2><div class="pi-workspace-actions"><span class="pi-archive-count" id="piCompassInsightsCount">0</span><button class="pi-workspace-quiet" id="piCompassAddInsightSection" type="button">+ section</button><button class="pi-workspace-quiet pi-alignment-table-toggle" type="button" data-toggle-panel="insights" aria-label="Collapse insights table" title="Collapse panel" aria-expanded="true" aria-controls="piCompassInsightsList">▾</button></div></div><div class="pi-workspace-scroll" id="piCompassInsightsList"></div></section>
 </div></main>
 <dialog aria-label="Alignment folder" class="pi-compass-folder-dialog" id="piCompassFolderDialog">
 <div class="pi-compass-folder-dialog-top"><label>Folder name<input aria-label="Folder name" id="piCompassFolderName" maxlength="90"/></label><button aria-label="Close folder" class="pi-workspace-quiet" id="piCompassFolderClose" type="button">×</button></div>
@@ -70,5 +70,6 @@
 <div aria-label="Notes in this folder" class="pi-compass-folder-note-list" id="piCompassFolderNotes"></div>
 </dialog>
 </div>
+<script defer src="AlignmentDashboard.js?v=20261116-v27-2"></script>
 </body>
 </html>
