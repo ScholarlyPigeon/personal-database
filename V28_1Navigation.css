@@ -1,0 +1,46 @@
+/* Shared pages menu: easy desktop hover, keyboard focus, and click on touch. */
+header .ecosystem-menu-popover:has(.pi-calendars-nav) {
+  overflow:visible!important;min-width:187px!important;
+}
+header .pi-calendars-nav {position:relative;min-width:0;}
+header .pi-calendars-trigger {
+  display:flex!important;justify-content:space-between!important;align-items:center!important;
+  gap:12px!important;width:100%!important;height:auto!important;min-height:28px!important;
+  padding:7px 9px!important;margin:0!important;border:0!important;border-radius:6px!important;
+  background:transparent!important;color:var(--muted)!important;box-shadow:none!important;
+  font:inherit!important;font-size:12px!important;text-align:left!important;cursor:pointer!important;
+}
+header .pi-calendars-trigger::after{content:'◂';font-size:12px;color:var(--faint);margin-left:auto;}
+header .pi-calendars-trigger:is(:hover,:focus-visible),
+header .pi-calendars-nav.pi-calendar-current > .pi-calendars-trigger {
+  background:color-mix(in srgb,var(--teal) 10%,var(--panel-light))!important;
+  color:var(--text)!important;
+}
+header .pi-calendars-flyout {
+  display:none;position:absolute;right:calc(100% + 5px);top:-5px;
+  z-index:6000;min-width:173px;width:max-content;padding:5px;
+  border:1px solid var(--border);border-radius:9px;
+  background:var(--panel);box-shadow:0 14px 34px rgba(0,0,0,.34);
+}
+header .pi-calendars-nav.is-open .pi-calendars-flyout,
+header .pi-calendars-nav:hover .pi-calendars-flyout,
+header .pi-calendars-nav:focus-within .pi-calendars-flyout {display:block;}
+header .pi-calendars-flyout a{width:100%;box-sizing:border-box;}
+@media(max-width:820px),(pointer:coarse){
+  header .pi-calendars-nav:not(.is-open) .pi-calendars-flyout{display:none;}
+  header .pi-calendars-nav.is-open .pi-calendars-flyout{
+    display:block;position:static;min-width:0;width:auto;max-width:none;
+    margin:2px 0 4px 10px;padding:2px 0 2px 8px;
+    border:0;border-left:1px solid var(--border);border-radius:0;box-shadow:none;
+    background:transparent;
+  }
+  header .pi-calendars-trigger::after{content:'▸';}
+  header .pi-calendars-nav.is-open .pi-calendars-trigger::after{content:'▾';}
+}
+
+/* Home category-note popout has two independent visibility controls now. */
+dialog.pi-category-dialog .pi-category-dialog-head {flex-wrap:wrap;row-gap:6px;}
+@media(max-width:640px){
+ dialog.pi-category-dialog .pi-category-dialog-title {flex:1 1 70%;}
+ dialog.pi-category-dialog .pi-category-dialog-details-option {padding:5px 7px;font-size:11px;}
+}

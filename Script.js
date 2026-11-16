@@ -2476,7 +2476,7 @@ if (document.getElementById("tileGrid")) {
             foldInner.append(details);
             fold.append(trigger,foldInner);
             if (item.showDetails !== false) body.append(fold);
-            body.append(window.PIHomeNestedChecklist(item,applyChange));
+            if (item.showChecklist !== false) body.append(window.PIHomeNestedChecklist(item,applyChange));
             return body;
         }
         function renderCategoryDialog() {
@@ -2507,7 +2507,18 @@ if (document.getElementById("tileGrid")) {
                     renderItems(); renderCategoryDialog();
                 }
             });
-            head.append(title,detailsOption,close);
+            const checklistOption = document.createElement('button');
+            checklistOption.type='button';checklistOption.className='pi-category-dialog-details-option';
+            checklistOption.textContent=item.showChecklist===false?'Show Checklist':'Hide Checklist';
+            checklistOption.title='Toggle checklist section without deleting its entries';
+            checklistOption.addEventListener('click',()=>{
+                if(!isFresh())return;
+                item.showChecklist=item.showChecklist===false;
+                if(manager.save(false,'before-checklist-visibility')){
+                    renderItems();renderCategoryDialog();
+                }
+            });
+            head.append(title,detailsOption,checklistOption,close);
             const scroll = document.createElement('div'); scroll.className='pi-category-dialog-scroll';
             scroll.append(buildCategoryContent(item,mutation => {
                 if (!isFresh()) return;
@@ -2805,6 +2816,18 @@ if (document.getElementById("tileGrid")) {
                         }
                     });
                     quickActions.append(detailsVisibility);
+                    const checklistVisibility=document.createElement('button');
+                    checklistVisibility.type='button';checklistVisibility.className='pi-category-visibility-action';
+                    checklistVisibility.textContent=item.showChecklist===false?'Show Checklist':'Hide Checklist';
+                    checklistVisibility.title='Show or hide checklist without removing entries';
+                    checklistVisibility.addEventListener('click',()=>{
+                        if(!isFresh())return;
+                        item.showChecklist=item.showChecklist===false;
+                        if(manager.save(false,'before-checklist-visibility')){
+                            renderItems();if(categoryDialog?.open)renderCategoryDialog();
+                        }
+                    });
+                    quickActions.append(checklistVisibility);
                 }
                 archive.title = 'Archive this note';
                 del.title = 'Delete this note';
@@ -3933,12 +3956,18 @@ if (document.getElementById("aquariumApp")) {
         archive.addEventListener("click", event => {
             event.stopPropagation();
             const archived = archiveManualItem({
-                text: [card.title, card.text].filter(Boolean).join("\n\n"),
+                text: [card.title, card.text,
+                    ...(Array.isArray(card.subtasks) ? card.subtasks.map(entry =>
+                        (entry.done ? '☑ ' : '☐ ') + String(entry.text || '')) : [])]
+                    .filter(Boolean).join("\n\n"),
                 source: "Aquarium",
                 context: aquariumZoneLabel(card.zone),
                 kind: card.kind,
                 createdAt: card.createdAt,
-                metadata: { zone: card.zone, done: Boolean(card.done), createdAt:card.createdAt||null, completedAt:card.completedAt||null, bodyHtml: card.html || "" }
+                metadata: { zone: card.zone, done: Boolean(card.done), createdAt:card.createdAt||null,
+                    completedAt:card.completedAt||null, bodyHtml: card.html || "",
+                    noteType:card.noteType||'category',subtasks:Array.isArray(card.subtasks)?card.subtasks:[],
+                    showDetails:card.showDetails!==false,showChecklist:card.showChecklist!==false }
             });
             if (!archived) return;
             aquariumState.cards = aquariumState.cards.filter(item => item.id !== card.id);
@@ -3987,12 +4016,6 @@ if (document.getElementById("aquariumApp")) {
         const selector = makeSelectionControl(selectionKey("aq-card", card.id), `Select this ${aquariumKindName(card.kind)}`);
         const meta = document.createElement("div");
         meta.className = "aq-card-meta";
-        if (document.documentElement.classList.contains('aquarium-merged-page')) {
-            const noteBadge = document.createElement('span');noteBadge.className='aq-note-type-badge';
-            noteBadge.textContent=card.noteType==='single'?'Single note':'Category note';
-            noteBadge.title='Change this type by editing in the composer';
-            meta.append(noteBadge);
-        }
         meta.append(kindSelect, created);
         const actions = document.createElement("div");
         actions.className = "aq-card-actions";
@@ -4001,6 +4024,34 @@ if (document.getElementById("aquariumApp")) {
             edit.textContent='✎';edit.title='Edit in composer';edit.setAttribute('aria-label','Edit in composer');
             edit.addEventListener('click', event => {event.stopPropagation();editAquariumInComposer(card);});
             actions.append(edit);
+            // Category-note settings are in the same quiet three-dot menu as
+            // the existing note actions. No visible note-type badges.
+            const convert = document.createElement('button');convert.type='button';convert.className='aq-v281-type-action';
+            convert.textContent = card.noteType === 'single' ? 'Convert to category note' : 'Convert to single note';
+            convert.title = convert.textContent;
+            convert.addEventListener('click', event => {
+                event.stopPropagation();
+                card.noteType = card.noteType === 'single' ? 'category' : 'single';
+                // Keep html, checklists and visibility flags intact either way.
+                saveAquariumState();renderAquarium();
+            });
+            actions.append(convert);
+            if (card.noteType !== 'single') {
+                const settings = [
+                    ['showDetails','Details'],
+                    ['showChecklist','Checklist']
+                ];
+                for (const [key, label] of settings) {
+                    const toggle = document.createElement('button');toggle.type='button';toggle.className='aq-v281-visibility-action';
+                    toggle.textContent=(card[key] === false ? 'Show ' : 'Hide ') + label;
+                    toggle.title=toggle.textContent + ' (keeps saved content)';
+                    toggle.addEventListener('click',event=>{
+                        event.stopPropagation();card[key]=card[key] === false;
+                        saveAquariumState();renderAquarium();
+                    });
+                    actions.append(toggle);
+                }
+            }
         }
         actions.append(selector, archive, remove, focus, collapse);
         header.append(drag, title, actions);
@@ -4019,7 +4070,35 @@ if (document.getElementById("aquariumApp")) {
             card.text = text.innerText.replace(/\u00a0/g, " ").trim();
             saveAquariumState();
         });
-        body.appendChild(text);
+        if (document.documentElement.classList.contains('aquarium-merged-page') && card.noteType !== 'single') {
+            // Retain the full rich HTML as Details; independent checklist
+            // entries use the same format and dates as Home category notes.
+            const subsection = (label, key, content) => {
+                const section = document.createElement('section');section.className='aq-note-section';
+                const toggle = document.createElement('button');toggle.type='button';
+                toggle.className='aq-note-section-toggle';
+                const inner=document.createElement('div');inner.className='aq-note-section-inner';
+                const renderFold=()=>{
+                    const open=card[key] !== false;
+                    toggle.textContent=(open?'▾ ':'▸ ')+label;
+                    toggle.setAttribute('aria-expanded',String(open));inner.hidden=!open;
+                };
+                toggle.addEventListener('click',()=>{
+                    card[key]=card[key] === false;
+                    saveAquariumState(false);renderFold();
+                });
+                renderFold();inner.append(content);section.append(toggle,inner);return section;
+            };
+            if(card.showDetails !== false) body.appendChild(subsection('Details','detailsExpanded',text));
+            if(card.showChecklist !== false && typeof window.PIHomeNestedChecklist === 'function') {
+                const entries=window.PIHomeNestedChecklist(card, change => {
+                    change(card);saveAquariumState(false);renderAquarium();showSaved();
+                });
+                body.appendChild(subsection('Checklist','checklistExpanded',entries));
+            }
+        } else {
+            body.appendChild(text);
+        }
         if (card.imageUrl) {
             const media = document.createElement(card.linkUrl ? 'a' : 'div');
             media.className = 'aq-merged-card-media';
@@ -8421,7 +8500,7 @@ if (document.getElementById("neopetsApp")) {
                 details.innerHTML = window.PIInlineRich?.cleanHTML(item.detailsHtml || window.PIInlineRich.legacyHTML(item.details || '')) || '';
                 body.append(details);
             }
-            body.append(window.PIHomeNestedChecklist(item, update));
+            if(item.showChecklist!==false)body.append(window.PIHomeNestedChecklist(item, update));
             if (/^https?:\/\//i.test(item.imageUrl || '')) {
                 const img = document.createElement('img');
                 img.src = item.imageUrl; img.alt = 'Note image'; img.loading = 'lazy';
@@ -8482,6 +8561,11 @@ if (document.getElementById("neopetsApp")) {
             visibility.textContent=item.showDetails===false ? 'Show Details':'Hide Details';
             visibility.addEventListener('click',()=>update(live=>{live.showDetails=live.showDetails===false;}));
             quickActions.append(visibility);
+            const checklistVisibility=document.createElement('button');
+            checklistVisibility.type='button';checklistVisibility.className='pi-category-visibility-action';
+            checklistVisibility.textContent=item.showChecklist===false?'Show Checklist':'Hide Checklist';
+            checklistVisibility.addEventListener('click',()=>update(live=>{live.showChecklist=live.showChecklist===false;}));
+            quickActions.append(checklistVisibility);
         }
         const archiveQuick = document.createElement('button');
         archiveQuick.type='button'; archiveQuick.className='pi-quick-archive'; archiveQuick.textContent='↘';

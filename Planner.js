@@ -193,6 +193,10 @@
        menu.open=false;
        updateList(key,index,items=>{items[index].showDetails=items[index].showDetails===false;});
      }));
+     options.append(button(item.showChecklist===false?'Show Checklist':'Hide Checklist','Show or hide checklist without deleting entries',()=>{
+       menu.open=false;
+       updateList(key,index,items=>{items[index].showChecklist=items[index].showChecklist===false;});
+     }));
      options.append(button('Archive','Archive this category note',()=>{
        menu.open=false;
        if(!confirm('Archive this category note?'))return;
@@ -236,6 +240,7 @@
    }
    const list=el('div','planner-category-checklist');
    const subtasks=Array.isArray(item.subtasks)?item.subtasks:[];
+   if(item.showChecklist!==false){
    let movedId=null;
    subtasks.forEach((sub,subindex)=>{
      const line=el('div','planner-category-line'+(sub.done?' is-done':''));
@@ -301,6 +306,7 @@
      });};
      content.append(addForm);
    }
+   } // /visible checklist; hidden subtasks stay in original storage.
    requestAnimationFrame(()=>autoHeight(name));
    return wrap;
  }

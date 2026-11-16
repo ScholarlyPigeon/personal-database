@@ -59,8 +59,11 @@
 <script defer src="V26_3AquariumPolish.js?v=20261108-v26-3"></script>
 <link rel="stylesheet" href="V26_4AquariumCleanup.css?v=20261112-v26-4"/>
 <script defer src="V26_4AquariumCleanup.js?v=20261112-v26-4"></script>
-<link rel="stylesheet" href="AquariumMerge.css?v=20261116-v28"/>
+<link rel="stylesheet" href="AquariumMerge.css?v=20261116-v28-1"/>
 <script defer src="AquariumMerge.js?v=20261116-v28"></script>
+<link rel="stylesheet" href="V28_1Refinements.css?v=20261116-v28-1"/>
+<link rel="stylesheet" href="V28_1Navigation.css?v=20261116-v28-1"/>
+<script defer src="V28_1Navigation.js?v=20261116-v28-1"></script>
 </head>
 <body data-default-theme="aquarium" class="aq-folder-layout">
 <div class="aq-page longform-page" id="aquariumApp">
@@ -72,6 +75,11 @@
     <details class="ecosystem-menu pi-tools-menu"><summary>tools</summary><div class="pi-tools-popover"><button class="small-button cloud-login-button" id="cloudLoginButton" type="button">cloud login</button><button class="small-button selection-mode-button" id="selectModeButton" type="button">select</button><button class="small-button selection-action-button" hidden id="selectionActionButton" type="button">archive selected</button><button class="small-button" id="archiveDone" type="button">archive completed</button></div></details>
   </div>
 </header>
+<section class="link-strip database-global-links" aria-label="Aquarium links">
+  <div class="link-strip-label editable-ui" contenteditable="true" data-ui-save="links-title">🔗 Links</div>
+  <div class="links-container" id="linksContainer"></div>
+  <button class="link-add-button" id="addLinkButton" title="Add a new link" type="button">+ link</button>
+</section>
 <main class="longform-workspace aq-merged-workspace" aria-label="Aquarium writing and folders">
   <aside class="panel longform-library aq-board-workspace aq-folder-board" aria-label="Saved thoughts and folders">
     <div class="longform-library-head aq-folder-heading">

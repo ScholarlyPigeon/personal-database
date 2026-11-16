@@ -423,7 +423,8 @@ function initUnifiedWorkspace(mode){
    fold.setAttribute('aria-expanded',String(open));
    const menuItems=[...destinations().filter(d=>d.id!==n.sectionId).map(d=>['Move to '+d.label,()=>move(n,legacy,d.id)]),null,
      [line?'Convert to category note':'Convert to checklist line',()=>{n.noteType=line?'category':'line';commit(n,legacy);renderAll();}],
-     ...(!line?[[(n.showDetails===false?'Show':'Hide')+' details field',()=>{n.showDetails=n.showDetails===false;commit(n,legacy);renderAll();}]]:[]),
+     ...(!line?[[(n.showDetails===false?'Show':'Hide')+' details field',()=>{n.showDetails=n.showDetails===false;commit(n,legacy);renderAll();}],
+       [(n.showChecklist===false?'Show':'Hide')+' checklist field',()=>{n.showChecklist=n.showChecklist===false;commit(n,legacy);renderAll();}]]:[]),
      ...(compass?[['Move earlier ↑',()=>reorderEntry(n,-1)],['Move later ↓',()=>reorderEntry(n,1)]]:[]),
      ['Archive',()=>archiveNote(n,legacy)],['Delete',()=>deleteNote(n,legacy)]];
    const menu=makeMenu(menuItems,'Note actions and movement');
@@ -437,7 +438,7 @@ function initUnifiedWorkspace(mode){
      if(!line){
        if(n.showDetails!==false){const desc=el('div','pi-note-card-body pi-ws-details');desc.contentEditable='true';desc.spellcheck=true;desc.dataset.placeholder='. . .';desc.innerHTML=safeHtml(n.html||escHtml(n.text||''));
          desc.onblur=()=>{n.html=safeHtml(desc.innerHTML);n.text=desc.innerText.trim();commit(n,legacy);};body.append(desc);}
-       body.append(makeChecklist(n,legacy));
+       if(n.showChecklist!==false)body.append(makeChecklist(n,legacy));
      }else if(n.html||n.text){
        const desc=el('div','pi-note-card-body pi-ws-details');desc.contentEditable='true';desc.spellcheck=true;desc.dataset.placeholder='. . .';desc.innerHTML=safeHtml(n.html||escHtml(n.text||''));
        desc.onblur=()=>{n.html=safeHtml(desc.innerHTML);n.text=desc.innerText.trim();commit(n,legacy);};body.append(desc);

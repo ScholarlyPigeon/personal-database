@@ -391,29 +391,31 @@
       [originalText||body||title,childLines].filter(Boolean).join('\n\n');
     return {
       id:uid(),title,text:fullText,body,html,
-      kind:item.kind==='note' || freeform || body || rawHtml ? 'note' :
+      kind:item.noteType==='category' || item.kind==='note' || freeform || body || rawHtml ? 'note' :
         (item.piTransferKind || item.kind || 'task'),
       details:body,date:item.date || (item.createdAt && /^\d{4}-\d{2}-\d{2}/.test(item.createdAt) ? item.createdAt.slice(0,10) : localDate()),
       done:Boolean(item.done),checkable:item.checkable!==false,
       imageUrl:validUrl(item.imageUrl),linkUrl:validUrl(item.linkUrl),
+      showDetails:item.showDetails!==false,showChecklist:item.showChecklist!==false,
       subtasks,createdAt:item.createdAt||new Date().toISOString(),origin:sourceId
     };
   }
   function targetRecord(targetId,payload,state) {
     const common={id:payload.id,date:payload.date,done:payload.done,createdAt:payload.createdAt,
-      imageUrl:payload.imageUrl,linkUrl:payload.linkUrl};
+      imageUrl:payload.imageUrl,linkUrl:payload.linkUrl,
+      showDetails:payload.showDetails,showChecklist:payload.showChecklist};
     const transfer={piTransferKind:payload.kind,piTransferTitle:payload.title,
       piTransferDetails:payload.body,piTransferHtml:payload.html,piTransferSubtasks:payload.subtasks};
     if(targetId==='aquarium') {
-      const extras=payload.subtasks.map(x=>(x.done?'☑ ':'☐ ')+String(x.text||'')).join('\n');
-      const body=[payload.body&&payload.body!==payload.title?payload.body:'',extras].filter(Boolean).join('\n\n');
+      const body=payload.body&&payload.body!==payload.title?payload.body:'';
       return {...common,...transfer,title:payload.title,text:body,
-        html:payload.html||esc(body),zone:'inbox',
+        html:payload.html||esc(body),zone:'inbox',subtasks:payload.subtasks,
+        noteType:payload.kind==='note'?'category':'single',
         kind:payload.kind==='task'?'action':'thought',collapsed:!body};
     }
     if(targetId==='home')return {...common,...transfer,text:payload.title,
       kind:payload.kind==='note'||payload.body||payload.subtasks.length||payload.imageUrl||payload.linkUrl?'note':'task',
-      expanded:!!payload.body,showDetails:true,
+      expanded:!!payload.body,showDetails:payload.showDetails,
       details:payload.body&&payload.body!==payload.title?payload.body:'',
       subtasks:payload.subtasks};
     if(targetId==='alignment')return {...common,...transfer,title:payload.title,
@@ -741,6 +743,12 @@
         if(focus){ focus.textContent='Pop out note'; focus.classList.add('aq-menu-button'); group.append(focus); }
         archive.textContent='Archive';remove.textContent='Delete';
         archive.classList.add('aq-menu-button');remove.classList.add('aq-menu-button');
+        // V28.1: Aquarium's new category settings belong inside the *same*
+        // three-dot menu, not as a parade of buttons in the note heading.
+        // Move the live controls so all existing listeners remain intact.
+        const noteSettings=[...actions.querySelectorAll(
+          ':scope > .aq-edit-in-composer, :scope > .aq-v281-type-action, :scope > .aq-v281-visibility-action')];
+        noteSettings.forEach(button=>{button.classList.add('aq-menu-button');group.append(button);});
         group.append(archive,remove);
         panel.prepend(group);
       }
