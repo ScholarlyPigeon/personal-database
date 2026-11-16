@@ -230,3 +230,51 @@ html body.pi-alignment-dashboard-body .pi-alignment-dashboard .is-table-collapse
     height:44px!important;min-height:44px!important;max-height:44px!important;
   }
 }
+
+/* ==== V27.2 | Let extra shelf height reveal MORE standard-size folders ====
+   Instead of stretching the three folder cards into tall rectangles, the top
+   shelves gain additional 140px rows. Each row shows three folders (two at
+   phone width); additional *groups* keep scrolling horizontally. Row counts
+   and card positions are set by AlignmentDashboard.js based on visible space. */
+html body.pi-alignment-dashboard-body .pi-alignment-shelf-scroll.pi-current-rail.pi-ws-current-rail{
+  --pi-shelf-card-height:140px;
+  --pi-shelf-gap:9px;
+  --pi-shelf-cols:3;
+  display:grid!important;
+  grid-template-columns:none!important;
+  grid-template-rows:repeat(var(--pi-shelf-visible-rows,1),var(--pi-shelf-card-height))!important;
+  grid-auto-rows:var(--pi-shelf-card-height)!important;
+  grid-auto-columns:calc((100% - 18px) / 3)!important;
+  /* Column auto-flow preserves horizontal scroll positions while Workspace.js
+     recreates folder nodes; JS then places them in intuitive row-major order. */
+  grid-auto-flow:column!important;
+  align-content:start!important;
+  justify-content:start!important;
+  align-items:start!important;
+  gap:var(--pi-shelf-gap)!important;
+  overflow-x:auto!important;
+  overflow-y:hidden!important;
+  scrollbar-width:thin;
+}
+html body.pi-alignment-dashboard-body .pi-alignment-shelf-scroll > .pi-alignment-folder{
+  box-sizing:border-box!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  height:var(--pi-shelf-card-height)!important;
+  min-height:var(--pi-shelf-card-height)!important;
+  max-height:var(--pi-shelf-card-height)!important;
+  align-self:start!important;
+  flex:0 0 auto!important;
+}
+html body.pi-alignment-dashboard-body .pi-alignment-shelf-scroll > .pi-alignment-shelf-empty{
+  grid-column:1 / span var(--pi-shelf-cols);
+  grid-row:1;
+  justify-self:stretch;
+}
+@media (max-width:670px){
+  html body.pi-alignment-dashboard-body .pi-alignment-shelf-scroll.pi-current-rail.pi-ws-current-rail{
+    --pi-shelf-cols:2;
+    grid-auto-columns:calc((100% - 9px) / 2)!important;
+  }
+}

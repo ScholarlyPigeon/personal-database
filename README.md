@@ -392,3 +392,22 @@ No migration to the note database or Supabase schema is required.
 - The top/bottom dashboard height responds to collapses: closing lower tables progressively makes more room for the upper folder shelves, while closing both upper shelves gives the lower tables more room. Counts sit immediately next to their respective header controls.
 - The five expanded/collapsed preferences are local UI-only settings under `pi-alignment-layout-v27-1`; they do not modify synced content, migrations, or Supabase. New file `AlignmentDashboard.js` is loaded only by `Alignment.html`.
 - Full browser testing was unavailable because the sandbox browser blocks even locally served pages; HTML structure, JavaScript syntax and CSS parsing were checked. After deployment, check one desktop and one mobile viewport and take a JSON backup before replacing files.
+
+
+## V27.2 · Alignment expanding folder shelves (November 16, 2026)
+
+- **Goals** and **Mindset** folder cards keep their existing size instead of stretching
+  when the lower Grounding, Writing and Insight & Reflections tables are collapsed.
+- The folder shelves automatically use the extra height for **more rows** of cards.
+  At desktop widths, each row has exactly **three** equally sized cards. On narrow
+  phones each row has **two**, as in the previous mobile layout.
+- Reading order is left-to-right then downward; when the available rows are full,
+  the next group continues to the **right with horizontal scrolling**.
+- The layout recalculates on window resize, table collapse/expand, or any folder
+  add/move/reorder, without rewriting folder IDs or changing saved notes.
+- This is purely a presentation change. `AlignmentDashboard.css`,
+  `AlignmentDashboard.js`, and the cache-busting URLs in `Alignment.html` changed.
+  Existing `pi-alignment-layout-v27-1` collapse preferences remain untouched.
+- Tested: JavaScript syntax, CSS stylesheet parse, and scripted layout placement
+  checks for desktop and phone viewports. A real full-page browser preview was not
+  available in the current runtime; verify the shelf appearance after deployment.
