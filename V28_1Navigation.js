@@ -5,9 +5,9 @@
    ['Database.html','🏠 Home'],
    ['Alignment.html','✨ Alignment'],
    ['Aquarium.html','🪼 Aquarium'],
-   ['Almanac.html','◷ Timeline'],
-   ['Patterns.html','🗂 Archive'],
-   ['neopets.html','✦ Neopets']
+   ['Almanac.html','📜 Timeline'],
+   ['Patterns.html','🗄️ Archive'],
+   ['neopets.html','💻 Neopets']
  ];
  const calendars=[
    ['Week.html','🗓️ This Week'],
@@ -29,7 +29,7 @@
    routes.slice(0,3).forEach(([url,label])=>panel.append(mk(url,label)));
    const group=document.createElement('div');group.className='pi-calendars-nav';
    const toggle=document.createElement('button');toggle.type='button';
-   toggle.className='pi-calendars-trigger';toggle.textContent='🗓 Calendars';
+   toggle.className='pi-calendars-trigger';toggle.textContent='📅 Calendars';
    toggle.setAttribute('aria-expanded','false');toggle.setAttribute('aria-haspopup','true');
    toggle.setAttribute('aria-label','Show calendar pages');
    const flyout=document.createElement('div');flyout.className='pi-calendars-flyout';

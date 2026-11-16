@@ -4,7 +4,7 @@
 (() => {
   'use strict';
   const DEFAULT_ICON = '✧';
-  const icons = ['✧','✦','★','☆','♡','☾','☀','❀','☘','✎','⚙','♫','⚡','∞','🌸','🌿','🌙','🔮','🪼','🐚','📚','🎨','💡','🎮','🧠','💻','🗂️','📝','☕','🪴','💜','🦋'];
+  const icons = ['✧','✦','★','☆','♡','☾','☀','❀','🐈‍⬛','✎','⚙','♫','⚡','∞','🌸','🌿','🌙','🔮','🪼','🏡','📔','🎨','💡','🎮','🧠','💻','🗂️','📝','☕','🪴','💜','🌲'];
   const colors = ['#71cfcc','#9c8aca','#e6a0b9','#88b6db','#98c69e','#edbd77','#e89a87','#d0b0ec','#edf0f7'];
   const hex = value => /^#[0-9a-f]{6}$/i.test(String(value||'')) ? String(value).toLowerCase() : '';
   const cleanIcon = value => String(value||'').trim().slice(0,32) || DEFAULT_ICON;
