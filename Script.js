@@ -4733,6 +4733,13 @@ if (document.getElementById("aquariumApp")) {
                 if (name) { category.name = name.slice(0, 120); saveAquariumState(); renderAquarium(); }
             } },
             { text: "Edit description", action: () => openAquariumFolder(category.id) },
+            { text: "Icon & color…", action: () => window.PIFolderAppearance?.open({
+                name: category.name, icon: category.icon, color: category.iconColor,
+                onSave: ({icon, color}) => {
+                    category.icon = icon; category.iconColor = color;
+                    saveAquariumState(); renderAquarium();
+                }
+            }) },
             { text: "Delete folder (keep notes)", action: () => aqDeleteFolder(category) }
         ]);
         // Use the same dropdown + color-dot vocabulary across this intranet.
@@ -4775,7 +4782,8 @@ if (document.getElementById("aquariumApp")) {
         center.setAttribute("aria-label", "Open folder " + category.name);
         const symbol = document.createElement("span");
         symbol.className = "aq-folder-tile-symbol";
-        symbol.textContent = "✧";
+        if (window.PIFolderAppearance) window.PIFolderAppearance.apply(symbol, category);
+        else symbol.textContent = category.icon || "✧";
         const name = document.createElement("strong");
         name.className = "aq-folder-tile-title";
         name.textContent = category.name;
@@ -4970,6 +4978,8 @@ if (document.getElementById("aquariumApp")) {
         openAquariumFolderId = id;
         document.getElementById("aqFolderDialogName").value = category.name;
         document.getElementById("aqFolderDialogDescription").value = category.description || "";
+        const dialogSymbol = dialog.querySelector('.aq-folder-dialog-symbol');
+        if (dialogSymbol && window.PIFolderAppearance) window.PIFolderAppearance.apply(dialogSymbol, category);
         const form = document.getElementById("aqFolderDialogForm");
         form.hidden = !startAdding;
         if (!dialog.open) dialog.showModal();

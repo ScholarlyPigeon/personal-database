@@ -551,11 +551,18 @@ function initUnifiedWorkspace(mode){
      ['Move earlier ↑',()=>reorderFolder(f,-1)],['Move later ↓',()=>reorderFolder(f,1)],
      ...['goals','mindset','insight','grounding'].filter(side=>side!==f.shelf).map(side=>['Move to '+shelfName(side),()=>moveFolder(f,side)]),
      ['Rename folder',()=>{const name=prompt('Folder name',f.name);if(name?.trim()){f.name=name.trim().slice(0,90);persist();renderAll();}}],
-     ['Edit description',()=>openFolder(f)],null,['Delete folder (keep notes)',()=>removeFolder(f)]
+     ['Edit description',()=>openFolder(f)],
+     ['Icon & color…',()=>window.PIFolderAppearance?.open({
+       name:f.name,icon:f.icon,color:f.iconColor,
+       onSave:({icon,color})=>{f.icon=icon;f.iconColor=color;persist();renderAll();}
+     })],null,['Delete folder (keep notes)',()=>removeFolder(f)]
    ],'Folder options and movement');
    head.append(grip,menu);
    const title=btn('','Open folder '+f.name,()=>openFolder(f),'pi-current-folder-open');
-   title.append(el('span','pi-current-folder-symbol','✧'),el('strong','pi-current-folder-title',f.name));
+   const symbol=el('span','pi-current-folder-symbol');
+   if(window.PIFolderAppearance)window.PIFolderAppearance.apply(symbol,f);
+   else symbol.textContent=f.icon||'✧';
+   title.append(symbol,el('strong','pi-current-folder-title',f.name));
    const desc=el('p','pi-current-folder-description',f.description||'. . .');
    const count=el('small','pi-current-folder-count',folderNotes(f).length+' note'+(folderNotes(f).length===1?'':'s'));
    tile.append(head,title,desc,count);

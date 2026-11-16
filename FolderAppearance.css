@@ -1,0 +1,50 @@
+/* V28.3 | Appearance picker for the active Aquarium and Alignment folders */
+.pi-folder-appearance-dialog {
+  width:min(470px,calc(100vw - 24px));max-height:min(88dvh,760px);overflow:auto;
+  border:1px solid var(--border,#aaa);border-radius:16px;
+  background:var(--panel-light,#f5f1fa);color:var(--text,#28233c);
+  padding:16px;box-shadow:0 24px 70px #05030c75;
+  font:inherit;box-sizing:border-box;
+}
+.pi-folder-appearance-dialog::backdrop {background:#07061290;backdrop-filter:blur(3px);}
+.pi-folder-appearance-head,.pi-folder-appearance-top,.pi-folder-appearance-actions {
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+}
+.pi-folder-appearance-head {margin-bottom:13px;}
+.pi-folder-appearance-title {font-size:18px;line-height:1.3;margin:0;font-weight:750;}
+.pi-folder-appearance-close,.pi-folder-appearance-preset,.pi-folder-appearance-cancel,.pi-folder-appearance-default {
+  background:var(--panel,#eae4f3);color:var(--text,#28233c);
+  border:1px solid var(--border,#aea5c6);border-radius:9px;cursor:pointer;
+}
+.pi-folder-appearance-close {font-size:20px;width:33px;height:33px;line-height:1;flex:none;}
+.pi-folder-appearance-top {justify-content:flex-start;margin-bottom:13px;padding:9px;border-radius:12px;background:var(--panel,#eae4f3);}
+.pi-folder-appearance-preview {display:grid;place-items:center;flex:none;width:55px;height:55px;font-size:31px!important;}
+.pi-folder-appearance-intro strong {font-size:13px;}
+.pi-folder-appearance-intro p {font-size:12px;color:var(--muted,var(--text,#555));opacity:.8;margin:3px 0 0;}
+.pi-folder-appearance-label,.pi-folder-appearance-color-label {display:block;font-weight:650;font-size:12px;margin:10px 0 7px;}
+.pi-folder-appearance-input {display:block;width:100%;box-sizing:border-box;margin-top:5px;border-radius:9px;
+  padding:9px 11px;border:1px solid var(--border,#aaa);background:var(--panel,#fff);color:var(--text,#222);font-size:19px;}
+.pi-folder-appearance-presets {display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px;max-height:148px;overflow:auto;padding:3px;}
+.pi-folder-appearance-preset {display:grid;place-items:center;min-width:0;height:32px;font-size:19px;padding:0;}
+.pi-folder-appearance-preset:hover,.pi-folder-appearance-preset:focus-visible {border-color:var(--teal-soft,#74b8b1);background:var(--panel-light,#fff);}
+.pi-folder-appearance-colors {display:flex;align-items:center;flex-wrap:wrap;gap:7px;padding:3px 0 9px;}
+.pi-folder-appearance-swatch {height:25px;width:25px;min-width:25px;border-radius:50%;cursor:pointer;border:2px solid var(--panel-light,#fff);outline:1px solid #71718a60;}
+.pi-folder-appearance-swatch[aria-pressed="true"] {outline:2px solid var(--text,#222);outline-offset:2px;}
+.pi-folder-appearance-default {padding:5px 9px;font-size:11px;}
+.pi-folder-appearance-default[aria-pressed="true"] {outline:2px solid var(--teal-soft,#74b8b1);}
+.pi-folder-appearance-custom-label {font-size:11px;display:inline-flex;align-items:center;gap:4px;}
+.pi-folder-appearance-custom-color {width:28px;height:29px;border:0;background:transparent;padding:0;cursor:pointer;}
+.pi-folder-appearance-hint {font-size:11px;line-height:1.5;opacity:.75;margin:3px 0 16px;}
+.pi-folder-appearance-actions {justify-content:flex-end;}
+.pi-folder-appearance-actions button {font:inherit;padding:8px 13px;cursor:pointer;border-radius:10px;}
+.pi-folder-appearance-save {background:var(--teal-soft,#7dbcb9);border:1px solid var(--teal-soft,#7dbcb9);color:var(--text,#112);font-weight:700;}
+.pi-folder-appearance-cancel {background:var(--panel,#eee);border:1px solid var(--border,#aaa);color:var(--text,#222);}
+/* Uncustomized symbols retain their original look. A custom color also adds a
+   small halo so full-color emoji still communicate the chosen folder color. */
+.pi-custom-folder-symbol {display:inline-grid;place-items:center;vertical-align:middle;box-sizing:border-box;white-space:nowrap;}
+.pi-custom-folder-symbol.pi-custom-folder-has-color {
+  width:1.5em;height:1.5em;min-width:1.5em;border-radius:50%;
+  background:color-mix(in srgb,var(--pi-folder-symbol-color) 16%,transparent);
+  box-shadow:0 0 0 1px color-mix(in srgb,var(--pi-folder-symbol-color) 32%,transparent);
+}
+@media(max-width:500px){.pi-folder-appearance-presets{grid-template-columns:repeat(6,minmax(0,1fr));}}

@@ -136,6 +136,11 @@
     if(event.key!=='Enter'||event.shiftKey||event.isComposing||event.altKey)return;
     const node=event.target.closest?.(newEntrySelector);
     if(!node)return;
+    // V28.3: Rich Aquarium writing belongs to the Longform-style editor.
+    // Plain Enter must insert a line; Ctrl/Cmd+Enter is handled by Script.js.
+    // This guard precedes the older capture-phase Enter-to-save shortcut.
+    if(document.documentElement.classList.contains('aquarium-merged-page') &&
+       node.matches('#captureInput,#aqCaptureTitle')) return;
     if(submit(node)){
       event.preventDefault();event.stopImmediatePropagation();
     }
