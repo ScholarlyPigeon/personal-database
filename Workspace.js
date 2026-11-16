@@ -31,7 +31,7 @@ function safeHtml(html){
  return tpl.innerHTML;
 }
 const ACT_KEY='pi-activity-v1',ARCHIVE_KEY='pi-archive-v1',LEGACY_KEY='pi-archive-workspace-v1',NOTES_KEY='pi-reflections-notes-v1';
-const routes={home:'Database.html',database:'Database.html',aquarium:'Aquarium.html',week:'Week.html',month:'Month.html',archive:'Patterns.html',almanac:'Almanac.html',compass:'Compass.html',alignment:'Alignment.html',longform:'Longform.html',neopets:'neopets.html'};
+const routes={home:'Database.html',database:'Database.html',aquarium:'Aquarium.html',week:'Week.html',month:'Month.html',archive:'Patterns.html',almanac:'Almanac.html',compass:'Alignment.html',alignment:'Alignment.html',longform:'Longform.html',neopets:'neopets.html'};
 function initArchive(){
  if(!$('archiveApp'))return;
  const dayList=$('dayArchiveList'), itemList=$('itemArchiveList'), recentList=$('piRecentActivityList');
@@ -100,7 +100,7 @@ function initArchive(){
   if(!list.length){recentList.append(el('p','pi-muted','New notes from across your intranet will appear here, alongside other item changes.'));return;}
   list.forEach(item=>{
    const a=el('a','pi-activity-entry');a.href=routes[item.page]||'Database.html';
-   a.append(el('span','pi-activity-action',item.action||'Updated item'),el('span','pi-activity-text',item.text||''),el('small','pi-muted',`${item.page==='database'?'Home':item.page==='almanac'?'Timeline & Notes':item.page==='compass'?'Compass':item.page||'Intranet'} · ${when(item.timestamp)}`));recentList.append(a);
+   a.append(el('span','pi-activity-action',item.action||'Updated item'),el('span','pi-activity-text',item.text||''),el('small','pi-muted',`${item.page==='database'?'Home':item.page==='almanac'?'Timeline & Notes':item.page==='compass'?'Alignment':item.page||'Intranet'} · ${when(item.timestamp)}`));recentList.append(a);
   });
  }
  window.addEventListener('storage',e=>{if(e.key===ARCHIVE_KEY)renderArchive();if(e.key===ACT_KEY)renderActivity();});
@@ -115,14 +115,16 @@ function initUnifiedWorkspace(mode){
  const compass=mode==='compass';
  const root=$(compass?'piCompass':'piReflections'); if(!root)return;
  const KEY=compass?'pi-compass-v1':NOTES_KEY;
- const MAIN='__current__', TIMELINE='__timeline__', GOALS='__goals__', GROUNDING='__grounding__';
+ const MAIN='__current__', TIMELINE='__timeline__', GOALS='__goals__', GROUNDING='__grounding__', INSIGHT='__insight__';
  const FOLDER_PREFIX='folder:';const folderDest=id=>FOLDER_PREFIX+id;
+ const topSides=['goals','mindset'];
+ const shelfName=side=>({goals:'Goals',mindset:'Mindset',insight:'Insight & Reflections',grounding:'Grounding'})[side]||'Goals';
  const cols=compass
-   ? [{id:'goals',title:'Goals',list:$('piCompassGoalsList'),count:$('piCompassGoalsCount')},
+   ? [{id:'insight',title:'Insight & Reflections',list:$('piCompassInsightsList'),count:$('piCompassInsightsCount')},
       {id:'grounding',title:'Grounding',list:$('piCompassGroundingList'),count:$('piCompassGroundingCount')}]
    : [{id:'timeline',title:'Timeline',list:$('piTimelineList'),count:$('piTimelineCount')},
       {id:'notes',title:'Saved Notes',list:$('piSavedNoteList'),count:$('piNoteCount')}];
- const current=compass?$('piCompassCurrentList'):null;
+ const shelves=compass?{goals:$('piCompassGoalsShelf'),mindset:$('piCompassMindsetShelf')}:null;
  const titleField=$(compass?'piCompassTitle':'piNoteTitle'),
        editor=$(compass?'piCompassEditor':'piNoteEditor'),
        sectionField=$(compass?'piCompassSection':'piNoteSection'),
@@ -131,32 +133,82 @@ function initUnifiedWorkspace(mode){
        imageField=$(compass?'piCompassImageUrl':'piNoteImageUrl'),
        linkField=$(compass?'piCompassLinkUrl':'piNoteLinkUrl');
  const defaults=()=>compass?
-   [{id:'goals-core',name:'Core Goals',side:'goals',collapsed:false},
+   [{id:'insight-readings',name:'Readings & Rituals',side:'insight',collapsed:false},
     {id:'grounding-everyday',name:'Everyday Joy',side:'grounding',collapsed:false}]:
    [{id:'general',name:'General',side:'notes',collapsed:false},
     {id:'patterns',name:'Patterns',side:'notes',collapsed:false}];
  const destinations=()=>[
-   ...(compass?[{id:MAIN,label:'Currently...',side:'current'},
-     ...state.folders.map(f=>({id:folderDest(f.id),label:'Currently · Folder · '+f.name,side:'current'})),
-     {id:GOALS,label:'Goals · main column',side:'goals'},
+   ...(compass?[
+     ...state.folders.map(f=>({id:folderDest(f.id),label:shelfName(f.shelf)+' · '+f.name,side:f.shelf})),
+     {id:INSIGHT,label:'Insight & Reflections · main column',side:'insight'},
      {id:GROUNDING,label:'Grounding · main column',side:'grounding'}]:[
      {id:TIMELINE,label:'Timeline · main column',side:'timeline'},
      {id:MAIN,label:'Saved Notes · main column',side:'notes'}]),
    ...cols.flatMap(c=>state.sections.filter(s=>s.side===c.id).map(s=>({id:s.id,label:c.title+' · '+s.name,side:c.id})))
  ];
+ // One-time, non-destructive adaptation of the existing Compass data. The
+ // original snapshot is also retained under pi-alignment-merge-backup-v1.
+ // Critically, the live key stays pi-compass-v1 so the existing cloud-sync
+ // and multi-device conflict protection continue working unchanged.
  function normalise(data){
-   if(!data||!Array.isArray(data.entries)||!Array.isArray(data.sections)) data={sections:defaults(),entries:[]};
-   if(!data.sections.length)data.sections=defaults();
-   if(compass)data.folders=Array.isArray(data.folders)?data.folders.filter(f=>f&&typeof f.id==='string').map(f=>({id:f.id,name:String(f.name||'Folder'),description:String(f.description||'')})):[];
-   data.sections.forEach(s=>{ if(!s.side)s.side=compass?'goals':'notes';if(!['goals','grounding','timeline','notes'].includes(s.side))s.side=compass?'goals':'notes';if(typeof s.collapsed!=='boolean')s.collapsed=false; });
-   data.entries.forEach(n=>{if(!n.sectionId)n.sectionId=data.sections[0].id;
-     if(compass&&String(n.sectionId).startsWith(FOLDER_PREFIX)&&!data.folders.some(f=>folderDest(f.id)===n.sectionId))n.sectionId=MAIN;});
+   if(!data||!Array.isArray(data.entries)||!Array.isArray(data.sections))data={sections:defaults(),entries:[],folders:[]};
+   if(compass){
+     data.folders=Array.isArray(data.folders)?data.folders.filter(f=>f&&typeof f.id==='string').map(f=>({...f,name:String(f.name||'Folder'),description:String(f.description||'')})):[];
+     if(data.alignmentLayoutVersion!==1){
+       const snapshot=JSON.stringify(data);
+       try{if(!localStorage.getItem('pi-alignment-merge-backup-v1'))localStorage.setItem('pi-alignment-merge-backup-v1',snapshot);}catch(e){console.warn('Alignment backup could not be saved',e);}
+       data.folders.forEach(f=>{f.shelf=topSides.includes(f.shelf)?f.shelf:'goals';});
+       const ensure=(name,shelf)=>{
+         let found=data.folders.find(f=>f.name===name&&f.shelf===shelf);
+         if(!found){found={id:'migrated-'+shelf+'-'+name.toLowerCase().replace(/[^a-z0-9]+/g,'-'),name,description:'',shelf};data.folders.push(found);}
+         return folderDest(found.id);
+       };
+       // Existing Goals category sections become folders, with their notes intact.
+       data.sections=data.sections.filter(section=>{
+         if(section.side!=='goals')return true;
+         const folder={id:'from-section-'+section.id,name:section.name||'Goals',description:'',shelf:'goals'};
+         if(!data.folders.some(f=>f.id===folder.id))data.folders.push(folder);
+         try {
+           const key='pi-personal-item-colors-v1';const colors=JSON.parse(localStorage.getItem(key)||'{}');
+           const original=colors['workspace-section:'+section.id];
+           if(original&&!colors['compass-folder:'+folder.id]){colors['compass-folder:'+folder.id]=original;localStorage.setItem(key,JSON.stringify(colors));}
+         }catch(e){console.warn('Section colors were left unchanged',e);}
+         data.entries.forEach(n=>{if(n.sectionId===section.id)n.sectionId=folderDest(folder.id);});
+         return false;
+       });
+       const isExistingAffirmation=n=>/^(i am financially free|my work brings me freedom,? fun,? and abundance)\b/i.test(String(n.title||'').trim());
+       for(const n of data.entries){
+         if(n.sectionId===MAIN)n.sectionId=ensure('From Currently','goals');
+         if(n.sectionId===GOALS)n.sectionId=isExistingAffirmation(n)?ensure('Affirmations & Scripts','mindset'):ensure('Unsorted Goals','goals');
+       }
+       if(!data.sections.some(section=>section.side==='insight'))data.sections.push({id:'insight-readings',name:'Readings & Rituals',side:'insight',collapsed:false});
+       data.alignmentLayoutVersion=1;
+     }
+     data.folders.forEach(f=>{if(!['goals','mindset','insight','grounding'].includes(f.shelf))f.shelf='goals';});
+     for(const section of data.sections){
+       if(section.side==='goals')section.side='insight';
+       if(!['insight','grounding'].includes(section.side))section.side='insight';
+       if(typeof section.collapsed!=='boolean')section.collapsed=false;
+     }
+     // A missing destination must never make an existing note disappear.
+     for(const n of data.entries){
+       if(!n.sectionId)n.sectionId=INSIGHT;
+       if(String(n.sectionId).startsWith(FOLDER_PREFIX)&&!data.folders.some(f=>folderDest(f.id)===n.sectionId))n.sectionId=INSIGHT;
+       if(n.sectionId===MAIN||n.sectionId===GOALS)n.sectionId=INSIGHT;
+     }
+   }else{
+     if(!data.sections.length)data.sections=defaults();
+     data.sections.forEach(section=>{if(!section.side)section.side='notes';if(!['timeline','notes'].includes(section.side))section.side='notes';if(typeof section.collapsed!=='boolean')section.collapsed=false;});
+     data.entries.forEach(n=>{if(!n.sectionId)n.sectionId=data.sections[0].id;});
+   }
    return data;
  }
- let state=normalise(read(KEY,null));
+ const oldState=read(KEY,null);
+ let state=normalise(oldState);
+ if(compass&&oldState?.alignmentLayoutVersion!==1)save(KEY,state);
  let selected=null,dragging=null,dragSection=null,dragSub=null;
  function persist(){save(KEY,state);}
- function sideOf(id){ if(compass&&String(id||'').startsWith(FOLDER_PREFIX)&&state.folders.some(f=>folderDest(f.id)===id))return 'current';if(id===MAIN)return compass?'current':'notes';if(id===GOALS)return 'goals';if(id===GROUNDING)return 'grounding';if(id===TIMELINE)return 'timeline';return state.sections.find(s=>s.id===id)?.side||cols[0].id; }
+ function sideOf(id){if(compass&&String(id||'').startsWith(FOLDER_PREFIX))return state.folders.find(f=>folderDest(f.id)===id)?.shelf||'insight';if(id===MAIN)return compass?'insight':'notes';if(id===GOALS)return 'goals';if(id===INSIGHT)return 'insight';if(id===GROUNDING)return 'grounding';if(id===TIMELINE)return 'timeline';return state.sections.find(s=>s.id===id)?.side||cols[0].id;}
  function isLine(n){return n.noteType==='line';}
  function inTimeline(n){return !compass && sideOf(n.sectionId)==='timeline';}
  function timelineDate(n){return String(n.date||n.createdAt||'9999-12-31').slice(0,10);}
@@ -206,7 +258,27 @@ function initUnifiedWorkspace(mode){
    }
    selected=null;dragging=null;dragSub=null;renderAll();
  }
- function moveSection(s,targetSide){if(s.side===targetSide)return;s.side=targetSide;persist();renderAll();}
+ function moveSection(s,targetSide){if(s.side===targetSide)return;if(compass&&topSides.includes(targetSide)){convertSectionToFolder(s,targetSide);return;}s.side=targetSide;persist();renderAll();}
+ function convertSectionToFolder(s,shelf){
+   if(!compass||!topSides.includes(shelf))return;
+   const f={id:'section-folder-'+s.id,name:s.name||'Folder',description:'',shelf};
+   if(!state.folders.some(x=>x.id===f.id))state.folders.push(f);
+   state.entries.forEach(n=>{if(n.sectionId===s.id)n.sectionId=folderDest(f.id);});
+   state.sections=state.sections.filter(x=>x.id!==s.id);
+   persist();renderAll();
+ }
+ function moveFolder(f,shelf,beforeId=null){
+   if(!compass||!['goals','mindset','insight','grounding'].includes(shelf))return;
+   const from=state.folders.indexOf(f);if(from<0)return;
+   state.folders.splice(from,1);f.shelf=shelf;
+   const index=beforeId?state.folders.findIndex(x=>x.id===beforeId):-1;
+   if(index>=0)state.folders.splice(index,0,f);else state.folders.push(f);
+   persist();renderAll();
+ }
+ function shiftWithin(list,item,delta){const at=list.indexOf(item);const next=at+delta;if(at<0||next<0||next>=list.length)return false;[list[at],list[next]]=[list[next],list[at]];return true;}
+ function reorderEntry(n,delta){const siblings=state.entries.filter(x=>x.sectionId===n.sectionId);if(!shiftWithin(siblings,n,delta))return;const indices=state.entries.map((x,i)=>x.sectionId===n.sectionId?i:-1).filter(i=>i>=0);indices.forEach((at,i)=>state.entries[at]=siblings[i]);persist();renderAll();}
+ function reorderFolder(f,delta){const siblings=state.folders.filter(x=>x.shelf===f.shelf);if(!shiftWithin(siblings,f,delta))return;const indices=state.folders.map((x,i)=>x.shelf===f.shelf?i:-1).filter(i=>i>=0);indices.forEach((at,i)=>state.folders[at]=siblings[i]);persist();renderAll();}
+
  function addSection(side){
    const s={id:uid('ws-section'),name:'New section',side,collapsed:false};
    state.sections.push(s);persist();renderAll();
@@ -223,7 +295,7 @@ function initUnifiedWorkspace(mode){
    const key=ARCHIVE_KEY,old=localStorage.getItem(key),prev=localStorage.getItem(legacy?LEGACY_KEY:KEY);
    const rows=read(key,[]);if(!Array.isArray(rows)){alert('Archive format could not be read. Nothing changed.');return;}
    const text=[n.title,n.text,...(n.subtasks||[]).map(s=>(s.done?'☑ ':'☐ ')+s.text)].filter(Boolean).join('\n');
-   const record={id:uid('archived'),recordType:'item',source:compass?'Compass':'Timeline',context:sideOf(n.sectionId),text,archivedAt:new Date().toISOString(),metadata:{noteType:n.noteType||'category',subtasks:n.subtasks||[],createdAt:created(n),completedAt:n.completedAt||null}};
+   const record={id:uid('archived'),recordType:'item',source:compass?'Alignment':'Timeline',context:sideOf(n.sectionId),text,archivedAt:new Date().toISOString(),metadata:{noteType:n.noteType||'category',subtasks:n.subtasks||[],createdAt:created(n),completedAt:n.completedAt||null}};
    try {
      save(key,[record,...rows]);
      if(legacy){const list=read(LEGACY_KEY,[]);save(LEGACY_KEY,list.filter(x=>!(x.zone==='timeline'&&x.id===n.id)));}
@@ -277,13 +349,15 @@ function initUnifiedWorkspace(mode){
    if(target.dataset.wsDropBound){target.dataset.wsDropBound=destination;return;}
    target.dataset.wsDropBound=destination;
    target.addEventListener('dragover',ev=>{
-     if(!dragging&&!dragSub)return;
+     if(!dragging&&!dragSub&&!dragSection&&!dragFolder)return;
      ev.preventDefault();ev.stopPropagation();target.classList.add('pi-drop-ready');
    });
    target.addEventListener('dragleave',ev=>{if(!target.contains(ev.relatedTarget))target.classList.remove('pi-drop-ready');});
    target.addEventListener('drop',ev=>{
-     if(!dragging&&!dragSub)return;ev.preventDefault();ev.stopPropagation();target.classList.remove('pi-drop-ready');
+     if(!dragging&&!dragSub&&!dragSection&&!dragFolder)return;ev.preventDefault();ev.stopPropagation();target.classList.remove('pi-drop-ready');
      const dest=target.dataset.wsDropBound||destination;
+     if(dragFolder&&compass){const next=sideOf(dest);moveFolder(dragFolder,['goals','mindset','insight','grounding'].includes(next)?next:'insight');dragFolder=null;return;}
+     if(dragSection&&compass){const next=sideOf(dest);if(topSides.includes(next))convertSectionToFolder(dragSection,next);else moveSection(dragSection,next);dragSection=null;return;}
      if(dragSub){const {n,sub,legacy}=dragSub;moveSub(n,legacy,sub,dest,parent);return;}
      const {n,legacy}=dragging;move(n,legacy,dest,before);
    });
@@ -350,6 +424,7 @@ function initUnifiedWorkspace(mode){
    const menuItems=[...destinations().filter(d=>d.id!==n.sectionId).map(d=>['Move to '+d.label,()=>move(n,legacy,d.id)]),null,
      [line?'Convert to category note':'Convert to checklist line',()=>{n.noteType=line?'category':'line';commit(n,legacy);renderAll();}],
      ...(!line?[[(n.showDetails===false?'Show':'Hide')+' details field',()=>{n.showDetails=n.showDetails===false;commit(n,legacy);renderAll();}]]:[]),
+     ...(compass?[['Move earlier ↑',()=>reorderEntry(n,-1)],['Move later ↓',()=>reorderEntry(n,1)]]:[]),
      ['Archive',()=>archiveNote(n,legacy)],['Delete',()=>deleteNote(n,legacy)]];
    const menu=makeMenu(menuItems,'Note actions and movement');
    head.append(fold,menu);card.append(head);
@@ -382,12 +457,14 @@ function initUnifiedWorkspace(mode){
    drag.addEventListener('dragstart',e=>{dragSection=s;e.dataTransfer.setData('text/plain',s.id);e.dataTransfer.effectAllowed='move';});drag.addEventListener('dragend',()=>dragSection=null);
    const title=el('div','pi-section-name',s.name);title.contentEditable='true';title.spellcheck=true;
    title.onblur=()=>{s.name=title.innerText.trim()||'Section';persist();renderPicker();};title.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();title.blur();}};
-   const count=el('small','pi-muted',String(state.entries.filter(x=>x.sectionId===s.id).length));
+   const count=el('small','pi-muted pi-ws-header-count',String(state.entries.filter(x=>x.sectionId===s.id).length));
    const fold=btn(s.collapsed?'▸':'▾',s.collapsed?'Expand section':'Collapse section',()=>{s.collapsed=!s.collapsed;persist();renderAll();},'pi-mini-icon');
    const menu=makeMenu([['Add category note',()=>addBlank(s.id,'category')],['Add checklist note',()=>addBlank(s.id,'line')],
-     ...cols.filter(c=>c.id!==s.side).map(c=>['Move section to '+c.title,()=>moveSection(s,c.id)]),null,
+     ...cols.filter(c=>c.id!==s.side).map(c=>['Move section to '+c.title,()=>moveSection(s,c.id)]),
+     ...(compass?topSides.map(side=>['Move section to '+shelfName(side)+' folders',()=>convertSectionToFolder(s,side)]):[]),
+     ...state.sections.filter(x=>x.side===s.side&&x!==s).map(other=>['Move notes into '+other.name,()=>{state.entries.forEach(n=>{if(n.sectionId===s.id)n.sectionId=other.id;});state.sections=state.sections.filter(x=>x!==s);persist();renderAll();}]),null,
      ['Delete section',()=>{const entries=state.entries.filter(x=>x.sectionId===s.id);if(entries.length&&!confirm('Move the notes to the main column and remove this section?'))return;
-       entries.forEach(n=>n.sectionId=compass?MAIN:s.side==='timeline'?TIMELINE:MAIN);state.sections=state.sections.filter(x=>x.id!==s.id);persist();renderAll();}]],'Section options');
+       entries.forEach(n=>n.sectionId=compass?(s.side==='grounding'?GROUNDING:INSIGHT):s.side==='timeline'?TIMELINE:MAIN);state.sections=state.sections.filter(x=>x.id!==s.id);persist();renderAll();}]],'Section options');
    if(s.side==='timeline'){drag.draggable=false;drag.removeAttribute('title');drag.style.display='none';}
    head.append(drag,title,count,fold,menu);
    head.onclick=e=>{if(e.target.closest('button,input,[contenteditable],summary,details'))return;s.collapsed=!s.collapsed;persist();renderAll();};
@@ -408,7 +485,7 @@ function initUnifiedWorkspace(mode){
  }
  function renderColumn(c){
    const root=c.list;root.replaceChildren();root.classList.add('pi-ws-column');
-   const main=compass?(c.id==='goals'?GOALS:GROUNDING):(c.id==='timeline'?TIMELINE:MAIN);
+   const main=compass?(c.id==='insight'?INSIGHT:GROUNDING):(c.id==='timeline'?TIMELINE:MAIN);
    if(main){
      const rows=state.entries.filter(x=>x.sectionId===main);
      if(c.id==='timeline'){
@@ -417,12 +494,13 @@ function initUnifiedWorkspace(mode){
          .forEach(({n,legacy})=>root.append(makeNote(n,legacy)));
      }else rows.forEach(n=>root.append(makeNote(n)));
    }
+   if(compass)state.folders.filter(f=>f.shelf===c.id).forEach(f=>root.append(folderTile(f)));
    state.sections.filter(s=>s.side===c.id).forEach(s=>root.append(makeSection(s)));
-   if(!root.children.length)root.append(el('p','pi-muted','Add a note or move one into this column.'));
+   if(!root.children.length)root.append(el('p','pi-muted','Add a section or move a folder or note here.'));
    if(c.count)c.count.textContent=String(state.entries.filter(n=>sideOf(n.sectionId)===c.id).length+(c.id==='timeline'?legacyItems().length:0));
    attachDrop(root,main);
  }
- // Folders are stored ONLY inside Compass's existing synced state; Alignment stays independent.
+ // Alignment reuses Compass's cloud-synced folders for both top shelves and lower columns.
  const folderDialog=compass?$('piCompassFolderDialog'):null;
  let activeFolder=null,dragFolder=null;
  const folderNotes=f=>state.entries.filter(n=>n.sectionId===folderDest(f.id));
@@ -436,81 +514,102 @@ function initUnifiedWorkspace(mode){
    if(document.activeElement!==desc)desc.value=f.description||'';
    const notes=folderNotes(f),list=$('piCompassFolderNotes');
    $('piCompassFolderCount').textContent=notes.length+' note'+(notes.length===1?'':'s');
-   list.replaceChildren();
-   notes.forEach(n=>list.append(makeNote(n)));
+   list.replaceChildren();notes.forEach(n=>list.append(makeNote(n)));
    if(!notes.length)list.append(el('p','pi-muted','This folder is ready for its first note.'));
    attachDrop(list,folderDest(f.id));
  }
- function createFolder(){
-   const title=prompt('Name this Currently folder','New folder');if(!title?.trim())return;
-   const f={id:uid('compass-folder'),name:title.trim().slice(0,90),description:''};
+ function createFolder(shelf='goals'){
+   const title=prompt('Name this '+shelfName(shelf)+' folder','New folder');if(!title?.trim())return;
+   const f={id:uid('alignment-folder'),name:title.trim().slice(0,90),description:'',shelf};
    state.folders.push(f);persist();renderAll();openFolder(f);
  }
  function removeFolder(f){
-   if(!confirm('Remove folder "'+f.name+'"? Its notes will stay in Currently.'))return;
-   state.entries.forEach(n=>{if(n.sectionId===folderDest(f.id))n.sectionId=MAIN;});
+   if(!confirm('Remove folder "'+f.name+'"? Its notes will be kept.'))return;
+   const contents=folderNotes(f);
+   if(contents.length){
+     const top=topSides.includes(f.shelf);
+     let dest=top?'':f.shelf==='grounding'?GROUNDING:INSIGHT;
+     if(top){
+       let spare=state.folders.find(x=>x!==f&&x.shelf===f.shelf&&x.name==='Unsorted '+shelfName(f.shelf));
+       if(!spare){spare={id:uid('alignment-rehome'),name:'Unsorted '+shelfName(f.shelf),description:'Notes retained from a removed folder',shelf:f.shelf};state.folders.push(spare);}
+       dest=folderDest(spare.id);
+     }
+     contents.forEach(n=>n.sectionId=dest);
+   }
    state.folders=state.folders.filter(x=>x.id!==f.id);
    if(activeFolder===f.id)closeFolder();persist();renderAll();
  }
  function folderTile(f){
-   const tile=el('article','pi-current-folder');tile.dataset.wsFolder=f.id;
+   const tile=el('article','pi-current-folder pi-alignment-folder');tile.dataset.wsFolder=f.id;
    const head=el('div','pi-current-folder-head');
-   const grip=btn('⠿','Drag folder to reorder',()=>{},'pi-mini-icon pi-move-handle');
-   grip.draggable=true;grip.addEventListener('dragstart',e=>{dragFolder=f;e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',f.id);});
+   const grip=btn('⠿','Drag folder to reorder or move',()=>{},'pi-mini-icon pi-move-handle');
+   grip.draggable=true;grip.addEventListener('dragstart',e=>{dragFolder=f;dragging=null;dragSection=null;e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',f.id);});
    grip.addEventListener('dragend',()=>{dragFolder=null;});
    const menu=makeMenu([
-     ['Open folder',()=>openFolder(f)],
-     ['Add note',()=>{addBlank(folderDest(f.id),'category');openFolder(f);}],
+     ['Open folder',()=>openFolder(f)],['Add note',()=>{addBlank(folderDest(f.id),'category');openFolder(f);}],
+     ['Move earlier ↑',()=>reorderFolder(f,-1)],['Move later ↓',()=>reorderFolder(f,1)],
+     ...['goals','mindset','insight','grounding'].filter(side=>side!==f.shelf).map(side=>['Move to '+shelfName(side),()=>moveFolder(f,side)]),
      ['Rename folder',()=>{const name=prompt('Folder name',f.name);if(name?.trim()){f.name=name.trim().slice(0,90);persist();renderAll();}}],
-     ['Edit description',()=>openFolder(f)],
-     null,['Delete folder (keep notes)',()=>removeFolder(f)]
-   ],'Folder options');
+     ['Edit description',()=>openFolder(f)],null,['Delete folder (keep notes)',()=>removeFolder(f)]
+   ],'Folder options and movement');
    head.append(grip,menu);
    const title=btn('','Open folder '+f.name,()=>openFolder(f),'pi-current-folder-open');
    title.append(el('span','pi-current-folder-symbol','✧'),el('strong','pi-current-folder-title',f.name));
    const desc=el('p','pi-current-folder-description',f.description||'. . .');
    const count=el('small','pi-current-folder-count',folderNotes(f).length+' note'+(folderNotes(f).length===1?'':'s'));
    tile.append(head,title,desc,count);
-   tile.addEventListener('dragover',e=>{if(dragging||dragSub||dragFolder){e.preventDefault();e.stopPropagation();tile.classList.add('pi-drop-ready');}});
+   tile.addEventListener('dragover',e=>{if(dragging||dragSub||dragFolder||dragSection){e.preventDefault();e.stopPropagation();tile.classList.add('pi-drop-ready');}});
    tile.addEventListener('dragleave',e=>{if(!tile.contains(e.relatedTarget))tile.classList.remove('pi-drop-ready');});
    tile.addEventListener('drop',e=>{tile.classList.remove('pi-drop-ready');
-     if(dragFolder){e.preventDefault();e.stopPropagation();if(dragFolder.id!==f.id){const old=state.folders.indexOf(dragFolder),to=state.folders.indexOf(f);if(old>=0&&to>=0){state.folders.splice(old,1);state.folders.splice(to,0,dragFolder);persist();renderAll();}}dragFolder=null;return;}
+     if(dragFolder){e.preventDefault();e.stopPropagation();if(dragFolder.id!==f.id)moveFolder(dragFolder,f.shelf,f.id);dragFolder=null;return;}
+     if(dragSection){e.preventDefault();e.stopPropagation();if(topSides.includes(f.shelf))convertSectionToFolder(dragSection,f.shelf);else moveSection(dragSection,f.shelf);dragSection=null;return;}
      if(dragging||dragSub){e.preventDefault();e.stopPropagation();if(dragSub){const {n,sub,legacy}=dragSub;moveSub(n,legacy,sub,folderDest(f.id));}else{const {n,legacy}=dragging;move(n,legacy,folderDest(f.id));}}
    });
    tile.addEventListener('click',e=>{if(e.target.closest('button,summary,details,input'))return;const chosen=findSelected();if(chosen)move(chosen.n,chosen.legacy,folderDest(f.id));else openFolder(f);});
    return tile;
  }
  if(compass&&folderDialog){
-   $('piCompassAddFolder').addEventListener('click',createFolder);
+   $('piCompassAddGoalFolder').addEventListener('click',()=>createFolder('goals'));
+   $('piCompassAddMindsetFolder').addEventListener('click',()=>createFolder('mindset'));
    $('piCompassFolderClose').addEventListener('click',closeFolder);
    folderDialog.addEventListener('close',()=>{activeFolder=null;});
    $('piCompassFolderName').addEventListener('change',e=>{const f=state.folders.find(x=>x.id===activeFolder);if(!f)return;f.name=e.target.value.trim().slice(0,90)||'Folder';persist();renderAll();});
    $('piCompassFolderDescription').addEventListener('change',e=>{const f=state.folders.find(x=>x.id===activeFolder);if(!f)return;f.description=e.target.value.slice(0,500);persist();renderAll();});
    $('piCompassFolderAddNote').addEventListener('click',()=>{const f=state.folders.find(x=>x.id===activeFolder);if(f)addBlank(folderDest(f.id),'category');});
  }
- function renderCurrent(){
-   if(!current)return;
-   const scroll=current.scrollLeft;
-   current.replaceChildren();current.classList.add('pi-current-rail','pi-ws-current-rail');
-   const entries=state.entries.filter(n=>n.sectionId===MAIN);
-   $('piCompassCurrentCount').textContent=String(entries.length+state.entries.filter(n=>n.sectionId.startsWith(FOLDER_PREFIX)&&state.folders.some(f=>folderDest(f.id)===n.sectionId)).length);
-   state.folders.forEach(f=>current.append(folderTile(f)));
-   entries.forEach(n=>current.append(makeNote(n,false,true)));
-   if(!entries.length)current.append(el('div','pi-muted pi-current-empty','Move a category or checklist note here to keep it in view.'));
-   current.scrollLeft=scroll;
-   attachDrop(current,MAIN);
+ function renderShelves(){
+   if(!shelves)return;
+   topSides.forEach(side=>{
+     const holder=shelves[side],scroll=holder.scrollLeft;
+     holder.replaceChildren();holder.classList.add('pi-current-rail','pi-ws-current-rail');
+     const folders=state.folders.filter(f=>f.shelf===side);
+     folders.forEach(f=>holder.append(folderTile(f)));
+     if(!folders.length)holder.append(el('p','pi-muted pi-alignment-shelf-empty','Add a folder to get started.'));
+     holder.scrollLeft=scroll;
+     const count=$(side==='goals'?'piCompassGoalsShelfCount':'piCompassMindsetShelfCount');
+     if(count)count.textContent=String(folders.length);
+     if(!holder.dataset.alignmentDropBound){
+       holder.dataset.alignmentDropBound='true';
+       holder.addEventListener('dragover',e=>{if(dragFolder||dragSection){e.preventDefault();holder.classList.add('pi-drop-ready');}});
+       holder.addEventListener('dragleave',e=>{if(!holder.contains(e.relatedTarget))holder.classList.remove('pi-drop-ready');});
+       holder.addEventListener('drop',e=>{holder.classList.remove('pi-drop-ready');if(dragFolder){e.preventDefault();moveFolder(dragFolder,side);dragFolder=null;}else if(dragSection){e.preventDefault();convertSectionToFolder(dragSection,side);dragSection=null;}});
+     }
+   });
  }
  function renderPicker(){
    const value=sectionField.value;sectionField.replaceChildren();
-   const groups=compass?[{side:'current',title:'Currently...'},{side:'goals',title:'Goals'},{side:'grounding',title:'Grounding'}]:[{side:'timeline',title:'Timeline'},{side:'notes',title:'Saved Notes'}];
+   const groups=compass?[
+     {side:'goals',title:'Goals folders'},{side:'mindset',title:'Mindset folders'},
+     {side:'insight',title:'Insight & Reflections'},{side:'grounding',title:'Grounding'}]:
+     [{side:'timeline',title:'Timeline'},{side:'notes',title:'Saved Notes'}];
    const items=destinations();groups.forEach(group=>{
      const optgroup=document.createElement('optgroup');optgroup.label=group.title;
      items.filter(item=>item.side===group.side).forEach(d=>{const o=el('option','',d.label);o.value=d.id;optgroup.append(o);});
-     sectionField.append(optgroup);
+     if(optgroup.children.length)sectionField.append(optgroup);
    });
-   sectionField.value=items.some(d=>d.id===value)?value:(compass?MAIN:MAIN);
+   sectionField.value=items.some(d=>d.id===value)?value:(compass?(state.folders[0]?folderDest(state.folders[0].id):INSIGHT):MAIN);
  }
- function renderAll(){renderPicker();renderCurrent();cols.forEach(renderColumn);if(compass&&folderDialog?.open)renderFolder();}
+ function renderAll(){renderPicker();renderShelves();cols.forEach(renderColumn);if(compass&&folderDialog?.open)renderFolder();}
  // Opt-in type picker that keeps the existing title, rich editor and date inputs.
  const formRow=sectionField.closest('.pi-workspace-form-row');
  let typeField=$(compass?'piCompassNoteType':'piTimelineNoteType');
@@ -535,8 +634,11 @@ function initUnifiedWorkspace(mode){
  saveButton.onclick=()=>submit();
  editor.onkeydown=e=>{if(e.key==='Enter'&&(e.metaKey||e.ctrlKey)){e.preventDefault();submit();}};
  if(compass){
-   $('piCompassAddGoalSection').onclick=()=>addSection('goals');
+   $('piCompassAddInsightSection').onclick=()=>addSection('insight');
    $('piCompassAddGroundingSection').onclick=()=>addSection('grounding');
+   const expand=$('piWritingExpand'),panel=$('piAlignmentWritingPanel');
+   if(expand&&panel){expand.onclick=()=>{const open=panel.classList.toggle('is-writing-expanded');document.body.classList.toggle('pi-writing-is-expanded',open);expand.textContent=open?'⤡':'⤢';expand.title=open?'Collapse writing':'Expand writing';expand.setAttribute('aria-label',expand.title);expand.setAttribute('aria-expanded',String(open));if(open)editor.focus();};
+     document.addEventListener('keydown',e=>{if(e.key==='Escape'&&panel.classList.contains('is-writing-expanded'))expand.click();});}
  }else{
    $('piAddNoteSection').onclick=()=>addSection('notes');
    $('piAddTimelineSection').onclick=()=>addSection('timeline');

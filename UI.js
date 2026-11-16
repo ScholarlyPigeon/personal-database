@@ -305,8 +305,7 @@
   const dests = [
     {id:'home', label:'Home Notes', key:'pi-database-notes-v1'},
     {id:'aquarium', label:'Aquarium Notes', key:'pi-aquarium-state-v3'},
-    {id:'alignment', label:'Alignment Notes', key:'pi-alignment-v1'},
-    {id:'compass', label:'Compass Notes', key:'pi-compass-v1'},
+    {id:'alignment', label:'Alignment Notes', key:'pi-compass-v1'},
     {id:'timeline', label:'Timeline Notes', key:'pi-reflections-notes-v1'},
     {id:'longform', label:'Longform Saved Thoughts', key:'pi-longform-state-v1'},
     {id:'week', label:'This Week Notes', key:'pi-planner-week-notes-v1'},
@@ -341,8 +340,8 @@
   const sourceKind = () => {
     if (document.getElementById('piDatabaseFocusList')) return 'home';
     if (document.getElementById('aquariumApp')) return 'aquarium';
-    if (document.getElementById('piCompass')) return 'compass';
     if (document.getElementById('alignmentApp')) return 'alignment';
+    if (document.getElementById('piCompass')) return 'alignment';
     if (document.getElementById('piReflections')) return 'timeline';
     if (document.getElementById('longformApp')) return 'longform';
     if (document.getElementById('plannerNotes')) return document.body.dataset.planner==='next-month' ? 'next-month' : document.body.dataset.planner==='month' ? 'month' : 'week';
@@ -420,7 +419,9 @@
       subtasks:payload.subtasks};
     if(targetId==='alignment')return {...common,...transfer,title:payload.title,
       text:payload.body||'',html:payload.html||esc(payload.body),
-      place:'readings',pinned:false,expanded:!!payload.body};
+      noteType:'category',subtasks:payload.subtasks,
+      sectionId:'__insight__',
+      expanded:!!payload.body};
     if(targetId==='compass'||targetId==='timeline'){
       const first=state.sections?.[0]?.id;
       return {...common,...transfer,title:payload.title,text:payload.body||'',
@@ -453,7 +454,7 @@
       if (!state.sections.length) state.sections = defaultSections;
       entries=state.entries;
     } else if (targetId === 'alignment') {
-      state=root||{version:1,entries:[],folders:[],sections:[]};
+      state=root||{alignmentLayoutVersion:1,entries:[],folders:[],sections:[{id:'insight-readings',name:'Readings & Rituals',side:'insight',collapsed:false}]};
       if(!Array.isArray(state.entries)||!Array.isArray(state.folders)||!Array.isArray(state.sections))
         throw new Error('Unexpected Alignment notes format. Original note preserved.');
       entries=state.entries;

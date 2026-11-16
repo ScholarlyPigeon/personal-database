@@ -41,7 +41,7 @@
     if (key.includes('longform')) return 'longform';
     if (key.includes('alignment')) return 'alignment';
     if (key === 'pi-archive-workspace-v1' || key === 'pi-reflections-notes-v1') return 'almanac';
-    if (key === 'pi-compass-v1') return 'compass';
+    if (key === 'pi-compass-v1') return 'alignment';
     if (key === 'pi-archive-v1') return 'archive';
     if (key.includes('neopets')) return 'neopets';
     return 'almanac';
@@ -58,7 +58,7 @@
     if (key.includes('alignment')) return 'Alignment';
     if (key.includes('archive-workspace')) return 'Timeline & Notes';
     if (key.includes('reflections')) return 'Timeline & Notes';
-    if (key.includes('compass')) return 'Compass';
+    if (key.includes('compass')) return 'Alignment';
     if (key.includes('archive')) return 'Archive';
     if (key.includes('neopets')) return 'Neopets';
     return 'Reference';

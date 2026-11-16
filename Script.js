@@ -8062,7 +8062,7 @@ if (document.getElementById("neopetsApp")) {
         home: { role: "FOCUS", note: "Go directly to your most useful page.", href: "Database.html", label: "Home", icon: "⌂" },
         database: { role: "FOCUS", note: "See what needs attention and where things currently stand.", href: "Database.html", label: "Home", icon: "⌂" },
         aquarium: { role: "CAPTURE", note: "Catch something before deciding what it needs to become.", href: "Aquarium.html", label: "Aquarium", icon: "🪼" },
-        alignment: { role: "ALIGN", note: "Readings, rituals, affirmations, and scripts in one reflective place.", href: "Alignment.html", label: "Alignment", icon: "✨" },
+        alignment: { role: "ALIGN", note: "Goals, mindset, grounding, and reflection together in one workspace.", href: "Alignment.html", label: "Alignment", icon: "✨" },
         longform: { role: "THINK", note: "Give a thought enough room to become coherent.", href: "Longform.html", label: "Longform", icon: "✎" },
         archive: { role: "REVIEW", note: "Day archive, stored items, and a history of changes.", href: "Patterns.html", label: "Archive", icon: "🧭" },
         almanac: { role: "REFLECT", note: "Timeline, thoughtful writing, and organized notes.", href: "Almanac.html", label: "Timeline & Notes", icon: "◷" },
@@ -8909,7 +8909,7 @@ if (document.getElementById("neopetsApp")) {
         const aquarium = readAquarium();
         aquarium.cards.forEach(card => addDoc(docs, "aquarium", card.zone === "inbox" ? "Inbox" : (card.zone || "Aquarium"), objectHumanText(card)));
 
-        const alignment = jsonRead("pi-alignment-v1", {entries:[],folders:[],sections:[]});
+        const alignment = jsonRead("pi-compass-v1", {entries:[],folders:[],sections:[]});
         (Array.isArray(alignment.entries)?alignment.entries:[]).forEach(entry => addDoc(docs,"alignment","Alignment",[entry.title,entry.text].filter(Boolean).join(" · ")));
         (Array.isArray(alignment.folders)?alignment.folders:[]).forEach(folder => addDoc(docs,"alignment","Folder",[folder.name,folder.description].filter(Boolean).join(" · ")));
         const longform = jsonRead(PI_KEYS.longformKey, { entries: [] });
@@ -8943,7 +8943,7 @@ if (document.getElementById("neopetsApp")) {
         // Search the remaining live stores using a deliberate allowlist: never index
         // authentication, cloud-sync metadata, conflict records or old recovery snapshots.
         [
-            ["pi-compass-v1", "almanac", "Compass"],
+            ["pi-compass-v1", "alignment", "Alignment"],
             ["pi-reflections-notes-v1", "almanac", "Notes"],
             ["pi-archive-workspace-v1", "almanac", "Workspace"],
             ["pi-planner-next-notes-v1", "next-month", "Next Month"],
@@ -9132,7 +9132,7 @@ if (document.getElementById("neopetsApp")) {
 
     function refreshHomeCounts() {
         const aquarium = readAquarium();
-        const alignment = jsonRead("pi-alignment-v1", {entries:[],folders:[],sections:[]});
+        const alignment = jsonRead("pi-compass-v1", {entries:[],folders:[],sections:[]});
         (Array.isArray(alignment.entries)?alignment.entries:[]).forEach(entry => addDoc(docs,"alignment","Alignment",[entry.title,entry.text].filter(Boolean).join(" · ")));
         (Array.isArray(alignment.folders)?alignment.folders:[]).forEach(folder => addDoc(docs,"alignment","Folder",[folder.name,folder.description].filter(Boolean).join(" · ")));
         const longform = jsonRead(PI_KEYS.longformKey, { entries: [] });

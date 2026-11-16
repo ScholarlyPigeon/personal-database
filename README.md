@@ -1,3 +1,23 @@
+## V27 · Compass + Alignment merged into Alignment (November 16, 2026)
+
+**Deployment:** Back up your intranet in-app first. Upload the files **inside** `CURRENT/` to your GitHub Pages repository root (preserve the `assets/` folder), close other open intranet tabs/devices while uploading, and hard-refresh. The original `Compass.html` now redirects to `Alignment.html`, so old bookmarks still lead to the merged page.
+
+**New Alignment dashboard**
+- Top row: **Goals** and **Mindset**, two side-by-side folder-only shelves. Each shows three complete folder tiles at typical desktop sizes before scrolling horizontally; narrow mobile screens show two per row width to keep titles legible.
+- Bottom row: **Insight & Reflections** (left), **Writing** (compact center with expand/collapse pop-out), and **Grounding** (right).
+- The composer can save a category note or checklist line into any existing folder, Insight & Reflections, Grounding, or a section inside either lower column.
+- Notes and checklist lines can be moved into folders and reordered by drag/drop or note menu. Folders can be reordered and moved between Goals, Mindset, Insight & Reflections and Grounding by dragging or using options. Lower-column sections can be moved between lower columns or converted into top-row folders without losing their notes. Folder dialogs retain rename, description, inline note editing, Archive/Delete and the personal color palette.
+- Shared panel/menu controls keep counts, pop-outs, collapses and three-dot options to the **right**. Movement grips remain on the left.
+
+**Data preservation**
+- New Alignment deliberately uses the existing synced `pi-compass-v1` store, avoiding a split between Compass notes and Alignment notes. The old `pi-alignment-v1` store is not deleted or overwritten.
+- The first opening of the new Alignment **copies the previous Compass data into a one-time backup** under `pi-alignment-merge-backup-v1`, then adapts the original record structure within `pi-compass-v1`: the previous Currently folders become Goals folders, the previous Goals sections become Goals folders, and loose notes are assigned to holding folders rather than dropped. The two specifically named affirmations visible in the planning screenshot are grouped under the new Mindset folder **Affirmations & Scripts**. Existing Grounding sections remain in Grounding, and a Readings & Rituals section is provided in Insight & Reflections. Existing item color choices remain attached to note and folder IDs; colors of converted sections are copied to their new folder IDs when possible.
+- Shared cloud synchronization still handles the `pi-*` keys, with no change to its sync algorithm. The general **Move to another page → Alignment** destination now targets this merged store; incoming cross-page notes land in Insight & Reflections, where you can file them wherever desired.
+
+**Checks:** `Workspace.js`, `Script.js`, `UI.js` and `Activity.js` pass JavaScript syntax checks; the new stylesheet parses; markup IDs/reference checks and a test of safe one-time migration and repeat loads passed. A browser rendering preview could not be completed because the test environment blocks local pages. Verify visual details, note movement, folder dialogs, and actual cloud sync on your deployed site before reorganizing a large amount of data.
+
+---
+
 ## V26.4 Aquarium Folders cleanup (November 12, 2026)
 
 - Rearranged Aquarium · Folders to **Dashboard | Folders | Brain Dump**, with equal-width outside columns and a wider center folder board.
