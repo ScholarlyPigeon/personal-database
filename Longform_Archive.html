@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+
+<html class="longform-page-html" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Longform Notes</title>
+<link rel="stylesheet" href="Core.css?v=20261101-v21-3"/>
+<script defer="" src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script defer src="CloudSync.js?v=20261101-v21-3"></script>
+<script defer src="Activity.js?v=20261101-v21-3"></script>
+<script defer src="Script.js?v=20261108-v26-1"></script>
+<style>
+        /* =========================================================
+           LONGFORM V7 — NOTE TITLES + MOBILE CONTAINMENT
+           Page-local overrides so the shared ecosystem files do not
+           need another late-night surgery.
+           ========================================================= */
+
+        .longform-title-input {
+            width: calc(100% - 28px);
+            min-width: 0;
+            height: 42px;
+            margin: 12px 14px 0;
+            padding: 8px 11px;
+            border: 1px solid color-mix(in srgb, var(--teal) 52%, var(--border));
+            border-radius: 9px;
+            outline: none;
+            background: color-mix(in srgb, var(--bg) 70%, var(--panel));
+            color: var(--text);
+            font-family: "Trebuchet MS", "Lucida Sans Unicode", "Segoe UI", sans-serif;
+            font-size: 17px;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .longform-title-input::placeholder {
+            color: var(--faint);
+            font-weight: 600;
+        }
+
+        .longform-title-input:focus {
+            border-color: var(--teal);
+            box-shadow: 0 0 0 2px color-mix(in srgb, var(--teal) 12%, transparent);
+        }
+
+        .longform-entry-title {
+            width: 100%;
+            min-width: 0;
+            max-width: 100%;
+            margin: 1px 0 5px;
+            padding: 2px 3px;
+            border-radius: 5px;
+            outline: none;
+            color: var(--text);
+            font-family: "Trebuchet MS", "Lucida Sans Unicode", "Segoe UI", sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            line-height: 1.25;
+            overflow-wrap: anywhere;
+            word-break: normal;
+        }
+
+        .longform-entry-title:hover {
+            background: color-mix(in srgb, var(--longform-accent) 6%, transparent);
+        }
+
+        .longform-entry-title:focus {
+            background: color-mix(in srgb, var(--longform-accent) 10%, transparent);
+            box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--longform-accent) 55%, transparent);
+        }
+
+        /* Real titles are now the sole collapsed-card preview. */
+        .longform-entry-summary {
+            display: none !important;
+        }
+
+        /* Prevent pasted text, long URLs, rich-text fragments and grid children
+           from widening a saved card beyond its actual rail. */
+        .longform-list,
+        .longform-entry,
+        .longform-entry-top,
+        .longform-entry-meta,
+        .longform-entry-summary,
+        .longform-entry-body,
+        .longform-entry-text {
+            min-width: 0;
+            max-width: 100%;
+        }
+
+        .longform-entry,
+        .longform-entry-summary,
+        .longform-entry-text,
+        .longform-link-chip {
+            overflow-wrap: anywhere;
+            word-break: break-word;
+        }
+
+        @media (max-width: 900px) {
+            .longform-title-input {
+                width: calc(100% - 22px);
+                margin: 10px 11px 0;
+            }
+        }
+
+        @media (max-width: 760px) {
+            html.longform-page-html,
+            html.longform-page-html body {
+                width: 100%;
+                max-width: 100%;
+                overflow-x: hidden !important;
+            }
+
+            .longform-page {
+                width: calc(100% - 12px) !important;
+                max-width: calc(100% - 12px);
+                min-width: 0;
+                overflow-x: hidden !important;
+            }
+
+            .longform-workspace,
+            .longform-library,
+            .longform-composer,
+            .longform-list,
+            .longform-entry {
+                width: 100%;
+                min-width: 0 !important;
+                max-width: 100% !important;
+            }
+
+            .longform-library,
+            .longform-composer,
+            .longform-list {
+                overflow-x: hidden !important;
+            }
+
+            .longform-entry {
+                overflow: hidden;
+            }
+
+            .longform-entry-top {
+                width: 100%;
+                min-width: 0;
+                max-width: 100%;
+            }
+
+            .longform-entry-meta {
+                min-width: 0;
+                max-width: calc(100% - 82px);
+            }
+
+            .longform-entry-actions {
+                flex: 0 0 auto;
+                max-width: 78px;
+            }
+
+            .longform-entry-title {
+                font-size: 14.5px;
+                margin-top: 2px;
+            }
+
+            /*
+               Desktop can keep the gloriously large image treatment.
+               Phones get a deliberately smaller, centered preview with
+               natural proportions and zero cropping.
+            */
+            .longform-entry-body.has-media {
+                display: block;
+                width: 100%;
+                min-width: 0;
+            }
+
+            .longform-entry-media {
+                width: min(70vw, 280px) !important;
+                max-width: 100% !important;
+                height: auto !important;
+                max-height: none !important;
+                aspect-ratio: auto !important;
+                margin: 0 auto 10px;
+            }
+
+            .longform-entry-media img {
+                width: auto !important;
+                max-width: 100% !important;
+                height: auto !important;
+                max-height: 250px !important;
+                object-fit: contain !important;
+                margin: 0 auto;
+            }
+
+            .longform-entry-text {
+                width: 100%;
+                overflow-wrap: anywhere;
+                word-break: break-word;
+            }
+        }
+
+        @media (max-width: 430px) {
+            .longform-entry-meta {
+                max-width: calc(100% - 76px);
+            }
+
+            .longform-card-category {
+                width: min(30vw, 90px) !important;
+                max-width: 90px !important;
+            }
+
+            .longform-card-date {
+                width: min(34vw, 108px) !important;
+                max-width: 108px !important;
+            }
+
+            .longform-card-tools > summary {
+                min-width: 42px !important;
+                padding-left: 5px !important;
+                padding-right: 5px !important;
+            }
+
+            .longform-collapse-toggle {
+                width: 28px !important;
+            }
+
+            .longform-entry-media {
+                width: min(68vw, 250px) !important;
+            }
+
+            .longform-entry-media img {
+                max-height: 220px !important;
+            }
+        }
+    </style>
+
+<script defer src="Planner.js?v=20261108-v26-1"></script>
+
+<script defer src="Workspace.js?v=20261102-v21-9"></script>
+
+<script defer src="UI.js?v=20261102-v21-7"></script>
+
+
+
+
+<link rel="stylesheet" href="Navigation.css?v=20261101-v21-3"/>
+<link rel="stylesheet" href="Panels.css?v=20261101-v21-3"/>
+
+
+<script defer src="Features.js?v=20261101-v21-3"></script>
+<link rel="stylesheet" href="Interface.css?v=20261101-v21-3"/>
+
+
+
+<link rel="stylesheet" href="Polish.css?v=20261101-v21-3"/>
+
+
+
+
+<link rel="stylesheet" href="Aurora.css?v=20261101-aurora-1"/>
+<link rel="stylesheet" href="ColorAccents.css?v=20261101-v21-5"/>
+<script defer src="ColorAccents.js?v=20261107-v24-1"></script>
+<link rel="stylesheet" href="Refinements.css?v=20261101-v21-6"/>
+<script defer src="Refinements.js?v=20261101-v21-6"></script>
+<link rel="stylesheet" href="MenuPolish.css?v=20261102-v21-7"/>
+<link rel="stylesheet" href="CandyJurassic.css?v=20261102-candy-jurassic-1"/>
+<link rel="stylesheet" href="MobileV21_9.css?v=20261102-v21-9"/>
+<script defer src="MenuPolish.js?v=20261107-v24-1"></script>
+<link rel="stylesheet" href="Windows.css?v=20261106-windows-1"/>
+<link rel="stylesheet" href="ColorCoverage.css?v=20261106-color-everywhere-1"/>
+<link rel="stylesheet" href="V23Polish.css?v=20261106-v23-1"/>
+<link rel="stylesheet" href="V24Polish.css?v=20261107-v24-1"/>
+<link rel="stylesheet" href="V25Controls.css?v=20261108-v25-1"/>
+<link rel="stylesheet" href="V26Sunday.css?v=20261108-v26-1"/>
+<script defer src="V23Menus.js?v=20261107-v24-1"></script>
+<script defer src="V25Controls.js?v=20261108-v25-1"></script>
+</head>
+<body data-default-theme="green">
+<div class="longform-page" id="longformApp">
+<header class="longform-header">
+<div class="brand longform-brand">
+<div aria-hidden="true" class="pi-mark">✎</div>
+<div>
+<h1>Longform</h1>
+</div>
+</div>
+<div class="longform-header-actions">
+<span aria-live="polite" class="sync-status" id="saveStatus">cloud ready</span><details class="ecosystem-menu">
+<summary>pages</summary>
+<nav aria-label="Open another page" class="ecosystem-menu-popover">
+<a href="Database.html">🏠 Home</a>
+<a href="Aquarium.html">🪼 Aquarium</a><a href="AquariumFolders.html">🗂 Aquarium · Folders</a>
+<a aria-current="page" class="current" href="Longform.html">✎ Longform</a>
+
+<a href="Alignment.html">✨ Alignment</a>
+<a href="Week.html">🗓️ This Week</a>
+<a href="Month.html">📅 This Month</a><a href="NextMonth.html">📆 Next Month</a>
+<a href="Almanac.html">◷ Timeline</a>
+<a href="Patterns.html">🗂 Archive</a>
+<a href="neopets.html">✦ Neopets</a>
+</nav>
+</details><select aria-label="Theme" class="theme-select" id="themeSelect"></select><details class="ecosystem-menu pi-tools-menu"><summary>tools</summary><div class="pi-tools-popover"><button class="small-button cloud-login-button" id="cloudLoginButton" type="button">cloud login</button></div></details></div>
+</header>
+<main class="longform-workspace">
+<aside class="panel longform-library" data-collapsible-panel="longform-library">
+<div class="longform-library-head">
+<div>
+<div class="longform-section-title editable-ui longform-ui-edit" contenteditable="true" data-longform-ui="library-title">Saved thoughts</div>
+<div class="longform-section-note editable-ui longform-ui-edit" contenteditable="true" data-longform-ui="library-note">pin what matters now; titles stay visible while thoughts fold underneath</div>
+</div>
+<div class="longform-library-controls">
+<button class="small-button longform-add-section" id="addLongformSection" type="button">+ section</button>
+<!-- Previous category filter retained invisibly for older saved data compatibility. -->
+<select id="longformFilters" hidden aria-hidden="true" tabindex="-1"><option value="all">All categories</option></select>
+</div>
+</div>
+<div class="longform-list" data-collapse-body="" id="longformList"></div>
+</aside>
+<section class="panel longform-composer" data-collapsible-panel="longform-composer">
+<div class="longform-composer-head">
+<div>
+<div class="longform-section-title editable-ui longform-ui-edit" contenteditable="true" data-longform-ui="composer-title">Write it out</div>
+<div class="longform-section-note editable-ui longform-ui-edit" contenteditable="true" data-longform-ui="composer-note">give it a title, then let the text box hold the whole thought</div>
+</div>
+<div class="longform-compose-meta">
+<label class="longform-inline-field longform-section-choice-field">
+<span class="pi-visually-hidden">Destination section</span>
+<select aria-label="Save note in section" id="longformSectionChoice"><option value="__unsorted__">Unsorted · Saved thoughts</option></select>
+</label>
+<!-- Hidden legacy category selection preserves existing entry schema and sync. -->
+<select id="longformCategory" hidden aria-hidden="true" tabindex="-1"><option selected value="database">Home</option></select>
+<label class="longform-inline-field longform-date-field">
+<span class="pi-visually-hidden">Date</span>
+<input aria-label="Date" id="longformDate" type="date"/>
+</label>
+</div>
+</div>
+<input aria-label="Longform note title" autocomplete="off" class="longform-title-input" data-collapse-body="" id="longformTitleInput" maxlength="180" placeholder="Title this note…" type="text"/>
+<div aria-multiline="true" class="longform-input" contenteditable="true" data-collapse-body="" data-placeholder="Stay here as long as the thought needs. Enter always makes a new line." id="longformInput" role="textbox"></div>
+<details class="longform-attachment" data-collapse-body="">
+<summary>optional image / clickable link</summary>
+<div class="longform-attachment-fields">
+<label>
+<span>image URL</span>
+<input id="longformImageUrl" placeholder="https://.../image.jpg" type="url"/>
+</label>
+<label>
+<span>click-through URL</span>
+<input id="longformLinkUrl" placeholder="https://..." type="url"/>
+</label>
+</div>
+</details>
+<div class="longform-submit-row" data-collapse-body="">
+<div class="longform-submit-note">Enter creates a new line · click Save thought when ready</div>
+<button class="longform-save-button" id="saveLongformEntry" type="button">Save thought</button>
+</div>
+</section>
+</main>
+</div>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    /*
+       Longform V7 title layer
+       -----------------------
+       The existing shared Script.js intentionally normalizes each Longform
+       entry to its established schema. Titles therefore live in a companion
+       pi-* key, keyed by entry id. That keeps existing notes fully
+       compatible while allowing titles to sync through Safe Sync V2.
+    */
+    const LONGFORM_STATE_KEY = "pi-longform-state-v1";
+    const LONGFORM_TITLES_KEY = "pi-longform-titles-v1";
+
+    const list = document.getElementById("longformList");
+    const titleInput = document.getElementById("longformTitleInput");
+    const bodyInput = document.getElementById("longformInput");
+    const saveButton = document.getElementById("saveLongformEntry");
+
+    if (!list || !titleInput || !bodyInput || !saveButton) return;
+
+    function readLongformState() {
+        try {
+            const parsed = JSON.parse(localStorage.getItem(LONGFORM_STATE_KEY) || "null");
+            return parsed && Array.isArray(parsed.entries)
+                ? parsed
+                : { entries: [] };
+        } catch {
+            return { entries: [] };
+        }
+    }
+
+    function readTitles() {
+        try {
+            const parsed = JSON.parse(localStorage.getItem(LONGFORM_TITLES_KEY) || "{}");
+            return parsed && typeof parsed === "object" && !Array.isArray(parsed)
+                ? parsed
+                : {};
+        } catch {
+            return {};
+        }
+    }
+
+    function writeTitles(titles, announce = true) {
+        localStorage.setItem(LONGFORM_TITLES_KEY, JSON.stringify(titles));
+
+        if (announce && typeof window.showSaved === "function") {
+            window.showSaved();
+        }
+    }
+
+    function cleanOneLine(value) {
+        return String(value || "")
+            .replace(/\s+/g, " ")
+            .trim()
+            .slice(0, 180);
+    }
+
+    function pruneOrphanTitles() {
+        const state = readLongformState();
+        const liveIds = new Set(
+            state.entries
+                .filter(entry => entry && typeof entry.id === "string")
+                .map(entry => entry.id)
+        );
+
+        const titles = readTitles();
+        let changed = false;
+
+        Object.keys(titles).forEach(id => {
+            if (!liveIds.has(id)) {
+                delete titles[id];
+                changed = true;
+            }
+        });
+
+        if (changed) {
+            writeTitles(titles, false);
+        }
+    }
+
+    function decorateCards() {
+        const titles = readTitles();
+
+        list.querySelectorAll(".longform-entry[data-entry-id]").forEach(card => {
+            const id = card.dataset.entryId;
+            if (!id) return;
+
+            let heading = card.querySelector(".longform-entry-top > .longform-entry-title, :scope > .longform-entry-title");
+
+            if (!heading) {
+                heading = document.createElement("div");
+                heading.className = "longform-entry-title";
+                heading.contentEditable = "true";
+                heading.spellcheck = true;
+                heading.setAttribute("role", "textbox");
+                heading.setAttribute("aria-label", "Note title");
+                heading.dataset.entryId = id;
+
+                const summary = card.querySelector(":scope > .longform-entry-summary");
+                if (summary) card.insertBefore(heading, summary);
+                else card.appendChild(heading);
+            }
+            // Shared compact note header: drag handle, title, date and controls
+            // sit on one quiet rail, consistent with Compass and Saved Notes.
+            const compactHeader = card.querySelector(":scope > .longform-entry-top");
+            if (compactHeader) {
+                const handle = compactHeader.querySelector(':scope > .longform-entry-move');
+                const anchor = handle?.nextSibling || compactHeader.firstChild;
+                if (heading.parentElement !== compactHeader || heading.previousElementSibling !== handle) {
+                    compactHeader.insertBefore(heading, anchor);
+                }
+            }
+
+            if (document.activeElement !== heading) {
+                const wanted = cleanOneLine(titles[id]) || "Untitled note";
+                if (heading.textContent !== wanted) {
+                    heading.textContent = wanted;
+                }
+            }
+        });
+
+        pruneOrphanTitles();
+    }
+
+    let decorateQueued = false;
+
+    function queueDecorate() {
+        if (decorateQueued) return;
+        decorateQueued = true;
+
+        requestAnimationFrame(() => {
+            decorateQueued = false;
+            decorateCards();
+        });
+    }
+
+    const observer = new MutationObserver(queueDecorate);
+    observer.observe(list, {
+        childList: true,
+        subtree: true
+    });
+
+    list.addEventListener("focusin", event => {
+        const heading = event.target.closest?.(".longform-entry-title");
+        if (!heading) return;
+
+        if (heading.textContent.trim() === "Untitled note") {
+            const selection = window.getSelection();
+            const range = document.createRange();
+            range.selectNodeContents(heading);
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
+    });
+
+    list.addEventListener("keydown", event => {
+        const heading = event.target.closest?.(".longform-entry-title");
+        if (!heading || event.key !== "Enter") return;
+
+        event.preventDefault();
+        heading.blur();
+    });
+
+    list.addEventListener("input", event => {
+        const heading = event.target.closest?.(".longform-entry-title");
+        if (!heading) return;
+
+        const id = heading.dataset.entryId;
+        if (!id) return;
+
+        const titles = readTitles();
+        const value = cleanOneLine(heading.innerText);
+
+        if (value && value !== "Untitled note") {
+            titles[id] = value;
+        } else {
+            delete titles[id];
+        }
+
+        writeTitles(titles);
+    });
+
+    list.addEventListener("focusout", event => {
+        const heading = event.target.closest?.(".longform-entry-title");
+        if (!heading) return;
+
+        const id = heading.dataset.entryId;
+        const titles = readTitles();
+        const value = cleanOneLine(heading.innerText);
+
+        if (value && value !== "Untitled note") {
+            titles[id] = value;
+            heading.textContent = value;
+        } else {
+            delete titles[id];
+            heading.textContent = "Untitled note";
+        }
+
+        writeTitles(titles);
+    });
+
+    /*
+       Script.js owns the actual note creation. We take a snapshot during
+       capture phase, then after its normal save handler runs we find the
+       newly-created id and attach the title to that id.
+    */
+    let pendingSave = null;
+
+    function armTitleForSave() {
+        const state = readLongformState();
+
+        pendingSave = {
+            title: cleanOneLine(titleInput.value),
+            beforeIds: new Set(
+                state.entries
+                    .filter(entry => entry && typeof entry.id === "string")
+                    .map(entry => entry.id)
+            )
+        };
+    }
+
+    function finishTitleSave() {
+        if (!pendingSave) return;
+
+        const state = readLongformState();
+        const created = state.entries.find(entry => (
+            entry &&
+            typeof entry.id === "string" &&
+            !pendingSave.beforeIds.has(entry.id)
+        ));
+
+        if (created) {
+            const titles = readTitles();
+
+            if (pendingSave.title) {
+                titles[created.id] = pendingSave.title;
+                writeTitles(titles);
+            }
+
+            titleInput.value = "";
+            queueDecorate();
+        }
+
+        pendingSave = null;
+    }
+
+    saveButton.addEventListener("click", () => { if (!bodyInput.dataset.longformEditingId) armTitleForSave(); }, true);
+    saveButton.addEventListener("click", () => {
+        setTimeout(finishTitleSave, 0);
+    });
+
+    titleInput.addEventListener("keydown", event => {
+        if (event.key !== "Enter") return;
+        event.preventDefault();
+        bodyInput.focus();
+    });
+
+    /* If a synced title map changes in another tab on the same origin,
+       repaint immediately. Cross-device Safe Sync will reload the page
+       after applying remote storage changes, so it lands here too. */
+    window.addEventListener("storage", event => {
+        if (
+            event.key === LONGFORM_TITLES_KEY ||
+            event.key === LONGFORM_STATE_KEY
+        ) {
+            queueDecorate();
+        }
+    });
+
+    decorateCards();
+});
+</script>
+</body>
+</html>

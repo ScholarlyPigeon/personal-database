@@ -307,7 +307,6 @@
     {id:'aquarium', label:'Aquarium Notes', key:'pi-aquarium-state-v3'},
     {id:'alignment', label:'Alignment Notes', key:'pi-compass-v1'},
     {id:'timeline', label:'Timeline Notes', key:'pi-reflections-notes-v1'},
-    {id:'longform', label:'Longform Saved Thoughts', key:'pi-longform-state-v1'},
     {id:'week', label:'This Week Notes', key:'pi-planner-week-notes-v1'},
     {id:'month', label:'This Month Notes', key:'pi-planner-month-'},
     {id:'next-month', label:'Next Month Notes', key:'pi-planner-month-'}

@@ -3657,6 +3657,47 @@ if (document.getElementById("aquariumApp")) {
     }
 
     let aquariumState = loadAquariumState();
+    // V28: Aquarium stays on its canonical synced key. Any residual Longform
+    // entries are imported once by stable ID (never removed from Longform).
+    // This is intentionally idempotent across refreshed tabs/devices.
+    if (document.documentElement.classList.contains("aquarium-merged-page")) {
+        try {
+            const legacy = JSON.parse(localStorage.getItem("pi-longform-state-v1") || "null");
+            const names = JSON.parse(localStorage.getItem("pi-longform-titles-v1") || "{}");
+            const sections = JSON.parse(localStorage.getItem("pi-longform-sections-v1") || "null");
+            if (Array.isArray(legacy?.entries) && legacy.entries.length) {
+                if (!localStorage.getItem("pi-aquarium-before-longform-import-v1"))
+                    localStorage.setItem("pi-aquarium-before-longform-import-v1", JSON.stringify(aquariumState));
+                const known = new Set(aquariumState.cards.map(card => card.id));
+                const sectionNames = new Map((sections?.sections || []).map(row => [row.id, row.name]));
+                let imported = 0;
+                for (const entry of legacy.entries) {
+                    if (!entry || typeof entry.id !== 'string') continue;
+                    const id = 'longform-import-' + entry.id;
+                    if (known.has(id)) continue;
+                    const sectionId = sections?.assignments?.[entry.id];
+                    let destination = 'inbox';
+                    if (sectionId && sectionId !== '__unsorted__' && sectionNames.has(sectionId)) {
+                        const name = 'Longform · ' + sectionNames.get(sectionId);
+                        let folder = aquariumState.categories.find(cat => cat.name === name);
+                        if (!folder) {
+                            folder = {id:'longform-folder-'+sectionId, name, description:'Imported from Longform',
+                                accent:'plum', section:aquariumState.sections[0]?.id || 'surface'};
+                            if (!aquariumState.categories.some(cat => cat.id === folder.id)) aquariumState.categories.push(folder);
+                        }
+                        destination = folder.id;
+                    }
+                    aquariumState.cards.push({id, title:String(names?.[entry.id] || entry.title || entry.text || 'Untitled note').split('\n')[0].slice(0,180),
+                        text:String(entry.text || ''), html:String(entry.html || ''), zone:destination, kind:'thought',
+                        noteType:'category', collapsed:true, done:Boolean(entry.done),
+                        createdAt:entry.date ? entry.date+'T12:00:00' : entry.createdAt || nowStamp(),
+                        imageUrl:entry.imageUrl || '', linkUrl:entry.linkUrl || ''});
+                    known.add(id);imported++;
+                }
+                if (imported) localStorage.setItem(AQUARIUM_STORAGE_KEY, JSON.stringify(aquariumState));
+            }
+        } catch(error) { console.warn('Longform content left unchanged after import check:',error); }
+    }
     let captureKind = aquariumState.kinds.find(kind => kind.id === "thought")?.id || aquariumState.kinds[0]?.id || "thought";
     let activeFilter = "all";
     let draggedCategoryId = null;
@@ -3808,6 +3849,7 @@ if (document.getElementById("aquariumApp")) {
         const element = document.createElement("article");
         element.className = "aq-card" + (card.done ? " completed" : "") + (card.collapsed ? " collapsed" : "");
         element.dataset.cardId = card.id;
+        element.dataset.noteType = card.noteType || "category";
         element.dataset.kind = card.kind;
         element.dataset.kindAccent = aquariumKindById(card.kind)?.accent || "teal";
 
@@ -3945,9 +3987,21 @@ if (document.getElementById("aquariumApp")) {
         const selector = makeSelectionControl(selectionKey("aq-card", card.id), `Select this ${aquariumKindName(card.kind)}`);
         const meta = document.createElement("div");
         meta.className = "aq-card-meta";
+        if (document.documentElement.classList.contains('aquarium-merged-page')) {
+            const noteBadge = document.createElement('span');noteBadge.className='aq-note-type-badge';
+            noteBadge.textContent=card.noteType==='single'?'Single note':'Category note';
+            noteBadge.title='Change this type by editing in the composer';
+            meta.append(noteBadge);
+        }
         meta.append(kindSelect, created);
         const actions = document.createElement("div");
         actions.className = "aq-card-actions";
+        if (document.documentElement.classList.contains("aquarium-merged-page")) {
+            const edit = document.createElement('button'); edit.type='button';edit.className='aq-edit-in-composer';
+            edit.textContent='✎';edit.title='Edit in composer';edit.setAttribute('aria-label','Edit in composer');
+            edit.addEventListener('click', event => {event.stopPropagation();editAquariumInComposer(card);});
+            actions.append(edit);
+        }
         actions.append(selector, archive, remove, focus, collapse);
         header.append(drag, title, actions);
 
@@ -3966,6 +4020,19 @@ if (document.getElementById("aquariumApp")) {
             saveAquariumState();
         });
         body.appendChild(text);
+        if (card.imageUrl) {
+            const media = document.createElement(card.linkUrl ? 'a' : 'div');
+            media.className = 'aq-merged-card-media';
+            if (card.linkUrl && /^https?:\/\//i.test(card.linkUrl)) {
+                media.href = card.linkUrl; media.target = '_blank'; media.rel = 'noopener noreferrer';
+            }
+            const img = document.createElement('img'); img.src = card.imageUrl; img.alt = 'Attached note image'; img.loading = 'lazy';
+            img.addEventListener('error', () => { img.remove(); media.textContent = 'Image unavailable'; });
+            media.append(img); body.append(media);
+        } else if (card.linkUrl && /^https?:\/\//i.test(card.linkUrl)) {
+            const link = document.createElement('a');link.className = 'aq-merged-card-link';
+            link.href = card.linkUrl;link.target='_blank';link.rel='noopener noreferrer';link.textContent = '↗ linked reference';body.append(link);
+        }
         main.append(meta, header, body);
 
         drag.addEventListener("click", event => {
@@ -4675,6 +4742,31 @@ if (document.getElementById("aquariumApp")) {
         return tile;
     }
 
+    let draggedAquariumSectionId = null;
+    function aqMoveSection(sectionId, delta, targetId = null) {
+        const from = aquariumState.sections.findIndex(item => item.id === sectionId);
+        const to = targetId ? aquariumState.sections.findIndex(item => item.id === targetId) : from + delta;
+        if (from < 0 || to < 0 || to >= aquariumState.sections.length || from === to) return;
+        const [section] = aquariumState.sections.splice(from, 1);
+        aquariumState.sections.splice(to, 0, section);
+        // Folders reference their parent section by ID, so its entire folder
+        // tree (and all notes nested in those folders) moves automatically.
+        saveAquariumState();renderAquarium();
+    }
+    function populateAquariumSaveDestinations() {
+        const select = document.getElementById('aqSaveDestination');
+        if (!select) return;
+        const previous = select.value;
+        select.replaceChildren(new Option('Unsorted notes', 'inbox'));
+        aquariumState.sections.forEach(section => {
+            const group = document.createElement('optgroup');group.label = section.name;
+            aquariumState.categories.filter(folder => folder.section === section.id).forEach(folder => {
+                group.append(new Option(folder.name, folder.id));
+            });
+            if (group.children.length) select.append(group);
+        });
+        select.value = [...select.options].some(item => item.value === previous) ? previous : 'inbox';
+    }
     function aqFolderSection(section) {
         const band = document.createElement("section");
         band.className = "aq-folder-section";
@@ -4684,7 +4776,21 @@ if (document.getElementById("aquariumApp")) {
         const label = document.createElement("strong");
         label.className = "aq-folder-section-name";
         label.textContent = section.name;
-
+        const grip = aqFolderButton('⠿','Drag to rearrange sections; or use Move up/down in ⋮',()=>{},'aq-folder-section-grip aq-folder-icon-button');
+        grip.draggable = true;
+        grip.addEventListener('dragstart',event=>{
+            draggedAquariumSectionId=section.id;
+            event.dataTransfer.effectAllowed='move';
+            event.dataTransfer.setData('application/x-aquarium-section', section.id);
+        });
+        grip.addEventListener('dragend',()=>{draggedAquariumSectionId=null;});
+        head.addEventListener('dragover',event=>{if(draggedAquariumSectionId && draggedAquariumSectionId!==section.id)event.preventDefault();});
+        head.addEventListener('drop',event=>{
+            const id=event.dataTransfer.getData('application/x-aquarium-section') || draggedAquariumSectionId;
+            if(!id || id===section.id) return;
+            event.preventDefault();event.stopPropagation();draggedAquariumSectionId=null;
+            aqMoveSection(id,0,section.id);
+        });
         const collapsed = collapsedAquariumSections.has(section.id);
         const toggleSection = () => {
             if (collapsedAquariumSections.has(section.id)) collapsedAquariumSections.delete(section.id);
@@ -4716,8 +4822,12 @@ if (document.getElementById("aquariumApp")) {
             } },
             { text: "Rename section", action: () => {
                 const name = prompt("Section name:", section.name)?.trim();
-                if (name) { section.name = name; saveAquariumState(); renderAquarium(); }
+                if (name) { section.name = name.slice(0,120); saveAquariumState(); renderAquarium(); }
             } },
+            { text: "↑ Move section up", disabled: aquariumState.sections[0]?.id === section.id,
+                action: () => aqMoveSection(section.id,-1) },
+            { text: "↓ Move section down", disabled: aquariumState.sections.at(-1)?.id === section.id,
+                action: () => aqMoveSection(section.id,1) },
             { text: "Delete section (keep folders)", disabled: aquariumState.sections.length < 2, action: () => {
                 if (!confirm('Remove section "' + section.name + '"? Its folders will move into the first remaining section.')) return;
                 aquariumState.sections = aquariumState.sections.filter(s => s.id !== section.id);
@@ -4728,14 +4838,14 @@ if (document.getElementById("aquariumApp")) {
         ]);
         menu.querySelector(".aq-folder-options-panel").append(
             aqFolderSurfacePalette("aquarium-folder-section:" + section.id, band));
-        head.append(label, fold, menu);
+        head.append(grip, label, fold, menu);
         const grid = document.createElement("div");
         grid.className = "aq-folder-tiles";
         grid.hidden = collapsed;
         const categories = aquariumState.categories.filter(cat => cat.section === section.id);
         categories.forEach(category => grid.appendChild(aqFolderTile(category)));
-        const add = aqFolderButton("+ folder", "Add folder to " + section.name, () => aqAddFolderInSection(section.id), "aq-folder-new-tile");
-        grid.appendChild(add);
+        // V28: folders are created from the library header or section menu.
+        // No oversized '+ folder' tile appears inside the section grid.
         grid.addEventListener("dragover", event => {
             if (!draggedCategoryId) return;
             event.preventDefault(); grid.classList.add("aq-folder-tiles-drop");
@@ -4757,6 +4867,9 @@ if (document.getElementById("aquariumApp")) {
         const board = document.getElementById("categoryGrid");
         if (!board) return;
         board.replaceChildren(...aquariumState.sections.map(aqFolderSection));
+        populateAquariumSaveDestinations();
+        const unsortedCount = document.getElementById('aqUnsortedCount');
+        if (unsortedCount) unsortedCount.textContent = String(aquariumState.cards.filter(item=>item.zone==='inbox').length);
         const heading = document.querySelector(".aq-folder-heading");
         const surface = document.querySelector(".aq-folder-board");
         if (heading && surface && !heading.querySelector(".aq-folder-options")) {
@@ -4851,10 +4964,21 @@ if (document.getElementById("aquariumApp")) {
             addAquariumCard(openAquariumFolderId, name, body, captureKind);
             clearForm();
         });
+        document.getElementById('aqFoldersAddFolder')?.addEventListener('click', () => {
+            let sectionId = aquariumState.sections[0]?.id;
+            if (aquariumState.sections.length > 1) {
+                const answer = prompt('Add folder to which section?\n'+aquariumState.sections.map((row,index) => `${index+1}. ${row.name}`).join('\n')+'\n\nEnter a section number:', '1');
+                if (answer === null) return;
+                const number=Number(answer);
+                if (!Number.isInteger(number) || !aquariumState.sections[number-1]) {alert('Choose a valid section number.');return;}
+                sectionId = aquariumState.sections[number-1].id;
+            }
+            if (sectionId) aqAddFolderInSection(sectionId);
+        });
         document.getElementById("aqFoldersAddSection")?.addEventListener("click", () => {
             const name = prompt("Section name:", "New section")?.trim();
             if (!name) return;
-            aquariumState.sections.push({ id: piUuid("section"), name });
+            aquariumState.sections.push({ id: piUuid("section"), name: name.slice(0,120) });
             saveAquariumState(); renderAquarium();
         });
     }
@@ -5063,7 +5187,7 @@ if (document.getElementById("aquariumApp")) {
         });
     }
 
-    function addAquariumCard(zone, titleValue, htmlValue, kind) {
+    function addAquariumCard(zone, titleValue, htmlValue, kind, meta = {}) {
         const html = String(htmlValue || "").trim();
         const plain = aquariumPlainTextFromHtml(html);
         const title = cleanAquariumTitle(titleValue) || cleanAquariumTitle(plain.split(/\n+/).find(Boolean)) || "Untitled note";
@@ -5077,7 +5201,9 @@ if (document.getElementById("aquariumApp")) {
             zone,
             kind: aquariumState.kinds.some(item => item.id === kind) ? kind : (aquariumState.kinds[0]?.id || "thought"),
             done: false,
-            createdAt: nowStamp()
+            noteType: meta.noteType === 'single' ? 'single' : 'category',
+            imageUrl: String(meta.imageUrl || ''), linkUrl: String(meta.linkUrl || ''),
+            createdAt: meta.date ? meta.date+'T12:00:00' : nowStamp()
         });
         saveAquariumState();
         renderAquarium();
@@ -5210,6 +5336,27 @@ if (document.getElementById("aquariumApp")) {
         repaint();
     }
 
+    let editingAquariumCardId = null;
+    function editAquariumInComposer(card) {
+        if (!document.documentElement.classList.contains('aquarium-merged-page')) return;
+        // A folder uses a modal dialog. Close it before editing so the
+        // composer and Save button are reachable instead of blocked.
+        const folderDialog = document.getElementById('aqFolderDialog');
+        if (folderDialog?.open) folderDialog.close();
+        editingAquariumCardId = card.id;
+        document.getElementById('aqCaptureTitle').value = card.title || '';
+        document.getElementById('captureInput').innerHTML = card.html || '';
+        document.getElementById('aqNoteType').value = card.noteType === 'single' ? 'single' : 'category';
+        populateAquariumSaveDestinations();
+        document.getElementById('aqSaveDestination').value = card.zone || 'inbox';
+        document.getElementById('aqComposeDate').value = String(card.createdAt || '').slice(0,10);
+        document.getElementById('aqComposeImage').value = card.imageUrl || '';
+        document.getElementById('aqComposeLink').value = card.linkUrl || '';
+        document.getElementById('captureBtn').textContent = 'Update thought';
+        document.getElementById('aqCancelEdit')?.removeAttribute('hidden');
+        document.getElementById('captureInput').focus();
+        document.querySelector('.aq-merged-composer')?.scrollIntoView({block:'nearest',behavior:'smooth'});
+    }
     initAquariumFolderDialog();
 
     const captureSelect = document.getElementById("aqCaptureKind");
@@ -5223,15 +5370,37 @@ if (document.getElementById("aquariumApp")) {
         captureInput?.focus();
     });
 
+    function resetAquariumComposer() {
+        editingAquariumCardId = null;
+        if (captureTitle) captureTitle.value = '';
+        if (captureInput) captureInput.innerHTML = '';
+        ['aqComposeImage','aqComposeLink'].forEach(id=>{const node=document.getElementById(id);if(node)node.value='';});
+        const button = document.getElementById('captureBtn');if(button)button.textContent='Save thought';
+        document.getElementById('aqCancelEdit')?.setAttribute('hidden','');
+    }
+    document.getElementById('aqCancelEdit')?.addEventListener('click',()=>{resetAquariumComposer();captureTitle?.focus();});
     function saveAquariumComposer() {
         if (!captureInput) return;
-        const title = captureTitle?.value || "";
+        const title = captureTitle?.value || '';
         const html = captureInput.innerHTML;
         const plain = aquariumPlainTextFromHtml(html);
-        if (!plain && !title.trim()) return;
-        addAquariumCard("inbox", title, html, captureKind);
-        if (captureTitle) captureTitle.value = "";
-        captureInput.innerHTML = "";
+        if (!plain && !title.trim()) { captureInput.focus(); return; }
+        const typeField = document.getElementById('aqNoteType');
+        const destination = document.getElementById('aqSaveDestination');
+        const zone = destination && (destination.value === 'inbox' || aquariumState.categories.some(folder=>folder.id===destination.value)) ? destination.value : 'inbox';
+        const meta = {noteType: typeField?.value || 'category',date:document.getElementById('aqComposeDate')?.value || '',
+            imageUrl:document.getElementById('aqComposeImage')?.value || '',linkUrl:document.getElementById('aqComposeLink')?.value || ''};
+        if (editingAquariumCardId) {
+            const card = aquariumState.cards.find(card=>card.id===editingAquariumCardId);
+            if (card) {
+                card.title = cleanAquariumTitle(title) || cleanAquariumTitle(plain.split(/\n+/).find(Boolean)) || 'Untitled note';
+                card.text = plain;card.html=html;card.zone=zone;card.noteType=meta.noteType;
+                card.imageUrl=meta.imageUrl;card.linkUrl=meta.linkUrl;
+                if (meta.date) card.createdAt=meta.date+'T12:00:00';
+                saveAquariumState();renderAquarium();
+            }
+        } else addAquariumCard(zone,title,html,captureKind,meta);
+        resetAquariumComposer();
         captureTitle?.focus();
     }
 
@@ -8063,7 +8232,7 @@ if (document.getElementById("neopetsApp")) {
         database: { role: "FOCUS", note: "See what needs attention and where things currently stand.", href: "Database.html", label: "Home", icon: "⌂" },
         aquarium: { role: "CAPTURE", note: "Catch something before deciding what it needs to become.", href: "Aquarium.html", label: "Aquarium", icon: "🪼" },
         alignment: { role: "ALIGN", note: "Goals, mindset, grounding, and reflection together in one workspace.", href: "Alignment.html", label: "Alignment", icon: "✨" },
-        longform: { role: "THINK", note: "Give a thought enough room to become coherent.", href: "Longform.html", label: "Longform", icon: "✎" },
+        longform: { role: "THINK", note: "Give a thought enough room to become coherent.", href: "Aquarium.html", label: "Aquarium", icon: "✎" },
         archive: { role: "REVIEW", note: "Day archive, stored items, and a history of changes.", href: "Patterns.html", label: "Archive", icon: "🧭" },
         almanac: { role: "REFLECT", note: "Timeline, thoughtful writing, and organized notes.", href: "Almanac.html", label: "Timeline & Notes", icon: "◷" },
         neopets: { role: "PLAY", note: "Run the routine, then wander wherever Neopia calls.", href: "neopets.html", label: "Neopets", icon: "✦" }
@@ -8609,8 +8778,10 @@ if (document.getElementById("neopetsApp")) {
             success = pushChecklist(PI_KEYS.databaseNotesKey, item.text);
             targetPage = "database"; action = "sent Inbox item to Home Notes";
         } else if (destination === "longform") {
-            success = addPayloadToLongform(item);
-            targetPage = "longform"; action = "sent Inbox item to Longform";
+            // Compatibility for saved older UI: never route content to an
+            // invisible/retired Longform database.
+            success = addPayloadToAquarium(item);
+            targetPage = "aquarium"; action = "sent Inbox item to Aquarium";
         } else if (destination === "archive") {
             success = addPayloadToArchive(item);
             targetPage = "almanac"; action = "sent Inbox item to Timeline Notes";
@@ -8642,7 +8813,7 @@ if (document.getElementById("neopetsApp")) {
         label.textContent = "safe in Inbox · send now:";
         container.appendChild(label);
         [
-            ["database", "Home"], ["aquarium", "Aquarium"], ["longform", "Longform"],
+            ["database", "Home"], ["aquarium", "Aquarium"],
             ["archive", "Timeline Notes"], ["focus", "Focus"], ["radar", "Radar"], ["today", "Today"]
         ].forEach(([id, text]) => {
             const button = document.createElement("button");
@@ -8700,7 +8871,8 @@ if (document.getElementById("neopetsApp")) {
         [
             ["aquarium","Aquarium Inbox"],
             ["database","Home Notes"],
-            ["longform","Longform"],
+            // Longform has merged into Aquarium.
+
             ["archive","Timeline Notes"],
             ["focus","On My Radar"],
             ["radar","Radar"],

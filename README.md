@@ -1,3 +1,23 @@
+# V28 · Aquarium + Longform Merge 🪼
+
+## Deploy
+Upload everything inside `CURRENT/` to the same GitHub Pages root as before. Before deploying, **export a fresh JSON backup** from your intranet and keep a copy outside GitHub.
+
+## New page
+- **Aquarium.html** is now the single **🪼 Aquarium** destination.
+- Desktop layout follows former Longform: Saved Thoughts / Aquarium folder sections on the left; large rich-text writer on the right.
+- Add a folder or section from the Saved Thoughts header, not a large tile in the folder grid.
+- Section menus include Rename, Move Up and Move Down; a section drag grip lets you rearrange sections, keeping every folder and its contained notes attached.
+- The composer supports **Category note** and **Single note**, an explicit destination folder, editable title, date, optional image/link, normal multiline rich text, Ctrl/Cmd+Enter to save, and Edit in Composer for saved notes. Drafts are preserved locally while writing.
+- Existing Aquarium folders/notes remain under **pi-aquarium-state-v3**. Remaining old Longform entries, if any, are imported by stable ID into Aquarium; the original Longform data stays untouched. A pre-import snapshot is saved under `pi-aquarium-before-longform-import-v1` when there are legacy entries.
+- Unsorted notes are available in a collapsible shelf below the folders. Old Aquarium, Aquarium Folders and Longform content are not deleted.
+- Old URLs **AquariumFolders.html** and **Longform.html** redirect to Aquarium.html. Standalone legacy page versions remain at `Aquarium_Archive.html` and `Longform_Archive.html` for recovery/reference, but are removed from normal navigation.
+
+## Validation
+The merged page was rendered and exercised in an isolated Chromium browser harness at desktop and mobile widths. Tests covered saving Single and Category notes, keeping rich HTML formatting, choosing a destination folder, opening/editing a saved note, creating folders and sections, renaming a section, and moving a section with its folders intact. Page assets, HTML IDs, JavaScript syntax and CSS parsing were checked. **Direct local-URL navigation was blocked in this environment and live Supabase cloud sync was not tested**; verify syncing and appearance on your deployed site before reorganizing a large amount of existing content.
+
+---
+
 ## V27 · Compass + Alignment merged into Alignment (November 16, 2026)
 
 **Deployment:** Back up your intranet in-app first. Upload the files **inside** `CURRENT/` to your GitHub Pages repository root (preserve the `assets/` folder), close other open intranet tabs/devices while uploading, and hard-refresh. The original `Compass.html` now redirects to `Alignment.html`, so old bookmarks still lead to the merged page.
