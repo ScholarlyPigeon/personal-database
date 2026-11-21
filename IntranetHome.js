@@ -1,4 +1,4 @@
-/* V29.2: The Intranet. Direct rich editing, section-specific cloud storage,
+/* V29.3: The Intranet. Direct rich editing, section-specific cloud storage,
    native shared colors/menus, and Archive integration. No Planner migrations. */
 (() => {
   'use strict';
@@ -37,7 +37,7 @@
   function sanitizeHTML(markup) {
     const template = document.createElement('template');
     template.innerHTML = String(markup || '');
-    const allowed = new Set(['B','STRONG','I','EM','U','S','STRIKE','DEL','P','DIV','BR','UL','OL','LI','BLOCKQUOTE','SPAN','A','H3']);
+    const allowed = new Set(['B','STRONG','I','EM','U','S','STRIKE','DEL','P','DIV','BR','UL','OL','LI','BLOCKQUOTE','SPAN','A','H3','DETAILS','SUMMARY']);
     const drop = new Set(['SCRIPT','STYLE','IFRAME','OBJECT','EMBED','SVG','MATH','IMG','VIDEO','AUDIO','FORM','BUTTON','SELECT','TEXTAREA','LINK','META']);
     function clean(parent) {
       for (const node of [...parent.childNodes]) {
@@ -61,11 +61,23 @@
         }
         const href = tag==='A' ? node.getAttribute('href') : null;
         const checklist = tag==='UL' && node.classList.contains('pi-intranet-checklist');
+        const dropdown = tag==='DETAILS' && node.classList.contains('pi-intranet-dropdown');
+        const title = tag==='SPAN' && node.classList.contains('pi-intranet-dropdown-title') && !!node.closest('details.pi-intranet-dropdown');
+        const body = tag==='DIV' && node.classList.contains('pi-intranet-dropdown-body') && !!node.closest('details.pi-intranet-dropdown');
+        const summary = tag==='SUMMARY' && !!node.closest('details.pi-intranet-dropdown');
+        const opened = dropdown && node.hasAttribute('open');
         [...node.attributes].forEach(attribute => node.removeAttribute(attribute.name));
         if (tag==='A' && href && /^(https?:\/\/|mailto:)/i.test(href.trim())) {
           node.setAttribute('href',href.trim());node.setAttribute('target','_blank');node.setAttribute('rel','noopener noreferrer');
         }
         if (checklist)node.className='pi-intranet-checklist';
+        if (dropdown) {
+          node.className='pi-intranet-dropdown';node.contentEditable='false';
+          if(opened)node.setAttribute('open','');
+        }
+        if(summary)node.className='pi-intranet-dropdown-summary';
+        if(title){node.className='pi-intranet-dropdown-title';node.contentEditable='true';}
+        if(body){node.className='pi-intranet-dropdown-body';node.contentEditable='true';}
         clean(node);
       }
     }
@@ -92,9 +104,67 @@
       }
     });
   }
+  /* Our small dropdowns are native <details> with separately editable title
+     and body. The outer element is not editable so the caret cannot dissolve
+     its structure. Only the allowed structure is persisted and synced. */
+  function normalizeDropdowns(editor) {
+    editor.querySelectorAll('details.pi-intranet-dropdown').forEach(details=>{
+      details.contentEditable='false';
+      let summary=details.querySelector(':scope > summary');
+      if(!summary){summary=document.createElement('summary');details.prepend(summary);}
+      summary.className='pi-intranet-dropdown-summary';
+      let title=summary.querySelector(':scope > .pi-intranet-dropdown-title');
+      if(!title){
+        title=document.createElement('span');
+        title.textContent=summary.textContent?.trim()||'Dropdown';
+        summary.replaceChildren(title);
+      }
+      title.className='pi-intranet-dropdown-title';title.contentEditable='true';
+      title.spellcheck=true;title.setAttribute('role','textbox');
+      title.setAttribute('aria-label','Dropdown title; edit here');
+      let body=details.querySelector(':scope > .pi-intranet-dropdown-body');
+      if(!body){body=document.createElement('div');summary.after(body);}
+      body.className='pi-intranet-dropdown-body';body.contentEditable='true';
+      body.spellcheck=true;body.setAttribute('role','textbox');
+      body.setAttribute('aria-multiline','true');
+      body.setAttribute('aria-label','Dropdown contents; edit here');
+    });
+  }
+  function insertDropdown(editor){
+    useSelection(editor);
+    const dropdown=document.createElement('details');
+    dropdown.className='pi-intranet-dropdown';dropdown.contentEditable='false';
+    dropdown.open=true;
+    const summary=document.createElement('summary');
+    summary.className='pi-intranet-dropdown-summary';
+    const title=document.createElement('span');
+    title.className='pi-intranet-dropdown-title';title.textContent='Dropdown';
+    summary.append(title);
+    const body=document.createElement('div');body.className='pi-intranet-dropdown-body';
+    dropdown.append(summary,body);
+    // Insert after the active top-level writing block. This avoids placing a
+    // <details> inside a paragraph, list item or another dropdown.
+    const range=window.getSelection()?.rangeCount ? window.getSelection().getRangeAt(0) : null;
+    let anchor=range?.startContainer || editor;
+    if(anchor.nodeType===3)anchor=anchor.parentNode;
+    let top=anchor;
+    while(top && top!==editor && top.parentNode!==editor)top=top.parentNode;
+    const following=document.createElement('p');following.append(document.createElement('br'));
+    if(top && top!==editor && top.parentNode===editor)top.after(dropdown,following);
+    else editor.append(dropdown,following);
+    normalizeDropdowns(editor);
+    title.focus();
+    const selection=window.getSelection();const titleRange=document.createRange();
+    titleRange.selectNodeContents(title);
+    selection.removeAllRanges();selection.addRange(titleRange);
+    editor.dispatchEvent(new Event('input',{bubbles:true}));
+    tell('Dropdown added · rename its title, then write inside');
+  }
+
   function storageKey(section) {return PREFIX + section;}
   function persistedHTML(editor) {
     normalizeChecklists(editor);
+    normalizeDropdowns(editor);
     return sanitizeHTML(editor.innerHTML);
   }
   function saveEditor(section) {
@@ -172,7 +242,7 @@
     ['underline','U','Underline (Ctrl/Cmd+U)'],['strikeThrough','S','Strikethrough'],
     ['sep','',''],
     ['insertUnorderedList','• List','Bulleted list'],['insertOrderedList','1. List','Numbered list'],
-    ['checklist','☑ Task','Insert a clickable checklist'],['createLink','🔗','Add a link']
+    ['checklist','☑ Task','Insert a clickable checklist'],['dropdown','▸ Dropdown','Insert collapsible dropdown'],['createLink','🔗','Add a link']
   ];
   const selectionByEditor = new WeakMap();
   function captureSelection(editor) {
@@ -193,6 +263,7 @@
   }
   function applyFormat(editor,command) {
     useSelection(editor);
+    if(command==='dropdown'){insertDropdown(editor);return;}
     if(command==='checklist')insertTask(editor);
     else if(command==='createLink'){
       const url=prompt('Link URL (https://… or mailto:…):');
@@ -285,6 +356,7 @@
     if(initial!==null)editor.innerHTML=sanitizeHTML(initial);
     baselines.set(section,initial===null?'':sanitizeHTML(initial));
     normalizeChecklists(editor);
+    normalizeDropdowns(editor);
     buildToolbar(card,editor,section);
     const collapseKey=storageKey(section)+'-collapsed';
     const collapseButton=card.querySelector('.pi-intranet-collapse');
@@ -323,8 +395,17 @@
     });
     editor.addEventListener('input',()=>{captureSelection(editor);scheduleSave(section);});
     editor.addEventListener('keyup',()=>captureSelection(editor));
+    editor.addEventListener('toggle',event=>{
+      if(event.target.matches('details.pi-intranet-dropdown'))scheduleSave(section);
+    },true);
     editor.addEventListener('mouseup',()=>captureSelection(editor));
-    editor.addEventListener('keydown',event=>handleChecklistEnter(event,editor));
+    editor.addEventListener('keydown',event=>{
+      if(event.target.closest('.pi-intranet-dropdown-title') && event.key==='Enter'){
+        event.preventDefault();event.target.closest('details')?.querySelector('.pi-intranet-dropdown-body')?.focus();
+        return;
+      }
+      handleChecklistEnter(event,editor);
+    });
     editor.addEventListener('paste',event=>{
       event.preventDefault();
       const transfer=event.clipboardData;
@@ -332,6 +413,7 @@
       const text=transfer?.getData('text/plain')||'';
       const safe=html?sanitizeHTML(html):escapeText(text).replace(/\r?\n/g,'<br>');
       document.execCommand('insertHTML',false,safe);
+      normalizeDropdowns(editor);
       editor.dispatchEvent(new Event('input',{bubbles:true}));
     });
     editor.addEventListener('change',event=>{
@@ -340,6 +422,11 @@
       saveEditor(section);
     });
     editor.addEventListener('click',event=>{
+      const title=event.target.closest('.pi-intranet-dropdown-title');
+      if(title && editor.contains(title)){
+        // Editing a heading must not also toggle its parent <details>.
+        event.preventDefault();event.stopPropagation();return;
+      }
       const link=event.target.closest('a[href]');
       if(link && !event.ctrlKey && !event.metaKey)event.preventDefault();
     });
@@ -532,7 +619,7 @@
       }
       const raw=safeRead(storageKey(section))??'';
       if(raw===baselines.get(section))continue;
-      editor.innerHTML=sanitizeHTML(raw);normalizeChecklists(editor);baselines.set(section,raw);
+      editor.innerHTML=sanitizeHTML(raw);normalizeChecklists(editor);normalizeDropdowns(editor);baselines.set(section,raw);
     }
     const remoteHeaderColors=safeRead(HEADER_COLOR_KEY);
     if(remoteHeaderColors!==baselines.get(HEADER_COLOR_KEY)){
