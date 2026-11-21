@@ -1,4 +1,4 @@
-/* V29.1: The Intranet. Direct rich editing, section-specific cloud storage,
+/* V29.2: The Intranet. Direct rich editing, section-specific cloud storage,
    native shared colors/menus, and Archive integration. No Planner migrations. */
 (() => {
   'use strict';
@@ -6,11 +6,11 @@
   if (!app) return;
   const PREFIX = 'pi-intranet-home-v1-';
   const MARQUEE_KEY = PREFIX + 'marquee';
-  const DEFAULT_MARQUEE = '✦ welcome to my corner of the internet ✦';
+  const DEFAULT_MARQUEE = '✦ Add your current north stars here ✦';
   const FONT_SIZES = [12,13,14,15,16,18,20];
   const DEFAULT_FONT_SIZE = 15;
   const validFontSize = value => FONT_SIZES.includes(Number(value)) ? Number(value) : DEFAULT_FONT_SIZE;
-  const labels = {goals:'Goals',week:'this week',today:'today'};
+  const labels = {week:'this week',today:'today'};
   const editors = new Map();
   const timeouts = new Map();
   const baselines = new Map();
@@ -296,8 +296,6 @@
       collapseButton.setAttribute('aria-label',`${collapsed?'Expand':'Collapse'} ${labels[section]}`);
       collapseButton.title=`${collapsed?'Expand':'Collapse'} ${labels[section]}`;
       collapseButton.textContent=collapsed?'▸':'▾';
-      app.querySelector('.pi-intranet-grid')?.classList.toggle('goals-collapsed',
-        !!app.querySelector('[data-intranet-section="goals"].is-collapsed'));
       const middle=app.querySelector('.pi-intranet-middle');
       middle?.classList.toggle('week-collapsed',
         !!app.querySelector('[data-intranet-section="week"].is-collapsed'));
@@ -356,6 +354,7 @@
   const repeat=app.querySelector('.pi-intranet-marquee-repeat');
   const marqueeContainer=app.querySelector('.pi-intranet-marquee');
   const marqueeEdit= document.getElementById('piIntranetEditMarquee');
+  const marqueeMenu=document.getElementById('piIntranetMarqueeMenu');
   const marqueeSize=document.getElementById('piIntranetMarqueeSize');
   const marqueeSizeKey=PREFIX+'marquee-size';
   const applyMarqueeSize=size=>{
@@ -384,15 +383,18 @@
     if(value!==baselines.get('marquee') && safeWrite(MARQUEE_KEY,value))baselines.set('marquee',value);
     marqueeOriginal=value;
   }
-  marquee.addEventListener('focus',()=>marqueeContainer.classList.add('is-editing'));
+  function finishMarqueeEditing(){
+    saveMarquee();
+    marquee.contentEditable='false';
+    marqueeContainer.classList.remove('is-editing');
+  }
+  marquee.addEventListener('focus',()=>{if(marquee.isContentEditable)marqueeContainer.classList.add('is-editing');});
   marquee.addEventListener('input',()=>{
     repeat.textContent=marquee.textContent;
     clearTimeout(timeouts.get('marquee'));
     timeouts.set('marquee',setTimeout(saveMarquee,350));
   });
-  marquee.addEventListener('blur',()=>{
-    saveMarquee();marqueeContainer.classList.remove('is-editing');
-  });
+  marquee.addEventListener('blur',finishMarqueeEditing);
   marquee.addEventListener('keydown',event=>{
     if(event.key==='Enter'){event.preventDefault();marquee.blur();}
     if(event.key==='Escape'){
@@ -404,9 +406,88 @@
     document.execCommand('insertText',false,event.clipboardData?.getData('text/plain').replace(/[\r\n]+/g,' ')||'');
   });
   marqueeEdit?.addEventListener('click',()=>{
+    if(marqueeMenu)marqueeMenu.open=false;
+    marquee.contentEditable='true';
+    marqueeContainer.classList.add('is-editing');
     marquee.focus();
     const selection=window.getSelection();const range=document.createRange();range.selectNodeContents(marquee);
     selection.removeAllRanges();selection.addRange(range);
+  });
+
+  /* The marquee's single ⋮ menu controls writing, sizing, and title/stars
+     contrast. Colors are saved PER THEME, so a Windows adjustment does not
+     unexpectedly change Aurora, Candy Jurassic, or any other theme. */
+  const HEADER_COLOR_KEY=PREFIX+'header-colors-by-theme';
+  const HEADER_COLORS=[
+    {key:'auto',label:'Theme default',value:null},
+    {key:'text',label:'Theme text',value:'var(--text)'},
+    {key:'teal',label:'Teal',value:'var(--teal,#2f8f9d)'},
+    {key:'plum',label:'Violet',value:'var(--plum,#7b5ea7)'},
+    {key:'blue',label:'Blue',value:'var(--blue,#4689c7)'},
+    {key:'rose',label:'Pink',value:'var(--rose,#b45e9a)'},
+    {key:'green',label:'Green',value:'var(--green,#5fbf9a)'},
+    {key:'gold',label:'Gold',value:'var(--orange,#dda35b)'},
+    {key:'white',label:'White',value:'#ffffff'},
+    {key:'dark',label:'Dark ink',value:'#162735'}
+  ];
+  const colorValues=new Map(HEADER_COLORS.map(entry=>[entry.key,entry.value]));
+  const currentTheme=()=>document.body.dataset.theme||'dark';
+  let headerColors={};
+  function readHeaderColors(){
+    try {
+      const parsed=JSON.parse(safeRead(HEADER_COLOR_KEY)||'{}');
+      if(!parsed||typeof parsed!=='object'||Array.isArray(parsed))return {};
+      return parsed;
+    }catch{return {};}
+  }
+  function applyHeaderColors(){
+    const saved=headerColors[currentTheme()]||{};
+    const heading=app.querySelector('.pi-intranet-heading');
+    for(const target of ['title','stars']) {
+      const choice=colorValues.has(saved[target])?saved[target]:'auto';
+      const property=target==='title'?'--pi-intranet-title-ink':'--pi-intranet-stars-ink';
+      if(choice==='auto')heading.style.removeProperty(property);
+      else heading.style.setProperty(property,colorValues.get(choice));
+      app.querySelectorAll(`[data-pi-header-target="${target}"] button[data-pi-color-choice]`).forEach(button=>{
+        button.setAttribute('aria-pressed',String(button.dataset.piColorChoice===choice));
+      });
+    }
+  }
+  headerColors=readHeaderColors();
+  baselines.set(HEADER_COLOR_KEY,safeRead(HEADER_COLOR_KEY));
+  for(const container of app.querySelectorAll('.pi-intranet-header-color-picker')){
+    const target=container.dataset.piHeaderTarget;
+    const row=container.querySelector('.pi-intranet-header-swatches');
+    for(const entry of HEADER_COLORS){
+      const button=document.createElement('button');button.type='button';
+      button.className='pi-intranet-header-swatch';button.dataset.piColorChoice=entry.key;
+      button.title=`${target==='title'?'Title text':'Stars'}: ${entry.label}`;
+      button.setAttribute('aria-label',button.title);
+      if(entry.value)button.style.setProperty('--pi-header-swatch-color',entry.value);
+      else button.textContent='×';
+      button.addEventListener('click',()=>{
+        const theme=currentTheme();
+        headerColors={...headerColors,[theme]:{...(headerColors[theme]||{}),[target]:entry.key}};
+        const payload=JSON.stringify(headerColors);
+        applyHeaderColors();
+        if(safeWrite(HEADER_COLOR_KEY,payload))baselines.set(HEADER_COLOR_KEY,payload);
+      });
+      row.append(button);
+    }
+  }
+  applyHeaderColors();
+  // Apply the right per-theme choices immediately on theme switches.
+  new MutationObserver(mutations=>{
+    if(mutations.some(m=>m.attributeName==='data-theme'))applyHeaderColors();
+  }).observe(document.body,{attributes:true,attributeFilter:['data-theme']});
+  document.addEventListener('pointerdown',event=>{
+    if(marqueeMenu?.open && !marqueeMenu.contains(event.target))marqueeMenu.open=false;
+  });
+  marqueeMenu?.addEventListener('keydown',event=>{
+    if(event.key==='Escape'){
+      event.stopPropagation();marqueeMenu.open=false;
+      marqueeMenu.querySelector('summary')?.focus();
+    }
   });
 
   /* Calendars: hover on desktop; click/keyboard on touch and small screens. */
@@ -452,6 +533,12 @@
       const raw=safeRead(storageKey(section))??'';
       if(raw===baselines.get(section))continue;
       editor.innerHTML=sanitizeHTML(raw);normalizeChecklists(editor);baselines.set(section,raw);
+    }
+    const remoteHeaderColors=safeRead(HEADER_COLOR_KEY);
+    if(remoteHeaderColors!==baselines.get(HEADER_COLOR_KEY)){
+      headerColors=readHeaderColors();
+      baselines.set(HEADER_COLOR_KEY,remoteHeaderColors);
+      applyHeaderColors();
     }
     const remoteMarqueeSize=safeRead(marqueeSizeKey);
     if(remoteMarqueeSize!==baselines.get(marqueeSizeKey)){

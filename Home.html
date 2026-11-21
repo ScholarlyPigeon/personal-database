@@ -36,8 +36,8 @@
 <script defer src="V25Controls.js?v=20261108-v25-1"></script>
 <link rel="stylesheet" href="V28_1Navigation.css?v=20261116-v28-1"/>
 <script defer src="V28_1Navigation.js?v=20261121-v29-1"></script>
-<link rel="stylesheet" href="IntranetHome.css?v=20261121-v29-1-1"/>
-<script defer src="IntranetHome.js?v=20261121-v29-1-1"></script>
+<link rel="stylesheet" href="IntranetHome.css?v=20261121-v29-2-1"/>
+<script defer src="IntranetHome.js?v=20261121-v29-2-1"></script>
 </head>
 <body class="pi-intranet-home-body" data-theme="dark">
 <div id="piLandingApp" class="pi-intranet-page">
@@ -56,20 +56,35 @@
     <span class="pi-intranet-sparkle" aria-hidden="true">✦ ⋆ ✧</span>
   </div>
 
-  <div class="pi-intranet-marquee" aria-label="Personal scrolling announcement">
+  <div class="pi-intranet-marquee" aria-label="Your current goals">
+    <span class="pi-intranet-marquee-label">Goals:</span>
     <div class="pi-intranet-marquee-view">
       <div class="pi-intranet-marquee-track">
-        <span id="piIntranetMarquee" class="pi-intranet-marquee-edit" contenteditable="true" role="textbox" aria-label="Edit marquee message" spellcheck="true">✦ welcome to my corner of the internet ✦</span>
-        <span class="pi-intranet-marquee-repeat" aria-hidden="true">✦ welcome to my corner of the internet ✦</span>
+        <span id="piIntranetMarquee" class="pi-intranet-marquee-edit" contenteditable="false" role="textbox" aria-label="Your moving goals; use the three-dot menu to edit" spellcheck="true">✦ Add your current north stars here ✦</span>
+        <span class="pi-intranet-marquee-repeat" aria-hidden="true">✦ Add your current north stars here ✦</span>
       </div>
     </div>
-    <label class="pi-intranet-marquee-size-control" title="Change the marquee text size">
-      <span aria-hidden="true">Aa</span>
-      <select id="piIntranetMarqueeSize" aria-label="Marquee text size">
-        <option value="12">12</option><option value="13">13</option><option value="14">14</option><option value="15" selected>15</option><option value="16">16</option><option value="18">18</option><option value="20">20</option>
-      </select>
-    </label>
-    <button type="button" class="pi-intranet-marquee-pencil" id="piIntranetEditMarquee" title="Edit the marquee right here" aria-label="Edit marquee">✎</button>
+    <details class="pi-intranet-marquee-menu" id="piIntranetMarqueeMenu">
+      <summary aria-label="Goals and heading options" title="Goals and heading options">⋮</summary>
+      <div class="pi-intranet-marquee-options" aria-label="Goals and heading options">
+        <button type="button" class="pi-intranet-marquee-edit-action" id="piIntranetEditMarquee">✎ Edit goals</button>
+        <label class="pi-intranet-marquee-size-control" title="Change the moving goals text size">
+          <span>Goals text size</span>
+          <select id="piIntranetMarqueeSize" aria-label="Moving goals text size">
+            <option value="12">12px</option><option value="13">13px</option><option value="14">14px</option><option value="15" selected>15px</option><option value="16">16px</option><option value="18">18px</option><option value="20">20px</option>
+          </select>
+        </label>
+        <div class="pi-intranet-header-color-picker" data-pi-header-target="title" role="group" aria-label="Header title color">
+          <span class="pi-intranet-header-color-label">Title text color</span>
+          <div class="pi-intranet-header-swatches"></div>
+        </div>
+        <div class="pi-intranet-header-color-picker" data-pi-header-target="stars" role="group" aria-label="Header stars color">
+          <span class="pi-intranet-header-color-label">Stars color</span>
+          <div class="pi-intranet-header-swatches"></div>
+        </div>
+        <span class="pi-intranet-menu-hint">Color choices are saved separately for each theme.</span>
+      </div>
+    </details>
   </div>
 
   <nav class="pi-intranet-links" aria-label="Intranet pages">
@@ -87,22 +102,6 @@
   </nav>
 
   <main class="pi-intranet-grid" aria-label="Editable personal home dashboard">
-    <section class="pi-workspace-panel pi-intranet-card pi-intranet-card-goals" data-intranet-section="goals">
-      <div class="pi-workspace-head pi-intranet-card-heading">
-        <h2>Goals</h2>
-        <button type="button" class="panel-collapse-toggle pi-intranet-collapse" aria-controls="piIntranetGoalsContent" aria-expanded="true" aria-label="Collapse Goals" title="Collapse Goals" data-pi-v23-stay>▾</button>
-        <div class="pi-workspace-actions">
-          <button type="button" class="pi-intranet-action-archive" title="Archive Goals contents">Archive contents</button>
-          <button type="button" class="pi-intranet-action-restore" title="Restore latest archived Goals contents">Restore latest</button>
-          <button type="button" class="pi-intranet-action-delete" title="Delete Goals contents">Delete contents</button>
-        </div>
-      </div>
-      <div id="piIntranetGoalsContent" class="pi-intranet-card-content">
-        <div class="pi-intranet-formatbar" role="toolbar" aria-label="Goals formatting tools"></div>
-        <div id="piIntranetGoals" class="pi-intranet-rich-editor" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Goals, edit directly" spellcheck="true" data-placeholder="What are you working toward? ✧"></div>
-      </div>
-    </section>
-
     <div class="pi-intranet-middle">
       <section class="pi-workspace-panel pi-intranet-card" data-intranet-section="week">
         <div class="pi-workspace-head pi-intranet-card-heading"><h2>this week</h2><button type="button" class="panel-collapse-toggle pi-intranet-collapse" aria-controls="piIntranetWeekContent" aria-expanded="true" aria-label="Collapse this week" title="Collapse this week" data-pi-v23-stay>▾</button><div class="pi-workspace-actions"><button type="button" class="pi-intranet-action-archive" title="Archive this week contents">Archive contents</button><button type="button" class="pi-intranet-action-restore" title="Restore latest archived this week contents">Restore latest</button><button type="button" class="pi-intranet-action-delete" title="Delete this week contents">Delete contents</button></div></div>
