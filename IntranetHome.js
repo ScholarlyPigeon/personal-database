@@ -1,4 +1,4 @@
-/* V29: The Intranet. Direct rich editing, section-specific cloud storage,
+/* V29.1: The Intranet. Direct rich editing, section-specific cloud storage,
    native shared colors/menus, and Archive integration. No Planner migrations. */
 (() => {
   'use strict';
@@ -7,7 +7,10 @@
   const PREFIX = 'pi-intranet-home-v1-';
   const MARQUEE_KEY = PREFIX + 'marquee';
   const DEFAULT_MARQUEE = '✦ welcome to my corner of the internet ✦';
-  const labels = {goals:'Goals',week:'this week',today:'today',notes:'notes'};
+  const FONT_SIZES = [12,13,14,15,16,18,20];
+  const DEFAULT_FONT_SIZE = 15;
+  const validFontSize = value => FONT_SIZES.includes(Number(value)) ? Number(value) : DEFAULT_FONT_SIZE;
+  const labels = {goals:'Goals',week:'this week',today:'today'};
   const editors = new Map();
   const timeouts = new Map();
   const baselines = new Map();
@@ -200,9 +203,41 @@
     captureSelection(editor);
     editor.dispatchEvent(new Event('input',{bubbles:true}));
   }
-  function buildToolbar(card,editor) {
+  function applyEditorFontSize(section,editor,size) {
+    const px=validFontSize(size);
+    editor.style.setProperty('--pi-intranet-editor-size',`${px}px`);
+    const selector=editor.closest('.pi-intranet-card')?.querySelector('.pi-intranet-font-select');
+    if(selector)selector.value=String(px);
+  }
+  function buildToolbar(card,editor,section) {
     const toolbar=card.querySelector('.pi-intranet-formatbar');
     if(!toolbar)return;
+    const sizeKey=storageKey(section)+'-size';
+    const fontLabel=document.createElement('label');
+    fontLabel.className='pi-intranet-font-control';
+    fontLabel.title=`Text size for ${labels[section]}`;
+    const fontLabelText=document.createElement('span');
+    fontLabelText.textContent='Aa';fontLabelText.setAttribute('aria-hidden','true');
+    const fontSelect=document.createElement('select');
+    fontSelect.className='pi-intranet-font-select';
+    fontSelect.setAttribute('aria-label',`Text size for ${labels[section]}`);
+    FONT_SIZES.forEach(size=>{
+      const option=document.createElement('option');option.value=String(size);
+      option.textContent=`${size}px`;fontSelect.append(option);
+    });
+    const initial=safeRead(sizeKey);
+    applyEditorFontSize(section,editor,initial);
+    fontSelect.value=String(validFontSize(initial));
+    baselines.set(sizeKey,initial);
+    fontSelect.addEventListener('change',()=>{
+      const size=validFontSize(fontSelect.value);
+      applyEditorFontSize(section,editor,size);
+      if(safeWrite(sizeKey,String(size)))baselines.set(sizeKey,String(size));
+    });
+    fontLabel.append(fontLabelText,fontSelect);
+    toolbar.append(fontLabel);
+    const divider=document.createElement('span');divider.className='pi-intranet-format-spacer';
+    divider.setAttribute('aria-hidden','true');toolbar.append(divider);
     controls.forEach(([action,label,title])=>{
       if(action==='sep'){
         const divider=document.createElement('span');divider.className='pi-intranet-format-spacer';divider.setAttribute('aria-hidden','true');toolbar.append(divider);return;
@@ -250,7 +285,37 @@
     if(initial!==null)editor.innerHTML=sanitizeHTML(initial);
     baselines.set(section,initial===null?'':sanitizeHTML(initial));
     normalizeChecklists(editor);
-    buildToolbar(card,editor);
+    buildToolbar(card,editor,section);
+    const collapseKey=storageKey(section)+'-collapsed';
+    const collapseButton=card.querySelector('.pi-intranet-collapse');
+    const sectionContent=card.querySelector('.pi-intranet-card-content');
+    function renderCollapse(collapsed) {
+      card.classList.toggle('is-collapsed',collapsed);
+      sectionContent.hidden=collapsed;
+      collapseButton.setAttribute('aria-expanded',String(!collapsed));
+      collapseButton.setAttribute('aria-label',`${collapsed?'Expand':'Collapse'} ${labels[section]}`);
+      collapseButton.title=`${collapsed?'Expand':'Collapse'} ${labels[section]}`;
+      collapseButton.textContent=collapsed?'▸':'▾';
+      app.querySelector('.pi-intranet-grid')?.classList.toggle('goals-collapsed',
+        !!app.querySelector('[data-intranet-section="goals"].is-collapsed'));
+      const middle=app.querySelector('.pi-intranet-middle');
+      middle?.classList.toggle('week-collapsed',
+        !!app.querySelector('[data-intranet-section="week"].is-collapsed'));
+      middle?.classList.toggle('today-collapsed',
+        !!app.querySelector('[data-intranet-section="today"].is-collapsed'));
+    }
+    const collapseRaw=safeRead(collapseKey);
+    baselines.set(collapseKey,collapseRaw);
+    renderCollapse(collapseRaw==='1');
+    card.piRenderCollapse=renderCollapse;
+    collapseButton?.addEventListener('click',event=>{
+      event.preventDefault();event.stopPropagation();
+      saveEditor(section); // Never lose edits if the focused editor is hidden.
+      const collapsed=!card.classList.contains('is-collapsed');
+      renderCollapse(collapsed);
+      if(safeWrite(collapseKey,collapsed?'1':'0'))baselines.set(collapseKey,collapsed?'1':'0');
+    });
+    card.querySelector('.pi-intranet-card-heading h2')?.addEventListener('click',()=>collapseButton.click());
     editor.addEventListener('focus',()=>card.classList.add('is-editing'));
     editor.addEventListener('blur',()=>{
       saveEditor(section);
@@ -291,6 +356,21 @@
   const repeat=app.querySelector('.pi-intranet-marquee-repeat');
   const marqueeContainer=app.querySelector('.pi-intranet-marquee');
   const marqueeEdit= document.getElementById('piIntranetEditMarquee');
+  const marqueeSize=document.getElementById('piIntranetMarqueeSize');
+  const marqueeSizeKey=PREFIX+'marquee-size';
+  const applyMarqueeSize=size=>{
+    const px=validFontSize(size);
+    marqueeContainer.style.setProperty('--pi-intranet-marquee-size',`${px}px`);
+    if(marqueeSize)marqueeSize.value=String(px);
+  };
+  const initialMarqueeSize=safeRead(marqueeSizeKey);
+  applyMarqueeSize(initialMarqueeSize);
+  baselines.set(marqueeSizeKey,initialMarqueeSize);
+  marqueeSize?.addEventListener('change',()=>{
+    const px=validFontSize(marqueeSize.value);
+    applyMarqueeSize(px);
+    if(safeWrite(marqueeSizeKey,String(px)))baselines.set(marqueeSizeKey,String(px));
+  });
   let marqueeOriginal=safeRead(MARQUEE_KEY) ?? DEFAULT_MARQUEE;
   marquee.textContent=marqueeOriginal;
   repeat.textContent=marqueeOriginal;
@@ -352,6 +432,18 @@
      not replacing a field currently in use. */
   function refreshFromStorage() {
     for(const [section,editor] of editors) {
+      const fontKey=storageKey(section)+'-size';
+      const fontRaw=safeRead(fontKey);
+      if(fontRaw!==baselines.get(fontKey)){
+        applyEditorFontSize(section,editor,fontRaw);
+        baselines.set(fontKey,fontRaw);
+      }
+      const collapseKey=storageKey(section)+'-collapsed';
+      const collapseRaw=safeRead(collapseKey);
+      if(collapseRaw!==baselines.get(collapseKey)){
+        editor.closest('.pi-intranet-card')?.piRenderCollapse?.(collapseRaw==='1');
+        baselines.set(collapseKey,collapseRaw);
+      }
       if(document.activeElement===editor || editor.contains(document.activeElement))continue;
       if(timeouts.has(section)) { // A scheduled input save is still pending.
         const timer=timeouts.get(section);
@@ -360,6 +452,10 @@
       const raw=safeRead(storageKey(section))??'';
       if(raw===baselines.get(section))continue;
       editor.innerHTML=sanitizeHTML(raw);normalizeChecklists(editor);baselines.set(section,raw);
+    }
+    const remoteMarqueeSize=safeRead(marqueeSizeKey);
+    if(remoteMarqueeSize!==baselines.get(marqueeSizeKey)){
+      applyMarqueeSize(remoteMarqueeSize);baselines.set(marqueeSizeKey,remoteMarqueeSize);
     }
     if(document.activeElement!==marquee){
       const next=safeRead(MARQUEE_KEY)??DEFAULT_MARQUEE;

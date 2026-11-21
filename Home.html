@@ -36,8 +36,8 @@
 <script defer src="V25Controls.js?v=20261108-v25-1"></script>
 <link rel="stylesheet" href="V28_1Navigation.css?v=20261116-v28-1"/>
 <script defer src="V28_1Navigation.js?v=20261121-v29-1"></script>
-<link rel="stylesheet" href="IntranetHome.css?v=20261121-v29-1"/>
-<script defer src="IntranetHome.js?v=20261121-v29-1"></script>
+<link rel="stylesheet" href="IntranetHome.css?v=20261121-v29-1-1"/>
+<script defer src="IntranetHome.js?v=20261121-v29-1-1"></script>
 </head>
 <body class="pi-intranet-home-body" data-theme="dark">
 <div id="piLandingApp" class="pi-intranet-page">
@@ -63,14 +63,17 @@
         <span class="pi-intranet-marquee-repeat" aria-hidden="true">✦ welcome to my corner of the internet ✦</span>
       </div>
     </div>
+    <label class="pi-intranet-marquee-size-control" title="Change the marquee text size">
+      <span aria-hidden="true">Aa</span>
+      <select id="piIntranetMarqueeSize" aria-label="Marquee text size">
+        <option value="12">12</option><option value="13">13</option><option value="14">14</option><option value="15" selected>15</option><option value="16">16</option><option value="18">18</option><option value="20">20</option>
+      </select>
+    </label>
     <button type="button" class="pi-intranet-marquee-pencil" id="piIntranetEditMarquee" title="Edit the marquee right here" aria-label="Edit marquee">✎</button>
   </div>
 
   <nav class="pi-intranet-links" aria-label="Intranet pages">
-    <div class="pi-intranet-link-cell pi-intranet-home-planner">
-      <a class="current" aria-current="page" href="Home.html">🏠 Home</a>
-      <a href="Database.html">📗 Planner</a>
-    </div>
+    <div class="pi-intranet-link-cell"><a href="Database.html">📗 Planner</a></div>
     <div class="pi-intranet-link-cell"><a href="Alignment.html">✨ Alignment</a></div>
     <div class="pi-intranet-link-cell"><a href="Aquarium.html">🪼 Aquarium</a></div>
     <div class="pi-intranet-link-cell pi-intranet-calendars">
@@ -87,13 +90,14 @@
     <section class="pi-workspace-panel pi-intranet-card pi-intranet-card-goals" data-intranet-section="goals">
       <div class="pi-workspace-head pi-intranet-card-heading">
         <h2>Goals</h2>
+        <button type="button" class="panel-collapse-toggle pi-intranet-collapse" aria-controls="piIntranetGoalsContent" aria-expanded="true" aria-label="Collapse Goals" title="Collapse Goals" data-pi-v23-stay>▾</button>
         <div class="pi-workspace-actions">
           <button type="button" class="pi-intranet-action-archive" title="Archive Goals contents">Archive contents</button>
           <button type="button" class="pi-intranet-action-restore" title="Restore latest archived Goals contents">Restore latest</button>
           <button type="button" class="pi-intranet-action-delete" title="Delete Goals contents">Delete contents</button>
         </div>
       </div>
-      <div class="pi-intranet-card-content">
+      <div id="piIntranetGoalsContent" class="pi-intranet-card-content">
         <div class="pi-intranet-formatbar" role="toolbar" aria-label="Goals formatting tools"></div>
         <div id="piIntranetGoals" class="pi-intranet-rich-editor" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Goals, edit directly" spellcheck="true" data-placeholder="What are you working toward? ✧"></div>
       </div>
@@ -101,19 +105,15 @@
 
     <div class="pi-intranet-middle">
       <section class="pi-workspace-panel pi-intranet-card" data-intranet-section="week">
-        <div class="pi-workspace-head pi-intranet-card-heading"><h2>this week</h2><div class="pi-workspace-actions"><button type="button" class="pi-intranet-action-archive" title="Archive this week contents">Archive contents</button><button type="button" class="pi-intranet-action-restore" title="Restore latest archived this week contents">Restore latest</button><button type="button" class="pi-intranet-action-delete" title="Delete this week contents">Delete contents</button></div></div>
-        <div class="pi-intranet-card-content"><div class="pi-intranet-formatbar" role="toolbar" aria-label="This week formatting tools"></div><div id="piIntranetWeek" class="pi-intranet-rich-editor" contenteditable="true" role="textbox" aria-multiline="true" aria-label="This week, edit directly" spellcheck="true" data-placeholder="What matters this week? ☑"></div></div>
+        <div class="pi-workspace-head pi-intranet-card-heading"><h2>this week</h2><button type="button" class="panel-collapse-toggle pi-intranet-collapse" aria-controls="piIntranetWeekContent" aria-expanded="true" aria-label="Collapse this week" title="Collapse this week" data-pi-v23-stay>▾</button><div class="pi-workspace-actions"><button type="button" class="pi-intranet-action-archive" title="Archive this week contents">Archive contents</button><button type="button" class="pi-intranet-action-restore" title="Restore latest archived this week contents">Restore latest</button><button type="button" class="pi-intranet-action-delete" title="Delete this week contents">Delete contents</button></div></div>
+        <div id="piIntranetWeekContent" class="pi-intranet-card-content"><div class="pi-intranet-formatbar" role="toolbar" aria-label="This week formatting tools"></div><div id="piIntranetWeek" class="pi-intranet-rich-editor" contenteditable="true" role="textbox" aria-multiline="true" aria-label="This week, edit directly" spellcheck="true" data-placeholder="What matters this week? ☑"></div></div>
       </section>
       <section class="pi-workspace-panel pi-intranet-card" data-intranet-section="today">
-        <div class="pi-workspace-head pi-intranet-card-heading"><h2>today</h2><div class="pi-workspace-actions"><button type="button" class="pi-intranet-action-archive" title="Archive today contents">Archive contents</button><button type="button" class="pi-intranet-action-restore" title="Restore latest archived today contents">Restore latest</button><button type="button" class="pi-intranet-action-delete" title="Delete today contents">Delete contents</button></div></div>
-        <div class="pi-intranet-card-content"><div class="pi-intranet-formatbar" role="toolbar" aria-label="Today formatting tools"></div><div id="piIntranetToday" class="pi-intranet-rich-editor" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Today, edit directly" spellcheck="true" data-placeholder="What is on today's horizon? ✦"></div></div>
+        <div class="pi-workspace-head pi-intranet-card-heading"><h2>today</h2><button type="button" class="panel-collapse-toggle pi-intranet-collapse" aria-controls="piIntranetTodayContent" aria-expanded="true" aria-label="Collapse today" title="Collapse today" data-pi-v23-stay>▾</button><div class="pi-workspace-actions"><button type="button" class="pi-intranet-action-archive" title="Archive today contents">Archive contents</button><button type="button" class="pi-intranet-action-restore" title="Restore latest archived today contents">Restore latest</button><button type="button" class="pi-intranet-action-delete" title="Delete today contents">Delete contents</button></div></div>
+        <div id="piIntranetTodayContent" class="pi-intranet-card-content"><div class="pi-intranet-formatbar" role="toolbar" aria-label="Today formatting tools"></div><div id="piIntranetToday" class="pi-intranet-rich-editor" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Today, edit directly" spellcheck="true" data-placeholder="What is on today's horizon? ✦"></div></div>
       </section>
     </div>
 
-    <section class="pi-workspace-panel pi-intranet-card pi-intranet-card-notes" data-intranet-section="notes">
-      <div class="pi-workspace-head pi-intranet-card-heading"><h2>notes</h2><div class="pi-workspace-actions"><button type="button" class="pi-intranet-action-archive" title="Archive notes contents">Archive contents</button><button type="button" class="pi-intranet-action-restore" title="Restore latest archived notes">Restore latest</button><button type="button" class="pi-intranet-action-delete" title="Delete notes contents">Delete contents</button></div></div>
-      <div class="pi-intranet-card-content"><div class="pi-intranet-formatbar" role="toolbar" aria-label="Notes formatting tools"></div><div id="piIntranetNotes" class="pi-intranet-rich-editor" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Notes, edit directly" spellcheck="true" data-placeholder="A little space for everything else... ✎"></div></div>
-    </section>
   </main>
   <div class="pi-intranet-footnote" aria-live="polite" id="piIntranetMessage">✦ click inside any table to write · changes autosave ✦</div>
 </div>
