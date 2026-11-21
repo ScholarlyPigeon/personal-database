@@ -1,8 +1,9 @@
-/* V28.1 shared page-navigation order and accessible Calendars flyout. */
+/* V29 shared page-navigation order: Home, Planner, Alignment, Aquarium, Calendars, Timeline, Archive, Neopets. */
 (()=>{
  'use strict';
  const routes=[
-   ['Database.html','🏠 Home'],
+   ['Home.html','🏠 Home'],
+   ['Database.html','📗 Planner'],
    ['Alignment.html','✨ Alignment'],
    ['Aquarium.html','🪼 Aquarium'],
    ['Almanac.html','📜 Timeline'],
@@ -17,7 +18,7 @@
  function buildMenu(menu){
    if(menu.dataset.piV281Nav==='true')return;
    // Native links remain navigable even if some higher-level app logic fails.
-   const href=location.pathname.split('/').pop()||'Database.html';
+   const href=location.pathname.split('/').pop()||'Home.html';
    const panel=menu.querySelector(':scope > .ecosystem-menu-popover');
    if(!panel)return;
    const mk=(url,label)=>{
@@ -26,7 +27,7 @@
      return a;
    };
    panel.replaceChildren();
-   routes.slice(0,3).forEach(([url,label])=>panel.append(mk(url,label)));
+   routes.slice(0,4).forEach(([url,label])=>panel.append(mk(url,label)));
    const group=document.createElement('div');group.className='pi-calendars-nav';
    const toggle=document.createElement('button');toggle.type='button';
    toggle.className='pi-calendars-trigger';toggle.textContent='📅 Calendars';
@@ -37,7 +38,7 @@
    calendars.forEach(([url,label])=>flyout.append(mk(url,label)));
    if(calendars.some(([url])=>url===href))group.classList.add('pi-calendar-current');
    group.append(toggle,flyout);panel.append(group);
-   routes.slice(3).forEach(([url,label])=>panel.append(mk(url,label)));
+   routes.slice(4).forEach(([url,label])=>panel.append(mk(url,label)));
    function setOpen(open){group.classList.toggle('is-open',open);toggle.setAttribute('aria-expanded',String(open));}
    toggle.addEventListener('click',e=>{e.stopPropagation();setOpen(!group.classList.contains('is-open'));});
    toggle.addEventListener('keydown',e=>{

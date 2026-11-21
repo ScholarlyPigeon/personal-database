@@ -8317,8 +8317,8 @@ if (document.getElementById("neopetsApp")) {
         week: { role: "PLAN", note: "", href: "Week.html", label: "This Week", icon: "◷" },
         month: { role: "PLAN", note: "", href: "Month.html", label: "This Month", icon: "▦" },
         "next-month": { role: "PLAN", note: "", href: "NextMonth.html", label: "Next Month", icon: "📆" },
-        home: { role: "FOCUS", note: "Go directly to your most useful page.", href: "Database.html", label: "Home", icon: "⌂" },
-        database: { role: "FOCUS", note: "See what needs attention and where things currently stand.", href: "Database.html", label: "Home", icon: "⌂" },
+        home: { role: "FOCUS", note: "Go directly to your most useful page.", href: "Home.html", label: "Home", icon: "⌂" },
+        database: { role: "PLAN", note: "See what needs attention and where things currently stand.", href: "Database.html", label: "Planner", icon: "📗" },
         aquarium: { role: "CAPTURE", note: "Catch something before deciding what it needs to become.", href: "Aquarium.html", label: "Aquarium", icon: "🪼" },
         alignment: { role: "ALIGN", note: "Goals, mindset, grounding, and reflection together in one workspace.", href: "Alignment.html", label: "Alignment", icon: "✨" },
         longform: { role: "THINK", note: "Give a thought enough room to become coherent.", href: "Aquarium.html", label: "Aquarium", icon: "✎" },
@@ -8361,7 +8361,7 @@ if (document.getElementById("neopetsApp")) {
 
     function pageId() {
         if (document.body.dataset.planner) return document.body.dataset.planner;
-        if (document.getElementById("piHomeApp")) return "home";
+        if (document.getElementById("piLandingApp") || document.getElementById("piHomeApp")) return "home";
         if (document.getElementById("aquariumApp")) return "aquarium";
         if (document.getElementById("alignmentApp")) return "alignment";
         if (document.getElementById("longformApp")) return "longform";

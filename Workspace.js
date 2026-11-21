@@ -31,7 +31,7 @@ function safeHtml(html){
  return tpl.innerHTML;
 }
 const ACT_KEY='pi-activity-v1',ARCHIVE_KEY='pi-archive-v1',LEGACY_KEY='pi-archive-workspace-v1',NOTES_KEY='pi-reflections-notes-v1';
-const routes={home:'Database.html',database:'Database.html',aquarium:'Aquarium.html',week:'Week.html',month:'Month.html',archive:'Patterns.html',almanac:'Almanac.html',compass:'Alignment.html',alignment:'Alignment.html',longform:'Aquarium.html',neopets:'neopets.html'};
+const routes={home:'Home.html',database:'Database.html',aquarium:'Aquarium.html',week:'Week.html',month:'Month.html',archive:'Patterns.html',almanac:'Almanac.html',compass:'Alignment.html',alignment:'Alignment.html',longform:'Aquarium.html',neopets:'neopets.html'};
 function initArchive(){
  if(!$('archiveApp'))return;
  const dayList=$('dayArchiveList'), itemList=$('itemArchiveList'), recentList=$('piRecentActivityList');
@@ -99,7 +99,7 @@ function initArchive(){
   recentList.replaceChildren();$('piActivityCount').textContent=String(list.length);
   if(!list.length){recentList.append(el('p','pi-muted','New notes from across your intranet will appear here, alongside other item changes.'));return;}
   list.forEach(item=>{
-   const a=el('a','pi-activity-entry');a.href=routes[item.page]||'Database.html';
+   const a=el('a','pi-activity-entry');a.href=routes[item.page]||'Home.html';
    a.append(el('span','pi-activity-action',item.action||'Updated item'),el('span','pi-activity-text',item.text||''),el('small','pi-muted',`${item.page==='database'?'Home':item.page==='almanac'?'Timeline & Notes':item.page==='compass'?'Alignment':item.page||'Intranet'} · ${when(item.timestamp)}`));recentList.append(a);
   });
  }

@@ -375,7 +375,7 @@
   // dedicated guidance, rather than becoming ambiguous.
   function tuneHints(root = document) {
     $$('textarea, input[type="text"], [contenteditable="true"][data-placeholder]',root).forEach(el => {
-      if (el.closest('.pi-overlay, .link-editor, .neo-link-editor')) return;
+      if (el.closest('.pi-overlay, .link-editor, .neo-link-editor, #piLandingApp')) return;
       const label = `${el.id} ${el.getAttribute('aria-label') || ''} ${el.getAttribute('placeholder') || ''}`;
       if (/url|link|https|icon|date|filter|search|name of|category|title of new|\bsection\b|hex|\bid\b/i.test(label) && el.tagName==='INPUT') return;
       if(el.matches('input')) {
