@@ -1,4 +1,4 @@
-/* V29.3: The Intranet. Direct rich editing, section-specific cloud storage,
+/* V29.4: The Intranet. Direct rich editing, section-specific cloud storage,
    native shared colors/menus, and Archive integration. No Planner migrations. */
 (() => {
   'use strict';
@@ -37,7 +37,7 @@
   function sanitizeHTML(markup) {
     const template = document.createElement('template');
     template.innerHTML = String(markup || '');
-    const allowed = new Set(['B','STRONG','I','EM','U','S','STRIKE','DEL','P','DIV','BR','UL','OL','LI','BLOCKQUOTE','SPAN','A','H3','DETAILS','SUMMARY']);
+    const allowed = new Set(['B','STRONG','I','EM','U','S','STRIKE','DEL','P','DIV','BR','UL','OL','LI','BLOCKQUOTE','SPAN','A','H3','DETAILS','SUMMARY','TABLE','THEAD','TBODY','TR','TD','TH']);
     const drop = new Set(['SCRIPT','STYLE','IFRAME','OBJECT','EMBED','SVG','MATH','IMG','VIDEO','AUDIO','FORM','BUTTON','SELECT','TEXTAREA','LINK','META']);
     function clean(parent) {
       for (const node of [...parent.childNodes]) {
@@ -52,7 +52,7 @@
           if (checked) node.setAttribute('checked','');
           continue;
         }
-        if (drop.has(tag)) {node.remove();continue;}
+        if (drop.has(tag) || node.classList?.contains('pi-intranet-inline-actions') || node.classList?.contains('pi-intranet-table-header')) {node.remove();continue;}
         if (!allowed.has(tag)) {
           while (node.firstChild) parent.insertBefore(node.firstChild,node);
           node.remove();
@@ -65,6 +65,8 @@
         const title = tag==='SPAN' && node.classList.contains('pi-intranet-dropdown-title') && !!node.closest('details.pi-intranet-dropdown');
         const body = tag==='DIV' && node.classList.contains('pi-intranet-dropdown-body') && !!node.closest('details.pi-intranet-dropdown');
         const summary = tag==='SUMMARY' && !!node.closest('details.pi-intranet-dropdown');
+        const tableWidget = tag==='DIV' && node.classList.contains('pi-intranet-table-widget');
+        const tableCell = (tag==='TD'||tag==='TH') && !!node.closest('.pi-intranet-table-widget');
         const opened = dropdown && node.hasAttribute('open');
         [...node.attributes].forEach(attribute => node.removeAttribute(attribute.name));
         if (tag==='A' && href && /^(https?:\/\/|mailto:)/i.test(href.trim())) {
@@ -78,6 +80,8 @@
         if(summary)node.className='pi-intranet-dropdown-summary';
         if(title){node.className='pi-intranet-dropdown-title';node.contentEditable='true';}
         if(body){node.className='pi-intranet-dropdown-body';node.contentEditable='true';}
+        if(tableWidget){node.className='pi-intranet-table-widget';node.contentEditable='false';}
+        if(tableCell)node.contentEditable='true';
         clean(node);
       }
     }
@@ -107,6 +111,172 @@
   /* Our small dropdowns are native <details> with separately editable title
      and body. The outer element is not editable so the caret cannot dissolve
      its structure. Only the allowed structure is persisted and synced. */
+  /* Inline widget controls are recreated from saved HTML. Their buttons and
+     menus NEVER become part of synced text, so only actual content is stored. */
+  function addInlineActions(host,widget,kind) {
+    if(host.querySelector(':scope > .pi-intranet-inline-actions'))return;
+    const actions=document.createElement('span');
+    actions.className='pi-intranet-inline-actions';
+    actions.contentEditable='false';
+    const trigger=document.createElement('button');
+    trigger.type='button';trigger.className='pi-intranet-inline-trigger';
+    trigger.textContent='⋮';trigger.title=`${kind==='table'?'Table':'Dropdown'} options`;
+    trigger.setAttribute('aria-label',trigger.title);
+    trigger.setAttribute('aria-expanded','false');
+    const popover=document.createElement('span');
+    popover.className='pi-intranet-inline-popover';
+    const entries=[
+      ['up','↑ Move up'],['down','↓ Move down'],
+      ...(kind==='table' ? [['row-add','+ Row'],['col-add','+ Column'],['row-remove','− Row'],['col-remove','− Column']] : []),
+      ['delete','✕ Delete']
+    ];
+    for(const [action,label] of entries){
+      const button=document.createElement('button');button.type='button';
+      button.dataset.piBlockAction=action;button.textContent=label;
+      if(action==='delete')button.classList.add('pi-intranet-danger-action');
+      popover.append(button);
+    }
+    // Bind to the action buttons themselves rather than relying on delegated
+    // editor clicks. Contenteditable hosts can retarget bubbled clicks.
+    // Prevent focus loss during mouse down: otherwise the formatting bar
+    // collapses and shifts this button between down/up, swallowing clicks.
+    trigger.addEventListener('pointerdown',event=>{
+      if(event.pointerType==='mouse')event.preventDefault();
+    });
+    popover.addEventListener('pointerdown',event=>{
+      if(event.pointerType==='mouse')event.preventDefault();
+    });
+    trigger.addEventListener('click',event=>{
+      event.preventDefault();event.stopPropagation();
+      const open=!actions.classList.contains('is-open');
+      closeInlineMenus();actions.classList.toggle('is-open',open);
+      trigger.setAttribute('aria-expanded',String(open));
+    });
+    for(const button of popover.querySelectorAll('button[data-pi-block-action]')){
+      button.addEventListener('click',event=>{
+        event.preventDefault();event.stopPropagation();
+        const editor=widget.closest('.pi-intranet-rich-editor');
+        if(!editor)return;
+        const action=button.dataset.piBlockAction;
+        closeInlineMenus();
+        if(action==='up'||action==='down')moveWidget(widget,action,editor);
+        else if(action==='delete'){
+          if(confirm(`Delete this ${kind==='table'?'table':'dropdown'} and all of its contents?`)){
+            widget.remove();editor.dispatchEvent(new Event('input',{bubbles:true}));
+            tell('Item deleted');
+          }
+        }else changeTableDimensions(widget,action,editor);
+      });
+    }
+    actions.append(trigger,popover);host.append(actions);
+  }
+  function normalizeTables(editor){
+    editor.querySelectorAll('.pi-intranet-table-widget').forEach(widget=>{
+      widget.contentEditable='false';
+      let table=widget.querySelector(':scope > table');
+      if(!table){table=document.createElement('table');widget.append(table);}
+      let header=widget.querySelector(':scope > .pi-intranet-table-header');
+      if(!header){
+        header=document.createElement('div');header.className='pi-intranet-table-header';
+        header.textContent='▦ Table';widget.prepend(header);
+      }
+      addInlineActions(header,widget,'table');
+      table.querySelectorAll('td,th').forEach(cell=>{
+        cell.contentEditable='true';cell.spellcheck=true;
+        cell.setAttribute('aria-label','Editable table cell');
+      });
+    });
+  }
+  function normalizeWidgets(editor){
+    normalizeChecklists(editor);
+    normalizeDropdowns(editor);
+    normalizeTables(editor);
+  }
+  function createStarterTable(){
+    const widget=document.createElement('div');
+    widget.className='pi-intranet-table-widget';widget.contentEditable='false';
+    const table=document.createElement('table');
+    const tbody=document.createElement('tbody');
+    for(let r=0;r<2;r++){
+      const tr=document.createElement('tr');
+      for(let c=0;c<2;c++){
+        const cell=document.createElement('td');cell.contentEditable='true';
+        if(r===0)cell.textContent=c===0?'Item':'Details';
+        tr.append(cell);
+      }
+      tbody.append(tr);
+    }
+    table.append(tbody);widget.append(table);
+    return widget;
+  }
+  function insertInlineWidget(editor,widget){
+    // Keep widgets at the top editing level even if the caret is inside a
+    // list, table, or accordion. This prevents broken nested block markup.
+    useSelection(editor);
+    const range=window.getSelection()?.rangeCount ? window.getSelection().getRangeAt(0) : null;
+    let anchor=range?.startContainer || editor;
+    if(anchor.nodeType===3)anchor=anchor.parentNode;
+    let top=anchor;
+    while(top && top!==editor && top.parentNode!==editor)top=top.parentNode;
+    const following=document.createElement('p');following.append(document.createElement('br'));
+    if(top && top!==editor && top.parentNode===editor)top.after(widget,following);
+    else editor.append(widget,following);
+    normalizeWidgets(editor);
+    editor.dispatchEvent(new Event('input',{bubbles:true}));
+  }
+  function insertTable(editor){
+    const widget=createStarterTable();
+    insertInlineWidget(editor,widget);
+    widget.querySelector('td')?.focus();
+    tell('Table added · edit cells or use ⋮ to change its layout');
+  }
+  function nearestMeaningfulSibling(widget,direction){
+    let sibling=direction==='up'?widget.previousSibling:widget.nextSibling;
+    while(sibling){
+      const emptyText=sibling.nodeType===3 && !sibling.textContent.trim();
+      const emptyElement=sibling.nodeType===1 && /^(P|DIV)$/i.test(sibling.tagName)
+        && !sibling.textContent.trim() && !sibling.querySelector('input,details,table');
+      if(!emptyText && !emptyElement)return sibling;
+      sibling=direction==='up'?sibling.previousSibling:sibling.nextSibling;
+    }
+    return null;
+  }
+  function moveWidget(widget,direction,editor){
+    if(widget.parentNode!==editor){tell('Move controls work for top-level items');return;}
+    const next=nearestMeaningfulSibling(widget,direction);
+    if(!next){tell(`Already at the ${direction==='up'?'top':'bottom'}`);return;}
+    if(direction==='up')editor.insertBefore(widget,next);
+    else next.after(widget);
+    editor.dispatchEvent(new Event('input',{bubbles:true}));
+    tell(`${widget.matches('details')?'Dropdown':'Table'} moved ${direction}`);
+  }
+  function changeTableDimensions(widget,action,editor){
+    const table=widget.querySelector('table');
+    if(!table)return;
+    const rows=[...table.rows];
+    if(action==='row-add'){
+      const cols=Math.max(1,rows[0]?.cells.length||2);
+      const tr=table.insertRow(-1);
+      for(let col=0;col<cols;col++)tr.insertCell(-1).contentEditable='true';
+    }else if(action==='col-add'){
+      rows.forEach(row=>row.insertCell(-1).contentEditable='true');
+    }else if(action==='row-remove'){
+      if(rows.length<=1){tell('Keep at least one row');return;}
+      if(!confirm('Remove the bottom row and its contents?'))return;
+      table.deleteRow(-1);
+    }else if(action==='col-remove'){
+      if(!rows[0] || rows[0].cells.length<=1){tell('Keep at least one column');return;}
+      if(!confirm('Remove the last column and its contents?'))return;
+      rows.forEach(row=>row.deleteCell(-1));
+    }
+    normalizeTables(editor);
+    editor.dispatchEvent(new Event('input',{bubbles:true}));
+  }
+  function closeInlineMenus(except){
+    app.querySelectorAll('.pi-intranet-inline-actions.is-open').forEach(menu=>{
+      if(menu!==except){menu.classList.remove('is-open');menu.querySelector('.pi-intranet-inline-trigger')?.setAttribute('aria-expanded','false');}
+    });
+  }
   function normalizeDropdowns(editor) {
     editor.querySelectorAll('details.pi-intranet-dropdown').forEach(details=>{
       details.contentEditable='false';
@@ -128,6 +298,7 @@
       body.spellcheck=true;body.setAttribute('role','textbox');
       body.setAttribute('aria-multiline','true');
       body.setAttribute('aria-label','Dropdown contents; edit here');
+      addInlineActions(summary,details,'dropdown');
     });
   }
   function insertDropdown(editor){
@@ -142,17 +313,7 @@
     summary.append(title);
     const body=document.createElement('div');body.className='pi-intranet-dropdown-body';
     dropdown.append(summary,body);
-    // Insert after the active top-level writing block. This avoids placing a
-    // <details> inside a paragraph, list item or another dropdown.
-    const range=window.getSelection()?.rangeCount ? window.getSelection().getRangeAt(0) : null;
-    let anchor=range?.startContainer || editor;
-    if(anchor.nodeType===3)anchor=anchor.parentNode;
-    let top=anchor;
-    while(top && top!==editor && top.parentNode!==editor)top=top.parentNode;
-    const following=document.createElement('p');following.append(document.createElement('br'));
-    if(top && top!==editor && top.parentNode===editor)top.after(dropdown,following);
-    else editor.append(dropdown,following);
-    normalizeDropdowns(editor);
+    insertInlineWidget(editor,dropdown);
     title.focus();
     const selection=window.getSelection();const titleRange=document.createRange();
     titleRange.selectNodeContents(title);
@@ -163,8 +324,7 @@
 
   function storageKey(section) {return PREFIX + section;}
   function persistedHTML(editor) {
-    normalizeChecklists(editor);
-    normalizeDropdowns(editor);
+    normalizeWidgets(editor);
     return sanitizeHTML(editor.innerHTML);
   }
   function saveEditor(section) {
@@ -181,7 +341,7 @@
     timeouts.set(section,setTimeout(()=>saveEditor(section),350));
   }
   function editorHasContent(editor) {
-    return !!editor.innerText?.replace(/[\u200b\u00a0]/g,' ').trim() || !!editor.querySelector('input[type=checkbox]');
+    return !!editor.innerText?.replace(/[\u200b\u00a0]/g,' ').trim() || !!editor.querySelector('input[type=checkbox],.pi-intranet-table-widget,details.pi-intranet-dropdown');
   }
   function getArchive() {
     try {const items=JSON.parse(safeRead('pi-archive-v1')||'[]');return Array.isArray(items)?items:[];}
@@ -242,7 +402,7 @@
     ['underline','U','Underline (Ctrl/Cmd+U)'],['strikeThrough','S','Strikethrough'],
     ['sep','',''],
     ['insertUnorderedList','• List','Bulleted list'],['insertOrderedList','1. List','Numbered list'],
-    ['checklist','☑ Task','Insert a clickable checklist'],['dropdown','▸ Dropdown','Insert collapsible dropdown'],['createLink','🔗','Add a link']
+    ['checklist','☑ Task','Insert a clickable checklist'],['dropdown','▸ Fold','Insert collapsible dropdown'],['table','▦ Table','Insert editable table'],['createLink','🔗','Add a link']
   ];
   const selectionByEditor = new WeakMap();
   function captureSelection(editor) {
@@ -264,6 +424,7 @@
   function applyFormat(editor,command) {
     useSelection(editor);
     if(command==='dropdown'){insertDropdown(editor);return;}
+    if(command==='table'){insertTable(editor);return;}
     if(command==='checklist')insertTask(editor);
     else if(command==='createLink'){
       const url=prompt('Link URL (https://… or mailto:…):');
@@ -355,8 +516,7 @@
     const initial=safeRead(storageKey(section));
     if(initial!==null)editor.innerHTML=sanitizeHTML(initial);
     baselines.set(section,initial===null?'':sanitizeHTML(initial));
-    normalizeChecklists(editor);
-    normalizeDropdowns(editor);
+    normalizeWidgets(editor);
     buildToolbar(card,editor,section);
     const collapseKey=storageKey(section)+'-collapsed';
     const collapseButton=card.querySelector('.pi-intranet-collapse');
@@ -413,13 +573,16 @@
       const text=transfer?.getData('text/plain')||'';
       const safe=html?sanitizeHTML(html):escapeText(text).replace(/\r?\n/g,'<br>');
       document.execCommand('insertHTML',false,safe);
-      normalizeDropdowns(editor);
+      normalizeWidgets(editor);
       editor.dispatchEvent(new Event('input',{bubbles:true}));
     });
     editor.addEventListener('change',event=>{
       if(!event.target.matches('input[type="checkbox"]'))return;
       event.target.toggleAttribute('checked',event.target.checked);
       saveEditor(section);
+    });
+    editor.addEventListener('keydown',event=>{
+      if(event.key==='Escape')closeInlineMenus();
     });
     editor.addEventListener('click',event=>{
       const title=event.target.closest('.pi-intranet-dropdown-title');
@@ -435,6 +598,9 @@
     card.querySelector('.pi-intranet-action-restore')?.addEventListener('click',()=>restoreSection(section));
   }
   app.querySelectorAll('[data-intranet-section]').forEach(bindSection);
+  document.addEventListener('pointerdown',event=>{
+    if(!event.target.closest('.pi-intranet-inline-actions'))closeInlineMenus();
+  });
 
   /* Seamless ticker with directly editable, plain-text content. */
   const marquee=document.getElementById('piIntranetMarquee');
@@ -619,7 +785,7 @@
       }
       const raw=safeRead(storageKey(section))??'';
       if(raw===baselines.get(section))continue;
-      editor.innerHTML=sanitizeHTML(raw);normalizeChecklists(editor);normalizeDropdowns(editor);baselines.set(section,raw);
+      editor.innerHTML=sanitizeHTML(raw);normalizeWidgets(editor);baselines.set(section,raw);
     }
     const remoteHeaderColors=safeRead(HEADER_COLOR_KEY);
     if(remoteHeaderColors!==baselines.get(HEADER_COLOR_KEY)){

@@ -358,3 +358,97 @@ html body[data-theme="windows"] .pi-intranet-card.pi-personal-colored > .pi-intr
   box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--teal) 48%,transparent);
 }
 .pi-intranet-formatbar button[data-format="dropdown"] {min-width:78px;font-weight:600;}
+
+/* V29.4: one steady formatting row. Tiny screens can swipe horizontally;
+   the editor itself never loses vertical space to a second toolbar row. */
+html body.pi-intranet-home-body .pi-intranet-formatbar {
+  flex-wrap:nowrap!important;white-space:nowrap;gap:2px;
+  overflow:hidden;min-width:0;box-sizing:border-box;
+}
+html body.pi-intranet-home-body .pi-intranet-card:is(.is-editing,:focus-within) .pi-intranet-formatbar {
+  max-height:35px;min-height:32px;padding:3px 7px;
+  overflow-x:auto!important;overflow-y:hidden!important;
+  scrollbar-width:thin;scrollbar-color:var(--teal) transparent;
+  overscroll-behavior-x:contain;
+}
+html body.pi-intranet-home-body .pi-intranet-formatbar button {
+  flex-shrink:0;min-width:23px;height:23px;min-height:23px;padding:2px 4px;font-size:11px;
+}
+html body.pi-intranet-home-body .pi-intranet-formatbar .pi-intranet-font-control {gap:2px;font-size:10px;flex-shrink:0;}
+html body.pi-intranet-home-body .pi-intranet-formatbar .pi-intranet-font-select {width:54px;min-width:54px;max-width:54px;height:23px;padding:1px 2px;}
+html body.pi-intranet-home-body .pi-intranet-formatbar .pi-intranet-format-spacer {margin:0 1px;flex-shrink:0;min-height:16px;}
+html body.pi-intranet-home-body .pi-intranet-formatbar button[data-format="dropdown"] {min-width:47px;}
+html body.pi-intranet-home-body .pi-intranet-formatbar button[data-format="table"] {min-width:49px;font-weight:600;}
+
+/* Reorderable and removable inline blocks. The controls are editor chrome,
+   not user content: JS regenerates them after a save, reload or restore. */
+.pi-intranet-rich-editor details.pi-intranet-dropdown {overflow:visible;position:relative;}
+.pi-intranet-rich-editor details.pi-intranet-dropdown:has(.pi-intranet-inline-actions.is-open) {z-index:10;}
+.pi-intranet-inline-actions {
+  position:relative;display:inline-flex;align-items:center;flex:0 0 auto;
+  margin-left:auto;user-select:none;-webkit-user-select:none;
+}
+html body.pi-intranet-home-body .pi-intranet-inline-trigger {
+  appearance:none;display:grid;place-items:center;width:27px;height:25px;
+  padding:0;border:1px solid color-mix(in srgb,var(--border) 78%,transparent);
+  border-radius:5px;color:var(--text);background:color-mix(in srgb,var(--teal) 7%,var(--panel-light));
+  font:700 18px/1 Georgia,serif;cursor:pointer;
+}
+html body.pi-intranet-home-body .pi-intranet-inline-trigger:is(:hover,:focus-visible),
+html body.pi-intranet-home-body .pi-intranet-inline-actions.is-open .pi-intranet-inline-trigger {
+  border-color:var(--teal);background:var(--panel);
+}
+.pi-intranet-inline-popover {
+  position:absolute;right:0;top:calc(100% + 3px);display:none;flex-direction:column;
+  width:118px;padding:4px;gap:2px;z-index:30;
+  border:1px solid var(--border);border-radius:7px;
+  background:var(--panel);box-shadow:0 9px 22px rgba(0,0,0,.26);
+  white-space:nowrap;
+}
+.pi-intranet-inline-actions.is-open > .pi-intranet-inline-popover {display:flex;}
+html body.pi-intranet-home-body .pi-intranet-inline-popover button {
+  display:block;text-align:left;width:100%;min-height:29px;padding:5px 8px;
+  border:0;border-radius:4px;background:transparent;color:var(--text);
+  font:600 12px/1.25 'Segoe UI',Arial,sans-serif;cursor:pointer;
+}
+html body.pi-intranet-home-body .pi-intranet-inline-popover button:is(:hover,:focus-visible) {background:var(--panel-light);}
+html body.pi-intranet-home-body .pi-intranet-inline-popover button.pi-intranet-danger-action {border-top:1px solid var(--border);border-radius:0;margin-top:2px;}
+.pi-intranet-rich-editor .pi-intranet-dropdown-title{min-width:0;}
+.pi-intranet-rich-editor details.pi-intranet-dropdown > summary.pi-intranet-dropdown-summary {position:relative;}
+
+/* Small, fully editable tables inside the same rich-text surface. */
+html body.pi-intranet-home-body .pi-intranet-rich-editor .pi-intranet-table-widget {
+  display:block;position:relative;box-sizing:border-box;width:100%;min-width:0;
+  margin:9px 0 12px;padding:0;
+  background:color-mix(in srgb,var(--teal) 6%,var(--panel));
+  border:1px solid color-mix(in srgb,var(--teal) 42%,var(--border));border-radius:7px;
+  color:var(--text);
+}
+html body.pi-intranet-home-body .pi-intranet-rich-editor .pi-intranet-table-widget:has(.pi-intranet-inline-actions.is-open) {z-index:10;}
+html body.pi-intranet-home-body .pi-intranet-rich-editor .pi-intranet-table-header {
+  display:flex;align-items:center;justify-content:space-between;gap:6px;
+  margin:0;padding:4px 7px 4px 10px;min-height:27px;
+  color:var(--text);background:color-mix(in srgb,var(--teal) 15%,var(--panel-light));
+  border-bottom:1px solid var(--border);border-radius:6px 6px 0 0;
+  font:600 .84em/1.25 'Segoe UI',Arial,sans-serif;
+}
+html body.pi-intranet-home-body .pi-intranet-rich-editor .pi-intranet-table-widget > table {
+  display:table;box-sizing:border-box;margin:0;border-collapse:collapse;
+  width:100%;min-width:0;table-layout:fixed;background:transparent;
+  font:inherit;color:var(--text);
+}
+html body.pi-intranet-home-body .pi-intranet-rich-editor .pi-intranet-table-widget :is(td,th) {
+  box-sizing:border-box;min-width:0;min-height:29px;padding:7px 8px;
+  border:1px solid color-mix(in srgb,var(--border) 90%,transparent);
+  outline:none;white-space:pre-wrap;overflow-wrap:anywhere;word-break:normal;
+  color:var(--text);background:transparent;vertical-align:top;text-align:left;
+  font:inherit;cursor:text;
+}
+html body.pi-intranet-home-body .pi-intranet-rich-editor .pi-intranet-table-widget :is(td,th):focus {
+  background:color-mix(in srgb,var(--teal) 10%,var(--panel));
+  box-shadow:inset 0 0 0 1px var(--teal);
+}
+@media(max-width:660px) {
+  html body.pi-intranet-home-body .pi-intranet-formatbar button {font-size:11px;}
+  html body.pi-intranet-home-body .pi-intranet-rich-editor .pi-intranet-table-widget :is(td,th){padding:6px;}
+}
