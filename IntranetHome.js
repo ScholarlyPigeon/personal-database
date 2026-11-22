@@ -1,4 +1,4 @@
-/* V29.4: The Intranet. Direct rich editing, section-specific cloud storage,
+/* V29.5: The Intranet. Direct rich editing, section-specific cloud storage,
    native shared colors/menus, and Archive integration. No Planner migrations. */
 (() => {
   'use strict';
@@ -7,6 +7,14 @@
   const PREFIX = 'pi-intranet-home-v1-';
   const MARQUEE_KEY = PREFIX + 'marquee';
   const DEFAULT_MARQUEE = '✦ Add your current north stars here ✦';
+  // Shared named theme colors. The color is stored directly on each inline
+  // widget so moving, archiving, restoring, or cloud-syncing it keeps its tint.
+  const INLINE_COLORS = [
+    ['', 'Theme default'], ['plum','Violet'], ['teal','Teal'],
+    ['blue','Blue'], ['rose','Pink'], ['green','Green'],
+    ['gold','Gold'], ['coral','Coral'], ['cyan','Ice blue']
+  ];
+  const validInlineColor = value => INLINE_COLORS.some(([key])=>key===value) ? value : '';
   const FONT_SIZES = [12,13,14,15,16,18,20];
   const DEFAULT_FONT_SIZE = 15;
   const validFontSize = value => FONT_SIZES.includes(Number(value)) ? Number(value) : DEFAULT_FONT_SIZE;
@@ -67,6 +75,8 @@
         const summary = tag==='SUMMARY' && !!node.closest('details.pi-intranet-dropdown');
         const tableWidget = tag==='DIV' && node.classList.contains('pi-intranet-table-widget');
         const tableCell = (tag==='TD'||tag==='TH') && !!node.closest('.pi-intranet-table-widget');
+        const widgetColor=(dropdown || tableWidget)
+          ? validInlineColor(node.getAttribute('data-pi-widget-color')||'') : '';
         const opened = dropdown && node.hasAttribute('open');
         [...node.attributes].forEach(attribute => node.removeAttribute(attribute.name));
         if (tag==='A' && href && /^(https?:\/\/|mailto:)/i.test(href.trim())) {
@@ -75,12 +85,16 @@
         if (checklist)node.className='pi-intranet-checklist';
         if (dropdown) {
           node.className='pi-intranet-dropdown';node.contentEditable='false';
+          if(widgetColor)node.dataset.piWidgetColor=widgetColor;
           if(opened)node.setAttribute('open','');
         }
         if(summary)node.className='pi-intranet-dropdown-summary';
         if(title){node.className='pi-intranet-dropdown-title';node.contentEditable='true';}
         if(body){node.className='pi-intranet-dropdown-body';node.contentEditable='true';}
-        if(tableWidget){node.className='pi-intranet-table-widget';node.contentEditable='false';}
+        if(tableWidget){
+          node.className='pi-intranet-table-widget';node.contentEditable='false';
+          if(widgetColor)node.dataset.piWidgetColor=widgetColor;
+        }
         if(tableCell)node.contentEditable='true';
         clean(node);
       }
@@ -136,6 +150,46 @@
       if(action==='delete')button.classList.add('pi-intranet-danger-action');
       popover.append(button);
     }
+    // Compact theme-aware palette within the SAME three-dot menu.
+    // Chrome controls are excluded by sanitizeHTML; only the validated
+    // data-pi-widget-color attribute is saved on the widget itself.
+    const picker=document.createElement('span');
+    picker.className='pi-intranet-inline-color-picker';
+    picker.setAttribute('role','group');
+    picker.setAttribute('aria-label',`${kind==='table'?'Table':'Dropdown'} color`);
+    const caption=document.createElement('span');
+    caption.className='pi-intranet-inline-color-caption';
+    caption.textContent='Color';
+    const swatches=document.createElement('span');
+    swatches.className='pi-intranet-inline-swatches';
+    function updateSwatches(){
+      const current=validInlineColor(widget.dataset.piWidgetColor||'');
+      swatches.querySelectorAll('[data-pi-widget-choice]').forEach(swatch=>{
+        swatch.setAttribute('aria-pressed',String(swatch.dataset.piWidgetChoice===current));
+      });
+    }
+    for(const [key,label] of INLINE_COLORS){
+      const swatch=document.createElement('button');
+      swatch.type='button';swatch.className='pi-intranet-inline-swatch';
+      swatch.dataset.piWidgetChoice=key;
+      swatch.title=label;swatch.setAttribute('aria-label',`${label} ${kind} color`);
+      if(!key){swatch.classList.add('is-default');swatch.textContent='×';}
+      swatch.addEventListener('click',event=>{
+        event.preventDefault();event.stopPropagation();
+        if(key)widget.dataset.piWidgetColor=key;
+        else widget.removeAttribute('data-pi-widget-color');
+        updateSwatches();
+        const editor=widget.closest('.pi-intranet-rich-editor');
+        editor?.dispatchEvent(new Event('input',{bubbles:true}));
+        tell(`${kind==='table'?'Table':'Dropdown'} color updated`);
+        // Leave the palette open to compare choices without extra clicks.
+      });
+      swatches.append(swatch);
+    }
+    picker.append(caption,swatches);
+    const deleteButton=popover.querySelector('[data-pi-block-action="delete"]');
+    popover.insertBefore(picker,deleteButton);
+    updateSwatches();
     // Bind to the action buttons themselves rather than relying on delegated
     // editor clicks. Contenteditable hosts can retarget bubbled clicks.
     // Prevent focus loss during mouse down: otherwise the formatting bar
@@ -172,6 +226,8 @@
   }
   function normalizeTables(editor){
     editor.querySelectorAll('.pi-intranet-table-widget').forEach(widget=>{
+      const color=validInlineColor(widget.dataset.piWidgetColor||'');
+      if(color)widget.dataset.piWidgetColor=color;else widget.removeAttribute('data-pi-widget-color');
       widget.contentEditable='false';
       let table=widget.querySelector(':scope > table');
       if(!table){table=document.createElement('table');widget.append(table);}
@@ -279,6 +335,8 @@
   }
   function normalizeDropdowns(editor) {
     editor.querySelectorAll('details.pi-intranet-dropdown').forEach(details=>{
+      const color=validInlineColor(details.dataset.piWidgetColor||'');
+      if(color)details.dataset.piWidgetColor=color;else details.removeAttribute('data-pi-widget-color');
       details.contentEditable='false';
       let summary=details.querySelector(':scope > summary');
       if(!summary){summary=document.createElement('summary');details.prepend(summary);}
